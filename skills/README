@@ -1,0 +1,37 @@
+All skills ultimately inherit from the SimpleVoiceAssistant base class sva_base.py.
+
+Media skills like those that front music services (Spotify, YouTube, etc) should 
+inherit from  MediaSkill (see file sva_media_skill_base.py). They will be required
+to provide two entry points used by the system. One returns the confidence the skill
+can handle the request given the input, while the second entry point actually plays
+the media using the media_player skill. See skill_media_player for more information
+on how to use the system media player skill. 
+
+Question and Answer skills like wikipedia should inherit from QuestionAnswerSkill.
+Much like Media skills, Q&A skills provide two entry points. One for confidence 
+and one for action. Question and Answer skills typically use the self.speak() method
+to speak their results in their action handlers.
+
+All other skills are considered user skills and should inherit from SimpleVoiceAssistant
+directly like the example skill. See user_skills/example1/__init__.py for more information.
+
+
+Technical Details
+-----------------
+The fallback skill handles any unrecognized utterances and sends messages to all registered
+Q&A skills to ask their confidence they can cover the question. If they are selected then
+their play entry point will be called. Note this only happens if the system could not match
+the spoken user input with an intent.
+
+A similar approach is taken by the media skill (skill_media.py). The media skill base class
+initially handles all media requests. It may send the command on to a media skill, but 
+typically it will catch the media oriented verbs first (like pause, resume, etc) and then
+forward them on to the appropriate skill based on system state.
+
+The system skill handles special cases like single word utterances that are recognized as
+either system level commands or media commands (like play, pause, resume, etc). It also
+handles focus requests and in general manages the overall state of the system. 
+
+The volume skill is linux specific and will need to be changed for other operating systems.
+Mainly just the actual command line command to change the volume is all that needs to change.
+See the hal/ subdirectory for more information.

@@ -1,0 +1,49 @@
+Skill Developer API
+
+The 'example1' skill located in the user_skills/ directory is a good example
+to see how a basic skill can communicate with the user. The time and date
+skill is an example of a minimalistic user skill.
+
+All skills that inherit from SimpleVoiceAssistant have these methods available ...
+
+    speak(text, wait=callback)
+    play_media(file_uri, delete_on_complete='false')
+    converse(timeout)
+    get_user_input()
+    get_confirmation()
+    send_message(message)
+    register_intent(intent_type, verb, subject, callback)
+
+additionally, if a skill wishes to see all messages destined for it, it may
+add the 'msg_handler' parameter in its super init call. See the help skill
+for an example of this.
+
+
+Q&A Skills additionally have to implement ...
+
+    def get_qna_confidence(msg):
+    def qna_answer_question(msg):
+
+
+And skills which inherit from the Media skill have to implement these methods ...
+
+    def get_media_confidence(msg):
+    def media_play(msg):
+
+
+The inflect module provides speakable numbers. It does things like converting
+
+    Thursday April 27 
+to 
+    Thursday April twenty seventh
+
+Which some may find helpful. 
+
+The Lingua Franca module provides advanced sentence parsing for things like
+extracting dates and times from spoken words. For example 
+
+    '7 pm the day after tomorrow'
+
+would return a datetime object. This can also be helpful when processing 
+spoken input.
+

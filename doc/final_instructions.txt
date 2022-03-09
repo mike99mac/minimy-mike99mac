@@ -1,0 +1,27 @@
+You must now edit your start.sh file and edit the following line
+
+export GOOGLE_APPLICATION_CREDENTIALS="/some/path/my-google-key.json"
+
+and replace /some/path/my-google-key.json
+
+with the location of your Google Sppech API key
+
+Always run "source venv_ngv/bin/activate" from this directory before 
+doing anything else and if you are going to run any utilities it is
+always a good idea to set PYTHONPATH and SVA_BASE_DIR to this directory.
+
+Once you do that you can run ./start.sh to start the system.
+
+run ./stop.py to stop the system.
+
+Use your browser to run the homepage.html page to see any unrecognized
+utterances.
+
+Be sure to run ./mmconfig.py to configure your system. 
+(basic, advanced and super advanced)
+
+./mmconfig.py 
+or 
+./mmconfig.py a
+or 
+./mmconfig.py sa

@@ -1,0 +1,66 @@
+
+Generic audio channel command is ...
+
+amixer sset channel_name percent
+
+so for example, 
+
+amixer sset Playback 20%
+
+BUT, the sset name is different per os.
+For example, 
+
+My Laptop = Speaker and Mic
+Mark2 = Playback and Record
+
+this is basically the mapping we are dealing with, however,
+The Mark2 also has a hardware volume control. This is different
+and is handled differently.
+
+This directory contains minimal ability to handle different 
+hardware environments regarding the output device.
+
+The system input device is controlled by replacing the mic.py file. 
+The output device is configured by altering the contents of the 
+hal.cfg file. The default hal.cfg file is shown below ...
+
+{
+    "l":{
+        "initialize":"python ../../hal/executables/initialize_linux.py",
+        "set_volume":"amixer sset Speaker %s%%",
+        "get_volume":"python ../../hal/executables/get_linux_volume.py",
+        "set_mic":"amixer sset Mic %s%%",
+        "get_mic":"python ../../hal/executables/get_linux_mic_level.py"
+        },
+
+    "m":{
+        "initialize":"python ../../hal/executables/initialize_mark2.py",
+        "set_volume":"amixer sset Playback %s%%",
+        "get_volume":"python ../../hal/executables/get_mark2_volume.py",
+        "set_mic":"amixer sset Record %s%%",
+        "get_mic":"python ../../hal/executables/get_mark2_mic.py"
+        }
+}
+
+The above configuration supports two basic environments or platforms. 
+One is standard linux, indicated by the key 'l'. The second is 'm' 
+which is the Mycroft MarkII. 
+
+For the output device the system needs to know how to set the volume 
+and optionally, how to get the volume. If standard linux commands can 
+not be used then the user should supply commands which can accomplish 
+this in the hal/executables subdirectory and reference them in the 
+hal.cfg file as shown above. 
+
+For example, if you wanted to create a new configuration for the 
+K210 Kendryte development board, you could create a python script which 
+could be called from the command line which could alter the volume. This 
+script would be located in the hal/executables directory and the command 
+to execute it would be entered in the hal.cfg file as a 'get_volume' entry 
+for the new custom environment (for example, you could use the key 'k210') 
+in the hal.cfg file.
+
+The ultimate goal of this process will be that the system will use the 
+hal.cfg file to determine which system command line utility to call to 
+set the system volume and/or the mic level. 
+

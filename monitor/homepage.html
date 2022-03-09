@@ -1,0 +1,69 @@
+<html>
+  <head>
+    <script>
+var bus_url = 'ws://localhost:4000/homepage_skill';
+//var bus_url = 'ws://10.0.0.198:4000/homepage_skill';
+var socket = new WebSocket(bus_url);
+
+var snd = new Audio("../framework/assets/boing.wav"); 
+
+setInterval(function () {
+  document.getElementById('time_div').innerHTML=new Date().toLocaleTimeString();
+  document.getElementById('date_div').innerHTML = new Date().toLocaleString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'});
+}, 1000); 
+
+function Init()
+{
+  console.log('Init() called');
+  socket.onopen = function(e) {
+    console.log("[open] Connection established");
+    //socket.send("New subscriber");
+  };
+  console.log('Init() opened');
+
+  socket.onmessage = function(event) {
+    let data = event.data;
+
+    //let msg =  JSON.parse(event.data);
+    //let msg_type = msg.type;
+    //let msg_subtype = msg.data['subtype'];
+
+    console.log(data);
+    let msg =  JSON.parse(event.data);
+    if (msg.msg_type == 'utterance' && msg.data['utt']['intent_match'] == ''){
+      let utt = msg.data['utt']['sentence'];
+      utt = utt.substring( utt.search("]")+1 );
+      let html = '<marquee width="600" scrollamount="7" scrolldelay="67" loop="1">Not Understood---> ' + utt + '</marquee>';
+      document.getElementById('utt_div').innerHTML=html;
+      snd.play();
+    }
+  }
+  socket.onclose = function(event) {
+    if (event.wasClean) {
+      console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+    } else {
+      // e.g. server process killed or network down
+      // event.code is usually 1006 in this case
+      console.log('[close] Connection died');
+    }
+  };
+
+  socket.onerror = function(error) {
+    console.log(`[error] ${error.message}`);
+  };
+}
+
+    </script>
+  </head>
+  <body bgcolor=black onload="Init();">
+    <center>
+      <br/><br/><br/>
+      <div id=time_div style="color:white;font-size:64px; font-weight:bold;"></div>
+      <br/>
+      <div id=date_div style="color:white;font-size:48px; font-weight: bold;"></div>
+      <br/>
+      <div id=utt_div style="color:red;font-size:32px; font-weight: bold;"></div>
+    </center>
+    <embed src="/home/ken/MiniMy/framework/assets/completed.wav" autostart="false" width="0" height="0" id="sound1" enablejavascript="true">
+  </body>
+</html>
