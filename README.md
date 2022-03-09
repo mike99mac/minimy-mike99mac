@@ -1,5 +1,5 @@
 # minimy
-simple nlp based voice assistant framework
+Simple nlp based voice assistant framework
 
 <h2>Overview</h2>
 The goal of this project is to provide a run-time 
@@ -16,18 +16,18 @@ registered.
 ./install/linux_install.sh
 
 <h2>Configuration</h2>
-Basic:
+Basic:<br/>
   ./mmconfig.py
-
-or, for more configuration options
+<br/><br/>
+or, for more configuration options<br/>
   ./mmconfig.py sa
 
 
 <h2>Running</h2>
-source venv_ngv/bin/activate
+source venv_ngv/bin/activate<br/>
 ./start.sh
 
-To stop
+To stop<br/>
 
 ./stop.py
 
@@ -71,9 +71,10 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/my/key/key_filename.json
 
 <h2>Configuration Explained</h2>
 
-./mmconfig.py
-./mmconfig.py a
-./mmconfig.py sa
+<ul>
+<li>./mmconfig.py</li>
+<li>./mmconfig.py a</li>
+<li>./mmconfig.py sa</li>
 
 The system can use local or remote services
 for speech to text (STT), text to speech (TTS)
@@ -115,7 +116,9 @@ enter them separated by commas with no punctuation.
 For example, 
 
 hey Bubba, bubba
+
 or
+
 computer
 
 Wake words work best when you choose multi-syllable
