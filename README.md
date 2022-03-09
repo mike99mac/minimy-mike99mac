@@ -1,7 +1,7 @@
 # minimy
 simple nlp based voice assistant framework
 
-<h1>Overview</h1>
+<h2>Overview</h2>
 The goal of this project is to provide a run-time 
 environment which facilitates the development of 
 voice enabled applications. These voice enabled
@@ -12,10 +12,10 @@ get called asynchronously when an utterance is
 matched to an intent the skill has previously
 registered. 
 
-<h1>Installation</h1>
+<h2>Installation</h2>
 ./install/linux_install.sh
 
-<h1>Configuration</h1>
+<h2>Configuration</h2>
 Basic:
   ./mmconfig.py
 
@@ -23,7 +23,7 @@ or, for more configuration options
   ./mmconfig.py sa
 
 
-<h1>Running</h1>
+<h2>Running</h2>
 source venv_ngv/bin/activate
 ./start.sh
 
@@ -37,7 +37,7 @@ installed this code to. For example
 
 /home/bubba/MiniMy
 
-<h1>General</h1>
+<h2>General</h2>
 The system uses ./start.sh and ./stop.py to
 start and stop the system en masse. Each
 skill and service run in their own process 
@@ -69,7 +69,7 @@ set it manually.
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/my/key/key_filename.json
 
 
-<h1>Configuration Explained</h1>
+<h2>Configuration Explained</h2>
 
 ./mmconfig.py
 ./mmconfig.py a
