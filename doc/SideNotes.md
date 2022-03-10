@@ -1,13 +1,13 @@
 General Design Notes and Musings
 
 
-=== Local and/or Remote Mode ===
+<h2>=== Local and/or Remote Mode ===</h2>
 The system was designed to run both locally and remote and to fall back automatically when an internet connection is lost or does not exist. It will also auto recover if the connection is reestablished. The system can be configured to run in local only mode if so desired. You would only do this for performance reasons when strictly using local TTS, STT and NLP because when in remote mode local mode will be delayed until the remote has timed out. This is not the case when configured in 'local only' mode.
 
 One of the system design goals was a small footprint so when configured in 'remote only' mode the code can run on nearly any device which runs linux.
 
 
-=== AEC Concerns ===
+<h2>=== AEC Concerns ===</h2>
 When configured in remote mode, all utterances are processed by the STT engine using both the local and remote services. Since the remote is often more reliable (for example in an 'edge' type environment), a key value store is persisted and used in the future when only a local response is available, to favor the previous remote response over the new local response. 
 
 Since smaller cheaper systems tend to have poor quality AEC (if any at all) the concept of 'logical AEC' is introduced. The concept of 'logical AEC' is kind of explained below  :-)
@@ -21,11 +21,11 @@ Another example would be since the current audio input implementation uses the f
 Out of band (OOB) handling of the 'stop' aliases (stop, terminate, cancel, etc) improves barge-in detection. Isolated wake word recognition (where you just say the wake word) causes the system to beep (audio confirmation) and pause the output until an utterance is received. This is another method employed to overcome poor AEC. In fact, one could argue this is endemic in the input handling portion of the framework (see mic.py, stt.py and intent.py) and could be removed entirely for systems with good AEC. For example, none of these issues exist when I use my wireless headset with any system.
 
 
-=== Message Bus ===
+<h2>=== Message Bus ===</h2>
 The message bus was implemented as a websocket server by design so skills do not have to live on the same machine and they may be written in any programming language that supports the websocket protocol. For example, Javascript or Ruby or PHP, etc. It is by design a 'directed message broker' with support for broadcast messages.
 
 
-=== Compatability ===
+<h2>=== Compatability ===</h2>
 This latest version of the code has been verified on the following environments
 Circa 2012 MacBook Pro 8 core i7 running Ubuntu 20.x 8GB RAM
 Raspberry Pi4 running Pi OS 64Bit, 2GB RAM (using wireless USB Headset)
