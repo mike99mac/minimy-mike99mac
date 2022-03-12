@@ -8,7 +8,7 @@ date
 #     install/linux_install.sh 3.9
 # will install using python 3.9
 #
-echo 'Begin Installation, MiniMy Version 1.0.0'
+echo 'Begin Installation, MiniMy Version 1.0.1'
 if [ "$1" ]; then
   sudo apt install python$1-venv
   sudo apt install python$1-dev

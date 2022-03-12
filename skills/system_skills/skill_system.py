@@ -6,6 +6,9 @@ from threading import Event
 import os
 import time
 
+INTERNAL_PAUSE = 1
+EXTERNAL_PAUSE = 2
+
 class SystemSkill(SimpleVoiceAssistant):
     """the system skill provides several important functions.
 
@@ -50,6 +53,7 @@ class SystemSkill(SimpleVoiceAssistant):
         self.stop_overide = None
         self.pause_requestor = None
         self.pause_requesting_skill_category = None
+        self.pause_reason = None
 
         # system information
         cfg = Config()
@@ -250,12 +254,14 @@ class SystemSkill(SimpleVoiceAssistant):
                 if verb == 'pause':
                     if len(self.active_skills) > 0:
                         last_active_skill_id = self.active_skills[len(self.active_skills) - 1]['skill_id']
+                        self.log.debug("SysSkill: EXTERNAL PAUSE")
+                        self.pause_reason = EXTERNAL_PAUSE
                         self.send_pause(last_active_skill_id)
 
                 elif verb == 'resume':
                     if len(self.active_skills) > 0:
                         last_active_skill_id = self.active_skills[len(self.active_skills) - 1]['skill_id']
-                        self.log.error("SysSkill: send resume to %s array=%s" % (last_active_skill_id, self.active_skills))
+                        self.log.debug("SysSkill: EXTERNAL RESUME. send resume to %s array=%s" % (last_active_skill_id, self.active_skills))
                         self.send_resume(last_active_skill_id)
                 else:
                     # else unrecognized oob 
@@ -284,9 +290,8 @@ class SystemSkill(SimpleVoiceAssistant):
             focus_response = ''
 
             if len(self.active_skills) != 0:
-                # a skill is requsting to go active, but
-                # we already have an active skill or two
-                # so we have hit a focus_determination
+                # a skill is requsting to go active, but we already
+                # have an active skill or two so we hit a focus
                 # inflection point. we may deny the activate
                 # request, we may stop the previously active skill
                 # and then approve the activate request or we
@@ -325,7 +330,8 @@ class SystemSkill(SimpleVoiceAssistant):
                     else:
                         self.active_skills.append( {'skill_id':self.pause_requestor, 'skill_category':self.pause_requesting_skill_category} )
                         self.log.warning("SysSkill: Warning skill already active %s. Positive response sent anyway. %s" % (self.pause_requestor,self.active_skills))
-
+                    self.log.debug("SysSkill: INTERNAL PAUSE")
+                    self.pause_reason = INTERNAL_PAUSE
                     self.send_pause(last_active_skill_id)
                     return 
 
@@ -369,26 +375,27 @@ class SystemSkill(SimpleVoiceAssistant):
                     self.log.warning("SysSkill: Warning skill already active %s. Positive response sent anyway" % (from_skill_id,))
 
         elif data['subtype'] == 'pause_confirmed':
-            last_active_skill_id = None
-            if len(self.active_skills) > 0:
-                last_active_skill_id = self.active_skills[len(self.active_skills) - 1]['skill_id']
-            if last_active_skill_id is None:
-                self.log.error("SysSkill: Error pause confirmed for non existent skill. Ignoring")
-                return 
-            self.log.error("SysSkill: pause confirmed for either requestor:%s or last_active:%s" % (self.pause_requestor,last_active_skill_id))
-            if len(self.active_skills) == 1:
-                self.log.error("SysSkill: Pause(3) NOT Sending positive activate_response to %s --->%s" % (last_active_skill_id,self.active_skills))
-                return
-            info = {
-                    'error':'',
-                    'subtype':'request_output_focus_response',
-                    'status':'confirm',
-                    'skill_id':last_active_skill_id,
-                    'from_skill_id':self.skill_id,
-                    }
+            self.log.debug("SysSkill: got pause confirmed. pause reason = %s, msg=%s" % (self.pause_reason, msg))
 
-            time.sleep(3) # give media a chance to pause (it sux for aplay especially)
-            self.bus.send(MSG_SYSTEM, last_active_skill_id, info)
+            if self.pause_reason == INTERNAL_PAUSE:
+                self.log.debug("SysSkill: INTERNAL_PAUSE confirmed, sending confirm output focus")
+                self.pause_reason = None
+                info = {
+                        'error':'',
+                        'subtype':'request_output_focus_response',
+                        'status':'confirm',
+                        'skill_id':self.pause_requestor,
+                        'from_skill_id':self.skill_id,
+                        }
+                time.sleep(3) # give media a chance to pause (it sux for aplay especially)
+                self.bus.send(MSG_SYSTEM, self.pause_requestor, info)
+
+            elif self.pause_reason == EXTERNAL_PAUSE:
+                self.pause_reason = None
+                self.log.debug("SysSkill: EXTERNAL_PAUSE confirmed, doing nothing")
+
+            else:
+                self.log.debug("SysSkill: Creepy Internal Error 105 - got paused confirmed with no reason!")
 
         elif data['subtype'] == 'release_output_focus':
             from_skill_id = data['from_skill_id']

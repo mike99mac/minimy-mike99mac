@@ -34,7 +34,7 @@ class Config:
     config_defaults = [
         {
         'Basic': {
-            'Version':'1.0.0',
+            'Version':'1.0.1',
             'BaseDir':'',
             'WakeWords': ['hey computer', 'computer'],
             'GoogleApiKeyPath' : 'install/my_google_key.json',
@@ -122,6 +122,7 @@ class Config:
             for item in (tmp_cfg[section]).items():
                 print("    %s" % (item,))
 
+
 class LOG:
     def __init__(self, filename):
         log_level = logging.ERROR
@@ -154,6 +155,7 @@ class MediaSession:
         self.state = 'idle'
         self.correlator = ''
 
+
 def aplay(file):
     # one place where the raw aplay is used
     # which uses proper device entry from
@@ -165,6 +167,7 @@ def aplay(file):
     if device_id is not None and device_id != '':
         cmd = "aplay -D" + device_id + " " + file
     os.system(cmd)
+
 
 # for simple blocking operations
 def execute_command(command):
@@ -478,72 +481,6 @@ def get_wake_words():
     return wws
 
 
-if __name__ == '__main__':
-
-    ## CommandExecutor tests
-
-    # example sync 
-    print("Start synchronous")
-    retcode = CommandExecutor('aplay -i /home/ken/Desktop/lincoln.wav').wait()
-    print("End", retcode)
-
-
-    # example async
-    print("Start asynchronous")
-    ce = CommandExecutor('aplay -i /home/ken/Desktop/lincoln.wav')
-
-    print("Pause")
-    ce.send(' ')
-
-    time.sleep(1)
-
-    print("Resume")
-    ce.send(' ')
-
-    time.sleep(5)
-    print("Kill")
-    ce.kill()
-
-    while not ce.is_completed():
-        print("Waiting for process exit")
-        time.sleep(1)
-
-    print("End", ce.get_return_code())
-
-
-    # example error (returns None)
-    print("Start error")
-    retcode = CommandExecutor('boo').wait()
-    print("End", retcode)
-
-
-def chunk_sentence(sentence):
-    # produce a list of chunks from a
-    # sentence.
-    max_chunk_size = MAX_CHUNK_LEN
-    min_chunk_size = MIN_CHUNK_LEN
-    sentence = sentence.replace('"', "'")
-    sa = sentence.split(" ")
-
-    if len(sa) < max_chunk_size:
-        return [ sentence, ]
-
-    indx = 0
-    chunks = []
-
-    while indx < len(sa):
-        chnk = " ".join(sa[indx:indx + max_chunk_size])
-        chunks.append( chnk.strip() )
-        indx += max_chunk_size
-
-    last_indx = len(chunks) - 1
-    chunks[last_indx] = chunks[last_indx] + '.'
-    if len(chunks[last_indx].split(" ")) < min_chunk_size:
-        chunks[last_indx-1] = chunks[last_indx-1] + ' ' + chunks[last_indx]
-        chunks = chunks[:-1]
-
-    return chunks
-
 def make_time_speakable(text):
     text = text.replace("00","")
     words = text.split(" ")
@@ -571,6 +508,7 @@ def expand_abbrevs(text):
     text = text.replace("U.K.", "United Kingdom")
     text = text.replace("N.R.A.", "National Rifle Association")
     return text
+
 
 def tts_scrub_output(text):
     # very tts specific btw
@@ -630,4 +568,43 @@ def chunk_text(data):
                     sentences.append(p)
 
     return sentences
+
+
+if __name__ == '__main__':
+    ## TODO remove state to abbrev type stuff out
+    ##      into its own file.
+
+    ## CommandExecutor tests
+    # example sync 
+    print("Start synchronous")
+    retcode = CommandExecutor('aplay -i /home/ken/Desktop/lincoln.wav').wait()
+    print("End", retcode)
+
+    # example async
+    print("Start asynchronous")
+    ce = CommandExecutor('aplay -i /home/ken/Desktop/lincoln.wav')
+
+    print("Pause")
+    ce.send(' ')
+
+    time.sleep(1)
+
+    print("Resume")
+    ce.send(' ')
+
+    time.sleep(5)
+    print("Kill")
+    ce.kill()
+
+    while not ce.is_completed():
+        print("Waiting for process exit")
+        time.sleep(1)
+
+    print("End", ce.get_return_code())
+
+    # example error (returns None)
+    print("Start error")
+    retcode = CommandExecutor('boo').wait()
+    print("End", retcode)
+
 

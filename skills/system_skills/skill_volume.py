@@ -198,7 +198,8 @@ class VolumeSkill(SimpleVoiceAssistant):
         # on some systems we have a system level mute
         # command and that works much better, otherwise
         # we fall back to using set/get volume
-        if self.hal_cfg['mute_volume'] != '':
+        #if self.hal_cfg['mute_volume'] != '':
+        if self.hal_cfg.get('mute_volume','') != '':
             os.system(self.hal_cfg['mute_volume'])
         else:
             self.log.info("No system mute command, using volume")
@@ -210,7 +211,8 @@ class VolumeSkill(SimpleVoiceAssistant):
 
     def handle_unmute(self,msg):
         self.log.debug("Inside handle unmute!")
-        if self.hal_cfg['unmute_volume'] != '':
+        #if self.hal_cfg['unmute_volume'] != '':
+        if self.hal_cfg.get('unmute_volume','') != '':
             os.system(self.hal_cfg['unmute_volume'])
         else:
             self.volume_level = self.muted_volume

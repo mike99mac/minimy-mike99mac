@@ -81,7 +81,7 @@ class FallbackSkill(SimpleVoiceAssistant):
                     'skill_id':'system_monitor_skill', 
                 'skill_data':data}
             self.send_message('system_monitor_skill', message)
-            aplay(self.boing_filename)
+            #aplay(self.boing_filename)
 
             # TODO send message to monitor skill
             # lol, while this seems like a good idea, on systems 
