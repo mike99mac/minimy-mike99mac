@@ -178,8 +178,11 @@ class TTSEngine:
     def _active_ended(self, msg):
         self.send_session_end_notify(self.current_session.owner)
         if len(self.saved_tts_sessions) > 0:
-            self.__change_state(STATE_PAUSED)
-            self.log.debug("TTS Engine active_ended() pausing due to saved sessions --->%s" % (self.saved_tts_sessions,))
+            self.__change_state(STATE_ACTIVE)
+            # restore paused session
+            saved_tts_session = self.saved_tts_sessions.pop()
+            self.log.debug("TTS Engine active_ended() just restored session %s" % (saved_tts_session,))
+            self.set_session_guts( saved_tts_session )
         else:
             self.__change_state(STATE_IDLE)
 
@@ -242,8 +245,7 @@ class TTSEngine:
 
     def _paused_resume(self, msg):
         self.__change_state(STATE_ACTIVE)
-        if len(self.saved_tts_sessions) > 0:
-            self.set_session_guts( self.saved_tts_sessions.pop() )
+        self.log.debug("TTS Engine paused_resume: current.owner=%s, saved sessions = %s" % (self.current_session.owner, self.saved_tts_sessions))
         self.current_session.handle_event(SESSION_EVENT_RESUME, msg)
 
     def _paused_speak(self, msg):
@@ -272,8 +274,15 @@ class TTSEngine:
         self.send_session_reject('tts_busy', msg['from_skill_id'])
 
     def _ws_done(self, msg):
-        self.__change_state(STATE_PAUSED)
         self.send_session_end_notify(self.current_session.owner)
+        if len(self.saved_tts_sessions) > 0:
+            self.__change_state(STATE_ACTIVE)
+            # restore paused session
+            saved_tts_session = self.saved_tts_sessions.pop()
+            self.log.debug("TTS Engine active_ended() just restored session %s" % (saved_tts_session,))
+            self.set_session_guts( saved_tts_session )
+        else:
+            self.__change_state(STATE_IDLE)
 
     def _wps_paused(self, msg):
         # current session has confirmed it is paused

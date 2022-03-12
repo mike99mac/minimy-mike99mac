@@ -16,25 +16,27 @@ registered.
 ./install/linux_install.sh
 
 <h2>Configuration</h2>
-Basic:<br/>
+Basic:<br/><br/>
   ./mmconfig.py
 <br/><br/>
-or, for more configuration options<br/>
+or, for more configuration options<br/><br/>
   ./mmconfig.py sa
 
 
 <h2>Running</h2>
-source venv_ngv/bin/activate<br/>
+source venv_ngv/bin/activate<br/><br/>
 ./start.sh
 
-To stop<br/>
+To stop<br/><br/>
 
 ./stop.py
 
+<br/><br/>
 These must be run from the base directory.
 The base directory is defined as where you
 installed this code to. For example
 
+<br/><br/>
 /home/bubba/MiniMy
 
 <h2>General</h2>
@@ -45,27 +47,34 @@ space and use the message bus or file system
 to synchronize. Their output may be found in
 the directory named 'logs/'. 
 
+<br/><br/>
 The system relies on the environment variables
 SVA_BASE_DIR and GOOGLE_APPLICATION_CREDENTIALS.
 
+<br/><br/>
 These are typically set in the start.sh script.
 
+<br/><br/>
 The SVA_BASE_DIR is set to the install directory
 of your system. The Google variable is set
 based on where your Google Speech API key is
 located. 
 
+<br/><br/>
 If you don't have a Google Speech API key you 
 can get one from here ...
 
+<br/><br/>
 https://console.cloud.google.com/freetrial/signup/tos
 
+<br/><br/>
 The start.sh file must then be modified to use this
 key. The Google Python module actually requires this
 enviornment variable but as mentioned it is typically 
 set in the start.sh script. You could, if you like,
 set it manually.
 
+<br/><br/>
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/my/key/key_filename.json
 
 
@@ -76,6 +85,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/my/key/key_filename.json
 <li>./mmconfig.py a</li>
 <li>./mmconfig.py sa</li>
 
+<br/><br/>
 The system can use local or remote services
 for speech to text (STT), text to speech (TTS)
 and intent matching. Intent matching is accomplished
@@ -88,6 +98,12 @@ if you would like to use remote or local STT, TTS
 and NLP. Unless you have a good reason, for now
 you should always select local mode (remote=n)
 for NLP.
+
+Remote TTS using polly requires an Amazon ID and key. 
+If you prefer to not use polly for remote TTS you may 
+choose mimi2 from Mycroft which is a free remote TTS 
+alternative. You could also select local only TTS in 
+which case mimic3 should work fine.
 
 By deault the system will fallback to local mode
 if a remote service fails. This will happen
@@ -153,6 +169,17 @@ run
 
 aplay -L
 
+Which will produce a series of lines which look 
+something like this 
+
+sysdefault:CARD=Headset
+
+Remove the 'CARD=' and provide the value 
+
+sysdefault:Headset
+
+To the configuration program.
+
 Local TTS refers to the local TTS engine. 
 Currently three are supported. Espeak, Coqui
 and mimic3. Mimic3 is strongly recommended.
@@ -182,8 +209,8 @@ standard log levels. Specifically 'e' sets the log
 level to 'error' and 'd' sets it to 'debug', etc.
 
 Once you confirm your changes you can see what was 
-produced by typing 'cat sva.cfg'. You should not
-modify this file by hand even thought it may be
-enticing to do so.
+produced by typing 'cat install/mmconfig.yml'. You 
+should not modify this file by hand even thought it 
+may be enticing to do so.
 
 

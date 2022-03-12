@@ -209,7 +209,7 @@ class SimpleVoiceAssistant:
 
         # raw messages are ignored unless in converse mode
         if self.i_am_conversed:
-            if self.crappy_aec:
+            if self.crappy_aec == 'y':
                 # ignore first stt on bad systems because 
                 # it is probably what you just said
                 self.log.info("** %s ** Handle Raw Msg IGNORING = %s" % (self.skill_control.skill_id,message.data))
@@ -395,6 +395,7 @@ class SimpleVoiceAssistant:
 
     def handle_skill_msg(self,msg):
         if msg.data['skill_id'] == self.skill_control.skill_id:
+            self.log.debug("SVA_BASE: skill msg = %s" % (msg,))
 
             if msg.data['subtype'] == 'media_player_command_response':
                 self.media_session_response = msg.data['response']
@@ -470,12 +471,14 @@ class SimpleVoiceAssistant:
 
     def handle_media_msg(self,msg):
         if msg.data['skill_id'] == self.skill_control.skill_id:
+            self.log.debug("SVA_BASE: media msg = %s" % (msg,))
             if self.handle_message is not None:
                 self.handle_message(msg)
 
 
     def handle_system_msg(self,msg):
         if msg.data['skill_id'] == self.skill_control.skill_id:
+            self.log.debug("SVA_BASE: system msg = %s" % (msg,))
 
             if msg.data['subtype'] == 'stop':
                 if self.tts_service_session_id != 0:
@@ -504,8 +507,6 @@ class SimpleVoiceAssistant:
                             }
                     self.media_player_session_id = 0
                     self.bus.send(MSG_MEDIA, 'media_player_service', info)
-
-                self.send_release_output_focus()
 
                 if self.stop:
                     # invoke user callback
