@@ -27,16 +27,16 @@ or, for more configuration options<br/><br/>
 source venv_ngv/bin/activate<br/><br/>
 ./start.sh
 
-To stop<br/><br/>
+<br/>To stop<br/>
 
 ./stop.py
 
-<br/><br/>
+<br/>
 These must be run from the base directory.
 The base directory is defined as where you
 installed this code to. For example
 
-<br/><br/>
+<br/>
 /home/bubba/MiniMy
 
 <h2>General</h2>
@@ -47,45 +47,44 @@ space and use the message bus or file system
 to synchronize. Their output may be found in
 the directory named 'logs/'. 
 
-<br/><br/>
+<br/>
 The system relies on the environment variables
 SVA_BASE_DIR and GOOGLE_APPLICATION_CREDENTIALS.
 
-<br/><br/>
+<br/>
 These are typically set in the start.sh script.
 
-<br/><br/>
+<br/>
 The SVA_BASE_DIR is set to the install directory
 of your system. The Google variable is set
 based on where your Google Speech API key is
 located. 
 
-<br/><br/>
+<br/>
 If you don't have a Google Speech API key you 
 can get one from here ...
 
-<br/><br/>
+<br/>
 https://console.cloud.google.com/freetrial/signup/tos
 
-<br/><br/>
+<br/>
 The start.sh file must then be modified to use this
 key. The Google Python module actually requires this
 enviornment variable but as mentioned it is typically 
 set in the start.sh script. You could, if you like,
 set it manually.
 
-<br/><br/>
+<br/>
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/my/key/key_filename.json
-
 
 <h2>Configuration Explained</h2>
 
 <ul>
-<li>./mmconfig.py</li>
-<li>./mmconfig.py a</li>
-<li>./mmconfig.py sa</li>
+<li>./mmconfig.py # basic</li>
+<li>./mmconfig.py a # advanced options</li>
+<li>./mmconfig.py sa # super advanced options</li>
 
-<br/><br/>
+<br/>
 The system can use local or remote services
 for speech to text (STT), text to speech (TTS)
 and intent matching. Intent matching is accomplished
@@ -170,7 +169,7 @@ run
 aplay -L
 
 Which will produce a series of lines which look 
-something like this 
+something like this ...
 
 sysdefault:CARD=Headset
 
@@ -198,7 +197,7 @@ poor quality AEC is what you normally have if you
 were using a laptop's built in speaker and mic.
 
 An easy way to test this setting in your environment
-would be to run the example #1 skill and see how 
+would be to run the 'example 1' skill and see how 
 well it recognizes you.
 
 Hey Computer ---> run example one
