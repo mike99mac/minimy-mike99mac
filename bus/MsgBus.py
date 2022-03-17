@@ -46,7 +46,7 @@ class Server:
             target = msg.get('target','')
             source = msg.get('source','')
             if target == '' or source == '':
-                logging.error("Error - Ill formed message. source:%s, target:%s" % (source, target))
+                logging.error("Error - Rejected ill formed message. source:%s, target:%s" % (source, target))
                 return False
 
             if target == '*':
@@ -56,10 +56,15 @@ class Server:
                 # directed
                 client = await self.find_client(target)
                 if client == None:
-                    logging.error("Error, target not found! %s, %s" % (target,msg))
+                    logging.warning("Error, target not found! %s, %s" % (target,msg))
                     return False
-                #logging.error("SRVR send to %s, %s" % (target,message))
+
                 await client.send(message)
+                client2 = await self.find_client('system_monitor')
+                if client2 == None:
+                    logging.debug("Error, system_monitor not found!")
+                    return False
+                await client2.send(message)
                 return True
                         
     async def ws_handler(self, ws: WebSocketServerProtocol, url: str) -> None:
@@ -77,7 +82,11 @@ class Server:
 
 if __name__ == "__main__":
     server = Server()
-    start_server = websockets.serve(server.ws_handler,'localhost',4000)
+    # only allow local (on device) access
+    #start_server = websockets.serve(server.ws_handler,'localhost',4000)
+    # allow external devices to access the msg bus
+    start_server = websockets.serve(server.ws_handler,'0.0.0.0',4000)
+
     loop = asyncio.get_event_loop()
     loop.run_until_complete(start_server)
     loop.run_forever()

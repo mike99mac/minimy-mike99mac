@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <script>
+var bus_url = 'ws://localhost:4000/system_monitor';
+//var bus_url = 'ws://10.0.0.198:4000/system_monitor';
+var socket = new WebSocket(bus_url);
+
+var msg_colors = {
+    'utterance':'orange',
+    'register_intent':'gray',
+    'media':'mediumslateblue',
+    'speak':'green',
+    'system':'yellow',
+    'skill':'navajowhite',
+    'raw':'red'
+};
+var msg_history = [];
+
+
+function reset_connection()
+{
+  let ip_addr = prompt("MiniMy IP Address", "localhost");
+  if (ip_addr){
+    bus_url = 'ws://' + ip_addr + ':4000/system_monitor';
+    alert('Connecting to ' + bus_url);
+    socket = new WebSocket(bus_url);
+  } else {
+    alert('Not changed');
+  }
+  document.getElementById('ip_addr_div').innerHTML=bus_url;
+  return(false);
+}
+
+function get_legend()
+{
+  let leg = '<font size=+1>Message Types: &nbsp; &nbsp; ';
+  for (col in msg_colors){
+    leg += "<font color=" + msg_colors[col] + ">" + col + "</font> &nbsp; ";
+  }
+  leg += '</font>';
+  return(leg);
+}
+
+
+setInterval(function () {
+  document.getElementById('time_div').innerHTML=new Date().toLocaleTimeString();
+  document.getElementById('date_div').innerHTML = new Date().toLocaleString("en-US", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'});
+}, 1000); 
+
+
+function parse_utt(msg)
+{
+
+    let tmp = '';
+	tmp += '<font color=magenta>Match:</font><font color=cyan>' + msg['intent_match'] + '</font>';
+    if (msg['sentence_type'] == 'Q'){
+	tmp += '<font color=magenta> Type:</font><font color=cyan>' + msg['sentence_type'] + '</font>';
+	tmp += '<font color=magenta> NP:</font><font color=cyan>' + msg['np'] + '</font>';
+	tmp += '<font color=magenta> VP:</font><font color=cyan>' + msg['vp'] + '</font>';
+	tmp += '<font color=magenta> AV:</font><font color=cyan>' + msg['aux_verb'] + '</font>';
+	tmp += '<font color=magenta> QW:</font><font color=cyan>' + msg['qword'] + '</font>';
+	tmp += '<font color=magenta> Tree:</font><font color=cyan>' + msg['tree'] + ' </font>';
+    } else {
+	tmp += '<font color=magenta> Type:</font><font color=cyan>' + msg['sentence_type'] + '</font>';
+	tmp += '<font color=magenta> Verb:</font><font color=cyan>' + msg['verb'] + '</font>';
+	tmp += '<font color=magenta> Subject:</font><font color=cyan>' + msg['subject'] + '</font>';
+	tmp += '<font color=magenta> Value:</font><font color=cyan>' + msg['value'] + '</font>';
+	tmp += '<font color=magenta> Squal:</font><font color=cyan>' + msg['squal'] + '</font>';
+	tmp += '<font color=magenta> Tree:</font><font color=cyan>' + msg['tree'] + ' </font>';
+    }
+    return(tmp);
+}
+
+
+function update_screen()
+{
+  let html = get_legend();
+  html += "<table border=1px cellspacing=8px cellpadding=8px>";
+  html += "<tr style=\"color:white;font-weight:bold;\"><td>Time</td><td align=center>Source</td><td align=center>Target</td><td> &nbsp; </td></tr>";
+  for (x=msg_history.length-1;x > -1;x--){
+    html += msg_history[x];
+  }
+  html += "</table>";
+  document.getElementById('msg_history').innerHTML=html;
+}
+
+function Init()
+{
+  console.log('Init() called');
+  socket.onopen = function(e) {
+  console.log("[open] Connection established");
+  //socket.send("New subscriber");
+  };
+  console.log('Init() opened');
+
+  socket.onmessage = function(event) {
+    let data = event.data;
+    let msg =  JSON.parse(event.data);
+    //console.log(msg);
+    let msg_type = msg.msg_type;
+    let msg_source = msg.source;
+    let msg_target = msg.target;
+    let msg_ts = msg.ts;
+    msg_ts = msg_ts.slice(12);
+    let msg_data = msg.data;
+    let colr = msg_colors[msg_type];
+    
+    let msg_str = '<tr style="color:' + colr + ';">';
+    msg_str += '<td>' + msg_ts + '</td>';
+    msg_str += '<td>' + msg_source + '</td>';
+    msg_str += '<td>' + msg_target + '</td>';
+    msg_str += '<td>';
+    for (k in msg.data){
+        let tmp = '';
+        if (k != 'error'){
+            if (k == 'utt'){
+                tmp = parse_utt(msg.data[k]);
+            } else {
+                tmp = '<font color=magenta>' + k + '</font>' + ':' + '<font color=cyan>' + msg.data[k] + '</font>' + ' ';
+            }
+        } else {
+            if (msg.data[k] != ''){
+                tmp = '<font color=red>' + k + '</font>' + ':' + '<font color=cyan>' + msg.data[k] + '</font>' + ' ';
+            }
+        }
+        msg_str += tmp;
+    } 
+    msg_str = msg_str.slice(0, -1);
+    msg_str += '</td></tr>';
+    msg_history.push(msg_str);
+    update_screen();
+  };
+
+  socket.onclose = function(event) {
+    if (event.wasClean) {
+      console.log(`Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+    } else {
+      // e.g. server process killed or network down
+      // event.code is usually 1006 in this case
+      console.log('[close] Connection died');
+    }
+  };
+
+  socket.onerror = function(error) {
+    console.log(`[error] ${error.message}`);
+  };
+}
+    </script>
+  </head>
+  <body bgcolor=black onload="Init();">
+    <table><tr>
+      <td align=left>
+	<img height=50px src="mycroft_logo.png" onclick="reset_connection();">
+      </td>
+      <td align=right width=100%>
+        <div id=time_div style="color:white;font-size:12px; font-weight:bold;"></div>
+        <div id=date_div style="color:white;font-size:10px; font-weight: bold;"></div>
+        <div id=ip_addr_div style="color:white;font-size:10px; font-weight: bold;"></div>
+      </td>
+    </tr></table>
+      <br/>
+    <center>
+      <div id=msg_history style="color:white;font-size:10px;"></div>
+    </center>
+  </body>
+</html>
