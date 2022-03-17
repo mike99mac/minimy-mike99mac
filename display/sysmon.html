@@ -26,6 +26,7 @@ function reset_connection()
     bus_url = 'ws://' + ip_addr + ':4000/system_monitor';
     alert('Connecting to ' + bus_url);
     socket = new WebSocket(bus_url);
+    Init();
   } else {
     alert('Not changed');
   }
@@ -89,11 +90,18 @@ function update_screen()
 function Init()
 {
   console.log('Init() called');
-  socket.onopen = function(e) {
-  console.log("[open] Connection established");
-  //socket.send("New subscriber");
-  };
-  console.log('Init() opened');
+
+
+  try {
+    socket.onopen = function(e) {
+      console.log("[open] Connection established");
+    };
+  }
+  catch(err) {
+    console.log(err.message);
+  }
+
+  //console.log('Init() opened');
 
   socket.onmessage = function(event) {
     let data = event.data;
@@ -144,7 +152,7 @@ function Init()
   };
 
   socket.onerror = function(error) {
-    console.log(`[error] ${error.message}`);
+    console.log('Open socket error');
   };
 }
     </script>
