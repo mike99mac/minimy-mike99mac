@@ -1,7 +1,7 @@
 from skills.sva_base import SimpleVoiceAssistant
 from bus.Message import Message
 from framework.message_types import MSG_SYSTEM, MSG_SKILL, MSG_UTTERANCE, MSG_RAW
-from framework.util.utils import Config, get_hal_cfg, aplay
+from framework.util.utils import Config, aplay
 from threading import Event
 import os
 import time
@@ -63,8 +63,8 @@ class SystemSkill(SimpleVoiceAssistant):
         self.cfg_platform = cfg.get_cfg_val('Advanced.Platform')
         self.cfg_version = cfg.get_cfg_val('Basic.Version')
         self.cfg_wake_words = cfg.get_cfg_val('Basic.WakeWords')
-        self.cfg_hal_cfg = get_hal_cfg(self.cfg_platform)
-        os.system(self.cfg_hal_cfg['initialize'])
+
+
         self.base_dir = cfg.get_cfg_val('Basic.BaseDir')
         self.play_filename = self.base_dir + '/framework/assets/stop.wav'
 
@@ -100,7 +100,6 @@ class SystemSkill(SimpleVoiceAssistant):
             'remote_nlp':self.cfg_remote_nlp,
             'platform':self.cfg_platform,
             'wake_words':self.cfg_wake_words,
-            'hal_cfg':self.cfg_hal_cfg,
         }
         self.bus.send(MSG_SKILL, data['from_skill_id'], info)
 

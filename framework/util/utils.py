@@ -13,24 +13,9 @@ import yaml
 MAX_CHUNK_LEN = 15
 MIN_CHUNK_LEN = 5
 
-def get_hal_cfg(platform):
-    cfg_file_name = '/framework/hal/hal.cfg'
-    base_dir = os.getenv('SVA_BASE_DIR')
-    if base_dir is not None:
-        cfg_file_name = base_dir + '/' + cfg_file_name
-
-    cfg_file = ''
-    fh = open(cfg_file_name)
-    for line in fh.readlines():
-        if not line.startswith("#"):
-            cfg_file += line.strip()
-    fh.close()
-    cfg_file = json.loads(cfg_file.replace("\n",""))
-    return cfg_file[platform]
-
-
 class Config:
     # minimal yaml based config file support class
+    # must coordinate this with mmconfig.py
     config_defaults = [
         {
         'Basic': {
@@ -44,8 +29,11 @@ class Config:
         'Advanced': {
             'Platform': 'l',
             'LogLevel': 'i',
+            'CrappyAEC': 'n',
             'InputDeviceId': '0',
             'OutputDeviceName': '',
+            'InputLevelControlName': '',
+            'OutputLevelControlName': '',
             'STT' : {
                      'UseRemote': 'y'
                     },

@@ -9,6 +9,7 @@ class EmailSkill(SimpleVoiceAssistant):
         self.letters = []
         self.body = []
         self.state = 'idle'
+        self.email_address = ''
 
         # match phrase ---> "wake word, {create|start|send} email" 
         self.register_intent('C', 'create', 'email', self.start)
@@ -80,23 +81,27 @@ class EmailSkill(SimpleVoiceAssistant):
             self.play_media(self.skill_base_dir + '/assets/fail.mp3')
         self.state = 'idle'
 
+
     def handle_recipient_confirmation(self, user_confirmation):
         if user_confirmation == 'yes':
-            self.play_media(self.skill_base_dir + '/assets/confirm.wav')
+            self.log.error("BUG! email skill play media %s" % (self.skill_base_dir + '/assets/confirm.wav',))
+            #self.play_media(self.skill_base_dir + '/assets/confirm.wav')
+            # bug - should use media callback which dies not exist yet!
             prompt = "Ready for message body. I will echo each sentence. To disregard a sentence say no. When finished say stop."
             self.get_user_input(self.handle_body_input, prompt, self.handle_timeout)
         else:
             prompt = "Would you prefer to spell it?"
             self.get_user_confirmation(self.handle_user_spell_confirmation_input, prompt, self.handle_timeout)
 
+
     def handle_recipient_input(self, user_input):
         if user_input.find("never") > -1 or user_input.find("spell") > -1:
             return self.handle_user_spell_confirmation_input('yes')
 
         speakable_user_input = user_input.replace(".", " dot ")
-        email_address = user_input.replace("at","@")
-        email_address = email_address.replace(" ","")
-        self.log.error("XXXXXXX email:%s, speakable:%s" % (email_address,speakable_user_input))
+        self.email_address = user_input.replace("at","@")
+        self.email_address = self.email_address.replace(" ","")
+        self.log.error("XXXXXXX email:%s, speakable:%s" % (self.email_address,speakable_user_input))
         self.state = 'get_confirmation'
         confirmation_prompt = "You said %s, is that correct?" % (speakable_user_input,)
         self.get_user_confirmation(self.handle_recipient_confirmation, confirmation_prompt, self.handle_timeout)

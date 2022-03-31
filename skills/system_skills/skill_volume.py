@@ -3,7 +3,8 @@ from threading import Event
 import lingua_franca
 from lingua_franca import parse
 import os
-from framework.util.utils import execute_command, get_hal_cfg, Config
+from framework.util.utils import execute_command
+from framework.hal.hal import Hal
 
 class VolumeSkill(SimpleVoiceAssistant):
     def __init__(self, bus=None, timeout=5):
@@ -11,10 +12,9 @@ class VolumeSkill(SimpleVoiceAssistant):
         super().__init__(msg_handler=self.handle_message, skill_id=self.skill_id, skill_category='system')
         lingua_franca.load_language('en')
 
-        cfg = Config()
-        self.platform = cfg.get_cfg_val('Advanced.Platform')
-        self.hal_cfg = get_hal_cfg(self.platform)
-        self.log.info("Volume skill using platform=%s--->%s" % (self.platform,self.hal_cfg))
+        self.hal = Hal()
+        self.log.error("XXXXXXX hal ---> %s" % (dir(self.hal),))
+        self.log.error("XXXXXXX hal.playform ---> %s" % (dir(self.hal.platform),))
 
         # note we use existing system settings
         # but we could also set them here and 
@@ -84,26 +84,16 @@ class VolumeSkill(SimpleVoiceAssistant):
                 num = parse.extract_number(v3)
         return num
 
+
     ## microphone ##
     def get_mic_level(self):
-        os_cmd = self.hal_cfg['get_mic']
-        if os_cmd:
-            # if we have a get_mic system command
-            res = execute_command(os_cmd)
-            ra = res.split("\n")
-            start_indx = ra[0].find(":")
-            vol = ra[0][start_indx+1:].strip()
-            return vol
-        else:
-            # otherwise return last value set
-            return self.mic_level
+        self.mic_level = self.hal.platform.get_intput_level()
+        return self.mic_level
 
 
-    def set_mic_level(self, new_volume):
-        self.mic_level = new_volume
-        os_cmd = self.hal_cfg['set_mic'] % (new_volume,)
-        self.log.debug("\n\n*** set Mic command = %s" % (os_cmd,))
-        os.system(os_cmd)
+    def set_mic_level(self, new_level):
+        self.mic_level = new_level
+        self.hal.platform.set_input_level(self.mic_level)
         return self.mic_level
 
 
@@ -121,32 +111,19 @@ class VolumeSkill(SimpleVoiceAssistant):
 
     def handle_query_mic(self, message):
         # for questions only right now
-        text = "the microphone is currently set to %s percent" % (self.get_mic_level(),)
+        text = "the microphone is currently set to %s percent" % (self.mic_level,)
         self.speak(text)
 
 
     ## speaker ##
     def set_volume(self, new_volume):
         self.volume_level = new_volume
-        os_cmd = self.hal_cfg['set_volume'] % (new_volume,)
-        self.log.debug("\n\n*** set volume command = %s" % (os_cmd,))
-        os.system(os_cmd)
+        self.hal.platform.set_output_level(self.volume_level)
         return self.volume_level
 
 
     def get_volume(self):
-        os_cmd = self.hal_cfg['get_volume']
-        if os_cmd:
-            # if we have a get_volume system command
-            res = execute_command(os_cmd)
-            ra = res.split("\n")
-            start_indx = ra[0].find(":")
-            vol = ra[0][start_indx+1:].strip()
-            return vol
-        else:
-            # otherwise return last value set
-            return self.volume_level
-
+        return self.hal.platform.get_output_level()
 
     def handle_message(self, message):
         # we also handle volume mute and volume unmute messages
@@ -194,33 +171,21 @@ class VolumeSkill(SimpleVoiceAssistant):
 
 
     def handle_mute(self,msg):
-        self.log.debug("Inside handle mute! %s" % (self.hal_cfg,))
-        # on some systems we have a system level mute
-        # command and that works much better, otherwise
-        # we fall back to using set/get volume
-        #if self.hal_cfg['mute_volume'] != '':
-        if self.hal_cfg.get('mute_volume','') != '':
-            os.system(self.hal_cfg['mute_volume'])
-        else:
-            self.log.info("No system mute command, using volume")
-            self.muted_volume = self.volume_level
-            self.log.debug("** handle_mute() saving volume is %s**" % (self.muted_volume,))
-            self.volume_level = 0
-            self.set_volume(self.volume_level)
+        self.log.debug("Inside handle mute!")
+        self.muted_volume = self.volume_level
+        self.log.debug("** handle_mute() saving volume is %s**" % (self.muted_volume,))
+        self.volume_level = 0
+        self.set_volume(self.volume_level)
 
 
     def handle_unmute(self,msg):
         self.log.debug("Inside handle unmute!")
-        #if self.hal_cfg['unmute_volume'] != '':
-        if self.hal_cfg.get('unmute_volume','') != '':
-            os.system(self.hal_cfg['unmute_volume'])
-        else:
-            self.volume_level = self.muted_volume
-            self.log.debug("** handle_unmute() restoring volume is %s**" % (self.muted_volume,))
-            self.set_volume(self.volume_level)
+        self.volume_level = self.muted_volume
+        self.log.debug("** handle_unmute() restoring volume is %s**" % (self.muted_volume,))
+        self.set_volume(self.volume_level)
 
     def stop(self,msg):
-        self.log.debug("Volume skill stop() method called with message")
+        self.log.debug("Volume skill stop() method called WITH message")
 
     def stop(self):
         self.log.debug("Volume skill stop() method called with NO message")
