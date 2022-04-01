@@ -3,7 +3,7 @@ from threading import Event
 import lingua_franca
 from lingua_franca import parse
 import os
-from framework.util.utils import execute_command
+from framework.util.utils import execute_command, Config
 from framework.hal.hal import Hal
 
 class VolumeSkill(SimpleVoiceAssistant):
@@ -12,9 +12,22 @@ class VolumeSkill(SimpleVoiceAssistant):
         super().__init__(msg_handler=self.handle_message, skill_id=self.skill_id, skill_category='system')
         lingua_franca.load_language('en')
 
-        self.hal = Hal()
-        self.log.error("XXXXXXX hal ---> %s" % (dir(self.hal),))
-        self.log.error("XXXXXXX hal.playform ---> %s" % (dir(self.hal.platform),))
+        # don't really know where the actual init belongs!
+        cfg = Config()
+        input_device_id = cfg.get_cfg_val('Advanced.InputDeviceId')
+        input_level_control_name = cfg.get_cfg_val('Advanced.InputLevelControlName')
+        output_device_name = cfg.get_cfg_val('Advanced.OutputDeviceName')
+        output_level_control_name = cfg.get_cfg_val('Advanced.OutputLevelControlName')
+
+        # workaround until we fix the config file to hold the actual module name
+        cfg_platform = cfg.get_cfg_val('Advanced.Platform')
+
+        if cfg_platform == 'u':
+            from framework.hal.executables.ubuntu import Platform
+        elif cfg_platform == 'p':
+            from framework.hal.executables.pios import Platform
+
+        self.hal = Platform(input_device_id, input_level_control_name, output_device_name, output_level_control_name)
 
         # note we use existing system settings
         # but we could also set them here and 
@@ -87,13 +100,13 @@ class VolumeSkill(SimpleVoiceAssistant):
 
     ## microphone ##
     def get_mic_level(self):
-        self.mic_level = self.hal.platform.get_intput_level()
+        self.mic_level = self.hal.get_intput_level()
         return self.mic_level
 
 
     def set_mic_level(self, new_level):
         self.mic_level = new_level
-        self.hal.platform.set_input_level(self.mic_level)
+        self.hal.set_input_level(self.mic_level)
         return self.mic_level
 
 
@@ -118,12 +131,12 @@ class VolumeSkill(SimpleVoiceAssistant):
     ## speaker ##
     def set_volume(self, new_volume):
         self.volume_level = new_volume
-        self.hal.platform.set_output_level(self.volume_level)
+        self.hal.set_output_level(self.volume_level)
         return self.volume_level
 
 
     def get_volume(self):
-        return self.hal.platform.get_output_level()
+        return self.hal.get_output_level()
 
     def handle_message(self, message):
         # we also handle volume mute and volume unmute messages

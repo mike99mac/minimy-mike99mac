@@ -1,25 +1,53 @@
-import importlib
-from framework.util.utils import Config
+import abc
 
 class Hal:
-    """ the Hal class represents the platform.
-        it determines which module to use from
-        the system config file. it also provides
-        the module constructor with the default
-        values contained in the system config file""" 
-    def __init__(self):
-        cfg = Config()
-        # get module name from config file
-        
-        # import the module
-        module_name = cfg.get_cfg_val('Advanced.Platform')
-        module_filename = "framework.hal.executables." + module_name
-        module = importlib.import_module(module_filename, package=None)
+    """ this represents the minimum functionality
+    a hal must provide. a voice system consists 
+    of an audio input device and audio output
+    device and the ability to control their levels """
+    __metaclass__ = abc.ABCMeta
+    @abc.abstractmethod
+    def __init__(self, input_device_id, input_level_control_name, output_device_name, output_level_control_name):
+        self.input_device_id = input_device_id
+        self.input_level_control_name = input_level_control_name
+        self.output_device_name = output_device_name
+        self.output_level_control_name = output_level_control_name 
 
-        # get default values from config file
-        input_device_id = cfg.get_cfg_val('Advanced.InputDeviceId')
-        output_device_name = cfg.get_cfg_val('Advanced.OutputDeviceName')
-        input_level_control_name = cfg.get_cfg_val('Advanced.InputLevelControlName')
-        output_level_control_name = cfg.get_cfg_val('Advanced.OutputLevelControlName')
-        self.platform = module.Platform(input_device_id, input_level_control_name, output_device_name, output_level_control_name)
+    @abc.abstractmethod
+    def get_input_device_id(self):
+        """returns an int """
+        return self.input_device_id
+
+    @abc.abstractmethod
+    def get_output_device_name(self):
+        """returns a string suitable for use with aplay and mpg123 """
+        return self.output_device_name
+
+    @abc.abstractmethod
+    def get_input_level_control_name(self):
+        """returns a string suitable for use with amixer """
+        return input_level_control_name
+
+    @abc.abstractmethod
+    def get_output_level_control_name(self):
+        """returns a string suitable for use with amixer """
+        return output_level_control_name
+
+    @abc.abstractmethod
+    def get_input_level(self):
+        """returns a value between 0-100% """
+        return -1
+
+    @abc.abstractmethod
+    def get_output_level(self):
+        """returns a value between 0-100% """
+        return -1
+
+    @abc.abstractmethod
+    def set_input_level(self, new_level):
+        return
+
+    @abc.abstractmethod
+    def set_output_level(self, new_level):
+        return
 

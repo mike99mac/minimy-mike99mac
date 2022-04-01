@@ -19,7 +19,7 @@ class Config:
     config_defaults = [
         {
         'Basic': {
-            'Version':'1.0.1',
+            'Version':'1.0.2',
             'BaseDir':'',
             'WakeWords': ['hey computer', 'computer'],
             'GoogleApiKeyPath' : 'install/my_google_key.json',
