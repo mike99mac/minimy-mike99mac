@@ -510,7 +510,10 @@ class SimpleVoiceAssistant:
 
                 if self.stop:
                     # invoke user callback
-                    self.stop(msg)
+                    try:
+                        self.stop(msg)
+                    except:
+                        self.log.error("Exception trying to invoke skill call back")
                 else:
                     selg.log.error("[%s]SVA_BASE stop received but no stop method!" %(self.skill_control.skill_id,))
 

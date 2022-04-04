@@ -158,6 +158,7 @@ class UttProc:
         utt = utt.replace("%", " percent")
         utt = utt.replace(".", " ")
         utt = utt.replace(",", "")
+        utt = utt.replace("-", " ")
         utt = utt.replace("please ", "")
         utt = utt.replace(" please", "")
         return utt
@@ -193,12 +194,13 @@ class UttProc:
     def get_question_intent_match(self, info):
         # ugly but necessary?
         aplay(self.earcon_filename)
-        # for qustions we cheat and use existing
-        # intents and minor fuzzy matching
+
         skill_id = ''
         for intent in self.intents:
             stype, subject, verb = intent.split(":") 
-            if stype == 'Q' and subject in info['np'] and verb == info['qword']:
+            if stype == 'Q' and subject in info['subject'] and verb == info['qword']:
+                # questionable behavior ?
+                info['subject'] = subject
                 skill_id = self.intents[intent]['skill_id']
                 intent_state = self.intents[intent]['state']
                 return skill_id, intent
@@ -209,6 +211,7 @@ class UttProc:
     def get_intent_match(self, info):
         # ugly but necessary?
         aplay(self.earcon_filename)
+
         # for utterances of type command
         # an intent match is a subject:verb
         skill_id = ''
@@ -225,9 +228,12 @@ class UttProc:
             subject = subject.replace("an ","")
             subject = subject.replace("a ","")
 
-        key = intent_type + ':' + subject + ':' + info['verb']
+            subject = subject.replace(":",";")
+
+        key = intent_type + ':' + subject.lower() + ':' + info['verb']
+
         if intent_type == 'Q':
-            key = intent_type + ':' + subject + ':' + info['qtype']
+            key = intent_type + ':' + subject.lower() + ':' + info['qtype']
 
         self.log.debug("get intent match key is %s" % (key,))
 
@@ -243,7 +249,10 @@ class UttProc:
     def handle_register_intent(self, msg):
         data = msg.data
 
-        key = data['intent_type'] + ':' + data['subject'] + ':' + data['verb']
+        # the subject may contain colons which is a pain
+        subject = data['subject'].replace(":", ";")
+
+        key = data['intent_type'] + ':' + subject.lower() + ':' + data['verb']
 
         if key in self.intents:
             self.log.warning("Error - intent clash! intent key=%s, skill_id=%s" % (key,data['skill_id']))
@@ -323,6 +332,7 @@ class UttProc:
                         info['sentence'] = utt
                         if info['error'] == '':
                             info['skill_id'], info['intent_match'] = self.get_question_intent_match(info)
+                        self.log.error("Probably a question, info is %s" % (info,))
 
                     if info['error'] == 'media':
                         # its a media type sentence

@@ -5,6 +5,7 @@ PP_TAG = "(PP "
 PRT_TAG = "(PRT "
 ADVP_TAG = "(ADVP "
 ADJP_TAG = "(ADJP "
+SBAR_TAG = "(SBAR "
 
 def get_node(node_tag, tree):
   # one of the few pieces of code that could
