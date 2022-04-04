@@ -16,7 +16,7 @@ class HALightSwitch(SimpleVoiceAssistant):
         # TODO stuff in a skill config file
         # for now user must manually edit these
         # ha long lived access token 
-        token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJiYjE1ZDU2NTYyYzI0NmVkOTcyMWM2MWU1ZGZjYmQzOCIsImlhdCI6MTY0ODUxNTg3OSwiZXhwIjoxOTYzODc1ODc5fQ.H82X0YNFEh210lKzNK-GOi7Woxl3VbaPPZi7ZwizQkE"
+        token = ""
         # could be localhost
         host = "10.0.0.198"
         port = 8123
