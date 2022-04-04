@@ -1,0 +1,45 @@
+This skill demonstrates how one might work with the Home Assistant home automation system.
+It relies on user configuration to expose switch devices by creating 'friendly names' for
+each supported device. In this context, a friendly name is an alias for how a user might
+want to refer to a device and a device is specifically a light (not a TV) controlled by a
+simple on/off switch. One or more aliases may refer to the same physical device. Most 
+devices friendly name is the same as the device name but some (those with non unique IDs)
+must be set manually in the configuration.yaml file.
+
+As for physical device, a switch is an ambiguous concept since users typically refer to 
+the thing controlled by the switch rather than the actual switch itself. For example, 
+you might say 'turn on the living room light' but you would rarely say 'turn on switch
+SONOFFSMARTV1x' though you might say something like 'turn off the switch that controls 
+the living room light', so when we refer to a switch we really mean what is attached to 
+the switch which for the purposes of this example skill specifically refers to lights 
+controlled by on/off switches and sensors. 
+
+We could of course also create a skill which just handles generic on/off switches but 
+this example assumes we have several different lights all attached to different on/off
+switches.
+
+Note this is not a light skill as a light skill for Home Assistant would handle such
+additional attributes as color and/or brightness.
+
+This example relies only on the Home Assistant REST API and its inherent structure as 
+surfaced through that integration point. It assumes the user has one or more switches
+and/or sensors already set up in home assistant. 
+
+if you had a switch named 'living room light' you could say things like ...
+
+turn the living room light on
+what is the light in the living room set to
+turn off the light in the lving room
+set living room light off
+turn off the living room light.
+etc.
+
+If you had a sensor named 'garage temperature' and a second called
+'garage humidity' you could say things like ...
+
+what is the temperature in the garage.
+what is the garage humidity.
+is the garage temperature over 90 degrees.
+ 
+and so on.
+

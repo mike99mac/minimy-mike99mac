@@ -48,16 +48,19 @@ sleep 1
 cd ../../
 
 echo 'Start Services'
-#cd framework/services
-
+echo ' '
+echo 'Intent Service'
 python framework/services/intent/intent.py &
 sleep 2 
 
+echo ' '
+echo 'Media Service'
 python framework/services/output/media_player.py &
 python framework/services/tts/tts.py &
 python framework/services/stt/stt.py &
 sleep 1
 
+echo ' '
 echo 'Start System Skills'
 #cd ../../skills/system_skills
 
@@ -67,6 +70,7 @@ python skills/system_skills/skill_volume.py &
 python skills/system_skills/skill_alarm.py &
 sleep 2 
 
+echo ' '
 echo 'Start User Skills'
 cd skills/user_skills
 
@@ -90,6 +94,9 @@ cd ../npr_news
 python __init__.py $PWD &
 
 cd ../weather
+python __init__.py $PWD &
+
+cd ../ha_skill
 python __init__.py $PWD &
 
 cd ../help
