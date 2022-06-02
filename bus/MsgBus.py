@@ -10,10 +10,10 @@ class Server:
     """ simple websocket server """
     clients = {}
     identifiers = set()
-    logging.info(f'Message Bus Starting Up ...')
+    logging.info('Message Bus Starting Up ...')
 
     def __init__(self):
-        logging.info(f'Message Bus Initialized')
+        logging.info('Message Bus Initialized')
 
     async def register(self, ws: WebSocketServerProtocol) -> None:
         identifier = ws.path[1:]

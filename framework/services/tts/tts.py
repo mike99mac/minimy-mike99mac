@@ -148,12 +148,19 @@ class TTSEngine:
     ##########################
     def _idle_start(self, msg):
         self.__change_state(STATE_WAIT_ACTIVE)
+        self.log.error("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ idle start hit ")
         self.current_session.reset( msg['from_skill_id'] )
         self.current_session_id += 1
         self.current_session.tts_sid = self.current_session_id
         self.current_session.correlator = self.current_session_id
         msg['correlator'] = self.current_session_id
         self.current_session.handle_event(EVENT_START, msg)
+
+    def _idle_pause(self, msg):
+        self.log.error("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ idle pause hit ")
+        aplay(self.aplay_filename)
+        self.send_paused_confirmed_message(self.current_session.owner, self.current_session.tts_sid)
+
 
     def _active_start(self, msg):
         self.__change_state(STATE_WAIT_PAUSED_START)
@@ -270,8 +277,9 @@ class TTSEngine:
     def _ws_start(self, msg):
         # we are waiting for our current session to end 
         # but we are asked to start a new session
-        self.log.error("TTS Engine MAYBE BUG wait_end start not supported yet!")
-        self.send_session_reject('tts_busy', msg['from_skill_id'])
+        self.log.error("TTS Engine MAYBE BUG wait_end start not supported yet! calling idle start")
+        #self.send_session_reject('tts_busy', msg['from_skill_id'])
+        return self._idle_start(msg)
 
     def _ws_done(self, msg):
         self.send_session_end_notify(self.current_session.owner)
@@ -360,6 +368,7 @@ class TTSEngine:
             INTERNAL_EVENT_PAUSED]
         self.SE = {
                 STATE_IDLE               + ':' + EVENT_START:              self._idle_start,
+                STATE_IDLE               + ':' + EVENT_PAUSE:              self._idle_pause,
 
                 STATE_WAIT_ACTIVE        + ':' + EVENT_START:              self._wait_active_start,
                 STATE_WAIT_ACTIVE        + ':' + EVENT_STOP:               self._wait_active_stop,

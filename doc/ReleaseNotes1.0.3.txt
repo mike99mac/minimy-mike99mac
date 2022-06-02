@@ -1,0 +1,57 @@
+
+1) added ability for skills to register lists of subjects and verbs
+this solves the problem of aliasing. sva_base.py will now range
+over the two lists and register multiple intents. the user could
+use this to create a map of concepts but see (3) below for more
+on this.
+
+2) cleaned up nlp a bit. added SentenceInfo class which consists
+of a Structure class and an Insight class. this area of the code
+still needs attention. this also included cleaning up intent.py
+and parse_question.py. parse_sentence.py is no longer used but
+is staying around for another release or two just to be safe.
+also moved some stuff out into the shallow_utils.py file. this
+is an initial attempt at NLU or simplistic abstract representation.
+
+3) added first attempt at concept mapping. see file concepts.py 
+for more info. not fully supported yet. no messaging but weather
+skill uses it as well as the new register_intent list code in 
+sva_base.py
+
+4) added test code to test new nlu stuff and also added some old
+test code into the test directory (list input devices and dump
+the remote db) 
+
+5) fixed a gnarly bug in the tts engine where interrupting the
+weather skilll with the wiki skill caused a hang because it
+would not grant output focus. because it was stuck in the wait
+stopped method. Called init_start() from the ws_start() method
+which seems to work.
+
+
+
+NLU
+----
+NLU takes the output from NLP (a tree) and produces a structure and insight object.
+
+Initially, an utterance is categorized as either a question, a command or an informational exchange. Each is parsed uniquely.
+
+The result of this semantic parse is an object with the following attributes.
+
+type - 'question', 'command', 'information', 'media', 'oob', 'unknown'
+noun - a list
+proper nouns - a list
+np - a tree
+verb - a list
+vp - a tree
+subject - a list
+dependent a list
+plurality - 'singular' or 'plural'
+tense - past, present, future
+value - value if any
+qword - question
+qaux - question aux
+
+The above is the insight object, the structure object includes things like parse tree, shallow pattern, normalized sentence, etc
+
+

@@ -12,6 +12,9 @@ def get_node(node_tag, tree):
   # probably have its performance improved
   # by using a regular expression.
   start_indx = tree.find(node_tag)
+  if start_indx == -1:
+    return ''
+
   paren_ctr = 1
   node = '('
   for c in tree[start_indx+1:]:
@@ -29,6 +32,10 @@ def get_node(node_tag, tree):
 
 def get_tag_value(tag, node):
   s1 = node.find(tag)
+
+  if s1 == -1:
+    return ''
+
   s = s1 + len(tag)
 
   e1 = node.find(")", s+1)
@@ -56,4 +63,58 @@ def scrub_node(node):
   node = node.replace('(','')
   node = node.replace('  ',' ')
   return node
+
+def scrub_sentence(utt):
+    # really need an overt pre-processing phase
+    utt = utt.replace("per cent", " percent")
+    utt = utt.replace("%", " percent")
+    utt = utt.replace(".", " ")
+    utt = utt.replace(",", "")
+    utt = utt.replace("-", " ")
+    utt = utt.replace("please ", "")
+    utt = utt.replace(" please", "")
+    return utt
+
+def get_nodes(tree):
+  # get first level of nodes in a tree
+  nodes = []
+  node = ''
+  pctr = 0
+  for c in tree:
+    if c == '(':
+      pctr += 1
+    if c == ')':
+      pctr -= 1
+
+    node += c
+    if pctr == 0:
+      if node and len(node) > 3:
+        nodes.append( node )
+      node = ''
+      pctr = 0
+
+  return nodes
+
+def extract_proper_nouns(sentence):
+  sentence = sentence.replace(".","")
+  sentence = sentence.replace(",","")
+  sentence = sentence.replace("?","")
+  sa = sentence.split(" ")
+  sa[0] = sa[0].lower()
+  gathering = False
+  pn = ''
+  pns = []
+  for s in sa:
+    if not s.islower():
+      gathering = True
+      pn += ' ' + s
+    else:
+      if pn != '' and pn.strip() != 'I':
+        pns.append(pn.strip())
+        pn = ''
+        gathering = False
+  if pn != '' and pn.strip() != 'I':
+    pns.append(pn.strip())
+
+  return pns
 

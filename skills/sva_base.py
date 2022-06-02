@@ -305,22 +305,33 @@ class SimpleVoiceAssistant:
     def register_intent(self, intent_type, verb, subject, callback):
         # bind a sentence type, subject and verb to a callback
         # sends on the message bus to the intent service.
-        key = intent_type + ':' + subject + ':' + verb
 
-        if key in self.intents:
-            self.log.warning("** %s ** [%s]error - duplicate key %s" % (self.skill_control.skill_id, self.skill_control.skill_id, key))
-        else:
-            self.intents[key] = callback
+        subjects = subject
+        verbs = verb
+        if type(subject) is not list:
+            subjects = [subject]
 
-            # for now assumes success but TODO needs time out and 
-            # parsing of response message because could be an intent clash 
-            info = {
-                'intent_type': intent_type,
-                'subject': subject,
-                'verb': verb,
-                'skill_id':self.skill_control.skill_id
-                }
-            self.bus.send(MSG_REGISTER_INTENT, 'intent_service', info)
+        if type(verb) is not list:
+            verbs = [verb]
+
+        for subject in subjects:
+            for verb in verbs:
+                key = intent_type + ':' + subject + ':' + verb
+
+                if key in self.intents:
+                    self.log.warning("** %s ** [%s]error - duplicate key %s" % (self.skill_control.skill_id, self.skill_control.skill_id, key))
+                else:
+                    self.intents[key] = callback
+
+                    # for now assumes success but TODO needs time out and 
+                    # parsing of response message because could be an intent clash 
+                    info = {
+                        'intent_type': intent_type,
+                        'subject': subject,
+                        'verb': verb,
+                        'skill_id':self.skill_control.skill_id
+                    }
+                    self.bus.send(MSG_REGISTER_INTENT, 'intent_service', info)
 
 
     def handle_utterance(self,msg):
@@ -513,7 +524,7 @@ class SimpleVoiceAssistant:
                     try:
                         self.stop(msg)
                     except:
-                        self.log.error("Exception trying to invoke skill call back")
+                        self.log.error("Exception trying to invoke skill call back for skill = %s" % (self.skill_control.skill_id,))
                 else:
                     selg.log.error("[%s]SVA_BASE stop received but no stop method!" %(self.skill_control.skill_id,))
 
