@@ -1,6 +1,6 @@
 echo '** System Starting ... **'
 echo 'Note - you may see some warnings here, dont worry about them'
-cat install/mmconfig.yml
+cat install/mmconfig.yml | grep -v "AWS" | grep -v "Goog"
 
 echo ' '
 echo 'Start Local STT Server'
@@ -96,8 +96,8 @@ python __init__.py $PWD &
 cd ../weather
 python __init__.py $PWD &
 
-cd ../ha_skill
-python __init__.py $PWD &
+#cd ../ha_skill
+#python __init__.py $PWD &
 
 cd ../help
 python __init__.py $PWD &

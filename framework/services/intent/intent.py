@@ -92,7 +92,7 @@ class UttProc:
 
         if len(ua) == 1:
             if ua[0] in self.recognized_verbs or ua[0] in self.stop_aliases or ua[0] == 'pause' or ua[0] == 'resume':
-                self.log.error("Intent Barge-In Normal OOB Detected")
+                self.log.info("Intent Barge-In Normal OOB Detected")
                 return 't'
 
         # in a system with decent aec you can just return 'f' here
@@ -133,7 +133,6 @@ class UttProc:
             target = '*'
         if utt == 'stop':
             target = 'system_skill'
-        self.log.error("WTFWTF %s" % (utt,))
         self.bus.send(MSG_UTTERANCE, target, {'utt': utt,'subtype':'utt'})
 
 
@@ -192,7 +191,7 @@ class UttProc:
 
         key = intent_type + ':' + subject.lower() + ':' + info['verb'].lower().strip()
 
-        self.log.error("Intent match key is %s" % (key,))
+        self.log.debug("Intent match key is %s" % (key,))
 
         if key in self.intents:
             skill_id = self.intents[key]['skill_id']
