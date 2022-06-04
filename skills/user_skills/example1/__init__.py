@@ -9,9 +9,9 @@ class Example1Skill(SimpleVoiceAssistant):
         self.state = 'idle'
 
         # match phrase ---> "wake word, {run|test|execute} example" 
-        self.register_intent('C', 'run', 'example', self.start)
-        self.register_intent('C', 'test', 'example', self.start)
-        self.register_intent('C', 'execute', 'example', self.start)
+        self.register_intent('C', 'run example', 'one', self.start)
+        self.register_intent('C', 'test example', 'one', self.start)
+        self.register_intent('C', 'execute example', 'one', self.start)
 
 
     def handle_timeout(self):

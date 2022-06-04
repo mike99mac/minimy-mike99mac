@@ -1,23 +1,20 @@
-import requests, json, time, glob, os
-#from framework.services.intent.nlp.shallow_parse.parse_sentence import parse_sentence
-#from framework.services.intent.nlp.shallow_parse.parse_question import parse_question
-from framework.services.intent.nlp.shallow_parse.shallow_utils import scrub_sentence
-from framework.services.intent.nlp.shallow_parse.nlu import SentenceInfo
-from framework.util.utils import LOG, Config, get_wake_words, aplay
+import requests, time, glob, os
 from bus.Message import Message
 from bus.MsgBusClient import MsgBusClient
+from framework.util.utils import LOG, Config, get_wake_words, aplay, normalize_sentence, remove_pleasantries
+from framework.services.intent.nlp.shallow_parse.nlu import SentenceInfo
+from framework.services.intent.nlp.shallow_parse.shallow_utils import scrub_sentence, remove_articles
 from framework.message_types import (
         MSG_UTTERANCE, 
         MSG_MEDIA, 
         MSG_RAW, 
         MSG_SYSTEM
         )
+
 class UttProc:
-    """
-    English language intent parser. Monitors the save_text/ FIFO 
-    for utterances to process. Emits utterance messages. If skill_id
-    is not '' the utterance matched an intent in the skill_id skill.
-    """
+    # English language specific intent parser. Monitors the save_text/ FIFO 
+    # for utterances to process. Emits utterance messages. If skill_id
+    # is not '' the utterance matched an intent in the skill_id skill.
     def __init__(self, bus=None, timeout=5):
         self.skill_id = 'intent_service'
 
@@ -42,21 +39,6 @@ class UttProc:
         # set to false to discontinue running.
         self.is_running = False
 
-        """
-        # create question words list
-        qw_file_name = 'question_words.txt'
-        if base_dir is not None:
-            qw_file_name = base_dir + '/framework/' + qw_file_name
-
-        self.question_words = []
-        fh = open(qw_file_name)
-        for line in fh.readlines():
-            line = line.strip()
-            if len(line) > 1:
-                self.question_words.append(line)
-        fh.close()
-        """
-
         # get configuration
         cfg = Config()
         self.crappy_aec = cfg.get_cfg_val('Advanced.CrappyAEC')
@@ -69,6 +51,7 @@ class UttProc:
         # so we can limit OOBs to verbs which have been
         # registered
         self.recognized_verbs = []
+
         # TODO need get_stop_aliases() method in framework.util.utils
         self.stop_aliases = ['stop', 'terminate', 'abort', 'cancel', 'kill', 'exit']
 
@@ -99,8 +82,8 @@ class UttProc:
 
 
     def is_oob(self, utt):
-        # we don't just match hard oobs, we also look for top
-        # oobs using special handling to overcome poor hardware
+        # we don't just match hard oobs, we also look for oobs
+        # using special handling to overcome poor hardware
         # return values:
         #  't' - normal oob detected
         #  'o' - aec oob detected
@@ -112,7 +95,7 @@ class UttProc:
                 self.log.error("Intent Barge-In Normal OOB Detected")
                 return 't'
 
-        # in a system with aec you can just return 'f' here
+        # in a system with decent aec you can just return 'f' here
         if not self.crappy_aec:
             return 'f'
 
@@ -124,13 +107,15 @@ class UttProc:
             for alias in self.stop_aliases:
                 oob_phrase = ww + ' ' + alias
                 if oob_phrase.lower() in utt.lower() or ( alias in utt.lower() and ww in utt.lower() ):
-                    self.log.warning("** Intent Barge-In Exception Detected, Don't Worry, I'm Handling It! **")
+                    self.log.warning("** Maybe ? Intent Barge-In detected. Don't Worry, I'm Handling It! **")
                     return 'o'
 
         return 'f'
 
 
     def get_sentence_type(self, utt):
+        # very rough is question or not
+        # TODO - improve upon this
         vrb = utt.split(" ")[0]
         resp = "I"
         for wrd in self.question_words:
@@ -141,11 +126,14 @@ class UttProc:
 
 
     def send_utt(self, utt):
+        # sends an utterance to a 
+        # target and handles edge cases
         target = utt.get('skill_id','*')
         if target == '':
             target = '*'
         if utt == 'stop':
             target = 'system_skill'
+        self.log.error("WTFWTF %s" % (utt,))
         self.bus.send(MSG_UTTERANCE, target, {'utt': utt,'subtype':'utt'})
 
 
@@ -168,14 +156,14 @@ class UttProc:
 
 
     def get_question_intent_match(self, info):
-        # ugly but necessary?
-        aplay(self.earcon_filename)
+        aplay(self.earcon_filename)  # should be configurable
 
+        # see if a quation matches an intent.
         skill_id = ''
         for intent in self.intents:
             stype, subject, verb = intent.split(":") 
             if stype == 'Q' and subject in info['subject'] and verb == info['qword']:
-                # questionable behavior ?
+                # fuzzy match - TODO please improve upon this
                 info['subject'] = subject
                 skill_id = self.intents[intent]['skill_id']
                 intent_state = self.intents[intent]['state']
@@ -185,68 +173,63 @@ class UttProc:
 
 
     def get_intent_match(self, info):
-        # ugly but necessary?
-        aplay(self.earcon_filename)
+        aplay(self.earcon_filename)  # should be configurable
 
         # for utterances of type command
         # an intent match is a subject:verb
+        # and we don't fuzzy match
         skill_id = ''
-        verb_or_qword = ''
 
-        intent_type = 'Q'
+        intent_type = 'C'
         if info['sentence_type'] == 'I':
-            intent_type = 'C'
+            self.log.warning("Intent trying to match an informational statement which it is not designed to to! %s" % (info,))
+            info['sentence_type'] == 'C'
 
-        subject = info['subject']
+        subject = remove_articles(info['subject'])
         if subject:
-            subject = subject.replace(" the","")
-            subject = subject.replace("the ","")
-            subject = subject.replace("an ","")
-            subject = subject.replace("a ","")
-
             subject = subject.replace(":",";")
+            subject = subject.strip()
 
-        key = intent_type + ':' + subject.lower() + ':' + info['verb']
+        key = intent_type + ':' + subject.lower() + ':' + info['verb'].lower().strip()
 
-        if intent_type == 'Q':
-            key = intent_type + ':' + subject.lower() + ':' + info['qtype']
-
-        self.log.debug("get intent match key is %s" % (key,))
+        self.log.error("Intent match key is %s" % (key,))
 
         if key in self.intents:
             skill_id = self.intents[key]['skill_id']
             intent_state = self.intents[key]['state']
-            self.log.debug("intent matched[%s] skill=%s, intent_state=%s" % (key,skill_id, intent_state))
+            self.log.debug("Intent matched[%s] skill=%s, intent_state=%s" % (key,skill_id, intent_state))
             return skill_id, key
 
+        # no match will return ('','')
         return skill_id, ''
 
 
     def handle_register_intent(self, msg):
         data = msg.data
 
-        # the subject may contain colons which is a pain
+        # the subject may contain colons which is 
+        # what we prefer to use as a delimiter
+        # so we convert them here
         subject = data['subject'].replace(":", ";")
 
         key = data['intent_type'] + ':' + subject.lower() + ':' + data['verb']
 
         if key in self.intents:
-            self.log.warning("Error - intent clash! intent key=%s, skill_id=%s" % (key,data['skill_id']))
+            self.log.warning("Intent clash! key=%s, skill_id=%s ignored!" % (key,data['skill_id']))
         else:
             self.intents[key] = {'skill_id':data['skill_id'], 'state':'enabled'}
 
 
     def run(self):
-        self.log.info("intent processor is_running is %s" % (self.is_running,))
+        self.log.info("Intent processor started - 'is_running' is %s" % (self.is_running,))
         si = SentenceInfo(self.base_dir)
+
         while self.is_running:
             # get all text files in the input directory
             mylist = sorted( [f for f in glob.glob(self.tmp_file_path + "save_text/*.txt")] )
 
             # if we have at least one
             if len(mylist) > 0:
-                # TODO clean this slop up
-
                 # take the first
                 txt_file = mylist[0]
 
@@ -255,6 +238,7 @@ class UttProc:
                 contents = fh.read()
                 fh.close()
 
+                # clean up input
                 start = contents.find("]")
                 utt_type = contents[1:start]
                 utt = contents[start+1:]
@@ -271,84 +255,42 @@ class UttProc:
 
                 elif utt_type == 'RAW':
                     # send raw messages to the system skill
-                    # and let it figure it out
+                    # and let it figure out what to do with them
                     if contents:
-                        # [RAW]bla bla bla ---> bla bla bla
                         self.bus.send(MSG_RAW, 'system_skill', {'utterance': contents[5:]})
 
                 else:
-                    info = {
-                        'error':'uninitialized', 
-                        'subtype':'', 
-                        'skill_id':'', 
-                        'from_skill_id':'', 
-                        'sentence_type':'', 
-                        'sentence':'', 
-                        'qword':'', 
-                        'np':'', 
-                        'vp':'', 
-                        'subject':'', 
-                        'raw_input':contents, 
-                        'intent_match':''
-                        }
-
-                    """
-                    # question or imperative 
-                    sentence_type = self.get_sentence_type(utt)
-                    info['sentence_type'] = sentence_type
-                    info['sentence'] = utt
-
-                    if sentence_type == 'I':
-                        info = parse_sentence(utt, self.use_remote_nlp)
-
-                        if info['sentence_type'] == 'system':
-                            # we missed but parse_sentence() picked up an oob
-                            # we probably want to ignore this if it is not registered.
-                            if utt in self.recognized_verbs:
-                                self.send_oob_to_system(utt, contents)
-                            else:
-                                self.log.warning("Ignoring not recognized OOB in intent_service '%s' not found in %s" % (utt,self.recognized_verbs))
-                        else:
-                            if info['error'] == '':
-                                # otherwise check for intent match
-                                info['skill_id'], info['intent_match'] = self.get_intent_match(info)
-
-                    else:
-                        # else probably a question
-                        info = parse_question(utt, self.use_remote_nlp)
-                        info['sentence_type'] = sentence_type
-                        if info['error'] == '':
-                            info['skill_id'], info['intent_match'] = self.get_question_intent_match(info)
-                        self.log.error("Probably a question, info is %s" % (info,))
-
-
-                    if info['error'] == 'media':
-                        # its a media type sentence
-                        info['error'] = ''
-                        info['skill_id'] = 'media_skill'
-                        info['from_skill_id'] = self.skill_id
-                        info['subtype'] = 'media_query'
-                        res = self.send_media(info) 
-                    else:
-                        # otherwise just a normal utterance
-                        info['sentence'] = contents
-                        res = self.send_utt(info) 
-                    """
+                    sentence_type = si.get_sentence_type(utt)
+                    self.log.debug("Sentence type = %s" % (sentence_type,))
+                    utt = normalize_sentence(utt)
+                    if sentence_type != 'Q':
+                        utt = remove_pleasantries(utt)
 
                     si.parse_utterance(utt)
-                    #si.dump()
 
-                    info['sentence_type'] = si.sentence_type
-                    info['qtype'] = si.insight.qtype
-                    info['question'] = si.insight.question
-                    info['sentence'] = utt
-                    info['np'] = si.insight.np
-                    info['subject'] = si.insight.subject
-                    info['vp'] = si.insight.vp
-                    info['verb'] = si.insight.verb
-                    info['aux_verb'] = si.insight.aux_verb
-                    info['rule'] = si.structure.shallow
-                    info['tree'] = si.structure.tree
+                    info = {
+                        'error':'', 
+                        'sentence_type': si.sentence_type, 
+                        'sentence': si.original_sentence, 
+                        'normalized_sentence': si.normalized_sentence, 
+                        'qtype': si.insight.qtype, 
+                        'np': si.insight.np, 
+                        'vp': si.insight.vp, 
+                        'subject': si.insight.subject, 
+                        'squal': si.insight.squal, 
+                        'question': si.insight.question,
+                        'qword': si.insight.question, 
+                        'value': si.insight.value, 
+                        'raw_input': contents, 
+                        'verb': si.insight.verb,
+                        'aux_verb': si.insight.aux_verb,
+                        'rule': si.structure.shallow,
+                        'tree': si.structure.tree,
+                        'subtype':'', 
+                        'from_skill_id':'', 
+                        'skill_id':'', 
+                        'intent_match':''
+                        }
 
                     # sentence types 
                     # Q - question
@@ -359,26 +301,34 @@ class UttProc:
                     # O - oob (out of bounds) request
                     if si.sentence_type == 'Q':
                         print("Match Question. key=Q:%s:%s" % (si.insight.question,si.insight.subject))
-                        info['skill_id'], info['intent_match'] = self.get_question_intent_match({'subject':si.insight.subject, 'qword':si.insight.question})
+                        info['skill_id'], info['intent_match'] = self.get_question_intent_match({'subject':info['subject'], 'qword':info['question']})
                         print("Match Question. skid:%s, im:%s" % (info['skill_id'], info['intent_match']))
                         res = self.send_utt(info) 
 
                     elif si.sentence_type == 'C':
                         print("Match Command")
-                        #skill_id, intent_match = self.get_question_intent_match(info)
+                        info['skill_id'], info['intent_match'] = self.get_intent_match(info)
+                        res = self.send_utt(info) 
 
                     elif si.sentence_type == 'M':
                         print("Media Command")
+                        info['skill_id'] = 'media_skill'
+                        info['from_skill_id'] = self.skill_id
+                        info['subtype'] = 'media_query'
+                        res = self.send_media(info) 
 
                     elif si.sentence_type == 'O':
                         print("OOB Command")
+                        if utt in self.recognized_verbs:
+                            self.send_oob_to_system(utt, contents)
+                        else:
+                            self.log.warning("Ignoring not recognized OOB in intent_service '%s' not found in %s" % (utt,self.recognized_verbs))
 
                     else:
-                        print("Unknown or Info")
+                        print("Unknown sentence type or Informational sentence. Ignored for now.")
 
 
-
-                # remove input file from input directory
+                # remove input file from file system
                 os.remove(txt_file)
 
             time.sleep(0.125)

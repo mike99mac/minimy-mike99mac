@@ -105,7 +105,7 @@ def handle_wh_type(info, question):
   tree = info['tree']
 
   if info['rule'].find("PP") > -1:
-    print("XXXXXXXXXXXXXXXXXXXXXXX Warning PP Not handled properly yet!")
+    print("Warning PP Not handled properly yet!")
 
   verb = get_tag_value(VP_TAG, tree)
   if verb == '':
@@ -265,10 +265,10 @@ def handle_yesno_type(info, sentence):
   info['vp'] = whack_tags(vp)
   info['subject'] = subject
   info['aux_verb'] = val
-  info['val'] = val
+  info['value'] = val
   if val == '':
-    info['val'] = extract_phrase(ADJP_TAG, tree)
-    info['aux_verb'] = info['val']
+    info['value'] = extract_phrase(ADJP_TAG, tree)
+    info['aux_verb'] = info['value']
   return info
 
 
@@ -292,11 +292,15 @@ def parse_question(tree, rule, sentence, use_remote):
   # TODO missing preprocess phase like expand 
   # isn't to is not, USA to united states, etc
   original_sentence = sentence
+
+  # TODO don't do this for proper nouns
   sentence = sentence.replace("'s", " is")
+
   tree = tree.replace("'s", " is")
 
   # this may be a bad idea but 'currently' and 'now' are 
-  # nothing more than tense indicators to me
+  # nothing more than tense indicators to me and actually
+  # confuse the NLP parser on occasion
   sentence = sentence.replace("currently ", "")
   sentence = sentence.replace(" currently", "")
   sentence = sentence.replace("now ", "")

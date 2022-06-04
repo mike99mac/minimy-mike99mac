@@ -24,53 +24,38 @@
 # the root cmd might be 'alter', this could be 
 # derived from one of many aliases like turn, change
 # modify, set, alter, etc. 
+import re, os
 from framework.services.intent.nlp.shallow_parse.parse_question import parse_question
 from framework.services.intent.nlp.remote.cmu_parse import remote_get_tree
 from framework.services.intent.nlp.local.parse_interface import local_get_tree as lgt
-from .produce_rules import get_shallow_rule_from_tree
-from .command_rule_handlers import rule_map as command_rule_map
-from .concepts import concepts
-import re, os
-from .shallow_utils import (
-        get_tag_value, 
+from framework.util.utils import normalize_sentence
+
+from framework.services.intent.nlp.shallow_parse.produce_rules import get_shallow_rule_from_tree
+from framework.services.intent.nlp.shallow_parse.command_rule_handlers import rule_map as command_rule_map
+from framework.services.intent.nlp.shallow_parse.concepts import concepts, command_concept_map
+from framework.services.intent.nlp.shallow_parse.shallow_utils import (
         get_node, 
         get_nodes, 
         extract_proper_nouns,
-        scrub_node, 
-        S_TAG,
-        VP_TAG,
-        NP_TAG,
-        PP_TAG,
-        PRT_TAG,
-        ADVP_TAG,
-        ADJP_TAG,
-        SBAR_TAG,
+        remove_articles,
 )
-
-def normalize_sentence(sentence):
-  # tbd
-  sentence = sentence.replace("a.m.","am")
-  sentence = sentence.replace("p.m.","pm")
-  sentence = sentence.replace("a m","am")
-  sentence = sentence.replace("p m","pm")
-  return sentence
-
 
 class Insight:
   def __init__(self, sentence):
     self.proper_nouns = extract_proper_nouns(sentence)
     self.tense = 'present'
     self.plural = False
-    self.verb = None
-    self.aux_verb = None
-    self.qtype = None
-    self.subject = None
-    self.value = None
-    self.dependent = None
-    self.question = None
-    self.np = None
-    self.vp = None
-    self.concept = None
+    self.verb = ''
+    self.aux_verb = ''
+    self.qtype = ''
+    self.subject = ''
+    self.squal = ''
+    self.value = ''
+    self.dependent = ''
+    self.question = ''
+    self.np = ''
+    self.vp = ''
+    self.concept = ''
 
 
 class Structure:
@@ -139,7 +124,7 @@ class SentenceInfo:
         tmp_tree = tmp_tree.replace(")","")
         tmp_tree = tmp_tree.replace("  "," ")
         self.insight.verb = tmp_tree.strip()
-        self.insight.subject = None
+        self.insight.subject = ''
         self.sentence_type = 'O'  # single word can only be an oob
         sa = tmp_tree.split(" ")
         if len(sa) > 1:
@@ -165,7 +150,6 @@ class SentenceInfo:
       # if one or two word utterance handle it and bail
       return self.handle_less_than_three_words(sentence)
 
-    #start_verb = get_tag_value(VP_TAG, self.structure.tree).lower()
     start_verb = self.original_sentence.split(" ")[0].lower()
 
     if start_verb in self.media_verbs:
@@ -193,12 +177,11 @@ class SentenceInfo:
           self.insight.subject = info['np']
         self.insight.np = self.insight.subject
 
-        self.insight.value = info['val']
+        self.insight.value = info['value']
 
         sa = self.original_sentence.split(" ")
         for s in sa:
           if s in concepts:
-            print("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZ CONCEPT! old subject = %s, new subject = %s" % (self.insight.subject, concepts[s]))
             self.insight.subject = concepts[s]
             self.insight.np = concepts[s]
 
@@ -207,6 +190,8 @@ class SentenceInfo:
     # otherwise parse what is assumed to be a command type sentence 
     save_struct = self.structure.shallow
     if self.structure.shallow not in command_rule_map:
+      #print("Unrecognized command rule: [%s] for sentence %s" % (self.structure.shallow, self.original_sentence))
+
       # if not a recognized pattern maybe we can munge it
       # probably a question but could be of the form 'will you please do bla'
       if self.structure.shallow.startswith("NP "):
@@ -219,22 +204,60 @@ class SentenceInfo:
         # remove the NP from shallow rule
         self.structure.shallow = self.structure.shallow[3:]
 
-        print("Note! question converted to command. new rule:%s, new tree:%s " % (self.structure.shallow,self.structure.tree))
+        #print("Note! question converted to command. new rule:%s, new tree:%s " % (self.structure.shallow,self.structure.tree))
 
     if self.structure.shallow in command_rule_map:
       info = (command_rule_map[self.structure.shallow](self.structure.tree))
+      # if not error
+      if info['error'] == '':
+        info['subject'] = remove_articles(info['subject'])
 
-      print("CMD_RULE_HANDLER addtl info = %s" % (info,))
+        self.structure.shallow = save_struct
+        self.sentence_type = 'C'
 
-      self.structure.shallow = save_struct
-      self.sentence_type = 'C'
-      self.insight.verb = info['verb']
-      self.insight.subject = info['subject'] + ' ' + info['squal']
-      self.insight.value = info['value']
-      return True
+        # TODO - verb concept maps must be intent specific 
+        # this is too rough a granularity here!
+        #self.insight.verb = command_concept_map.get(info['verb'].lower(), info['verb'].lower())
+        self.insight.verb = info['verb'].lower()
+
+        self.insight.squal = info['squal']
+        self.insight.vp = info['verb']
+        self.insight.subject = info['subject'].lower()
+        self.insight.np = info['subject'] 
+        self.insight.value = info['value']
+        return True
 
     return self.handle_unknown_grammar(sentence)
 
 if __name__ == "__main__":
-    pass
+    # unit tests kinda - validate subject verb
+    print("Running NLU Unit Tests")
+    print("======================")
+    base_dir = os.getenv('SVA_BASE_DIR')
+    si = SentenceInfo(base_dir)
+    fpath = base_dir + '/framework/services/intent/nlp/shallow_parse/corpus_commands.txt'
+    fh = open(fpath)
+    failed = 0
+    passed = 0
+    total_lines = 0
+    for line in fh.readlines():
+        if line.strip() and not line.startswith("#"):
+            la = line.split("|")
+            if len(la) < 3:
+                print("Ill formed input line! %s" % (line.strip(),))
+            else:
+                total_lines += 1
+                si.parse_utterance(la[2].strip())
+                expected_verb = la[0]
+                expected_subject = la[1]
+                if expected_subject != si.insight.subject or expected_verb != si.insight.verb:
+                    failed += 1
+                    print("[%s/%s]FAIL! Cmd:%s, Subject:%s <--- %s" % (failed, total_lines, si.insight.verb, si.insight.subject, line.strip()))
+                else:
+                    passed += 1
 
+    ratio = 0.0
+    if failed > 0 and total_lines > 0: 
+        ratio = float(failed / total_lines)
+    ratio = int( 100 * float( float(1.0) - ratio ) )
+    print("Total:%s, Passed:%s, Failed:%s, %s%%" % (total_lines, passed, failed, ratio))

@@ -19,7 +19,7 @@ class Config:
     config_defaults = [
         {
         'Basic': {
-            'Version':'1.0.3',
+            'Version':'1.0.2',
             'BaseDir':'',
             'WakeWords': ['hey computer', 'computer'],
             'GoogleApiKeyPath' : 'install/my_google_key.json',
@@ -489,13 +489,51 @@ def make_time_speakable(text):
     text = " ".join(words)
     return text
 
+def remove_pleasantries(sentence):
+    pleasantries = ['please', 'o.k.', 'ok', 'thanks', 'thank you']
+    altered = ''
+    sentence = sentence.replace("?","")
+    sentence = sentence.replace(".","")
+    sentence = sentence.replace(",","")
+    sentence = sentence.replace("!","")
+    sa = sentence.split(" " )
+    for s in sa:
+        if not s.lower() in pleasantries:
+            altered += s + ' '
+    return altered.strip()
+
 
 def expand_abbrevs(text):
-    text = text.replace("D.C.", "dee sea")
-    text = text.replace("U.S.", "United States")
-    text = text.replace("U.K.", "United Kingdom")
-    text = text.replace("N.R.A.", "National Rifle Association")
-    return text
+    abbrevs = {
+            "DC":"District of Columbia",
+            "US":"United States",
+            "USA":"United States of America",
+            "UK":"United Kingdom",
+            "UAE":"United Arab Emirates",
+            "NRA":"National Rifle Association",
+            "Mr":"Mister",
+            "TV":"television",
+            "IBM":"International Business Machines",
+            }
+    ta = text.split(" ")
+    expanded_sentence = ''
+    for t in ta:
+        if t.replace('.','') in abbrevs:
+            expanded_sentence += abbrevs[t.replace('.','')]
+        else:
+            expanded_sentence += t
+        expanded_sentence += ' '
+
+    return expanded_sentence.strip()
+
+
+def normalize_sentence(sentence):
+  sentence = sentence.replace("a.m.","am")
+  sentence = sentence.replace("p.m.","pm")
+  sentence = sentence.replace("a m","am")
+  sentence = sentence.replace("p m","pm")
+  sentence = sentence.replace("%"," percent")
+  return sentence
 
 
 def tts_scrub_output(text):
@@ -516,10 +554,7 @@ def tts_scrub_output(text):
     text = re.sub('\>', '', text)
     text = re.sub('\=', 'equal', text)
     text = re.sub('  ', ' ', text)
-
-    #text = re.sub(r'0+(.+)', r'\1', text)
     text = make_time_speakable(text)
-
     return text
 
 

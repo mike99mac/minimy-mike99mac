@@ -1,5 +1,5 @@
 # minimy
-Simple nlp based voice assistant framework
+Simple nlu based voice assistant framework
 
 <h2>Overview</h2>
 The goal of this project is to provide a run-time 
@@ -10,7 +10,7 @@ simply python programs which may do normal python
 things as well as call speak() and listen() and
 get called asynchronously when an utterance is
 matched to an intent the skill has previously
-registered. 
+registered.  
 
 <h2>Installation</h2>
 ./install/linux_install.sh

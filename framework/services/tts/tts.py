@@ -148,7 +148,6 @@ class TTSEngine:
     ##########################
     def _idle_start(self, msg):
         self.__change_state(STATE_WAIT_ACTIVE)
-        self.log.error("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ idle start hit ")
         self.current_session.reset( msg['from_skill_id'] )
         self.current_session_id += 1
         self.current_session.tts_sid = self.current_session_id
@@ -157,7 +156,6 @@ class TTSEngine:
         self.current_session.handle_event(EVENT_START, msg)
 
     def _idle_pause(self, msg):
-        self.log.error("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ idle pause hit ")
         aplay(self.aplay_filename)
         self.send_paused_confirmed_message(self.current_session.owner, self.current_session.tts_sid)
 

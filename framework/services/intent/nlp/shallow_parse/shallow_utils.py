@@ -118,3 +118,11 @@ def extract_proper_nouns(sentence):
 
   return pns
 
+def remove_articles(sentence):
+    # only from start of sentence for now!
+    en_articles = ['a','an','the','all','some', 'most', 'no', 'my', 'his', 'hers', 'her', 'their', 'your']
+    first_word = sentence.split(" ")[0]
+    if first_word.lower() in en_articles:
+        return sentence.replace(first_word + ' ', '')
+    return sentence
+

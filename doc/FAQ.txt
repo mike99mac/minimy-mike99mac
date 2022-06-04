@@ -1,0 +1,137 @@
+Frequently Asked Questions
+
+
+(Q) Why does nothing seem to work?
+Most problems are due to not sourcing the virtual environment
+before running something or because the three environment
+variables have not been set correctly. 
+
+
+When you install the system you are doing so from what will
+be known as the base directory. If you are running from a
+directory like this ....
+
+
+/home/joe/MiniMy
+
+
+Then this is your home or base directory and you would change
+into it before you ran anything. In most cases you would 
+simply run ./start.sh and ./stop.sh from this directory.
+
+
+If you are not using the start.sh script you will need to run
+these four commands before you run anything else.
+
+
+source venv_ngv/bin/activate
+
+export PYTHONPATH=`pwd`
+
+export SVA_BASE_DIR=`pwd`
+
+export GOOGLE_APPLICATION_CREDENTIALS=$PWD/my-google-speech-api-key.json
+
+
+Again, keeping in mind you have run 
+
+
+cd /home/joe/Minimi
+
+
+to change into your base directory before you run these commands. 
+
+
+Everything relies on these being properly set before execution. 
+If you configure the system to use local speech to text you do
+not have to set the GOOGLE_APPLICATION_CREDENTIALS variable but
+it is strongly recommended.
+
+
+
+(Q) The configure program confuses me.
+Before you run for the first time you need to configure your system.
+You do this by running the following from your home dirctory ...
+
+
+source venv_ngv/bin/activate
+
+./configure.py
+
+
+This will lead you through several prompts which will ultimately
+produce a sva.cfg file in your home directory. See the Configuration
+section in the README file for more detail but in general you must 
+enter a specific value for each prompt. Do not just press enter and
+assume the default value will be selected. The configuration program
+is not that good yet. If it says (y/n) enter the letter 'y' followed
+by the enter key. Unless you have a good reason the device index 
+should always be 0 (zero) and you are probably on a linux system so
+that should always be the letter 'l'. Best results are achieved using
+remote STT, remote TTS, local NLP, device index 0 and environment
+linux. 
+
+
+(Q) It does not recognize my wake word very well.
+Wake words need to be chosen carefully. Short non descript words like 
+'hey' or 'wake' will not work very well. The wake word should have at
+least 3 syllables and have some distinguishing feature like an 'X'
+or a hard 'K' or two. This is why names like 'Alexa' are used. 
+You should try out several (there are test scripts for this in the
+framework/tests/ directory) before deciding on one. Personally I
+simply use the word 'computer' which is not great but seems to work
+fine. 
+
+
+One final note on recognition. You will find it pays to experiment
+with the microphone settings and speaker settings to optimize them for
+you particular hardware and environment. Some systems like headsets
+or the MarkII have echo and noise cancellation built in and everything
+works fine but on normal laptops the system will struggle a bit with
+barge-in. You will find saying 'computer stop' or 'computer terminate'
+and then waiting for the recognition confirmation beep will work best
+on systems with inferior audio quality.
+
+
+
+(Q) Why does the system suck?
+Well, suck is a relative term. If you are running in local only mode
+(no internet connection) you will be limited in what you can do. For
+example, wiki queries will not work without an internet connection. 
+
+
+As far as speech to text (STT), remote is usually pretty good, but it
+can take a few seconds based on your internet connection. If you switch
+to local STT (or if your internet goes down in which case you will be 
+automatically switched over) the performance is about the same but the
+recognition quality is not as good. It may be as different as 90%
+recognition accuracy versus 80% or somewhere around that. When using
+local STT you must also enunciate much more clearly. Local STT does
+not do very well with garbled input or noisy environments.
+
+
+Text to speech using remote is a bit slow and on the average takes
+about 2-3 seconds per request but the voice quality is pretty good.
+Local is a different story. Espeak which is one local TTS option is
+pretty fast but the voice quality is poor. Local Coqui is very 
+good quality but takes closer to 5-7 seconds per request. Typically
+using remote for STT and TTS and choosing local for NLP will produce 
+the best results. 
+
+
+(Q) Why does TTS not clean up after itself properly?
+You may notice in the framework/services/save_tts/ directory
+after you shut down files remain. This is actually a design
+trade-off and will not happen if you are configured for local
+only mode. When a TTS request is made the system actually fires
+off two threads one for the remote request and one for the local
+request. The local is hobbled a bit by design and the first 
+response if from the remote is used, however, for performance
+purposes we do not wait around for the local to finish so when 
+we try to delete its file in most cases it has not been created
+yet. While we could wait this would adversely impact performance
+so we live with extraneous files which are ultimately cleared
+out on system start and stop. 
+
+
+

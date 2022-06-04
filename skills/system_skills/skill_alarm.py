@@ -71,7 +71,6 @@ class AlarmSkill(SimpleVoiceAssistant):
                 ]
 
         # intent stuff
-        self.subject = 'alarm'
         self.register_intent('C', 'set', 'alarm', self.handle_create)
         self.register_intent('C', 'create', 'alarm', self.handle_create)
         self.register_intent('C', 'new', 'alarm', self.handle_create)
@@ -81,10 +80,14 @@ class AlarmSkill(SimpleVoiceAssistant):
         self.register_intent('C', 'list', 'alarms', self.handle_show)
 
         self.register_intent('C', 'delete', 'alarm', self.handle_delete)
+        self.register_intent('C', 'delete', 'alarms', self.handle_delete)
         self.register_intent('C', 'remove', 'alarm', self.handle_delete)
+        self.register_intent('C', 'remove', 'alarms', self.handle_delete)
 
         self.register_intent('C', 'stop', 'alarm', self.handle_stop)
+        self.register_intent('C', 'stop', 'alarms', self.handle_stop)
         self.register_intent('C', 'cancel', 'alarm', self.handle_stop)
+        self.register_intent('C', 'cancel', 'alarms', self.handle_stop)
 
         base_dir = os.getenv('SVA_BASE_DIR')
 
