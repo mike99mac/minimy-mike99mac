@@ -10,7 +10,11 @@ simply python programs which may do normal python
 things as well as call speak() and listen() and
 get called asynchronously when an utterance is
 matched to an intent the skill has previously
-registered.  
+registered. See the skill api document for more
+information on the skills built in functions.
+Once everything is running you can view the 
+system monitor page in the display/ directory
+to view the message bus in real time.
 
 <h2>Installation</h2>
 ./install/linux_install.sh
@@ -161,6 +165,22 @@ before you run anything. The SVA_BASE_DIR and
 PYTHONPATH environments being set properly also
 helps.
 
+For example to test nlu run these commands ...
+
+<br/><b>
+source venv_ngv/bin/activate
+<br/>
+export PYTHONPATH=`pwd`
+<br/>
+export SVA_BASE_DIR=`pwd`
+<br/>
+export GOOGLE_APPLICATION_CREDENTIALS=$PWD/install/my-google-speech-key.json
+<br/>
+python framework/services/intent/nlp/shallow_parse/nlu.py
+</b><br/>
+
+
+<h2>Advanced</h2>
 You may also modify the default audio output device.
 This value is used by the system aplay command 
 and the system mpg123 command. To see your options 
