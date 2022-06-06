@@ -29,5 +29,7 @@ def local_get_tree(sentence):
     res = " ".join(res)
     res = res.replace("\n","")
     res = ' '.join(res.split())
-    return res[3:-1]
+    #return res[3:-1]
+    # be careful with backward compatability
+    return res
 

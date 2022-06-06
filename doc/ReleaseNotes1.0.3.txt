@@ -1,0 +1,121 @@
+Release Notes for Release 1.0.3
+
+1) added ability for skills to register lists of subjects and verbs
+this solves the problem of aliasing. sva_base.py will now range
+over the two lists and register multiple intents. the user could
+use this to create a map of concepts but see (2) below for more
+on this.
+
+2) added first attempt at concept mapping. see file concepts.py 
+for more info. not fully supported yet. no messaging but weather
+skill uses it as well as the new register_intent list code in 
+sva_base.py. just static grouping initially.
+
+3) cleaned up nlp a bit. added SentenceInfo class which consists
+of a Structure class and an Insight class. this area of the code
+still needs attention. this also included cleaning up intent.py
+and parse_question.py. parse_sentence.py is no longer used but
+is staying around for another release or two just to be safe.
+also moved some stuff out into the shallow_utils.py file. this
+is an initial attempt at NLU or simplistic flat abstract 
+representation (see NLU below for more on this).
+
+the basic approach here is once you have your 
+subjects and verbs you can abstract out the stuff a bit, so for
+example for the volume you might want to say things like 
+
+  turn up the volume
+  decrease the volume
+  volume down
+  mute
+  set the volume to 75%
+  cut the volume in half
+  turn down the noise
+
+But really what you are saying with all of them is 'alter' the
+volume. all that varied was the value so this is the idea behind 
+flat simple concept mapping initially. just map stuff into a 
+consistent abstract structure. all of the above statements 
+should be equal if the specific value is ignored. specifically
+they should all convert to 
+
+  set volume to <some value>
+
+4) added test code to test new nlu stuff and also added some old
+test code into the test directory (list input devices and dump
+the remote db) to help with initial setup. 
+
+5) fixed a gnarly bug in the tts engine where interrupting the
+weather skilll with the wiki skill caused a hang because it
+would not grant output focus because it was stuck in the 'wait
+stopped' method. Called init_start() from the ws_start() method
+which seems to work for now. there will be more of these but 
+they are now easily resolved since tts is a state/event driven
+piece of code.
+
+=========================================================================
+
+NLP
+---
+You can think of natural language processing (NLP) 
+as the syntactic parse stage. The result(s) of this
+stage is a tree graph representing one or more 
+probable sentence structures.
+
+In addition we extract a shallow token pattern from 
+the tree graph and both of these as well as the 
+general sentence type (question, command, info)
+are provided as input to the NLU stage.
+
+NLU
+---
+You can think of natural language understanding 
+(NLU) as the initial sematic parse stage. During 
+this stage a bundle of attributes are produced.
+
+This incudes noun, verb, utterance type, value,
+tense, plurality, subject/dependent relationships,
+proper noun to pronoun mapping, locale inferences,
+etc. Context is also provided during this stage.
+
+In general, NLU takes the output from NLP (a tree) 
+and produces an object composed of structure and insight.
+It begins with three basic NLP inputs; a NLP parse tree,
+a list of shallow tokens extracted from the tree and
+a sentence type. 
+
+Initially, an utterance (or sentence) is categorized as 
+either a question, a command or an informational input.
+Each is parsed differently.
+
+The result of this semantic parse is a SentenceInformation 
+object which looks something like this.
+
+Structure:
+  parse tree - a tree representing the result of the NLP
+  shallow pattern - a list of tokens extracted from the tree
+  original sentence - the original unmodified input
+  normalized sentence - a normalized version of the input
+  nodes - a list of first level nodes from the tree
+
+Insight:
+  type - 'question', 'command', 'information', 'media', 'oob', 'unknown'
+  noun - a word or list of words
+  proper nouns - a list
+  np - a tree
+  verb - a word or list of words
+  vp - a tree
+  subject - a word or list
+  dependent a word or list
+  plurality - 'singular' or 'plural'
+  tense - 'past', 'present', 'future'
+  value - value if any provided in the input
+  qword - question word 
+  qaux - question aux word
+  squal - if present a subject or verb qualifier (like 'all', 'one',
+  'the', 'none') etc.
+
+The above SentenceInformation object is used to match intents and 
+currently is passed in the message to the matching endpoint as a 
+json object.
+

@@ -4,6 +4,7 @@ from .produce_rules import get_shallow_rule_from_tree
 from .shallow_utils import (
         get_tag_value, 
         get_node, 
+        get_nodes, 
         scrub_node, 
         S_TAG,
         VP_TAG,
@@ -36,27 +37,7 @@ determiners = [' a ', ' any ', ' the ', ' this ', ' that ',
 chatter = [' is ', ' not ', ' are ', ' of ', ' the ', 
         ' in ', ' an ', ' that ', ' which ', ' there', 
         ' for ', ' a ', ' it ', ' on ', ' off ']
-# don't lose site that the larger goal is intent matching!
-# Note - this is an extremely abbreviated solution. the correct
-# solution is to pattern match like commands do but I do not
-# have that much time right now.
-# notes
-# 1) "is it raining" implies weather
-#    since the larger goal is intent matching
-#    we need to make sure we can get this
-#    question to the right handler
-#
-# 2) you can cheat since you know all the verbs 
-#    contained in your intents and you also know all 
-#    the subjects you could intent match against. 
-#    BUT as (1) demonstrates, don't get too cute.
-# 
-# it would also be nice to detect the word 'it' in
-# sentences and replace it with what it actually 
-# refers to so 'is it colder in texas or arizona' 
-# after noise removal is colder texas arizona and
-# it refers to colder.
-# 
+
 def whack_tags(tree):
   # remove tag related artifacts from a string
   tags = (
@@ -112,69 +93,105 @@ def np_to_subject(np):
   return subject.strip()
 
 
-def brute_subject_match(sentence,subjects):
-  # old regex type brute force match 
-  # mainly used for verification and
-  # a last resort
-  for subject in subjects:
-    if sentence.find(subject) > -1:
-      return subject
-  return ''
-
 def np_in_vp(np,vp):
   if vp.find(np) > -1:
     return True
   return False
 
+
 def handle_wh_type(info, question):
   info['qtype'] = QTYPE_WH
+  info['dependent'] = ''
   tree = info['tree']
-  np = extract_phrase(NP_TAG, tree)
 
-  # if np is 'it', keep looking
-  if np == 'it':
-    #print("Indirect np being tracked")
-    sa = tree.split(" ")
-    np = sa[1]
+  if info['rule'].find("PP") > -1:
+    print("Warning PP Not handled properly yet!")
 
-  vp = extract_phrase(VP_TAG, tree)
-  val = extract_phrase(PRT_TAG, tree)
-  #print("WH: NP:%s, VP:%s, VAL:%s" % (np,vp,val))
-  info['np'] = np
-  info['vp'] = vp
-  info['aux_verb'] = val
-  info['val'] = val
-  np_not_handled = True
+  verb = get_tag_value(VP_TAG, tree)
+  if verb == '':
+    verb = get_tag_value(ADVP_TAG, tree)
 
-  #print("Rule:%s, Tree:%s" % (info['rule'], tree))
+  # extract qword and qaux then remove from tree
+  qword, aux_verb = get_qw(tree)
 
-  # TODO i hate doing this here but for now
-  # eventually handle like commands with branch table
+  # get nodes from modified tree
+  start = tree.find("(")
+  tree = tree[start:]
+  nodes = get_nodes(tree)
+  #print(nodes)
 
-  if info['rule'] == 'VP NP PP NP':
-    np_not_handled = False
-    np = handle_pp_in_np(vp)
+  value = get_tag_value(PRT_TAG, tree)
 
-  elif info['rule'] == 'NP NP NP VP PP':
-    np_not_handled = False
-    np = tree.replace(vp,'')
+  subject = get_subject(tree)
+  subject = subject.strip()
+  if subject == 'it' or subject == '':
+    subject = aux_verb
 
-  elif info['rule'] == 'NP PP NP NP VP PP':
-    np_not_handled = False
-    np = tree.replace(vp,'')
-    np = handle_pp_in_np(np)
-
-  else:
-    if tree.find(PP_TAG) > -1:
-      #print("PP not handled properly. this will not go well")
-      pass
-
-  subject = whack_tags(np)
-  subject = np_to_subject(subject)
-  subject = subject.lower()
+  info['qword'] = qword
+  info['aux_verb'] = aux_verb
+  info['verb'] = verb
   info['subject'] = subject
-
+  info['value'] = value
   return info
+
+
+def get_subject(tree):
+  subject = ''
+  exit_flag = False
+  while not exit_flag:
+    # combine all NPs for now
+    next_np = get_tag_value(NP_TAG, tree)
+    if next_np:
+      subject = subject + ' ' + next_np
+      indx = tree.find("(NP ")
+      tree = tree[indx + len(next_np) + len(NP_TAG) + 1:]
+    else:
+      exit_flag = True
+
+  subject = subject.replace(NP_TAG,"")
+  subject = subject.replace(" is","")
+  subject = subject.replace(" it","")
+  subject = subject.strip()
+  if subject.startswith("the "):
+    subject = subject[len("the "):]
+  subject = np_to_subject(subject)
+
+  return subject
+
+
+def get_qw(tree):
+  if tree.startswith(ADVP_TAG):
+    # typically of the form
+    # how {bla} {does|is|hot|long|etc} {something|it}
+    # where aux is basically the question
+    ta = tree.split(" ")
+    qword = ta[1]
+    qaux = ta[1]
+    if len(ta) > 2:
+      qaux = ta[2]
+    return qword, qaux
+
+  tree = tree
+  tree = tree.replace("?","")
+  tree = tree.replace(".","")
+  tree = tree.replace("!","")
+  start_index = tree.find("(")
+  qa = tree[0:start_index].strip()
+  qa = qa.split(" ")
+  qword = qa[0]
+  qaux = qa[0]
+  if len(qa) > 1:
+    qaux = qa[1]
+  else:
+    qaux = get_tag_value(VP_TAG, tree)
+
+  if qword == '' and qaux == '':
+    # probably starts with an adverbial phrase
+    qa = tree.split(" ")
+    qword = qa[1]
+    qaux = qa[2]
+
+  return qword, qaux
 
 
 def is_comparison(question):
@@ -227,51 +244,35 @@ def handle_yesno_type(info, sentence):
   if np.find(PP_TAG) > -1:
     np = handle_pp_in_np(np)
 
+  node = get_node(ADJP_TAG, np)
+  np = np.replace(node,"")
   np = whack_tags(np)
   np = np_to_subject(np)
   np = np.lower()
 
   subject = whack_tags(np_to_subject(np))
+
+  if subject == '':
+    subject = extract_phrase(VP_TAG, tree)
+
+  if val == '':
+    val = extract_phrase(PP_TAG, tree)
+
+  if val == '':
+    val = extract_phrase(PRT_TAG, tree)
+
   info['np'] = np
-  info['vp'] = vp
+  info['vp'] = whack_tags(vp)
   info['subject'] = subject
   info['aux_verb'] = val
-  info['val'] = val
+  info['value'] = val
   if val == '':
-    info['val'] = extract_phrase(ADJP_TAG, tree)
-    info['aux_verb'] = info['val']
+    info['value'] = extract_phrase(ADJP_TAG, tree)
+    info['aux_verb'] = info['value']
   return info
 
-def resort_to_pattern_matching(info):
-  sentence = info['sentence']
-  rule = info['rule']
-  if rule == "VP NP" or rule == "VP PP":
-    sa = sentence.split(" ")
-    return sa[1]
 
-  if rule == "VP ADJP":
-    sa = sentence.split(" ")
-    return sa[len(sa)-1]
-
- 
-def parse_question(sentence, use_remote):
-  # note sensor comes before sensors!
-  subjects = ['sensors', 'sensor', 'living room light', 'light one', 'hall light']
-  info = _parse_question(sentence, use_remote)
-  sub1 = info['subject']
-  sub2 = brute_subject_match(sentence, subjects)
-  if sub1 == '':
-    sub1 = sub2
-  info['subject'] = sub1
-
-  if info['subject'] == '':
-    # emergency measures are needed :-)
-    info['subject'] = resort_to_pattern_matching(info)
-
-
-  return info
-
-def _parse_question(sentence, use_remote):
+def parse_question(tree, rule, sentence, use_remote):
   # takes in a sentence, returns a data structure
   # representing what the system thinks was 
   # communicated. a lot of different values are
@@ -290,16 +291,25 @@ def _parse_question(sentence, use_remote):
   # 
   # TODO missing preprocess phase like expand 
   # isn't to is not, USA to united states, etc
-  # but maybe that should be done higher up anyway
   original_sentence = sentence
+
+  # TODO don't do this for proper nouns
   sentence = sentence.replace("'s", " is")
 
+  tree = tree.replace("'s", " is")
+
   # this may be a bad idea but 'currently' and 'now' are 
-  # nothing more than tense indicators to me
+  # nothing more than tense indicators to me and actually
+  # confuse the NLP parser on occasion
   sentence = sentence.replace("currently ", "")
   sentence = sentence.replace(" currently", "")
   sentence = sentence.replace("now ", "")
   sentence = sentence.replace(" now ", "")
+
+  tree = tree.replace("currently ", "")
+  tree = tree.replace(" currently", "")
+  tree = tree.replace("now ", "")
+  tree = tree.replace(" now", "")
 
   # this is what is returned by this method/process.
   np = ''
@@ -308,21 +318,13 @@ def _parse_question(sentence, use_remote):
   plural = 'false'
   qword = ''
   qtype = ''
+  verb = ''
   topic = ''
   location = ''
   subject = ''
   aux_verb = ''
-  tree = ''
   parse_err = ''
-
-  if use_remote:
-    tree = remote_get_tree(sentence.replace(" ", "+"))
-  else:
-    tree = local_get_tree(sentence)
-
   original_tree = tree
-  rule = get_shallow_rule_from_tree(tree).strip()
-
   sa = sentence.split(" ")
   qword = sa[0]
 
@@ -339,6 +341,7 @@ def _parse_question(sentence, use_remote):
           'qword':qword, 
           'aux_verb':aux_verb, 
           'val':aux_verb, 
+          'verb':verb, 
           'topic':topic, 
           'location':location, 
           'subject':subject, 
@@ -349,7 +352,7 @@ def _parse_question(sentence, use_remote):
   # open ended or comparisons. open ended could be
   # further subdivided but we don't do it. 
   wh_words=['who', 'what', 'where', 'when', 'how', 'why']
-  not_sure_what_to_do_with_yet = ['do', 'does', 'did', 'will', 'which', 'would', 'are', 'can']
+  not_sure_what_to_do_with_yet = ['do', 'does', 'did', 'will', 'which', 'would', 'are', 'can', 'is']
   question = sentence
 
   # handle comparison type questions
@@ -357,8 +360,10 @@ def _parse_question(sentence, use_remote):
     return handle_comparison_type(info, question)
 
   else:
+
     sa = sentence.split(" ")
-    if sa[0] in wh_words:
+
+    if sa[0].lower() in wh_words:
       return handle_wh_type(info, question)
 
     else:

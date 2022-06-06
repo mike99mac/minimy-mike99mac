@@ -12,10 +12,7 @@ class WeatherSkill(SimpleVoiceAssistant):
         # register intents
         self.register_intent('Q', 'what', 'weather', self.handle_msg)
         self.register_intent('Q', 'what', 'forecast', self.handle_msg)
-
-
-        # these should really come from a 
-        # config file but for now ...
+        self.register_intent('Q', ['is', 'will', 'did', 'what'], 'temperature', self.handle_msg)
 
         # get your public ip
         response = execute_command('curl ifconfig.me')
@@ -152,8 +149,11 @@ class WeatherSkill(SimpleVoiceAssistant):
         return page[start_indx:end_indx]
 
 
+    def stop(self, msg):
+        self.log.error("Do nothing stop for weather skill with msg hit")
+
     def stop(self):
-        self.log.debug("Do nothing stop for weather skill hit")
+        self.log.error("Do nothing stop for weather skill hit")
 
 if __name__ == '__main__':
     ws = WeatherSkill()
