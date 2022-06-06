@@ -5,16 +5,24 @@ in the Python programming language. Many skills rely on the
 presence of 'wget', 'ffmpeg' and other standard linux system 
 utilities. Specifically these are ...
 
+
 mpg123 - play mp3 files
+
 aplay - play wav files
+
 wget - get web pages
+
 curl - get API results
+
 ffmpeg - convert files between audio formats
+
 
 The system is easily ported to custom hardware environments. The
 ability to capture input and control output volume are basically
-all that are needed to successfully deploy the system to a 
-new hardware evironment. 
+all that are needed to successfully deploy the system to a new
+hardware evironment. This amounts to being able to use 'aplay'
+and 'arecord'. If you are able to record a file using 'arecord'
+and can hear it using 'aplay' you should be good to go.
 
 The file mic.py is used to detect user utterances. It listens for
 silence and then writes a time stamped audio file to a well known
@@ -37,6 +45,20 @@ standardized file naming convention and when the system needs
 to control the volume of the output device it uses the hal.cfg 
 file to determine what commands are used to control the output 
 device volume.
+
+The HAL is nothing more than a file which maps a command to an
+action. The following actions are currently supported ...
+
+
+initialize
+
+get volume
+
+set volume
+
+get mic gain
+
+set mic gain
 
 
 BARGE-IN
