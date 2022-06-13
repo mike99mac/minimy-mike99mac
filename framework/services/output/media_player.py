@@ -4,7 +4,7 @@ from bus.Message import Message
 from bus.MsgBusClient import MsgBusClient
 import time, os
 from subprocess import Popen, PIPE, STDOUT
-from framework.util.utils import CommandExecutor, LOG, Config, MediaSession
+from framework.util.utils import CommandExecutor, LOG, Config, MediaSession, get_hal_obj
 from framework.message_types import MSG_MEDIA, MSG_SKILL
 
 class SVAMediaPlayerSkill:
@@ -14,6 +14,10 @@ class SVAMediaPlayerSkill:
     session and play a new one. it stacks these in the 
     paused_sessions q. the media player does not have a paused
     state as such. 
+    Recently support for streams was added. to maintain 
+    backward compatibility we simply assume any uri which does
+    not end with .wav or .mp3 is a stream and we uses cvlc
+    to play it.
     """
     def __init__(self, bus=None, timeout=5):
         self.skill_id = 'media_player_service'
@@ -33,6 +37,7 @@ class SVAMediaPlayerSkill:
 
         # states = idle, playing or paused
         self.state = 'idle'
+        self.hal = get_hal_obj('l')
 
         self.bus.on(MSG_MEDIA, self.handle_message)
 
@@ -95,10 +100,12 @@ class SVAMediaPlayerSkill:
         from_skill = msg.data['from_skill_id']
         file_uri = msg.data['file_uri']
         play_session_id = msg.data['session_id']
-        self.log.info("MediaPlayer: PlaySID=%s, CurrentSID=%s, play file:%s" % (play_session_id, self.current_session.session_id, file_uri))
+        media_type = msg.data.get('media_type', None)
+        self.log.info("MediaPlayer: MediaType=%s, PlaySID=%s, CurrentSID=%s, play file:%s" % (media_type, play_session_id, self.current_session.session_id, file_uri))
         if play_session_id == self.current_session.session_id:
             media_entry = {
                     'file_uri':file_uri,
+                    'media_type':media_type,
                     'delete_on_complete':msg.data['delete_on_complete'],
                     'from_skill_id':from_skill
                     }
@@ -171,6 +178,7 @@ class SVAMediaPlayerSkill:
 
 
     def stop_session(self,msg):
+        # TODO may need special handling for cvlc!!!
         self.log.info("MediaPlayer: stop_session() state = %s, current sess id=%s, session_id to stop=%s, sessMediaType:%s" % (self.state,self.current_session.session_id,msg.data['session_id'], self.current_session.media_type))
 
         data = msg.data
@@ -341,24 +349,50 @@ class SVAMediaPlayerSkill:
 
                 media_entry = self.current_session.media_queue[0]
                 file_uri = media_entry['file_uri']
+                media_type = media_entry['media_type']
 
                 fa = file_uri.split(".")
                 file_ext = fa[len(fa) - 1]
 
                 cfg = Config()
                 device_id = cfg.get_cfg_val('Advanced.OutputDeviceName')
-                # we currently support wav and mp3
-                cmd = "mpg123 %s" % (file_uri,)
-                if device_id is not None:
-                    cmd = "mpg123 -a " + device_id + " " + file_uri
 
-                self.current_session.media_type = 'mp3'
-                if file_ext == "wav":
-                    cmd = "aplay " + file_uri
-                    if device_id is not None and device_id != '':
-                        cmd = "aplay -D" + device_id + " " + file_uri
-                    self.current_session.media_type = 'wav'
+                cmd = ''
+                if media_type is None or media_type == '':
+                    self.log.warning("ERROR - invalid media type ! %s. Will attempt to derive" % (media_type,))
+                    self.current_session.media_type = 'mp3'
+                    cmd = "mpg123 %s" % (file_uri,)  
+                    if device_id is not None:
+                        cmd = "mpg123 -a " + device_id + " " + file_uri
 
+                        if file_ext == "wav":
+                            cmd = "aplay " + file_uri
+                            if device_id is not None and device_id != '':
+                                cmd = "aplay -D" + device_id + " " + file_uri
+                            self.current_session.media_type = 'wav'
+                    self.log.warning("ERROR - derived media type = %s." % (media_type,))
+                else:
+                    # else media type is known so use it 
+                    # to get cmd line from hal cfg file
+
+                    # we currently support wav, mp3, stream using cvlc and 
+                    # stream using ytdownload cmd line tool with cvlc
+                    # we use the hal to determine the command line for the
+                    # actual player so we can support anything
+                    self.current_session.media_type = media_type
+                    media_player_cfg = self.hal.get('play_media', None)
+
+                    if media_player_cfg:
+                        cmd = media_player_cfg.get(self.current_session.media_type,'')
+
+                    if cmd == '':
+                        self.log.error("ERROR - invalid media player command line !")
+                        return 
+                    else:
+                        cmd = cmd % (file_uri,)
+
+                self.log.info("cmd = %s" % (cmd,))
+             
                 self.current_session.ce = CommandExecutor(cmd)
 
                 self.wait_for_end_play(media_entry)

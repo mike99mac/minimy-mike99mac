@@ -240,10 +240,11 @@ class SimpleVoiceAssistant:
         self.bus.send(MSG_SKILL, target, message)
 
 
-    def play_media(self, file_uri, delete_on_complete='false'):
+    def play_media(self, file_uri, delete_on_complete='false', media_type=None):
         # try to acquire a media player session and play a media file
         from_skill_id = self.skill_control.skill_id
         from_skill_category = self.skill_control.category
+        self.log.error("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX WTFWTFWTF ---> sva_base:play_media(): media_type=%s, file_uri=%s" % (media_type, file_uri))
 
         if self.i_am_paused:
             self.log.warning("** %s ** %s is paused. play_media() request rejected!" % (self.skill_control.skill_id,from_skill_id))
@@ -264,6 +265,7 @@ class SimpleVoiceAssistant:
                     'session_id':self.media_player_session_id,
                     'skill_id':'media_player_service',
                     'from_skill_id':from_skill_id,
+                    'media_type':media_type,
                     'delete_on_complete':delete_on_complete
                     }
             self.bus.send(MSG_MEDIA, 'media_player_service', info)
@@ -272,6 +274,7 @@ class SimpleVoiceAssistant:
         # else we need to acquire a media session
         # BUG - these probably need to be stacked !!!
         self.file_uri = file_uri
+        self.media_type = media_type
         self.delete_on_complete = delete_on_complete
 
         self.focus_mode = 'media'
@@ -426,6 +429,7 @@ class SimpleVoiceAssistant:
                             'session_id':self.media_player_session_id,
                             'skill_id':'media_player_service',
                             'from_skill_id':self.skill_control.skill_id,
+                            'media_type':self.media_type,
                             'delete_on_complete':self.delete_on_complete
                             }
                     self.bus.send(MSG_MEDIA, 'media_player_service', info)
@@ -523,8 +527,9 @@ class SimpleVoiceAssistant:
                     # invoke user callback
                     try:
                         self.stop(msg)
-                    except:
-                        self.log.error("Exception trying to invoke skill call back for skill = %s" % (self.skill_control.skill_id,))
+                    except Exception as e:
+                        self.log.error("SVA_BASE:Exception trying to invoke skill call back for skill = %s" % (self.skill_control.skill_id,))
+                        self.log.error(e)
                 else:
                     selg.log.error("[%s]SVA_BASE stop received but no stop method!" %(self.skill_control.skill_id,))
 

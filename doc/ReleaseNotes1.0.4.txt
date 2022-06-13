@@ -1,0 +1,15 @@
+
+
+1) Cleanup up documentation
+
+2) Cleaned up example 1 skill
+
+3) Added support for streams to media player
+
+4) Added RadioFreeMycroft music type skill
+
+5) Changed start file to not start youtube skill for now
+Note if both were going to coexist the confidence level
+will need to be fixed as both always return 0 or 100
+
+ 

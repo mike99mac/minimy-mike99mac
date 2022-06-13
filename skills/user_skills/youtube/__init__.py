@@ -5,6 +5,8 @@ from framework.message_types import MSG_MEDIA
 
 media_verbs = ['play', 'watch', 'listen']
 
+#### TODO convert to use ytdl and provide stream_ytdl in m,edia_play command!!!
+
 class YouTubeSkill(MediaSkill):
 
     def __init__(self, bus=None, timeout=5):
@@ -54,6 +56,8 @@ class YouTubeSkill(MediaSkill):
         sentence = msg.data['skill_data']['sentence']
         url = msg.data['skill_data']['url']
         cmd = "pytube https://www.youtube.com/watch?v=%s" % (url,)
+        # BUG USE youtube-dl -o - "https://www.youtube.com/watch?v=1RZJ4ESU52U" | cvlc --no-video -
+        # and don't do it here, fix media player!!!!
         os.system(cmd)
 
         self.log.debug("Converting from mp4 to mp3")

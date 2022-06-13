@@ -437,7 +437,7 @@ class AlarmSkill(SimpleVoiceAssistant):
         return False
 
 
-    def stop(self,msg):
+    def stop(self,msg=None):
         self.log.error("Do Nothing Alarm stop() hit !, alarm_active=%s, alarms=%s" % (self.alarm_active.active,self.alarms))
         self.alarm_active.active = False
         #self.send_release_message()

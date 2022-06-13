@@ -13,6 +13,20 @@ import yaml
 MAX_CHUNK_LEN = 15
 MIN_CHUNK_LEN = 5
 
+
+def get_hal_obj(which):
+    jobj = ''
+    fh = open("framework/hal/hal.cfg")
+    for line in fh.readlines():
+        if not line.startswith("#"):
+            jobj += line.strip()
+    fh.close()
+    hal_obj = json.loads(jobj)
+    if hal_obj is None:
+        return hal_obj
+    return hal_obj.get(which,None)
+
+
 class Config:
     # minimal yaml based config file support class
     # must coordinate this with mmconfig.py
