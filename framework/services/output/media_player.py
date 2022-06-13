@@ -69,7 +69,10 @@ class SVAMediaPlayerSkill:
                 if self.current_session.media_type == 'wav':
                     self.current.session.ce.send(' ')
                 else:
-                    self.current.session.ce.send('s')
+                    if self.current_session.media_type == 'mp3':
+                        self.current.session.ce.send('s')
+                    else:
+                        os.system("dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.vlc /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause")
         elif self.state == 'idle':
             if len(self.paused_sessions) > 0:
                 self.log.debug("MediaPlayer was idle but I have paused sessions to restart")
@@ -79,7 +82,10 @@ class SVAMediaPlayerSkill:
                     if self.current_session.media_type == 'wav':
                         self.current_session.ce.send(' ')
                     else:
-                        self.current_session.ce.send('s')
+                        if self.current_session.media_type == 'mp3':
+                            self.current_session.ce.send('s')
+                        else:
+                            os.system("dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.vlc /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause")
                 self.state = 'resumed'
         else:
             self.log.debug("Resume Ignored - state = %s" % (self.state,))
@@ -92,6 +98,21 @@ class SVAMediaPlayerSkill:
         for mentry in local_q:
             self.log.error("BUG! ClearQ must deal with this file:%s" % (mentry['file_uri'],))
         self.current_session.media_queue = []
+
+
+    def reset_session(self,msg):
+        self.log.error("XXXXXXXXXXXXXXXXXXXX MEDIA CHANNEL NEW RESET SESSION !")
+        self.resume(msg)
+        time.sleep(0.01)
+        if self.current_session.ce.proc is not None:
+            try:
+                self.current_session.ce.kill()
+            except:
+                self.log.warning("Exception in media player killing existing proc")
+        else:
+            self.log.debug("MediaPlayer:stop_session(): no currently executing command!")
+
+        self.clear_q(msg)
 
 
     def play_file(self,msg):
@@ -161,6 +182,8 @@ class SVAMediaPlayerSkill:
                 'skill_id':target,
                 'from_skill_id':'media_player_service',
                 }
+        self.log.error("XXXXXXXXXXXXXXXXXXX media_player! sending session is paused! %s" % (info,))
+
         return self.send_message(target, info)
 
 
@@ -258,6 +281,7 @@ class SVAMediaPlayerSkill:
 
     def handle_message(self,msg):
         data = msg.data
+        self.log.error("MEDIA OUTPUT CHANNEL SERVICE data is %s" % (data,))
         if data['subtype'] == 'media_player_command':
             command = data['command']
             if command == 'play_media':
@@ -272,6 +296,8 @@ class SVAMediaPlayerSkill:
                 return self.start_session(msg)
             elif command == 'stop_session':
                 return self.stop_session(msg)
+            elif command == 'reset_session':
+                return self.reset_session(msg)
             else:
                 self.log.debug("MediaPlayer - Unrecognized command = %s" % (command,))
 
@@ -290,8 +316,13 @@ class SVAMediaPlayerSkill:
                     self.current_session.ce.send(' ')
                     self.log.info("MediaPlayer Paused WAV playback")
                 else:
-                    self.log.info("MediaPlayer Paused MP3 playback")
-                    self.current_session.ce.send('s')
+                    if self.current_session.media_type == 'mp3':
+                        self.log.info("MediaPlayer Paused MP3 playback")
+                        self.current_session.ce.send('s')
+                    else:
+                        self.log.info("MediaPlayer Paused vlc stream playback")
+                        os.system("dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.vlc /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause")
+
                 time.sleep(0.001)  # give ce a chance
 
             # push media entry onto paused stack

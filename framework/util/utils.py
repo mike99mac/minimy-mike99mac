@@ -619,15 +619,21 @@ if __name__ == '__main__':
 
     # example async
     print("Start asynchronous")
-    ce = CommandExecutor('aplay -i /home/ken/Desktop/lincoln.wav')
+    #ce = CommandExecutor('aplay -i /home/ken/Desktop/lincoln.wav')
+    ce = CommandExecutor("cvlc --global-key-play-pause='s' https://walmradio.com:8443/jazz")
+
+    time.sleep(3)
 
     print("Pause")
-    ce.send(' ')
+    #ce.send('s')
+    os.system("dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.vlc /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause")
+    print("Paused ...")
 
-    time.sleep(1)
+    time.sleep(3)
 
     print("Resume")
-    ce.send(' ')
+    #ce.send('s')
+    os.system("dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.vlc /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause")
 
     time.sleep(5)
     print("Kill")

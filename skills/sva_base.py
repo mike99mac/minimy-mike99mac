@@ -244,12 +244,22 @@ class SimpleVoiceAssistant:
         # try to acquire a media player session and play a media file
         from_skill_id = self.skill_control.skill_id
         from_skill_category = self.skill_control.category
-        self.log.error("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX WTFWTFWTF ---> sva_base:play_media(): media_type=%s, file_uri=%s" % (media_type, file_uri))
 
         if self.i_am_paused:
-            self.log.warning("** %s ** %s is paused. play_media() request rejected!" % (self.skill_control.skill_id,from_skill_id))
-            # TODO technically i should be able to continue feeding my media session while paused!
-            return False
+            if self.media_player_session_id:
+                self.log.error("XXXXXXXXXXXXXXXXXXXXXXX NEW LOGIC! ** %s ** %s is paused. play_media() request while paused !!!!!!!!" % (self.skill_control.skill_id,from_skill_id))
+                # send clear q
+                info = {
+                    'error':'',
+                    'subtype':'media_player_command',
+                    'command':'reset_session',
+                    'session_id':self.media_player_session_id,
+                    'skill_id':'media_player_service',
+                    'from_skill_id':from_skill_id
+                    }
+                self.bus.send(MSG_MEDIA, 'media_player_service', info)
+                self.i_am_paused = False
+                time.sleep(0.1)
 
         if self.media_player_session_id != 0:
             self.log.warning("** %s ** %s already has an active media session id=%s. play_media() reusing it" % (self.skill_control.skill_id,from_skill_id,self.media_player_session_id))
@@ -291,6 +301,41 @@ class SimpleVoiceAssistant:
 
     def speak(self, text, wait_callback=None):
         # send the text to the tts service
+        if self.i_am_paused:
+            if self.tts_service_session_id != 0:
+
+                self.log.error("XXXXXXXXXXXXXXXXXXXXX NEW SCENARIO - asked to speak with paused TTS session send reset !!!!!!!!!!!!")
+                info = {
+                        'error':'',
+                        'subtype':'tts_service_command',
+                        'command':'reset_session',
+                        'session_id':self.tts_service_session_id,
+                        'skill_id':'tts_service',
+                        'from_skill_id':self.skill_control.skill_id,
+                        }
+                self.send_message('tts_service', info)
+
+                time.sleep(0.1)
+
+                self.log.error("XXXXXXXXXXXXXXXXXXXXX NEW SCENARIO - asked to speak with paused TTS session sending resume !!!!!!!!!!!!")
+                info = {
+                        'error':'',
+                        'subtype':'tts_service_command',
+                        'command':'resume_session',
+                        'session_id':self.tts_service_session_id,
+                        'skill_id':'tts_service',
+                        'from_skill_id':self.skill_control.skill_id,
+                        }
+                self.send_message('tts_service', info)
+                time.sleep(0.1)
+
+                self.log.error("XXXXXXXXXXXXXXXXXXXXX NEW SCENARIO - asked to speak with paused TTS session sending speak !!!!!!!!!!!!")
+                info = {'text': text,'skill_id':self.skill_control.skill_id}
+                self.bus.send(MSG_SPEAK, 'tts_service', info)
+
+                self.i_am_paused = False
+                return True
+
         self.focus_mode = 'speech'
         self.text = text
         info = {
@@ -416,6 +461,16 @@ class SimpleVoiceAssistant:
                 if self.media_session_response == 'session_ended':
                     self.send_release_output_focus()
 
+                elif self.media_session_response == 'session_paused':
+                    self.log.error("XXXXXXXXXXXXXXXXXXXXXX SVA BASE GOT MEDIA PAUSED MSG")
+                    info = {
+                            'error':'',
+                            'subtype':'pause_confirmed',
+                            'skill_id':'system_skill',
+                            'from_skill_id':self.skill_control.skill_id,
+                            }
+                    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+
                 elif self.media_session_response == 'session_confirm':
                     self.media_player_session_id = msg.data['session_id']
                     # otherwise we are good to go
@@ -486,7 +541,7 @@ class SimpleVoiceAssistant:
 
     def handle_media_msg(self,msg):
         if msg.data['skill_id'] == self.skill_control.skill_id:
-            self.log.debug("SVA_BASE: media msg = %s" % (msg,))
+            self.log.error("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX SVA_BASE: media msg = %s" % (msg,))
             if self.handle_message is not None:
                 self.handle_message(msg)
 
@@ -521,6 +576,7 @@ class SimpleVoiceAssistant:
                             'from_skill_id':self.skill_control.skill_id,
                             }
                     self.media_player_session_id = 0
+                    self.log.error("WTFWTFWTFWTFWTFWTFWTF stop hit for skill:%s, sending stop cmd to media player!" % (self.skill_control.skill_id,))
                     self.bus.send(MSG_MEDIA, 'media_player_service', info)
 
                 if self.stop:
@@ -579,6 +635,7 @@ class SimpleVoiceAssistant:
                             'from_skill_id':self.skill_control.skill_id,
                             }
                     self.bus.send(MSG_MEDIA, 'media_player_service', info)
+                    self.i_am_paused = True
 
                 # pause any active tts sessions
                 if self.tts_service_session_id != 0:
@@ -591,6 +648,7 @@ class SimpleVoiceAssistant:
                             'from_skill_id':self.skill_control.skill_id,
                             }
                     self.send_message('tts_service', info)
+                    self.i_am_paused = True
 
             if msg.data['subtype'] == 'resume':
                 # resume any active media sessions
@@ -604,6 +662,7 @@ class SimpleVoiceAssistant:
                             'from_skill_id':self.skill_control.skill_id,
                             }
                     self.bus.send(MSG_MEDIA, 'media_player_service', info)
+                    self.i_am_paused = False
 
                 # resume any active tts sessions
                 if self.tts_service_session_id != 0:
@@ -616,6 +675,7 @@ class SimpleVoiceAssistant:
                             'from_skill_id':self.skill_control.skill_id,
                             }
                     self.send_message('tts_service', info)
+                    self.i_am_paused = False
 
 
             # honor any registered message handlers

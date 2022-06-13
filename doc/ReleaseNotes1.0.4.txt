@@ -1,6 +1,6 @@
 
 
-1) Cleanup up documentation
+1) Cleaned up documentation
 
 2) Cleaned up example 1 skill
 
@@ -12,4 +12,13 @@
 Note if both were going to coexist the confidence level
 will need to be fixed as both always return 0 or 100
 
- 
+6) Finally fixed pause from user
+BUT see tts.py - the very bottom. there is an issue here
+and this should not be working this way. you should be 
+able to call handle_event not call the handler directly
+like it is currently working.
+TODO: Fix this !!! 
+
+7) Also, note in the future music skill needs to be 
+altered to use the ytdownload to cvlc aproach rather
+than the pytube module 
