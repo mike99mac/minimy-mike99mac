@@ -56,7 +56,12 @@ class SVAMediaPlayerSkill:
             # send signal to run()
             self.state = 'paused'
         else:
-            self.log.debug("Pause Ignored - state = %s" % (self.state,))
+            self.log.error("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ Pause but not playing - state = %s" % (self.state,))
+            # must ack pause request or other events won't trigger
+            if len(self.paused_sessions) > 0:
+                tmp = self.paused_sessions[len(self.paused_sessions) - 1]
+                self.send_session_paused(tmp.session_id, tmp.owner)
+                self.log.error("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ Pause but not playing - sent pause confirmed anyway for sid:%s, owner:%s" % (tmp.session_id, tmp.owner))
 
 
     def resume(self,msg):

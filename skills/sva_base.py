@@ -546,6 +546,34 @@ class SimpleVoiceAssistant:
                 self.handle_message(msg)
 
 
+    def pause_sessions(self):
+        # pause any active media sessions
+        if self.media_player_session_id != 0:
+            info = {
+                    'error':'',
+                    'subtype':'media_player_command',
+                    'command':'pause_session',
+                    'session_id':self.media_player_session_id,
+                    'skill_id':'media_player_service',
+                    'from_skill_id':self.skill_control.skill_id,
+                    }
+            self.bus.send(MSG_MEDIA, 'media_player_service', info)
+            self.i_am_paused = True
+
+        # pause any active tts sessions
+        if self.tts_service_session_id != 0:
+            info = {
+                    'error':'',
+                    'subtype':'tts_service_command',
+                    'command':'pause_session',
+                    'session_id':self.tts_service_session_id,
+                    'skill_id':'tts_service',
+                    'from_skill_id':self.skill_control.skill_id,
+                    }
+            self.send_message('tts_service', info)
+            self.i_am_paused = True
+
+
     def handle_system_msg(self,msg):
         if msg.data['skill_id'] == self.skill_control.skill_id:
             self.log.debug("SVA_BASE: system msg = %s" % (msg,))
@@ -578,6 +606,7 @@ class SimpleVoiceAssistant:
                     self.media_player_session_id = 0
                     self.log.error("WTFWTFWTFWTFWTFWTFWTF stop hit for skill:%s, sending stop cmd to media player!" % (self.skill_control.skill_id,))
                     self.bus.send(MSG_MEDIA, 'media_player_service', info)
+                    self.i_am_paused = False
 
                 if self.stop:
                     # invoke user callback
@@ -624,31 +653,14 @@ class SimpleVoiceAssistant:
                     self.log.warning("[%s] Cant acquire output focus!" % (self.skill_control.skill_id,))
 
             if msg.data['subtype'] == 'pause':
-                # pause any active media sessions
-                if self.media_player_session_id != 0:
-                    info = {
-                            'error':'',
-                            'subtype':'media_player_command',
-                            'command':'pause_session',
-                            'session_id':self.media_player_session_id,
-                            'skill_id':'media_player_service',
-                            'from_skill_id':self.skill_control.skill_id,
-                            }
-                    self.bus.send(MSG_MEDIA, 'media_player_service', info)
-                    self.i_am_paused = True
+                if self.i_am_paused:
+                    self.log.error("XXXXXXXXXXXXXXXXXXXXXX IGNORE PAUSE BECAUSE ALREADY PAUSED!!!!!")
+                    return
+                return self.pause_sessions()
 
-                # pause any active tts sessions
-                if self.tts_service_session_id != 0:
-                    info = {
-                            'error':'',
-                            'subtype':'tts_service_command',
-                            'command':'pause_session',
-                            'session_id':self.tts_service_session_id,
-                            'skill_id':'tts_service',
-                            'from_skill_id':self.skill_control.skill_id,
-                            }
-                    self.send_message('tts_service', info)
-                    self.i_am_paused = True
+            if msg.data['subtype'] == 'pause_internal':
+                self.log.error("XXXXXXXXXXXXXXXXXXXXXX ALREADY PAUSED BUT CANT IGNORE INTERNAL PAUSE !!!!")
+                return self.pause_sessions()
 
             if msg.data['subtype'] == 'resume':
                 # resume any active media sessions
