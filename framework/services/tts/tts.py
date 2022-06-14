@@ -251,7 +251,6 @@ class TTSEngine:
 
     def _paused_reset(self, msg):
         # clear tts session
-        self.log.error("\nXXXXXXXXXXXXXXXXXX STATE=PAUSED EVENT=RESET, must ask session to reset here!\n")
         self.current_session.handle_event(SESSION_EVENT_RESUME, msg)
         self.current_session.session_data = []
         self.current_session.index = 0
@@ -432,7 +431,7 @@ class TTSEngine:
         self.log.info("TTS Engine Initialized")
 
     def handle_speak_msg(self, msg):
-        self.log.error("TTS Engine speak msg = %s" % (msg.data,))
+        self.log.debug("TTS Engine speak msg = %s" % (msg.data,))
         self.handle_event(EVENT_SPEAK, msg.data)
 
     def handle_skill_msg(self,msg):
@@ -453,7 +452,7 @@ class TTSEngine:
                 if data['command'] == 'resume_session':
                     return self.handle_event(EVENT_RESUME, data)
                 if data['command'] == 'reset_session':
-                    #self.log.error("XXXXXXXXXXXXXXXXXX TTS ENG NEW RESET HIT!")
+                    #self.log.error("TTS ENG NEW RESET HIT!")
                     # TODO - it is disturbing that the direct call works but the handle_event call does not!!!!
                     # fix it!
                     #return self.handle_event(EVENT_RESET, data)

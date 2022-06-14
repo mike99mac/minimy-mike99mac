@@ -1,5 +1,33 @@
 
+Overview
+--------
+First release that gets down to a gnat's ass on how a voice 
+assistant framework should behave. Beyond the normal system
+skill based logic, there is also the following edge cases 
+that were addressed ....
 
+A) What does it mean to be paused (for a skill)
+B) What if I am paused playing media and I am asked
+to play media? Answer stop paused media and go active playing
+new media. Same goes for TTS. If a wiki answer is paused and
+you ask wiki another question, the old tts session will be
+cancelled and the new one will take over. Note this is not so
+for an active wiki answer - in that case the tts sessions are
+stacked so you can interrupt yourself. The typical use case
+for this would be 
+
+play down on main street
+wiki who is Bob Seeger
+wiki who was in the silver bullet band
+
+and it would answer the silver bullet band 
+when done (or stopped) it would resume with
+the answer who is bob seeger and finally should
+return to playing the song. 
+
+
+Code Changes
+------------
 1) Cleaned up documentation
 
 2) Cleaned up example 1 skill
@@ -21,4 +49,9 @@ TODO: Fix this !!!
 
 7) Also, note in the future music skill needs to be 
 altered to use the ytdownload to cvlc aproach rather
-than the pytube module 
+than the pytube module and then you need to handle
+intent clash between the radio and music (media skills)
+which should be done by the common play calculate 
+confidence base class method.
+
+

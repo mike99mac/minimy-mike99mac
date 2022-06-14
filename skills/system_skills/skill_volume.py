@@ -22,8 +22,6 @@ class VolumeSkill(SimpleVoiceAssistant):
         # workaround until we fix the config file to hold the actual module name
         cfg_platform = cfg.get_cfg_val('Advanced.Platform')
 
-        self.log.error("XXXXXXXXXXXXXXXXXXXXX VOLUME SKILL - cfg platform = %s" % (cfg_platform,))
-
         if cfg_platform == 'u':
             from framework.hal.executables.ubuntu import Platform
         elif cfg_platform == 'p':
@@ -142,7 +140,7 @@ class VolumeSkill(SimpleVoiceAssistant):
 
     def handle_message(self, message):
         # we also handle volume mute and volume unmute messages
-        self.log.error("VolumeSkill got a message --->%s" % (message.data,))
+        self.log.debug("VolumeSkill got a message --->%s" % (message.data,))
         data = message.data
         if data['subtype'] == 'mute_volume':
             self.handle_mute(None)
@@ -200,12 +198,8 @@ class VolumeSkill(SimpleVoiceAssistant):
         self.set_volume(self.volume_level)
 
     def stop(self,msg=None):
-        self.log.error("Volume skill stop() method called WITH message %s" % (msg,))
+        self.log.debug("Volume skill stop() method called WITH message %s" % (msg,))
 
-    """
-    def stop(self):
-        self.log.error("Volume skill stop() method called with NO message")
-    """
 
 if __name__ == '__main__':
     vs = VolumeSkill()

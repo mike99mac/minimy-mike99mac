@@ -70,7 +70,7 @@ class SystemSkill(SimpleVoiceAssistant):
 
 
     def send_pause(self, target_skill):
-        self.log.error("SysSkill: Pausing skill %s reason = %s" % (target_skill,self.pause_reason))
+        self.log.debug("SysSkill: Pausing skill %s reason = %s" % (target_skill,self.pause_reason))
         subtype = 'pause'
         if self.pause_reason == INTERNAL_PAUSE:
             subtype = 'pause_internal'
@@ -333,7 +333,7 @@ class SystemSkill(SimpleVoiceAssistant):
                     else:
                         self.active_skills.append( {'skill_id':self.pause_requestor, 'skill_category':self.pause_requesting_skill_category} )
                         self.log.warning("SysSkill: Warning skill already active %s. Positive response sent anyway. %s" % (self.pause_requestor,self.active_skills))
-                    self.log.error("SysSkill: INTERNAL PAUSE")
+                    self.log.debug("SysSkill: INTERNAL PAUSE")
                     self.pause_reason = INTERNAL_PAUSE
                     self.send_pause(last_active_skill_id)
                     return 

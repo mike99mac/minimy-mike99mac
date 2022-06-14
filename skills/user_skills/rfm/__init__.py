@@ -20,7 +20,7 @@ class RadioFreeMycroftSkill(MediaSkill):
         self.blacklist = [
                 "icecast",
                 ]
-        self.log.error("** Radio Free Mycroft skill initialized, skill base dir is %s" % (self.skill_base_dir,))
+        self.log.debug("** Radio Free Mycroft skill initialized, skill base dir is %s" % (self.skill_base_dir,))
 
 
     def domain_is_unique(self, stream_uri, stations):
@@ -74,14 +74,13 @@ class RadioFreeMycroftSkill(MediaSkill):
 
 
     def play(self, uri):
-        self.log.error("Radio Free Mycroft, play() hit")
         self.play_media(uri, False, 'stream_vlc')
 
 
     def get_media_confidence(self,msg):
         # I am being asked if I can handle this request
         sentence = msg.data['msg_sentence']
-        self.log.error("\nrfm handle query sentence=%s" % (sentence,))
+        self.log.debug("\nrfm handle query sentence=%s" % (sentence,))
         sa = sentence.split(" ")
         vrb = sa[0].lower()
         if vrb in media_verbs:
@@ -105,19 +104,19 @@ class RadioFreeMycroftSkill(MediaSkill):
     def media_play(self,msg):
         # I am being asked to play this media
         data = msg.data['skill_data']
-        self.log.error("\nrfm media play = %s" % (data,))
+        self.log.debug("\nrfm media play = %s" % (data,))
         sentence = data.get('sentence','')
         stream_uri = data.get('url','')
-        self.log.error("\n** rfm playing %s from %s" % (sentence, stream_uri))
-        #self.play(stream_uri)
+        self.log.debug("\n** rfm playing %s from %s" % (sentence, stream_uri))
         self.play_media(stream_uri, False, 'stream_vlc')
 
 
-
     def stop(self, msg):
-        self.log.error("Radio Free Mycroft, stop() hit. killall vlc")
+        self.log.debug("Radio Free Mycroft, stop() hit. killall vlc")
+        """
         cmd = "killall cvlc"
         os.system(cmd)
+        """
 
 
 if __name__ == '__main__':

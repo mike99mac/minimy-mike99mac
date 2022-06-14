@@ -56,12 +56,10 @@ class SVAMediaPlayerSkill:
             # send signal to run()
             self.state = 'paused'
         else:
-            self.log.error("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ Pause but not playing - state = %s" % (self.state,))
             # must ack pause request or other events won't trigger
             if len(self.paused_sessions) > 0:
                 tmp = self.paused_sessions[len(self.paused_sessions) - 1]
                 self.send_session_paused(tmp.session_id, tmp.owner)
-                self.log.error("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ Pause but not playing - sent pause confirmed anyway for sid:%s, owner:%s" % (tmp.session_id, tmp.owner))
 
 
     def resume(self,msg):
@@ -78,6 +76,10 @@ class SVAMediaPlayerSkill:
                         self.current.session.ce.send('s')
                     else:
                         os.system("dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.vlc /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause")
+            else:
+                self.log.error("MediaPlayer BUG????? resume but no session.ce.proc!!!!!")
+                pass
+
         elif self.state == 'idle':
             if len(self.paused_sessions) > 0:
                 self.log.debug("MediaPlayer was idle but I have paused sessions to restart")
@@ -106,18 +108,20 @@ class SVAMediaPlayerSkill:
 
 
     def reset_session(self,msg):
-        self.log.error("XXXXXXXXXXXXXXXXXXXX MEDIA CHANNEL NEW RESET SESSION !")
-        self.resume(msg)
-        time.sleep(0.01)
+        if not self.current_session:
+            self.resume(msg)
+            time.sleep(0.01)
+
         if self.current_session.ce.proc is not None:
             try:
                 self.current_session.ce.kill()
             except:
                 self.log.warning("Exception in media player killing existing proc")
         else:
-            self.log.debug("MediaPlayer:stop_session(): no currently executing command!")
+            self.log.error("MediaPlayer:reset_session(): no currently executing command!")
 
         self.clear_q(msg)
+        return self.play_file(msg)
 
 
     def play_file(self,msg):
@@ -187,8 +191,6 @@ class SVAMediaPlayerSkill:
                 'skill_id':target,
                 'from_skill_id':'media_player_service',
                 }
-        self.log.error("XXXXXXXXXXXXXXXXXXX media_player! sending session is paused! %s" % (info,))
-
         return self.send_message(target, info)
 
 
@@ -205,15 +207,91 @@ class SVAMediaPlayerSkill:
         return self.send_message(msg.data['from_skill_id'], info)
 
 
+    def get_paused_session(self,paused_sid):
+        for session in self.paused_sessions:
+            if session.session_id == paused_sid:
+                return session
+        return None
+
+    def remove_paused_entry(self,paused_entry):
+        tmp_paused_sessions = []
+        for session in self.paused_sessions:
+            if session.session_id != paused_entry.session_id:
+                tmp_paused_sessions.append(session)
+
+        self.paused_sessions = tmp_paused_sessions
+
+    def cancel_session(self,msg):
+        # could be paused or active
+        cancel_sid = msg.data['session_id']
+
+        if self.current_session and self.current_session.session_id == cancel_sid:
+            if self.current_session.session_id == cancel_sid:
+                if self.current_session.ce.proc is not None:
+                    try:
+                        self.current_session.ce.kill()
+                    except:
+                        self.log.warning("Exception in media player killing wav play")
+                else:
+                    self.log.warning("MediaPlayer:cancel_session(): no currently executing command!")
+
+            self.current_session.owner = None
+            self.log.info("MediaPlayer cancel_session(), setting current_session.sid to 0, it was %s" % (self.current_session.session_id,))
+            self.current_session.session_id = 0
+            self.current_session.time_out_ctr = 0
+            return self.clear_q(msg)
+
+        else:
+            paused_session = self.get_paused_session(cancel_sid)
+            if not paused_session:
+                # cancel non existent media session ignored for now
+                return 
+
+            # otherwise we will need to remove it from the paused q
+            # after draining its q and stopping its process
+            local_q = paused_session.media_queue
+            for mentry in local_q:
+                self.log.error("BUG! ClearQ must deal with this file:%s" % (mentry['file_uri'],))
+            paused_session.media_queue = []
+
+            if paused_session.ce.proc is not None:
+                try:
+                    paused_session.ce.kill()
+                except:
+                    self.log.warning("Exception in media player killing paused session player")
+            else:
+                self.log.warning("MediaPlayer:cancel_session(): no currently executing command for paused session %s!" % (cancel_sid,))
+
+            self.remove_paused_entry(paused_session)
+
+
     def stop_session(self,msg):
-        # TODO may need special handling for cvlc!!!
         self.log.info("MediaPlayer: stop_session() state = %s, current sess id=%s, session_id to stop=%s, sessMediaType:%s" % (self.state,self.current_session.session_id,msg.data['session_id'], self.current_session.media_type))
 
         data = msg.data
+        sid_to_stop = data['session_id']
+        sid_owner = data['from_skill_id']
+
+        if self.current_session is None or self.current_session.session_id == 0:
+            # no current session to stop, maybe he means a paused session?
+            paused_session = self.get_paused_session(sid_to_stop)
+            if paused_session:
+                if paused_session.owner == sid_owner:
+                    # make it the current session
+                    self.current_session = paused_session
+                    self.remove_paused_entry(paused_session)
+                else:
+                    self.log.error("WTF session owner is %s but %s is asking to stop session!!!! Confused BUG!!!" % (paused_session_owner, sid_owner))
+            else:
+                # else session not active or paused maybe send a message
+                self.log.warning("MediaPlayer:stop_session() - cant find sid to stop = %s" % (sid_to_stop,))
+
         if data['from_skill_id'] != self.current_session.owner:
+            # if active session is not owned by peson requesting the stop
             sid = msg.data['session_id']
             target = data['from_skill_id']
-            self.log.warning("StopSession Ingored owner:%s, requester:%s, sending cancelled confirmation anyway for msid:%s." % (self.current_session.owner, target, sid))
+            self.log.warning("StopSession Ingored because owner not equal to requester. owner:%s, requester:%s, sending cancelled confirmation anyway for msid:%s." % (self.current_session.owner, target, sid))
+            # not sure if we want to send this or not
             info = {
                     'error':'',
                     'subtype':'media_player_command_response',
@@ -286,7 +364,7 @@ class SVAMediaPlayerSkill:
 
     def handle_message(self,msg):
         data = msg.data
-        self.log.error("MEDIA OUTPUT CHANNEL SERVICE data is %s" % (data,))
+        self.log.debug("MediaPlayer msg.data is %s" % (data,))
         if data['subtype'] == 'media_player_command':
             command = data['command']
             if command == 'play_media':
@@ -303,6 +381,8 @@ class SVAMediaPlayerSkill:
                 return self.stop_session(msg)
             elif command == 'reset_session':
                 return self.reset_session(msg)
+            elif command == 'cancel_session':
+                return self.cancel_session(msg)
             else:
                 self.log.debug("MediaPlayer - Unrecognized command = %s" % (command,))
 
