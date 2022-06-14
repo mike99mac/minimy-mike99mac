@@ -75,33 +75,49 @@ echo 'Start User Skills'
 cd skills/user_skills
 
 # TODO automate this
-cd youtube
+
+
+cd help
+echo 'Load Help Skill'
 python __init__.py $PWD &
 
+echo 'Loading RFM skill!'
+cd ../rfm
+python __init__.py $PWD &
+
+echo 'Warning! NOT loading youtube music skill!'
+#cd ../youtube
+#python __init__.py $PWD &
+
+echo 'Load Email Skill'
 cd ../email
 python __init__.py $PWD &
 
+echo 'Load Wiki Skill'
 cd ../wiki
 python __init__.py $PWD &
 
+echo 'Load TimeDate Skill'
 cd ../timedate
 python __init__.py $PWD &
 
+echo 'Load Example 1 Skill'
 cd ../example1
 python __init__.py $PWD &
 
+echo 'Load NPR News Skill'
 cd ../npr_news
 python __init__.py $PWD &
 
+echo 'Load Weather Skill'
 cd ../weather
 python __init__.py $PWD &
 
+echo 'Warning! NOT loading Home Assistant skill!'
 #cd ../ha_skill
 #python __init__.py $PWD &
 
-cd ../help
-python __init__.py $PWD &
-
+echo 'Load Connectivity Skill'
 cd ../connectivity
 python __init__.py $PWD &
 

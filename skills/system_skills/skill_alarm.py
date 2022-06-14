@@ -251,7 +251,7 @@ class AlarmSkill(SimpleVoiceAssistant):
         self.log.debug("add alarm to db. time:%s, name:%s" % (alarm_time, alarm_name))
         alarm_time = alarm_time.replace(second=0, microsecond=0)
         alarm_time = alarm_time.strftime("%Y-%m-%d %H:%M:%S")
-        self.log.error("alarm after adjustment ---> %s" % (alarm_time,))
+        self.log.debug("alarm after adjustment ---> %s" % (alarm_time,))
         if self.get_alarm_from_db(alarm_time):
             self.log.warning("Error - duplicate alarm %s" % (alarm_time,))
             return False
@@ -408,9 +408,8 @@ class AlarmSkill(SimpleVoiceAssistant):
 
         new_alarm_time = self.get_time(sentence)
 
-        self.log.error("XXXX Create Alarm, detect past, new_alarm_time:%s, now:%s" % (new_alarm_time, datetime.datetime.now(new_alarm_time.tzinfo)))
         if new_alarm_time <= datetime.datetime.now(new_alarm_time.tzinfo):
-            self.log.error("XXXX Create Alarm, new alarm is in the past!")
+            self.log.warning("Create Alarm, new alarm is in the past! Can not create!")
             self.speak("Can not create an alarm in the past")
             return False
 
@@ -437,14 +436,13 @@ class AlarmSkill(SimpleVoiceAssistant):
         return False
 
 
-    def stop(self,msg):
-        self.log.error("Do Nothing Alarm stop() hit !, alarm_active=%s, alarms=%s" % (self.alarm_active.active,self.alarms))
+    def stop(self,msg=None):
+        self.log.debug("Do Nothing Alarm stop() hit !, alarm_active=%s, alarms=%s" % (self.alarm_active.active,self.alarms))
         self.alarm_active.active = False
-        #self.send_release_message()
 
 
     def handle_stop(self, msg):
-        self.log.error("Alarm handle_stop() hit !, alarm_active=%s, sending release msg, alarms=%s" % (self.alarm_active.active,self.alarms))
+        self.log.debug("Alarm handle_stop() hit !, alarm_active=%s, sending release msg, alarms=%s" % (self.alarm_active.active,self.alarms))
         self.alarm_active.active = False
         self.send_release_message()
 

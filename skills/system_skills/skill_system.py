@@ -70,10 +70,14 @@ class SystemSkill(SimpleVoiceAssistant):
 
 
     def send_pause(self, target_skill):
-        self.log.debug("SysSkill: Pausing skill %s" % (target_skill,))
+        self.log.debug("SysSkill: Pausing skill %s reason = %s" % (target_skill,self.pause_reason))
+        subtype = 'pause'
+        if self.pause_reason == INTERNAL_PAUSE:
+            subtype = 'pause_internal'
+
         info = {
                 'error':'',
-                'subtype':'pause',
+                'subtype':subtype,
                 'skill_id':target_skill,
                 'from_skill_id':self.skill_id,
                 }

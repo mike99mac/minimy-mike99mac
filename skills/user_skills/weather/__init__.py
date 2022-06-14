@@ -150,10 +150,10 @@ class WeatherSkill(SimpleVoiceAssistant):
 
 
     def stop(self, msg):
-        self.log.error("Do nothing stop for weather skill with msg hit")
+        self.log.debug("Do nothing stop for weather skill with msg hit")
 
     def stop(self):
-        self.log.error("Do nothing stop for weather skill hit")
+        self.log.debug("Do nothing stop for weather skill hit")
 
 if __name__ == '__main__':
     ws = WeatherSkill()

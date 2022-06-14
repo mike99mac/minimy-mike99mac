@@ -197,11 +197,9 @@ class VolumeSkill(SimpleVoiceAssistant):
         self.log.debug("** handle_unmute() restoring volume is %s**" % (self.muted_volume,))
         self.set_volume(self.volume_level)
 
-    def stop(self,msg):
-        self.log.debug("Volume skill stop() method called WITH message")
+    def stop(self,msg=None):
+        self.log.debug("Volume skill stop() method called WITH message %s" % (msg,))
 
-    def stop(self):
-        self.log.debug("Volume skill stop() method called with NO message")
 
 if __name__ == '__main__':
     vs = VolumeSkill()

@@ -13,13 +13,27 @@ import yaml
 MAX_CHUNK_LEN = 15
 MIN_CHUNK_LEN = 5
 
+
+def get_hal_obj(which):
+    jobj = ''
+    fh = open("framework/hal/hal.cfg")
+    for line in fh.readlines():
+        if not line.startswith("#"):
+            jobj += line.strip()
+    fh.close()
+    hal_obj = json.loads(jobj)
+    if hal_obj is None:
+        return hal_obj
+    return hal_obj.get(which,None)
+
+
 class Config:
     # minimal yaml based config file support class
     # must coordinate this with mmconfig.py
     config_defaults = [
         {
         'Basic': {
-            'Version':'1.0.3',
+            'Version':'1.0.4',
             'BaseDir':'',
             'WakeWords': ['hey computer', 'computer'],
             'GoogleApiKeyPath' : 'install/my_google_key.json',
@@ -605,15 +619,21 @@ if __name__ == '__main__':
 
     # example async
     print("Start asynchronous")
-    ce = CommandExecutor('aplay -i /home/ken/Desktop/lincoln.wav')
+    #ce = CommandExecutor('aplay -i /home/ken/Desktop/lincoln.wav')
+    ce = CommandExecutor("cvlc --global-key-play-pause='s' https://walmradio.com:8443/jazz")
+
+    time.sleep(3)
 
     print("Pause")
-    ce.send(' ')
+    #ce.send('s')
+    os.system("dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.vlc /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause")
+    print("Paused ...")
 
-    time.sleep(1)
+    time.sleep(3)
 
     print("Resume")
-    ce.send(' ')
+    #ce.send('s')
+    os.system("dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.vlc /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause")
 
     time.sleep(5)
     print("Kill")

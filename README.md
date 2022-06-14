@@ -10,11 +10,7 @@ simply python programs which may do normal python
 things as well as call speak() and listen() and
 get called asynchronously when an utterance is
 matched to an intent the skill has previously
-registered. See the skill api document for more
-information on the skills built in functions.
-Once everything is running you can view the 
-system monitor page in the display/ directory
-to view the message bus in real time.
+registered.  
 
 <h2>Installation</h2>
 ./install/linux_install.sh
@@ -40,7 +36,7 @@ These must be run from the base directory.
 The base directory is defined as where you
 installed this code to. For example
 
-<br/><br/>
+<br/>
 /home/bubba/MiniMy
 
 <h2>General</h2>
@@ -51,14 +47,14 @@ space and use the message bus or file system
 to synchronize. Their output may be found in
 the directory named 'logs/'. 
 
-<br/><br/>
+<br/>
 The system relies on the environment variables
 SVA_BASE_DIR and GOOGLE_APPLICATION_CREDENTIALS.
 
-<br/><br/>
+<br/>
 These are typically set in the start.sh script.
 
-<br/><br/>
+<br/>
 The SVA_BASE_DIR is set to the install directory
 of your system. The Google variable is set
 based on where your Google Speech API key is
@@ -78,7 +74,7 @@ enviornment variable but as mentioned it is typically
 set in the start.sh script. You could, if you like,
 set it manually.
 
-<br/><br/>
+<br/>
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/my/key/key_filename.json
 
 <h2>Configuration Explained</h2>
@@ -165,22 +161,6 @@ before you run anything. The SVA_BASE_DIR and
 PYTHONPATH environments being set properly also
 helps.
 
-For example to test nlu run these commands ...
-
-<br/><b>
-source venv_ngv/bin/activate
-<br/>
-export PYTHONPATH=`pwd`
-<br/>
-export SVA_BASE_DIR=`pwd`
-<br/>
-export GOOGLE_APPLICATION_CREDENTIALS=$PWD/install/my-google-speech-key.json
-<br/>
-python framework/services/intent/nlp/shallow_parse/nlu.py
-</b><br/>
-
-
-<h2>Advanced</h2>
 You may also modify the default audio output device.
 This value is used by the system aplay command 
 and the system mpg123 command. To see your options 
