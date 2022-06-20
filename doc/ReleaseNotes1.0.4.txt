@@ -1,4 +1,6 @@
 
+Release Notes for MiniMy 1.0.4
+
 Overview
 --------
 First release that gets down to a gnat's ass on how a voice 
