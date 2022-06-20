@@ -1,7 +1,5 @@
 Voice Assistant Framework
 
-<img src="VoiceFramework.png">
-
 Components
 
 1) Message Bus
