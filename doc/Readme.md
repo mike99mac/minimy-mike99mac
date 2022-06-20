@@ -1,24 +1,24 @@
-Voice Assistant Framework
+<h1>Voice Assistant Framework</h1>
 
-Components
+<h2>Components</h2>
 
-1) Message Bus
+1) Message Bus<br/>
 The message bus is a combination WebSocket server and associated client
 library which provides direct targeted messaging and broadcast capabilities
 to WebSocket clients. Support for groups/targets is easily added. There
 already exists a 'carve out' for the system monitor.
 
-2) Input Channel (Mic)
+2) Input Channel (Mic)<br/>
 The Mic is a python process that monitors the input channel for silence.
 When a non null voice input is detected it writes a file with a timestamped
 name to a well known location.
 
-3) STT
+3) STT<br/>
 The STT service is a python process that monitors the Mic output directory
 and reads Mic output files in timestamped filename order and converts them
 to text file with a timestamped name to a well known location.
 
-4) Intent Service
+4) Intent Service<br/>
 The Intent service monitors the STT output directory and reads STT output
 files and attempts to match them against end-points which have previously
 registered with the intent service. The output of the intent service is a always
@@ -27,7 +27,7 @@ a message of either type RAW or WAKE WORD QUALIFIED. Qualified messages
 INTENT MATCHED or UNMATCHED in which case they are broadcast on the
 message bus.
 
-5) Output Channel (Media Service)
+5) Output Channel (Media Service)<br/>
 The media service responds to message bus requests. It provides the output
 channel and associated management in the form of media sessions. A typical
 media session request might be to play a file or media stream. The media
@@ -35,20 +35,20 @@ service never denies a new media session request, it simply stacks the
 sessions. This decision is made above at a higher level. The media service
 always ignores requests not originated by the current session owner.
 
-6) TTS Service
+6) TTS Service<br/>
 The TTS service responds to message bus requests to convert text to wav
 files. It is interruptible and manages multiple simultaneous requests using
 a unique sessionID. Like the media service, the TTS service never denies a
 request for a new session, it simply stacks them. It also ignores requests
 from anyone with an invalid session ID.
 
-7) System Skill
+7) System Skill<br/>
 The system skill manages the interaction of skills within the system.
 It handles focus requests and out of band (OOB) messaging necessary
 to provide a consistent response to system level input events. It is
 driven completely by the message bus.
 
-8) Skill Library
+8) Skill Library<br/>
 The skill library is a collection of intrinsic functions available to all
 skills which inherit from the base class. This includes such things as
 'speak()', 'get_user_input()', 'converse()' and other utilities which make
@@ -56,7 +56,7 @@ it easier to voice augment existing applications. The library is an
 extension of the base class and honors system level protocols for channel
 focus and related activities.
 
-9) Skills
+9) Skills<br/>
 Skills are Linux processes which interact with the system using the
 message bus. They augment existing applications by utilizing the voice
 assistant framework to convert text input and output to audio input
@@ -64,38 +64,37 @@ and output. Currently the system framework base class has only been
 ported to the Python programming language.
 
 
-Foundational Concepts
+<h2>Foundational Concepts</h2>
 
-A) Channels
+A) Channels<br/>
 Central to the framework is the concept of a channel. A channel may be
 either input or output based. For example, typically the Mic program  
 manages the input channel and the media player manages the output
 channel.
 
-B) Sessions
+B) Sessions<br/>
 A session is a unique ID created by the TTS service and the Media service.
 The service will only honor requests from the owner of the currently
 active session so for example if a skill which does not own the current
 session requests the media player to play a file it will be ignored.
 
-C) Focus
+C) Focus<br/>
 An audio channel is a critical resource in that only one source should be
 able to control it at a given point in time. Audio channel usage is serialized
 by skills requesting focus from the system skill.
 
-D) Activities
+D) Activities<br/>
 An activity is a well defined system level event which has a start and end
 time associated with it. Activities are user level contracts which help the
 system to determine the overall state of the system.
 
-A typical activity might
-be the 'speak' event triggered by a skill invoking its 'speak' method. This
-'speak' method includes not only the text to speak, but a callback method
-which the skill will have called when the speak activity has ended. The activity
-object passed to the skill will contain the results of the activity. For example
-'success', 'timed-out', 'rejected', etc.
+A typical activity might be the 'speak' event triggered by a skill invoking its 
+'speak' method. This 'speak' method includes not only the text to speak, but a 
+callback method which the skill will have called when the speak activity has ended. 
+The activity object passed to the skill will contain the results of the activity. 
+For example 'success', 'timed-out', 'rejected', etc.
 
-Theory of Operation
+<h2>Theory of Operation</h2>
 
 The framework is constructed around the concept of audio channels. An
 audio channel can be either an input or output channel. The system skill
@@ -188,7 +187,7 @@ a ‘session ended’ message to the TTS service which will need to acquire a ne
 it may resume streaming to the media service.   
 
 
-Advanced Topics
+<h2>Advanced Topics</h2>
 
 - Intent clash for media type is handled by Media Abstraction (old CPS)
 - Intent clash for question and answer type is handled by QnA Abstraction (old CQS)
@@ -197,9 +196,6 @@ Advanced Topics
 - Skill Self Interruption Modes (1=default/stack, 2=terminate, 3=ignore, etc)
 - Dynamic Intents (simple but currently not supported, related to like Dynamic OOB)
 - Intent Types (currently NLP/NLU what would it take to integrate regex, others)
-
-
-
 
 
 
