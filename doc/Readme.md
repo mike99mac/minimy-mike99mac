@@ -1,5 +1,7 @@
 <h1>Voice Assistant Framework</h1>
 
+![Voice Framework](VoiceFramework.png)
+
 <h2>Components</h2>
 
 1) Message Bus<br/>
