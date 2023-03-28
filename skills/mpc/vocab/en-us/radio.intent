@@ -1,0 +1,10 @@
+play (the|a|any|) radio (station|)
+play music (on the|on my|) radio
+play genre {genre} (on the|on my|) radio
+play station {station} (on the|on my|) radio
+play (the|) (radio|) station {station} 
+play (the radio|a radio station) (from|from country|from the country) {country}
+play (the|) radio (spoken|) (in|in language|in the language) {language}
+play (another|a different|next) (radio|) station
+play (a|an) {nationality} radio station
+(different|next) (radio|) station

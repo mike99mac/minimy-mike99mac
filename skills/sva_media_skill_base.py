@@ -12,10 +12,10 @@ class MediaSkill(SimpleVoiceAssistant):
         and media_play(). A media skill is called first to return the 
         confidence level it has regarding a media play request. If its 
         confidence is the highest it is later called to play that media. 
-        See the youtube skill for an example of a media skill.
         """
         super().__init__(msg_handler=self.handle_message, skill_id=skill_id, skill_category=skill_category)
-        time.sleep(1) # give fall back skill a chance to initialize
+        time.sleep(1)                      # give fall back skill a chance to initialize
+        self.log.debug("MediaSkill.__init__()")
 
         # register with the system media skill
         info = {
@@ -25,22 +25,21 @@ class MediaSkill(SimpleVoiceAssistant):
             }
         self.bus.send(MSG_SKILL, 'media_skill', info)
 
-
-    def handle_message(self,msg):
+    def handle_message(self, msg):
+        self.log.debug("MediaSkill.handle_message()")
         if msg.data['subtype'] == 'media_get_confidence':
             skill_data = self.get_media_confidence(msg)
             message = {'subtype':'media_confidence_response','skill_id':'media_skill', 'skill_data':skill_data}
             self.send_message('media_skill', message)
-
         if msg.data['subtype'] == 'media_play':
             self.media_play(msg)
-        pass
+#       pass
 
-    def get_media_confidence(self,msg):
-        print("Error - unimplemented method: get_media_confidence(self,msg)!")
-        pass
+#   def get_media_confidence(self,msg):
+#       print("Error - unimplemented method: get_media_confidence(self,msg)!")
+#       pass
 
-    def media_play(self,msg):
-        print("Error - unimplemented method: media_play(self,msg)!")
-        pass
+#   def media_play(self,msg):
+#       print("Error - unimplemented method: media_play(self,msg)!")
+#       pass
 
