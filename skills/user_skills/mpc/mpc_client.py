@@ -8,7 +8,6 @@ import csv
 from dataclasses import dataclass
 from enum import Enum
 import logging
-import mpv
 from music_info import Music_info
 from pathlib import Path
 import random
@@ -18,7 +17,6 @@ import re
 import subprocess
 from subprocess import run
 from typing import Union, Optional, List, Iterable
-# from ytmusicapi import YTMusic
 from youtube_search import YoutubeSearch
 
 class MpcClient():
@@ -57,7 +55,6 @@ class MpcClient():
     Turn mpc "single" off so player keeps playing music   
     Return: boolean
     """
-    # turn single play off so there is a queue 
     try:
       result = subprocess.check_output("/usr/bin/mpc single off", shell=True) 
     except subprocess.CalledProcessError as e:      
@@ -91,7 +88,7 @@ class MpcClient():
     cmd = "/usr/bin/mpc update"
     if wait:
       cmd.append("--wait")
-    self.log.info("mpc_update() running command: "+cmd)
+    self.log.debug("mpc_update() running command: "+cmd)
     subprocess.check_call(cmd)
 
   def start_music(self, music_info: Music_info):
@@ -99,8 +96,11 @@ class MpcClient():
     Start playing the music passed in the music_info object   
     Return: boolean
     """
-    # first check for 'next' or 'prev'
-    if music_info.match_type == "next" or music_info.match_type == "prev":
+    self.log.debug("MpcClient.start_music(): match_type = %s" % (music_info.match_type))
+    if music_info.match_type == "internet":
+      self.stream_internet_music(music_info)
+      return True
+    elif music_info.match_type == "next" or music_info.match_type == "prev":
       self.mpc_cmd(music_info.match_type)
       return True
 
@@ -267,7 +267,7 @@ class MpcClient():
     num_hits = len(results)
     self.log.debug("MpcClient.get_album() num_hits = " + str(num_hits))
     if num_hits == 0: 
-      self.log.debug("MpcClient.get_album() _get() did not find an album matching "+str(album_name))
+      self.log.debug("MpcClient.get_album() _get() did not find an album matching: "+str(album_name))
       mesg_info = {"album_name": album, "artist_name": artist}
       return Music_info("none", "music_not_found", mesg_info, [])
     tracks_or_urls = []                  # at least one hit
@@ -345,14 +345,14 @@ class MpcClient():
     if len(results) == 0:   
       self.log.debug("MpcClient.get_all_music() did not find any music")
       mesg_info = {"music_name": "all music"}
-      return Music_info("none", "music_not_found", mesg_info, [])
+      return Music_info("none", "music_not_found", mesg_info, None)
     random.shuffle(results)                # shuffle tracks
     results = results[0:self.max_queued]   # prune to max number of tracks
     num_hits = len(results)
     self.log.debug("MpcClient.get_all_music() num_hits = " + str(num_hits))
     mesg_info = {"num_hits": num_hits}
     ret_val = self.get_music_info("random", "playing_random", mesg_info, results)
-    self.mpc_cmd("repeat", "on")              # keep playing random tracks 
+    self.mpc_cmd("repeat", "on")           # keep playing random tracks 
     return ret_val
     
   def get_genre(self, genre_name):
@@ -363,7 +363,7 @@ class MpcClient():
     results = self.search_music("search", "genre", genre_name) 
     if len(results) == 0: 
       self.log.debug("MpcClient.get_genre() did not find a genre "+str(genre_name))
-      return Music_info("none", "genre_not_found", {"genre_name": genre_name}, [])
+      return Music_info("none", "genre_not_found", {"genre_name": genre_name}, None)
     random.shuffle(results)                # shuffle tracks found
     results = results[0:self.max_queued]   # prune to max number of tracks
     mesg_info = {"genre_name": genre_name}
@@ -390,14 +390,14 @@ class MpcClient():
     results = self.search_music("search", "title", track_name)    
     num_recs = len(results)
     if num_recs == 0:                    # no hits
-      self.log.debug("MpcClient.get_track(): did not find a track matching"+track_name)
+      self.log.debug("MpcClient.get_track(): did not find a track matching "+track_name)
       if artist_name == "unknown_artist":
         mesg_file = "track_not_found"
         mesg_info = {"track_name": track_name}
       else:
         mesg_file = "track_artist_not_found"
         mesg_info = {"track_name": track_name, "artist_name": artist_name}   
-      return Music_info("none", mesg_file, mesg_info, [])  
+      return Music_info("none", mesg_file, mesg_info, None)  
     
     # one or more hits
     exact_match = -1                     # no exact match yet
@@ -419,7 +419,7 @@ class MpcClient():
     if exact_match == -1:                # track and artist do not both match 
       if index > 0:                      # multiple hits
         num_hits = len(possible_files)
-        self.log.debug("MpcClient.get_track() no exact match but had "+num_hits+" hits")
+        self.log.debug("MpcClient.get_track() no exact match but had "+str(num_hits)+" hits")
         index = random.randrange(num_hits) # choose a random track 
         self.log.debug("MpcClient.get_track() random track index = "+str(index)) 
     tracks_or_urls.append(possible_files[index])
@@ -473,7 +473,7 @@ class MpcClient():
 
     # if we fall through, no music was found 
     self.log.debug("MpcClient.get_unknown_music(): did not find music matching "+music_name) 
-    return Music_info("none", "music_not_found", {"music_name": music_name}, None )
+    return Music_info("none", "music_not_found", {"music_name": music_name}, None)
     
   def get_music(self, intent, music_name, artist_name):
     """
@@ -964,27 +964,27 @@ class MpcClient():
     music_info = self.get_stations(search_name) 
     return music_info
      
-  def search_youtube(self, utterance):
+  def search_internet(self, utterance):
     """
-    Search for music on YouTube 
+    Search for music on the internet and if found, return all URLs in Music_info object 
     param:  search term
     Return: Music_info object 
     """
     mesg_file = "" 
     mesg_info = {}
     tracks_or_urls = []
-    self.log.debug("MpcClient.search_youtube() utterance: "+utterance)
+    self.log.debug("MpcClient.search_internet() utterance: "+utterance)
     phrase = utterance.split(' ', 1)[1]    # remove first word (always 'play'?)
     phrase = phrase.lower()                # fold to lower case
     phrase = phrase.replace('on youtube', '') # remove unnecessary words
     phrase = phrase.replace('in youtube', '')
     phrase = phrase.replace('from youtube', '')
-    self.log.debug("MpcClient.search_youtube() phrase: "+phrase)
+    self.log.debug("MpcClient.search_internet() phrase: "+phrase)
 
     results = YoutubeSearch(phrase, max_results=20).to_dict() # return a dictionary
     num_hits = len(results)
     if num_hits == 0:
-      self.log.info("MpcClient.search_youtube() did not find any YouTube music")
+      self.log.info("MpcClient.search_internet() did not find any music on the internet")
       mesg_file = "music_not_found"
       mesg_info = {"music_name": utterance}
     else:                                  # found music - queue it up
@@ -993,26 +993,27 @@ class MpcClient():
         suffix = next_track['url_suffix']
         next_url = "http://youtube.com"+suffix
         tracks_or_urls.append(next_url)
-        self.log.debug("MpcClient.search_youtube(): added url: "+next_url)
-    ret_val = Music_info("youtube", mesg_file, mesg_info, tracks_or_urls)
+        self.log.debug("MpcClient.search_internet(): added url: "+next_url)
+    ret_val = Music_info("internet", mesg_file, mesg_info, tracks_or_urls)
     return ret_val 
 
-  def stream_youtube(self, music_info):
+  def stream_internet_music(self, music_info):
     """
-    Stream music from YouTube using mpv 
+    Stream music from the Internet using mpc 
     param: Music_info object 
     """
-    self.log.debug("MpcClient.stream_youtube() streaming all tracks from YouTube")
-    # player = mpv.MPV(ytdl=True)
-    for next_url in music_info.tracks_or_urls:
-      self.log.debug("MpcClient.stream_youtube() streaming from YouTube URL "+next_url)
-      # player.play(next_url) 
-      # player.wait_for_playback()
-      cmd = "/usr/local/sbin/ytplay "+next_url
+    self.log.debug("MpcClient.stream_internet_music() streaming all tracks from the Internet")
+    for next_url in music_info.tracks_or_urls: # queue up tracks in mpc
+      self.log.debug("MpcClient.stream_internet_music() streaming from URL "+next_url)
+      cmd = "/usr/local/sbin/ytadd "+next_url # add URL to mpc queue
     try:
-      self.log.debug("MpcClient.stream_youtube(): running command: "+cmd)
+      self.log.debug("MpcClient.stream_internet_music(): running command: "+cmd)
       result = subprocess.check_output(cmd, shell=True)
-      self.log.debug("MpcClient.stream_youtube(): result: "+str(result))
+      self.log.debug("MpcClient.stream_internet_music(): result: "+str(result))
     except subprocess.CalledProcessError as e:
       self.mpc_rc = str(e.returncode)
 
+    # Now play the queued up tracks
+    if self.mpc_cmd("play") != True:
+        self.log.debug("MpcClient.start_music(): mpc_cmd(play) failed")
+        return False 

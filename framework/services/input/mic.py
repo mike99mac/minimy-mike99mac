@@ -13,7 +13,7 @@ script to read from mic and save utterances
 in the directory base_dir/tmp/save_audio/ as .wav files
 """
 DEFAULT_SAMPLE_RATE = 16000
-BARK = True
+BARK = False
 
 def log(msg):
     if BARK:

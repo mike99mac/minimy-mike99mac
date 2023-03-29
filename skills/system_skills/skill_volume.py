@@ -22,10 +22,10 @@ class VolumeSkill(SimpleVoiceAssistant):
         # workaround until we fix the config file to hold the actual module name
         cfg_platform = cfg.get_cfg_val('Advanced.Platform')
 
-        if cfg_platform == 'u':
-            from framework.hal.executables.ubuntu import Platform
-        elif cfg_platform == 'p':
+        if cfg_platform == 'p':
             from framework.hal.executables.pios import Platform
+        else:   
+            from framework.hal.executables.ubuntu import Platform
 
         self.hal = Platform(input_device_id, input_level_control_name, output_device_name, output_level_control_name)
 
