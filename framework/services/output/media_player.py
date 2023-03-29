@@ -287,7 +287,7 @@ class SVAMediaPlayerSkill:
             return self.send_message(target, info)
 
         else:
-            if self.current_session.ce.proc is not None:
+            if self.current_session.ce is not None:
                 if self.current_session.media_type == 'wav':
                     try:
                         self.current_session.ce.kill()
@@ -445,7 +445,7 @@ class SVAMediaPlayerSkill:
                 media_entry = self.current_session.media_queue[0]
                 file_uri = media_entry['file_uri']
                 media_type = media_entry['media_type']
-
+                self.log.debug("MediaPlayer:run() file_uri = %s media_type = %s" % (file_uri, media_type))
                 fa = file_uri.split(".")
                 file_ext = fa[len(fa) - 1]
 
