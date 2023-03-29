@@ -88,9 +88,11 @@ class MpcSkill(MediaSkill):
     """
     I am being asked to play some media
     """
-    self.log.debug("MpcSkill.media_play() play this media: %s" % (msg.data))
-    # sentence = msg.data['skill_data']['sentence']
-    self.mpc_client.start_music(self.music_info)
+    if [ self.music_info.tracks_or_urls == None ]:  # no music was found
+      self.log.debug("MpcSkill.media_play() no music found") 
+    else:
+      self.log.debug("MpcSkill.media_play() play this media: %s" % (msg.data))
+      self.mpc_client.start_music(self.music_info)
 
   def handle_prev(self, message):
     """
