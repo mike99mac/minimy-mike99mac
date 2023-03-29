@@ -12,6 +12,7 @@ from se_tts_session_methods import TTSSessionMethods
 class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
     def __init__(self, owner, tts_sid, msid, session_data, internal_event_callback, log):
         self.log = log
+        self.log.debug("TTSSession.__init__() owner = %s tts_sid = %s msid = %s" % (owner, tts_sid, msid))
         super(TTSSession, self).__init__()
         threading.Thread.__init__(self)
         self.skill_id = "tts_session"
@@ -48,8 +49,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
         remote_tts_flag = cfg.get_cfg_val('Advanced.TTS.UseRemote')
         if remote_tts_flag and remote_tts_flag == 'y':
             self.use_remote_tts = True
-            # we don't bother with fancy configs or modules
-            # this is your modular architecture right here
+            # we don't bother with fancy configs or modules - this is your modular architecture right here
             which_remote_tts = cfg.get_cfg_val('Advanced.TTS.Remote')
             #which_remote_tts = get_cfg_val('remote_tts_type')
             if which_remote_tts == 'm':
@@ -81,8 +81,8 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
         self.bus.on(MSG_SKILL, self.handle_skill_msg)
 
     def wait_paused(self, requestor):
-        # set up to handle pause responses from
-        # both local and remote processes
+        self.log.debug("TTSSession.wait_paused() requestor = %s" % requestor) 
+        # set up to handle pause responses from both local and remote processes
         self.internal_pause = False
         self.external_pause = False
         self.paused = True
@@ -93,7 +93,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
         self.pause_ack = True
 
     def play_file(self,filename):
-        self.log.debug("TTSSession play_file() state=%s, self.msid=%s, curr_sess.msid=%s, filename=%s" % (self.state, self.msid, self.msid, filename))
+        self.log.debug("TTSSession.play_file() state=%s, self.msid=%s, curr_sess.msid=%s, filename=%s" % (self.state, self.msid, self.msid, filename))
         if self.state == se_tts_constants.STATE_ACTIVE:
             if self.msid == 0:
                 self.log.info("TTSSession Warning, invalid session ID (0). Must reestablish media session!")
@@ -117,6 +117,8 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
             self.log.warning("Play file refusing to play because state is not active ---> %s" % (self.state,))
 
     def get_remote_tts(self, chunk):
+        self.log.debug("TTSSession.get_remote_tts() chunk = %s" % (chunk))
+
         # TODO these do not need to be instance variables 
         self.remote_filename = datetime.now().strftime("save_tts/remote_outfile_%Y-%m-%d_%H-%M-%S_%f.wav")
         self.remote_filename = "%s/%s" % (self.tmp_file_path, self.remote_filename)
@@ -163,20 +165,20 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
         return filename
 
     def send_media_session_request(self):
+        self.log.debug("TTSSession.send_media_session_request()") 
         info = {
-            'error':'',
-            'subtype':'media_player_command',
-            'command':'start_session',
-            'correlator':self.correlator,
-            'skill_id':'media_player_service',
-            'from_skill_id':self.skill_id
-            }
+                'error':'',
+                'subtype':'media_player_command',
+                'command':'start_session',
+                'correlator':self.correlator,
+                'skill_id':'media_player_service',
+                'from_skill_id':self.skill_id
+               }
         self.bus.send(MSG_MEDIA, 'media_player_service', info)
 
     def stop_media_session(self):
+        self.log.debug("TTSSession.stop_media_session() stopping media session!, state=%s, mpsid:%s" % (self.state, self.msid))
         self.paused = True
-        self.log.debug("TTSSession told to stop media session!, state=%s, mpsid:%s" % (self.state, self.msid))
-
         if self.msid != 0:
             info = {
                     'error':'',
@@ -186,7 +188,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
                     'session_id':self.msid,
                     'skill_id':'media_player_service',
                     'from_skill_id':self.skill_id,
-                    }
+                   }
             self.bus.send(MSG_MEDIA, 'media_player_service', info)
             self.msid = 0
         else:
@@ -197,6 +199,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
         self.index = 0
 
     def send_session_pause(self):
+        self.log.debug("TTSSession.send_session_pause()") 
         info = {
                 'error':'',
                 'subtype':'media_player_command',
@@ -209,6 +212,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
         self.bus.send(MSG_MEDIA, 'media_player_service', info)
 
     def send_session_resume(self):
+        self.log.debug("TTSSession.send_session_resume()") 
         info = {
                 'error':'',
                 'subtype':'media_player_command',
@@ -221,14 +225,17 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
         self.bus.send(MSG_MEDIA, 'media_player_service', info)
 
     def add(self, i):
+        self.log.debug("TTSSession.add()") 
         with self.lock:
             self.session_data.extend(i)
 
     def remove(self, i):
+        self.log.debug("TTSSession.remove()") 
         with self.lock:
             self.session_data.remove(i)
 
     def reset(self, owner):
+        self.log.debug("TTSSession.reset()") 
         with self.lock:
             self.owner = owner
             self.session_data = []
@@ -240,14 +247,14 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
             self.state = se_tts_constants.STATE_IDLE
 
     def run(self):
+        self.log.debug("TTSSession.run()") 
         while not self.exit_flag:
-            #print("TIC paused=%s, index=%s, data=%s" % (self.paused,self.index, self.session_data))
+            # self.log.debug("TTSSession.run() TIC paused=%s, index=%s, data=%s" % (self.paused,self.index, self.session_data))
             if self.pause_ack:
                 self.pause_ack = False
                 self.handle_event(se_tts_constants.EVENT_INTERNAL_PAUSE, {'tsid':self.tts_sid, 'msid':self.msid})
             if not self.paused:
-                if len(self.session_data) == self.index and self.index != 0:
-                    # End of q reached!
+                if len(self.session_data) == self.index and self.index != 0: # End of q reached!
                     self.index = 0
                     self.session_data = []
                     self.handle_event(se_tts_constants.INTERNAL_EVENT_ENDED, {'tsid':self.tts_sid, 'msid':self.msid})
@@ -261,40 +268,31 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
                             self.index += 1
             time.sleep(0.01)
 
-    def handle_skill_msg(self,msg):
+    def handle_skill_msg(self, msg):
+        self.log.debug("TTSSession.handle_skill_msg()") 
         data = msg.data
         msg_correlator = data.get("correlator","")
-
         if data['skill_id'] == self.skill_id:
-
             if data['subtype'] == 'media_player_command_response':
                 # these come to us from the media service
-
                 if self.correlator != self.tts_sid:
-                    self.log.debug("TTSSession Internal issue. self.cor [%s] <> self.curr_sess.tts_sid [%s]" % (self.correlator, self.tts_sid))
-
+                    self.log.debug("TTSSession.handle_skill_msg() Internal issue. self.cor [%s] <> self.curr_sess.tts_sid [%s]" % (self.correlator, self.tts_sid))
                 if self.correlator != msg_correlator:
-                    self.log.error("TTSSession correlators dont match! Ignoring message. self.cor[%s] <> msg.cor[%s]" % (self.correlator, msg_correlator))
+                    self.log.error("TTSSession.handle_skill_msg() correlators dont match! Ignoring message. self.cor[%s] <> msg.cor[%s]" % (self.correlator, msg_correlator))
                     return False
-
                 if msg.data['response'] == 'session_confirm':
                     self.handle_event(se_tts_constants.EVENT_MEDIA_CONFIRMED, data)
-
                 elif msg.data['response'] == 'session_reject':
                     self.handle_event(se_tts_constants.EVENT_MEDIA_DECLINED, data)
-
                 elif msg.data['response'] == 'session_paused':
                     self.handle_event(se_tts_constants.EVENT_MEDIA_PAUSED, data)
-
                 elif msg.data['response'] == 'session_ended':
                     if msg.data['reason'] == 'eof':
                         self.handle_event(se_tts_constants.EVENT_MEDIA_ENDED, data)
                     else:
                         self.handle_event(se_tts_constants.EVENT_MEDIA_CANCELLED, data)
-
                 elif msg.data['response'] == 'stop_session':
                     self.log.warning("TTSSession Creepy Internal Error 102 - the media player reported stop_session for no reason.")
-
                 else:
                     self.log.warning("TTSSession Creepy Internal Error 103 - unknown media response = %s" % (msg.data['response'],))
 

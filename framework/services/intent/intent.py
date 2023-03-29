@@ -220,7 +220,7 @@ class UttProc:
 
 
     def run(self):
-        self.log.info("Intent processor started - 'is_running' is %s" % (self.is_running,))
+        self.log.info("UttProc.run() Intent processor started - 'is_running' is %s" % (self.is_running,))
         si = SentenceInfo(self.base_dir)
 
         while self.is_running:
@@ -241,55 +241,48 @@ class UttProc:
                 start = contents.find("]")
                 utt_type = contents[1:start]
                 utt = contents[start+1:]
-
                 utt = scrub_sentence(utt)
 
                 # we special case OOBs here
                 oob_type = self.is_oob(utt)
                 if oob_type == 't':
                     res = self.send_oob_to_system(utt, contents) 
-
                 elif oob_type == 'o':
                     res = self.send_oob_to_system('stop', contents) 
-
                 elif utt_type == 'RAW':
-                    # send raw messages to the system skill
-                    # and let it figure out what to do with them
+                    # send raw messages to the system skill and let it figure out what to do with them
                     if contents:
                         self.bus.send(MSG_RAW, 'system_skill', {'utterance': contents[5:]})
-
                 else:
                     sentence_type = si.get_sentence_type(utt)
-                    self.log.debug("Sentence type = %s" % (sentence_type,))
+                    self.log.debug("UttProc.run() sentence_type = %s utt = %s" % (sentence_type, utt))
                     utt = normalize_sentence(utt)
                     if sentence_type != 'Q':
                         utt = remove_pleasantries(utt)
-
                     si.parse_utterance(utt)
-
                     info = {
-                        'error':'', 
-                        'sentence_type': si.sentence_type, 
-                        'sentence': si.original_sentence, 
-                        'normalized_sentence': si.normalized_sentence, 
-                        'qtype': si.insight.qtype, 
-                        'np': si.insight.np, 
-                        'vp': si.insight.vp, 
-                        'subject': si.insight.subject, 
-                        'squal': si.insight.squal, 
-                        'question': si.insight.question,
-                        'qword': si.insight.question, 
-                        'value': si.insight.value, 
-                        'raw_input': contents, 
-                        'verb': si.insight.verb,
-                        'aux_verb': si.insight.aux_verb,
-                        'rule': si.structure.shallow,
-                        'tree': si.structure.tree,
-                        'subtype':'', 
-                        'from_skill_id':'', 
-                        'skill_id':'', 
-                        'intent_match':''
-                        }
+                           'error':'', 
+                           'sentence_type': si.sentence_type, 
+                           'sentence': si.original_sentence, 
+                           'normalized_sentence': si.normalized_sentence, 
+                           'qtype': si.insight.qtype, 
+                           'np': si.insight.np, 
+                           'vp': si.insight.vp, 
+                           'subject': si.insight.subject, 
+                           'squal': si.insight.squal, 
+                           'question': si.insight.question,
+                           'qword': si.insight.question, 
+                           'value': si.insight.value, 
+                           'raw_input': contents, 
+                           'verb': si.insight.verb,
+                           'aux_verb': si.insight.aux_verb,
+                           'rule': si.structure.shallow,
+                           'tree': si.structure.tree,
+                           'subtype':'', 
+                           'from_skill_id':'', 
+                           'skill_id':'', 
+                           'intent_match':''
+                           }
 
                     # sentence types 
                     # Q - question
@@ -303,35 +296,28 @@ class UttProc:
                         info['skill_id'], info['intent_match'] = self.get_question_intent_match({'subject':info['subject'], 'qword':info['question']})
                         print("Match Question. skid:%s, im:%s" % (info['skill_id'], info['intent_match']))
                         res = self.send_utt(info) 
-
                     elif si.sentence_type == 'C':
                         print("Match Command")
                         info['skill_id'], info['intent_match'] = self.get_intent_match(info)
                         res = self.send_utt(info) 
-
                     elif si.sentence_type == 'M':
                         print("Media Command")
                         info['skill_id'] = 'media_skill'
                         info['from_skill_id'] = self.skill_id
                         info['subtype'] = 'media_query'
                         res = self.send_media(info) 
-
                     elif si.sentence_type == 'O':
                         print("OOB Command")
                         if utt in self.recognized_verbs:
                             self.send_oob_to_system(utt, contents)
                         else:
-                            self.log.warning("Ignoring not recognized OOB in intent_service '%s' not found in %s" % (utt,self.recognized_verbs))
-
+                            self.log.warning("UttProc.run() Ignoring not recognized OOB in intent_service '%s' not found in %s" % (utt,self.recognized_verbs))
                     else:
                         print("Unknown sentence type or Informational sentence. Ignored for now.")
 
-
                 # remove input file from file system
                 os.remove(txt_file)
-
             time.sleep(0.125)
-
 
 if __name__ == '__main__':
     up = UttProc()
