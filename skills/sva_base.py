@@ -18,45 +18,28 @@ from framework.message_types import (
 class SimpleVoiceAssistant:
     def __init__(self, msg_handler=None, skill_id=None, skill_category=None, bus=None, timeout=5):
         """
-        Most user skills at some point in their lifecycles 
-        will want to speak() and/or play_media(). These
-        require acquisition of a session and associated
-        error logic which is shared among all skills by
+        Most user skills at some point in their lifecycles will want to speak() and/or play_media(). These
+        require acquisition of a session and associated error logic which is shared among all skills by
         placing it here. 
 
-        Skills wishing to play media call their play_media()
-        method which handles initiating a session with the
-        media service and playing the media. Establishing a
-        session with the media player also causes a skill to
-        go active and remain active until either the media 
-        session is terminated or it ends normally. 
+        Skills wishing to play media call their play_media() method which handles initiating a session with the
+        media service and playing the media. Establishing a session with the media player also causes a skill to
+        go active and remain active until either the media session is terminated or it ends normally. 
 
-        A great deal of trouble went into supporting the 
-        ability to interrupt oneself. For example, while 
-        speaking an answer a user may wish to ask wiki yet
-        another question. The intended behavior in this case
-        is to stack the TTS output so when the new qustion
-        has been answered the old question will automatically
-        be resumed. While this behavior may not be desirable 
-        to the developer it may be easily overridden in the 
-        system skill (see the methods input_focus_determination() 
-        and output_focus_determination() in the system skill 
-        for more detailed information) making it far easier for
-        the developer to disable then to implement.
+        A great deal of trouble went into supporting the ability to interrupt oneself. For example, while 
+        speaking an answer a user may wish to ask wiki yet another question. The intended behavior in this case
+        is to stack the TTS output so when the new qustion has been answered the old question will automatically
+        be resumed. While this behavior may not be desirable to the developer it may be easily overridden in the 
+        system skill (see the methods input_focus_determination() and output_focus_determination() in the system skill 
+        for more detailed information) making it far easier for the developer to disable then to implement.
 
-        It is the same process with the tts service. A skill 
-        enters the active state upon initiating a session with
-        the tts service. In this case the tts service itself
-        establishes a session with the media service. The skill
-        calling the speak() method will enter the 'active' state 
-        upon successful negotiation of the session with the tts
-        service. It will remain in the active state until both 
-        the session with the tts service and the underlying 
-        session with the medai service have been terminated. This
-        all happens automatically in this base class. 
+        It is the same process with the tts service. A skill enters the active state upon initiating a session with
+        the tts service. In this case the tts service itself establishes a session with the media service. The skill
+        calling the speak() method will enter the 'active' state upon successful negotiation of the session with the tts
+        service. It will remain in the active state until both the session with the tts service and the underlying 
+        session with the medai service have been terminated. This all happens automatically in this base class. 
 
-        The base class maintains the last session response and 
-        current session id for both the tts service and the media 
+        The base class maintains the last session response and current session id for both the tts service and the media 
         service.
         """
         self.skill_control = SkillControl()
@@ -379,13 +362,12 @@ class SimpleVoiceAssistant:
                     # for now assumes success but TODO needs time out and 
                     # parsing of response message because could be an intent clash 
                     info = {
-                        'intent_type': intent_type,
-                        'subject': subject,
-                        'verb': verb,
-                        'skill_id':self.skill_control.skill_id
-                    }
+                            'intent_type': intent_type,
+                            'subject': subject,
+                            'verb': verb,
+                            'skill_id':self.skill_control.skill_id
+                           }
                     self.bus.send(MSG_REGISTER_INTENT, 'intent_service', info)
-
 
     def handle_utterance(self, message):
         self.log.debug("SimpleVoiceAssistant.handle_utterance() message = %s", (message))
