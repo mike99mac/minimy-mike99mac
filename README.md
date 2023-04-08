@@ -7,19 +7,19 @@ voice enabled applications. These voice enabled applications take the form of a 
 simply python programs which may do normal python things as well as call speak() and listen() and
 get called asynchronously when an utterance is matched to an intent the skill has previously registered.  
 
+This is a fork of Ken-Mycroft's Minimy at: 
+    https://github.com/ken-mycroft/minimy
+
 <h2>Installation</h2>
 Installation should be run as a non-root user such as 'pi'.
-```
-  $ ./install/linux_install.sh
-```
+    $ ./install/linux_install.sh
 
 <h2>Configuration</h2>
 Basic:<br/><br/>
-  ./mmconfig.py
+    ./mmconfig.py
 <br/><br/>
 or, for more configuration options<br/><br/>
-  ./mmconfig.py sa
-
+    ./mmconfig.py sa
 
 <h2>Running</h2>
 source venv_ngv/bin/activate<br/><br/>
