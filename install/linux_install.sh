@@ -1,22 +1,13 @@
-date
+#!/bin/bash
 #
-# should be run from sva base dir
+# should be run from minimy base dir
 # Example:
 #     install/linux_install.sh
-# will install using default python 3.8
 #
-#     install/linux_install.sh 3.9
-# will install using python 3.9
-#
+date
 echo 'Begin Installation, MiniMy Version 1.0.2'
-if [ "$1" ]; then
-  sudo apt install python$1-venv
-  sudo apt install python$1-dev
-else
-  sudo apt install python3.8-venv
-  sudo apt install python3.8-dev
-fi
-
+sudo apt install python3-venv
+sudo apt install python3-dev
 python3 -m venv venv_ngv
 source venv_ngv/bin/activate
 pip install --upgrade pip
@@ -25,13 +16,19 @@ pip install setuptools -U
 sudo apt install python-dev
 sudo apt install build-essential
 sudo apt install portaudio19-dev
-sudo apt install ffmpeg
-sudo apt install curl
-sudo apt install wget
+# try skipping these
+#sudo apt install ffmpeg
+#sudo apt install curl
+#sudo apt install wget
 sudo apt install mpg123
 pip install -r install/requirements.txt
 
 deactivate
+
+echo 'Installing Internet music tools'
+pip install youtube-search 
+sudo curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl
+sudo chmod a+rx /usr/local/bin/yotube-dl
 
 echo 'Installing Local NLP'
 cd framework/services/intent/nlp/local
@@ -41,7 +38,6 @@ make
 cd ../../../../../..
 
 echo 'Installing Local STT'
-# fetch stt model 
 cd framework/services/stt/local/CoquiSTT/ds_model
 wget https://github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/huge-vocabulary.scorer
 wget https://github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/alphabet.txt
