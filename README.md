@@ -2,18 +2,16 @@
 Simple nlu based voice assistant framework
 
 <h2>Overview</h2>
-The goal of this project is to provide a run-time 
-environment which facilitates the development of 
-voice enabled applications. These voice enabled
-applications take the form of a 'skill' and are
-simply python programs which may do normal python
-things as well as call speak() and listen() and
-get called asynchronously when an utterance is
-matched to an intent the skill has previously
-registered.  
+The goal of this project is to provide a run-time environment which facilitates the development of 
+voice enabled applications. These voice enabled applications take the form of a 'skill' and are
+simply python programs which may do normal python things as well as call speak() and listen() and
+get called asynchronously when an utterance is matched to an intent the skill has previously registered.  
 
 <h2>Installation</h2>
-./install/linux_install.sh
+Installation should be run as a non-root user such as 'pi'.
+```
+  $ ./install/linux_install.sh
+```
 
 <h2>Configuration</h2>
 Basic:<br/><br/>
@@ -32,20 +30,16 @@ source venv_ngv/bin/activate<br/><br/>
 ./stop.py
 
 <br/>
-These must be run from the base directory.
-The base directory is defined as where you
-installed this code to. For example
+These must be run from the base directory.  The base directory is defined as where you installed this code to. 
+For example:
 
 <br/>
-/home/bubba/MiniMy
+/home/pi/MiniMy
 
 <h2>General</h2>
-The system uses ./start.sh and ./stop.py to
-start and stop the system en masse. Each
-skill and service run in their own process 
-space and use the message bus or file system
-to synchronize. Their output may be found in
-the directory named 'logs/'. 
+The system uses ./start.sh and ./stop.py to start and stop the system en masse. Each
+skill and service run in their own process space and use the message bus or file system
+to synchronize. Their output may be found in the directory named 'logs/'. 
 
 <br/>
 The system relies on the environment variables
