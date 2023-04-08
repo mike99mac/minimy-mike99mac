@@ -7,52 +7,53 @@ voice enabled applications. These voice enabled applications take the form of a 
 simply python programs which may do normal python things as well as call speak() and listen() and
 get called asynchronously when an utterance is matched to an intent the skill has previously registered.  
 
-This is a fork of Ken-Mycroft's Minimy at: 
-    https://github.com/ken-mycroft/minimy
+This is a fork of Ken-Mycroft's Minimy at: https://github.com/ken-mycroft/minimy
 
 <h2>Installation</h2>
-Installation should be run as a non-root user such as 'pi'.
-    $ ./install/linux_install.sh
+Installation should be run as a non-root user such as 'pi'. Run the install script:
+```
+$ ./install/linux_install.sh
+```
 
 <h2>Configuration</h2>
-Basic:<br/><br/>
-    ./mmconfig.py
-<br/><br/>
-or, for more configuration options<br/><br/>
-    ./mmconfig.py sa
+You can run a basic configuration with the command:
+```
+$ ./mmconfig.py
+```
+or, for more configuration options:
+```
+$ ./mmconfig.py sa
+```
 
 <h2>Running</h2>
-source venv_ngv/bin/activate<br/><br/>
-./start.sh
-
-<br/>To stop<br/>
-
-./stop.py
-
-<br/>
-These must be run from the base directory.  The base directory is defined as where you installed this code to. 
-For example:
-
-<br/>
-/home/pi/MiniMy
-
-<h2>General</h2>
 The system uses ./start.sh and ./stop.py to start and stop the system en masse. Each
 skill and service run in their own process space and use the message bus or file system
 to synchronize. Their output may be found in the directory named 'logs/'. 
 
-<br/>
-The system relies on the environment variables
-SVA_BASE_DIR and GOOGLE_APPLICATION_CREDENTIALS.
-
-<br/>
+The system relies on the environment variables ``SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS``.
 These are typically set in the start.sh script.
 
 <br/>
-The SVA_BASE_DIR is set to the install directory
-of your system. The Google variable is set
-based on where your Google Speech API key is
-located. 
+The SVA_BASE_DIR is set to the install directory of your system. The Google variable is set
+based on where your Google Speech API key is located. 
+
+Start a virtual environment
+```
+source venv_ngv/bin/activate<br/><br/>
+```
+Then start Minimy with:
+```
+$ ./start.sh
+```
+To stop Minimy:
+```
+$ ./stop.py
+```
+These must be run from the base directory.  The base directory is defined as where you installed this code to. 
+For example:
+```
+/home/pi/minimy-mike99mac
+```
 
 <br/><br/>
 If you don't have a Google Speech API key you 
