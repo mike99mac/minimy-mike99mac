@@ -1,5 +1,6 @@
 # minimy
-Simple nlu based voice assistant framework
+Minimy is a simple NLU-based voice assistant framework.
+It is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
 
 ## Overview
 The goal of this project is to provide a run-time environment which facilitates the development of 
@@ -7,14 +8,13 @@ voice enabled applications. These voice enabled applications take the form of a 
 simply python programs which may do normal python things as well as call speak() and listen() and
 get called asynchronously when an utterance is matched to an intent the skill has previously registered.  
 
-This is a fork of Ken-Mycroft's Minimy at: https://github.com/ken-mycroft/minimy
 
 ## Installation
 Installation should be run as a non-root user such as 'pi'. Run the install script:
 ```
 $ ./install/linux_install.sh
 ```
-
+This step can take up to ten minutes.
 ## Configuration
 You can run a basic configuration with the command:
 ```
