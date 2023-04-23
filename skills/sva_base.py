@@ -91,6 +91,7 @@ class SimpleVoiceAssistant:
         # note we need a special handler for media but not Q&A because media handles system level
         # single verb utterances but Q&A does not.
         self.bus.on(MSG_MEDIA, self.handle_media_msg)
+        self.lang = "en-us"
 
     # watchdog timer
     def start_watchdog(self, timeout, callback):
@@ -276,7 +277,7 @@ class SimpleVoiceAssistant:
         return True
 
     def speak(self, text, wait_callback=None):
-        self.log.debug("SimpleVoiceAssistant.speak() text = %s", (text))
+        self.log.debug(f"SimpleVoiceAssistant.speak() text = {text} i_am_paused = {self.i_am_paused}")
 
         # send the text to the tts service
         if self.i_am_paused:
@@ -319,23 +320,27 @@ class SimpleVoiceAssistant:
         self.bus.send(MSG_SYSTEM, 'system_skill', info)
         return True
 
-    def speak_lang(self, mesg_file: str, mesg_info: dict, wait_callback=None):
+    def speak_lang(self, base_dir: str, mesg_file: str, mesg_info: dict, wait_callback=None):
         """
         Speak text from a file so as to support other languages 
-        replace variables in the message file with their corresponding values in mesg_info
+        replace variables in the message file with their corresponding values in mesg_info dictionary
+        param 1: skill's base directory
+        param 2: message file name (without .dialog suffix)
+        param 3: values to be plugged in
         """
         self.log.debug("SimpleVoiceAssistant.speak_lang() mesg_file = %s mesg_info = %s" % (mesg_file, mesg_info))
-        if os.path.exists(mesg_file) == False:
-          self.log.error("SimpleVoiceAssistant.speak_lang(): file %s not found" % (mesg_file))
+        fqdn_name = f"{base_dir}/dialog/{self.lang}/{mesg_file}.dialog"
+        if os.path.exists(fqdn_name) == False:
+          self.log.error(f"SimpleVoiceAssistant.speak_lang(): file {fqdn_name} not found") 
           return False
 
-        fh = open(mesg_file, "r")
+        fh = open(fqdn_name, "r")
         text = fh.read() 
         fh.close()
         for key in mesg_info:              # replace variables in the message with their corresponding values
           variable = "{"+key+"}"           # variables are surrounded by {braces}
           text = text.replace(variable, mesg_info[key])
-        self.log.debug("SimpleVoiceAssistant.speak_lang() message text = %s" % (text))
+        self.log.debug(f"SimpleVoiceAssistant.speak_lang() speaking message: {text}")
         self.speak(text, wait_callback)    # speak the message 
 
     def register_intent(self, intent_type, verb, subject, callback):
@@ -406,13 +411,10 @@ class SimpleVoiceAssistant:
                     #print("skill base class intent match: %s" % (key,))
                     (self.intents[key](message))
 
-
     def converse(self, callback):
         """
-        a skill in the conversant state will get a 
-        single raw utterance and then exit the 
-        conversant state. the raw utterance is 
-        returned to the caller
+        a skill in the conversant state will get a single raw utterance and then exit the 
+        conversant state. the raw utterance is returned to the caller
         """
         self.log.debug("SimpleVoiceAssistant.converse() starting")
         self.waiting_for_input_focus = True
@@ -428,7 +430,6 @@ class SimpleVoiceAssistant:
         self.bus.send(MSG_SYSTEM, 'system_skill', info)
         return True
 
-
     def send_release_output_focus(self):
         self.log.debug("SimpleVoiceAssistant.send_release_output_focus() starting")
         self.media_player_session_id = 0
@@ -442,7 +443,6 @@ class SimpleVoiceAssistant:
         self.bus.send(MSG_SYSTEM, 'system_skill', info)
 
     ## message bus handlers ##
-
     def handle_skill_msg(self, message):
         self.log.debug("SimpleVoiceAssistant.handle_skill_msg() skill message = %s" % (message))
         if message.data['skill_id'] == self.skill_control.skill_id:
@@ -527,13 +527,11 @@ class SimpleVoiceAssistant:
             if message.data['subtype'] == 'stt_end':
                 self.stt_is_active = False
 
-
     def handle_media_msg(self, message):
         self.log.debug("SimpleVoiceAssistant.handle_media_msg() message = %s", (message))
         if message.data['skill_id'] == self.skill_control.skill_id:
             if self.handle_message is not None:
                 self.handle_message(message)
-
 
     def pause_sessions(self):
         self.log.debug("SimpleVoiceAssistant.pause_sessions() starting")
@@ -564,7 +562,7 @@ class SimpleVoiceAssistant:
             self.i_am_paused = True
 
     def handle_system_msg(self, message):
-        self.log.debug("SimpleVoiceAssistant.handle_system_msg() message = %s" % (message))
+        self.log.debug("SimpleVoiceAssistant.handle_system_msg()")
         if message.data['skill_id'] == self.skill_control.skill_id:
             if message.data['subtype'] == 'stop':
                 if self.tts_service_session_id != 0:
@@ -595,8 +593,7 @@ class SimpleVoiceAssistant:
                     self.bus.send(MSG_MEDIA, 'media_player_service', info)
                     self.i_am_paused = False
 
-                if self.stop:
-                    # invoke user callback
+                if self.stop:              # invoke user callback
                     try:
                         self.stop(message)
                     except Exception as e:
