@@ -12,9 +12,11 @@ from framework.message_types import (
         )
 
 class UttProc:
-    # English language specific intent parser. Monitors the save_text/ FIFO 
-    # for utterances to process. Emits utterance messages. If skill_id
-    # is not '' the utterance matched an intent in the skill_id skill.
+    """
+    English language specific intent parser. Monitors the save_text/ FIFO 
+    for utterances to process. Emits utterance messages. If skill_id
+    is not '' the utterance matched an intent in the skill_id skill.
+    """
     def __init__(self, bus=None, timeout=5):
         self.skill_id = 'intent_service'
 
@@ -22,7 +24,6 @@ class UttProc:
         if bus is None:
             bus = MsgBusClient(self.skill_id)
         self.bus = bus
-
         self.intents = {}
 
         # set up logging into intent.log
@@ -35,8 +36,7 @@ class UttProc:
         self.log.debug("UttProc:__init__() base_dir = %s" % (self.base_dir))
         self.earcon_filename = self.base_dir + "/framework/assets/earcon_start.wav"
 
-        # set this to True before calling run()
-        # set to false to discontinue running.
+        # set this to True before calling run(), set to false to discontinue running.
         self.is_running = False
 
         # get configuration
@@ -47,9 +47,7 @@ class UttProc:
         if remote_nlp and remote_nlp == 'n':
             self.use_remote_nlp = False
 
-        # we try to keep in sync with the system skill
-        # so we can limit OOBs to verbs which have been
-        # registered
+        # we try to keep in sync with the system skill so we can limit OOBs to verbs which have been registered
         self.recognized_verbs = []
 
         # TODO need get_stop_aliases() method in framework.util.utils
@@ -65,23 +63,18 @@ class UttProc:
         self.bus.on('register_intent', self.handle_register_intent)
         self.bus.on('system', self.handle_system_message)
 
-
     def handle_system_message(self, message):
         self.log.debug("UttProc:handle_system_message()")
 
         # we try to stay in-sync with the system skill regarding OOBs
         data = message.data
         self.log.debug("Intent svc handle sys msg %s" % (data,))
-        if data['skill_id'] == 'system_skill':
-            # we only care about system messages - reserve and release oob
+        if data['skill_id'] == 'system_skill': # we only care about system messages - reserve and release oob
             self.log.debug("Intent service handle system message %s" % (message.data,))
-
             if data['subtype'] == 'reserve_oob':
                 self.recognized_verbs.append( data['verb'] )
-
             if data['subtype'] == 'release_oob':
                 del self.recognized_verbs[ data['verb'] ]
-
 
     def is_oob(self, utt):
         """
@@ -92,7 +85,7 @@ class UttProc:
          'f' - no oob detected
         """ 
         ua = utt.split(" ")
-        self.log.debug("UttProc:is_oob() ua = %s" % (ua))
+        self.log.debug(f"UttProc:is_oob() utt = {utt} ua = {ua}")
         if len(ua) == 1:
             if ua[0] in self.recognized_verbs or ua[0] in self.stop_aliases or ua[0] == 'pause' or ua[0] == 'resume':
                 self.log.debug("UttProc:is_oob(): Intent Barge-In Normal OOB Detected")
@@ -117,11 +110,12 @@ class UttProc:
                     return 'o'
         self.log.debug("UttProc:is_oob(): fell through - returning 'f'")
         return 'f'
+      # self.log.debug("UttProc:is_oob(): fell through - returning 't'")
+      # return 't'
 
     def get_sentence_type(self, utt):
         self.log.debug("UttProc:get_sentence_type() utt = %s" % (utt))
-        # very rough is question or not
-        # TODO - improve upon this
+        # very rough is question or not TODO - improve upon this
         vrb = utt.split(" ")[0]
         resp = "I"
         for wrd in self.question_words:
@@ -142,11 +136,9 @@ class UttProc:
             target = 'system_skill'
         self.bus.send(MSG_UTTERANCE, target, {'utt': utt,'subtype':'utt'})
 
-
     def send_media(self, info):
         self.log.debug("UttProc:send_media()")
         self.bus.send(MSG_MEDIA, 'media_skill', info)
-
 
     def send_oob_to_system(self, utt, contents):
         self.log.debug("UttProc:send_oob_to_system()")
@@ -161,7 +153,6 @@ class UttProc:
                 'intent_match':''
                 }
         self.bus.send(MSG_SYSTEM, 'system_skill', info)
-
 
     def get_question_intent_match(self, info):
         self.log.debug("UttProc:get_question_intent_match()")
@@ -180,13 +171,11 @@ class UttProc:
 
         return skill_id, ''
 
-
     def get_intent_match(self, info):
         self.log.debug("UttProc:get_intent_match()")  
         aplay(self.earcon_filename)  # should be configurable
 
-        # for utterances of type command an intent match is a subject:verb
-        # and we don't fuzzy match
+        # for utterances of type command an intent match is a subject:verb and we don't fuzzy match
         skill_id = ''
 
         intent_type = 'C'
@@ -225,7 +214,7 @@ class UttProc:
             self.intents[key] = {'skill_id':data['skill_id'], 'state':'enabled'}
 
     def run(self):
-        self.log.debug("UttProc.run() Intent processor started - 'is_running' is %s" % (self.is_running))
+        self.log.debug(f"UttProc.run() Intent processor started - is_running = {self.is_running}")
         si = SentenceInfo(self.base_dir)
 
         while self.is_running:             # get all text files in the input directory
@@ -310,9 +299,9 @@ class UttProc:
                         if utt in self.recognized_verbs:
                             self.send_oob_to_system(utt, contents)
                         else:
-                            self.log.warning("UttProc.run() Ignoring not recognized OOB in intent_service '%s' not found in %s" % (utt,self.recognized_verbs))
+                            self.log.warning("UttProc.run() Ignoring not recognized OOB in intent_service '%s' not found in %s" % (utt, self.recognized_verbs))
                     else:
-                        print("Unknown sentence type %s or Informational sentence" % (si.sentence_type))
+                        print(f"Unknown sentence type {si.sentence_type} or Informational sentence")
 
                 # remove input file from file system
                 os.remove(txt_file)

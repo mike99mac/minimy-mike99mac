@@ -36,10 +36,9 @@ class SVAMediaSkill(SimpleVoiceAssistant):
         self.log.debug("SVAMediaSkill.handle_oob_detected() OOB detected by media base %s" % (msg.data))
 
     def handle_register_media(self, msg):
-        self.log.debug("SVAMediaSkill.handle_register_media() msg: %s" % (msg.data))
         data = msg.data
         skill_id = data['media_skill_id']
-        self.log.info("[%s] Registered as a Media skill" % (skill_id,))
+        self.log.debug("SVAMediaSkill.handle_register_media() {skill_id} registered as a Media skill")
         if skill_id not in self.media_skills:
             self.media_skills.append(skill_id)
 
@@ -58,7 +57,7 @@ class SVAMediaSkill(SimpleVoiceAssistant):
         self.send_message(msg.data['from_skill_id'], message)
         # figure out when done here :-)
         # probably when the media player service tells the skill id the session has ended!
-        self.log.info("media skill %s going active" % (msg.data['from_skill_id']))
+        self.log.info("SVAMediaSkill.handle_media_response() media skill %s going active" % (msg.data['from_skill_id']))
 
     def handle_query(self, msg):
         self.log.debug("SVAMediaSkill.handle_query() hit!")
