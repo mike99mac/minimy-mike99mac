@@ -103,7 +103,7 @@ class MpcClient():
 
   def start_music(self, music_info: Music_info):
     """ 
-    Start playing the type of music (or news) passed in the music_info object   
+    Start playing the type of music passed in the music_info object   
     Return: boolean
     """
     self.log.debug(f"MpcClient.start_music(): match_type = {music_info.match_type}")
@@ -113,9 +113,9 @@ class MpcClient():
     elif music_info.match_type == "next" or music_info.match_type == "prev":
       self.mpc_cmd(music_info.match_type)  # call 'mpc next' or 'mpc prev'
       return True
-    elif music_info.match_type == "news":
-      self.play_news(music_info)
-      return True
+  #  elif music_info.match_type == "news":
+  #    self.play_news(music_info)
+  #    return True
     elif music_info.tracks_or_urls == None:
       self.log.debug("MpcClient.start_music() Unexpected: no music found")
       return False
@@ -264,7 +264,7 @@ class MpcClient():
 
   def get_album(self, album_name, album_id, artist_name):
     """
-    return files for one album 
+    return a Music_info object with track file names for one album 
     """
     self.log.debug("MpcClient.get_album() album_name = "+album_name+" artist_name = "+artist_name)
     artist_found = "none"
@@ -278,9 +278,6 @@ class MpcClient():
     tracks_or_urls = []                    # at least one hit
     correct_artist = True
     for artist_found, album_found, title, time_str, relative_path in results:
-      if album_found.lower() != album_name: # not an exact match
-        self.log.debug("MpcClient.get_album() skipping album found that does not match: "+album_found.lower())
-        continue 
       next_track='"'+self.music_dir+relative_path+'"'  
       self.log.debug("MpcClient.get_album() adding track: "+next_track+" to queue")     
       tracks_or_urls.append(next_track)    # add track to queue
@@ -685,7 +682,7 @@ class MpcClient():
       return "bad_mpc_rc", mesg_info  
       self.log.debug("MpcClient.delete_playlist():  command return code = "+str(e.returncode))
     mesg_info = {"playlist_name": phrase}  
-    self.mpc_clear()                     # clear playlist in memory
+    self.mpc_cmd("clear")                  # clear playlist in memory
     return "deleted_playlist", mesg_info
 
   def add_to_playlist(self, music_type, phrase):
@@ -839,21 +836,19 @@ class MpcClient():
     Return: music_info object  
     """
     self.log.debug("MpcClient.get_stations() self.request_type: "+self.request_type+" search_name = "+search_name)
+    mesg_info = {}
+    tracks_or_urls = []
 
     # check that the radio station file exists
     if not os.path.exists("/home/pi/minimy/skills/user_skills/mpc/radio.stations.csv"):
       self.log.debug("MpcClient.get_stations() file /home/pi/minimy/skills/user_skills/mpc/radio.stations.csv not found")
-      return Music_info("none", "file_not_found", {"file": "radio.stations.csv"}, None, None) 
+      return Music_info("none", "file_not_found", {"file": "radio.stations.csv"}, None) 
 
     input_file = open("/home/pi/minimy/skills/user_skills/mpc/radio.stations.csv", "r+")
-    # relative path does not work:
-    # input_file = open("skills/user_skills/mpc/radio.stations.csv", "r+")
     reader_file = csv.reader(input_file)
     self.list_lines = list(reader_file)    # convert to list
     num_lines = len(self.list_lines)       # number of saved radio stations
     self.log.debug("MpcClient.get_stations() num_lines = "+str(num_lines))
-    mesg_info = {}
-    tracks_or_urls = []
     match self.request_type:
       case "random":
       #  if num_lines <= self.max_queued:   # all stations can be queued 
@@ -867,33 +862,46 @@ class MpcClient():
         tracks_or_urls = self.get_matching_stations(1, search_name)
         if tracks_or_urls == None:         # station not found
           self.log.debug("MpcClient.get_stations() did not find genre "+search_name) 
+          mesg_file = "radio_not_found"
           mesg_info = {"request_type": self.request_type, "search_name": search_name}
-          return Music_info("radio", "radio_not_found", mesg_info, tracks_or_urls)
+        else:
+          mesg_file = "playing_genre"  
+          mesg_info = {"genre_name": search_name} 
       case "country":
         self.log.debug("MpcClient.get_stations() searching for station from country "+search_name) 
         tracks_or_urls = self.get_matching_stations(2, search_name)
         if tracks_or_urls == None:         # country not found
           self.log.debug("MpcClient.get_stations() did not find country "+search_name) 
+          mesg_file = "country_not_found"
           mesg_info = {"country": search_name}
-          return Music_info("radio", "country_not_found", mesg_info, tracks_or_urls)
+        else:
+          mesg_file = "playing_country"  
+          mesg_info = {"station_name": self.station_name, "country": search_name}
       case "language":
         self.log.debug("MpcClient.get_stations() searching for station in language "+search_name) 
         tracks_or_urls = self.get_matching_stations(3, search_name)
         if tracks_or_urls == None:         # language not found
           self.log.debug("MpcClient.get_stations() did not find language "+search_name) 
-          mesg_info = {"language": search_name}
-          return Music_info("radio", "language_not_found", mesg_info, tracks_or_urls)  
+          mesg_file = "language_not_found"
+          mesg_info = {"language": search_name} 
+        else:
+          mesg_file = "playing_language"  
+          mesg_info = {"station_name": self.station_name, "language": search_name}
       case "station":
         self.log.debug("MpcClient.get_stations() searching for station named "+search_name) 
         tracks_or_urls = self.get_matching_stations(0, search_name)
         if tracks_or_urls == None:         # station not found
           self.log.debug("MpcClient.get_stations() did not find language "+search_name) 
-          mesg_info = {"language": search_name}
-          return Music_info("radio", "country_not_found", mesg_info, tracks_or_urls)
+          mesg_file = "station_not_found"
+          mesg_info = {"station": search_name}
+        else:
+          mesg_file = "playing_country"  
+          mesg_info = {"station_name": search_name}
       case _:                              # not expected
         self.log.debug("MpcClient.get_stations() INTERNAL ERROR: request_type = "+self.request_type)
         mesg_info = {"function": "mpcclient.get_stations"}
-        return Music_info("error", "internal_error", mesg_info, tracks_or_urls)
+        mesg_file = "internal_error"
+    return Music_info("radio", mesg_file, mesg_info, tracks_or_urls)  
 
   def parse_radio(self, utterance):
     """
@@ -924,12 +932,12 @@ class MpcClient():
     intent = "None"
     search_name = "None" 
     mesg_info = {}    
-    tracks_or_stations = []
+    tracks_or_urls = []
     match words[0]:                      
       case "different" | "next":  
-        return Music_info("next", "none", mesg_info, tracks_or_stations)
+        return Music_info("next", "none", mesg_info, tracks_or_urls)
       case "previous" | "last":  
-        return Music_info("prev", "none", mesg_info, tracks_or_stations)
+        return Music_info("prev", "none", mesg_info, tracks_or_urls)
       case "play":      
         match words[1]:
           case "radio":
@@ -989,7 +997,8 @@ class MpcClient():
     phrase = phrase.replace('on the internet', '') 
     self.log.debug("MpcClient.search_internet() searching for phrase: "+phrase)
 
-    results = YoutubeSearch(phrase, max_results=20).to_dict() # return a dictionary
+    # the ytadd script takes around 5 seconds to add a URL - so limit results to 4
+    results = YoutubeSearch(phrase, max_results=4).to_dict() # return a dictionary
     num_hits = len(results)
     if num_hits == 0:
       self.log.info("MpcClient.search_internet() did not find any music on the internet")
@@ -1000,8 +1009,8 @@ class MpcClient():
       for next_track in results: 
         suffix = next_track['url_suffix']
         next_url = "http://youtube.com"+suffix
+        self.log.debug("MpcClient.search_internet(): adding url: "+next_url)
         tracks_or_urls.append(next_url)
-        self.log.debug("MpcClient.search_internet(): added url: "+next_url)
       mesg_file = None
       mesg_info = None 
     ret_val = Music_info("internet", mesg_file, mesg_info, tracks_or_urls)
@@ -1013,39 +1022,18 @@ class MpcClient():
     param: Music_info object 
     """
     self.log.debug("MpcClient.stream_internet_music() streaming all tracks from the Internet")
+    self.mpc_cmd("clear")                  # clear playlist in memory
     for next_url in music_info.tracks_or_urls: # queue up tracks in mpc
-      self.log.debug("MpcClient.stream_internet_music() streaming from URL "+next_url)
+      self.log.debug(f"MpcClient.stream_internet_music() streaming from URL: {next_url}")
       cmd = "/usr/local/sbin/ytadd "+next_url # add URL to mpc queue
-    try:
-      self.log.debug("MpcClient.stream_internet_music(): running command: "+cmd)
-      result = subprocess.check_output(cmd, shell=True)
-      self.log.debug("MpcClient.stream_internet_music(): result: "+str(result))
-    except subprocess.CalledProcessError as e:
-      self.mpc_rc = str(e.returncode)
+      try:
+        self.log.debug(f"MpcClient.stream_internet_music(): running command: {cmd}")
+        result = subprocess.check_output(cmd, shell=True)
+        self.log.debug(f"MpcClient.stream_internet_music(): result: {result}")
+      except subprocess.CalledProcessError as e:
+        self.mpc_rc = str(e.returncode)
 
     # Now play the queued up tracks
     if self.mpc_cmd("play") != True:
         self.log.debug("MpcClient.start_music(): mpc_cmd(play) failed")
         return False 
-
-  def search_news(self, utterance):
-    """
-    play NPR news 
-    param: Music_info object
-    """
-
-    npr_news_url = "https://edge2.pod.npr.org/anon.npr-mp3/npr/newscasts/2023/04/09/20230409_newscasts_long_080834.mp3/20230409_newscasts_long_080834.mp3_ywr3ahjkcgo_ae8f23cb983c63c291e7d45f01aa8059_4858027.mp3"
-    self.log.debug("MpcClient.play_news() streaming all tracks from the Internet")
-    return Music_info("news", None, None, [npr_news_url])
-
-  def play_news(self, music_info):
-    """
-    play NPR news 
-    param: Music_info object
-    """
-    news_url = music_info.tracks_or_urls[0]
-    self.log.debug("MpcClient.play_news() news_url = %s" % (news_url)) 
-    self.mpc_cmd("add", music_info.tracks_or_urls[0])
-    self.mpc_cmd("play")
-
-
