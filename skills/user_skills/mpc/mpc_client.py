@@ -97,8 +97,8 @@ class MpcClient():
     Start the mpc player   
     Return: boolean
     """
-    self.log.debug(f"MpcClient.mpc_play() - first sleeping")
-    time.sleep(3)
+    self.log.debug(f"MpcClient.mpc_play() - first sleeping for 1 sec")
+    time.sleep(1)
     self.mpc_cmd("play")
 
   def start_music(self, music_info: Music_info):
@@ -155,7 +155,7 @@ class MpcClient():
       seconds = int(parts[0])
     return (hours * 60 * 60) + (minutes * 60) + seconds
   
-  def parse_common_phrase(self, phrase):
+  def search_library(self, phrase):
     """
     Perform "brute force" parsing of a music play request
     Music playing vocabulary of search phrase:
@@ -177,47 +177,47 @@ class MpcClient():
     match_type = "unknown"               # album, artist, song or unknown
     music_name = ""                      # search term of music being sought
     tracks_or_urls = []                  # files of songs to be played
-    self.log.debug("MpcClient.parse_common_phrase() phrase: " + phrase)
+    self.log.debug("MpcClient.search_library() phrase: " + phrase)
 
     # check for a partial request with no music_name
     match phrase:
       case "album" | "track" | "song" | "artist" | "genre" | "playlist":
-        self.log.debug("MpcClient.parse_common_phrase() not enough information in request "+str(phrase))
+        self.log.debug("MpcClient.search_library() not enough information in request "+str(phrase))
         mesg_info = {"phrase": phrase}
-        self.log.debug("MpcClient.parse_common_phrase() mesg_info = "+str(mesg_info))
+        self.log.debug("MpcClient.search_library() mesg_info = "+str(mesg_info))
         ret_val = Music_info("song", "not_enough_info", {"phrase": phrase}, None)
-        self.log.debug("MpcClient.parse_common_phrase() ret_val.mesg_info = "+str(ret_val.mesg_info))
+        self.log.debug("MpcClient.search_library() ret_val.mesg_info = "+str(ret_val.mesg_info))
         return ret_val
     key = re.split(" by ", phrase)
     if len(key) == 1:                    # did not find "by"
       found_by = "no"
       music_name = str(key[0])           # check for all music, genre and playlist
-      self.log.debug("MpcClient.parse_common_phrase() music_name = "+music_name)
+      self.log.debug("MpcClient.search_library() music_name = "+music_name)
       match music_name:
         case "any music" | "all music" | "my music" | "random music" | "some music" | "music":
-          self.log.debug("MpcClient.parse_common_phrase() removed keyword "+music_name+" from music_name")
+          self.log.debug("MpcClient.search_library() removed keyword "+music_name+" from music_name")
           ret_val = self.get_music("music", music_name, artist_name)
           return ret_val
       key = re.split("^genre ", music_name)
       if len(key) == 2:                  # found first word "genre"
         genre = str(key[1])
-        self.log.debug("MpcClient.parse_common_phrase() removed keyword "+music_name+" from music_name")
+        self.log.debug("MpcClient.search_library() removed keyword "+music_name+" from music_name")
         ret_val = self.get_music("genre", genre, artist_name)
         return ret_val 
       else:
         key = re.split("^playlist ", music_name)
         if len(key) == 2:                # found first word "playlist"
           playlist = str(key[1])
-          self.log.debug("MpcClient.parse_common_phrase() removed keyword "+music_name+" from music_name")
+          self.log.debug("MpcClient.search_library() removed keyword "+music_name+" from music_name")
           ret_val = self.get_music("playlist", playlist, artist_name)
           return ret_val
     elif len(key) == 2:                  # found one "by"
       music_name = str(key[0])
       artist_name = str(key[1])          # artist name follows "by"
-      self.log.debug("MpcClient.parse_common_phrase() found the word by - music_name = "+music_name+" artist_name = "+artist_name)
+      self.log.debug("MpcClient.search_library() found the word by - music_name = "+music_name+" artist_name = "+artist_name)
     elif len(key) == 3:                  # found "by" twice - assume first one is in music
       music_name = str(key[0]) + " by " + str(key[1]) # paste the track or album back together
-      self.log.debug("MpcClient.parse_common_phrase() found the word by twice: assuming first is music_name")
+      self.log.debug("MpcClient.search_library() found the word by twice: assuming first is music_name")
       artist_name = str(key[2])
     else:                                # found more than 2 "by"s - what to do?
       music_name = str(key[0])
@@ -231,7 +231,7 @@ class MpcClient():
         intent = "album_artist"
       else:
         intent = "album"
-      self.log.debug("MpcClient.parse_common_phrase() removed keyword album or record")
+      self.log.debug("MpcClient.search_library() removed keyword album or record")
     else:                                # leading "album" not found
       key = re.split("^track |^song |^title ", music_name)
       if len(key) == 2:                  # leading "track", "song" or "title" found
@@ -241,7 +241,7 @@ class MpcClient():
           intent = "track_artist"
         else:                            # assume track
           intent = "track"
-        self.log.debug("MpcClient.parse_common_phrase() removed keyword track, song or title")
+        self.log.debug("MpcClient.search_library() removed keyword track, song or title")
       else:                              # leading keyword not found
         key = re.split("^artist |^band ", music_name) # remove "artist" or "band" if first word
         if len(key) == 2:                # leading "artist" or "band" found
@@ -249,16 +249,16 @@ class MpcClient():
           artist_name = str(key[1])
           match_type = "artist"
           intent = "artist"
-          self.log.debug("MpcClient.parse_common_phrase() removed keyword artist or band from music_name")
+          self.log.debug("MpcClient.search_library() removed keyword artist or band from music_name")
         else:                            # no leading keywords found yet
-          self.log.debug("MpcClient.parse_common_phrase() no keywords found: in last else clause")
+          self.log.debug("MpcClient.search_library() no keywords found: in last else clause")
           if found_by == "yes":
             intent = "unknown_artist"    # found artist but music could be track or album
     key = re.split("^artist |^band ", artist_name) # remove "artist" or "band" if first word
     if len(key) == 2:                    # leading "artist" or "band" found in artist name
       artist_name = str(key[1])
-      self.log.debug("MpcClient.parse_common_phrase() removed keyword artist or band from artist_name")
-    self.log.debug("MpcClient.parse_common_phrase() calling get_music with: "+intent+", "+music_name+", "+artist_name)
+      self.log.debug("MpcClient.search_library() removed keyword artist or band from artist_name")
+    self.log.debug("MpcClient.search_library() calling get_music with: "+intent+", "+music_name+", "+artist_name)
     ret_val = self.get_music(intent, music_name, artist_name) 
     return ret_val
 
@@ -714,7 +714,7 @@ class MpcClient():
       return "playlist_not_found", mesg_info
     
     # verify track or album exists  
-    music_info = self.parse_common_phrase(music_name) 
+    music_info = self.search_library(music_name) 
     if music_info.tracks_or_urls == None:
       self.log.debug("MpcClient.add_to_playlist() did not find track or album "+music_name)
       mesg_info = {"playlist_name": playlist_name} 
@@ -759,7 +759,7 @@ class MpcClient():
       return "missing_playlist", mesg_info
     
     # verify track or album exists  
-    music_info = self.parse_common_phrase(music_name) 
+    music_info = self.search_library(music_name) 
     if music_info.tracks_or_urls == None:
       self.log.debug("MpcClient.delete_from_playlist() did not find track or album "+music_name)
       mesg_info = {"playlist_name": playlist_name, "music_name": music_name} 
@@ -997,8 +997,8 @@ class MpcClient():
     phrase = phrase.replace('on the internet', '') 
     self.log.debug("MpcClient.search_internet() searching for phrase: "+phrase)
 
-    # the ytadd script takes around 5 seconds to add a URL - so limit results to 4
-    results = YoutubeSearch(phrase, max_results=4).to_dict() # return a dictionary
+    # the ytadd script takes around 5 seconds to add a URL - so limit results to 3
+    results = YoutubeSearch(phrase, max_results=3).to_dict() # return a dictionary
     num_hits = len(results)
     if num_hits == 0:
       self.log.info("MpcClient.search_internet() did not find any music on the internet")
