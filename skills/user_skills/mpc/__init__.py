@@ -7,7 +7,7 @@
 from framework.message_types import MSG_MEDIA
 from mpc_client import MpcClient
 from music_info import Music_info
-import time, glob
+import glob, os, requests, time
 from skills.sva_media_skill_base import MediaSkill
 from skills.sva_base import SimpleVoiceAssistant
 from threading import Event
@@ -48,16 +48,24 @@ class MpcSkill(MediaSkill):
     self.log.debug("MpcSkill.initialize(): setting vars") 
     self.music_info = Music_info("none", "", {}, []) # music to play
     self._is_playing = False
-    self.mpc_client = MpcClient("/media/") # search for music under /media
+    self.sentence = None                   # 
+    # self.mpc_client = MpcClient("/media/") # search for music under /media
+
+  def fallback_internet(self, msg):
+    """
+    Requested music was not found in the library - fallback to Internet search
+    """
+    self.music_info = self.mpc_client.search_internet(self.sentence)
 
   def get_media_confidence(self, msg):
-    # I am being asked if I can play this music
+    """
+    I am being asked if I can play this music
+    """
     sentence = msg.data['msg_sentence']
     self.log.debug("MpcSkill.get_media_confidence(): parse request %s" % (sentence))
-    sentence = sentence.lower() 
-    sa = sentence.split(" ")
+    sentence = sentence.lower()
  
-    # if track or album is specified, assume it is a song, else search for 'radio' or 'internet' requests 
+    # if track or album is specified, assume it is a song, else search for 'radio', 'internet' or 'news' requests 
     song_words = ["track", "song", "title", "album", "record", "artist", "band" ]
     if "internet radio" in sentence:      
       request_type = "radio"
@@ -73,20 +81,25 @@ class MpcSkill(MediaSkill):
       request_type = "music"
 
     # search for music in (1) library, on (2) Internet radio, on (3) the Internet or (4) play NPR news
-    self.log.debug("MpcSkill.get_media_confidence(): sentence = %s request_type = %s" % (sentence, request_type))
+    self.log.debug(f"MpcSkill.get_media_confidence(): sentence = {sentence} request_type = {request_type}")
     match request_type:
-      case "music":
-        self.music_info = self.mpc_client.parse_common_phrase(sentence)
+      case "music":                        # if not found in library, search internet
+        self.music_info = self.mpc_client.search_library(sentence)
+        self.log.debug(f"MpcSkill.get_media_confidence() match_type = {self.music_info.match_type}")
+        if self.music_info.match_type == "none": # music not found in library
+          self.sentence = sentence 
+          self.log.debug(f"MpcSkill.get_media_confidence(): not found in library - searching Internet")
+          self.speak_lang(self.skill_base_dir, "searching_internet", None, self.fallback_internet) # tell user "searching internet"
       case "radio":
         self.music_info = self.mpc_client.parse_radio(sentence)
       case "internet":
         self.music_info = self.mpc_client.search_internet(sentence)
       case "news":
-        self.music_info = self.mpc_client.search_news(sentence)
+        self.music_info = self.search_news(sentence)
     if self.music_info.tracks_or_urls != None: # no error 
       self.log.debug("MpcSkill.get_media_confidence(): found tracks or URLs") 
     else:                                  # error encountered
-      self.log.debug("MpcSkill.get_media_confidence() did not find music: mesg_file = "+self.music_info.mesg_file+" mesg_info = "+str(self.music_info.mesg_info))
+      self.log.debug(f"MpcSkill.get_media_confidence() did not find music: mesg_file = {self.music_info.mesg_file} mesg_info = {self.music_info.mesg_info}")
     confidence = 100                       # always return 100%
     return {'confidence':confidence, 'correlator':0, 'sentence':sentence, 'url':self.url}
 
@@ -100,23 +113,56 @@ class MpcSkill(MediaSkill):
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info) 
       return None
 
-    # clear the mpc queue then add all matching station URLs or tracks 
-    self.mpc_client.mpc_cmd("clear")               
-    for next_url in self.music_info.tracks_or_urls:
-      self.log.debug(f"MpcSkill.media_play() adding station or URL {next_url}")
-      self.mpc_client.mpc_cmd("add", next_url)
-
-    # speak what music will be playing and pass callback to start the music  
-    if self.music_info.mesg_file == None:  # no message
-      self.start_music()
-    else:                                  # speak message and pass callback  
-      self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.start_music)
+    # speak what music will be playing and pass callback to start the music 
+    if self.music_info.match_type == "news":
+      file_name = self.music_info.tracks_or_urls[0]
+      self.play_media(self.skill_base_dir + '/' + file_name, delete_on_complete=True)
+    else:                                  # clear the mpc queue then add all matching station URLs or tracks 
+      self.mpc_client.mpc_cmd("clear")   
+      for next_url in self.music_info.tracks_or_urls:
+        self.log.debug(f"MpcSkill.media_play() adding URL to MPC queue: {next_url}")
+        self.mpc_client.mpc_cmd("add", next_url)
+      if self.music_info.mesg_file == None:  # no message
+        self.start_music()
+      else:                                  # speak message and pass callback  
+        self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.start_music)
     
   def start_music(self):
     """
     callback to start music after media_play() speaks informational message
     """
     self.mpc_client.start_music(self.music_info) # play the music
+
+  def search_news(self, utterance):
+    """
+    search for NPR news 
+    param: text of the request
+    return: Music_info object
+    """
+    self.log.debug(f"MpcSkill.search_news() utterance = {utterance}")
+    url = "https://www.npr.org/podcasts/500005/npr-news-now"
+    self.log.debug(f"MpcSkill.search_news() url = {url}") 
+    # self.speak("Getting the latest from N.P.R news")
+    res = requests.get(url)
+    page = res.text
+    start_indx = page.find('audioUrl')
+    if start_indx == -1:
+        self.log.debug(f"MpcSkill.search_news() cannot find url") 
+        return
+    end_indx = start_indx + len('audioUrl')
+    page = page[end_indx+3:]
+    end_indx = page.find('?')
+    if end_indx == -1:
+        print("Parse error")
+        return
+    self.log.debug(f"MpcSkill.search_news() start_indx = {start_indx} end_indx = {end_indx} ")       
+    new_url = page[:end_indx]
+    new_url = new_url.replace("\\","")
+    cmd = "wget %s" % (new_url,)
+    os.system(cmd)
+    file_names = glob.glob("*.mp3")         # find the downloaded file
+    file_name = file_names[0]
+    return Music_info("news", None, None, [file_name])
 
   def handle_prev(self, message):
     """
