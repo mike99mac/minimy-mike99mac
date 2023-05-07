@@ -33,14 +33,10 @@ class UttProc:
         self.log = LOG(log_filename).log
 
         # resources
-        self.log.debug("UttProc:__init__() base_dir = %s" % (self.base_dir))
+        self.log.debug(f"UttProc:__init__() base_dir = {self.base_dir}")
         self.earcon_filename = self.base_dir + "/framework/assets/earcon_start.wav"
-
-        # set this to True before calling run(), set to false to discontinue running.
-        self.is_running = False
-
-        # get configuration
-        cfg = Config()
+        self.is_running = False            # set to True before calling run(), to false to discontinue running.
+        cfg = Config()                     # get configuration
         self.crappy_aec = cfg.get_cfg_val('Advanced.CrappyAEC')
         remote_nlp = cfg.get_cfg_val('Advanced.NLP.UseRemote')
         self.use_remote_nlp = True
@@ -52,9 +48,7 @@ class UttProc:
 
         # TODO need get_stop_aliases() method in framework.util.utils
         self.stop_aliases = ['stop', 'terminate', 'abort', 'cancel', 'kill', 'exit']
-
-        # establish wake word(s)
-        self.wake_words = []
+        self.wake_words = []               # establish wake word(s)
         wws = get_wake_words()
         for ww in wws:
             self.wake_words.append( ww.lower() )
@@ -64,13 +58,11 @@ class UttProc:
         self.bus.on('system', self.handle_system_message)
 
     def handle_system_message(self, message):
-        self.log.debug("UttProc:handle_system_message()")
-
-        # we try to stay in-sync with the system skill regarding OOBs
+        # stay in-sync with the system skill regarding OOBs
         data = message.data
-        self.log.debug("Intent svc handle sys msg %s" % (data,))
+        self.log.debug(f"UttProc:handle_system_message() data = {data}")
         if data['skill_id'] == 'system_skill': # we only care about system messages - reserve and release oob
-            self.log.debug("Intent service handle system message %s" % (message.data,))
+            self.log.debug(f"Intent service handle system message {message.data}")
             if data['subtype'] == 'reserve_oob':
                 self.recognized_verbs.append( data['verb'] )
             if data['subtype'] == 'release_oob':
@@ -86,13 +78,23 @@ class UttProc:
         """ 
         ua = utt.split(" ")
         self.log.debug(f"UttProc:is_oob() utt = {utt} ua = {ua}")
-        if len(ua) == 1:
+        self.log.debug(f"UttProc:is_oob() recognized_verbs = {self.recognized_verbs}")
+
+        # add tests for two-word OOBs -MM
+        if len(ua) == 1:                   # one word utterance
             if ua[0] in self.recognized_verbs or ua[0] in self.stop_aliases or ua[0] == 'pause' or ua[0] == 'resume':
                 self.log.debug("UttProc:is_oob(): Intent Barge-In Normal OOB Detected")
                 return 't'
-        
+        elif len(ua) == 2:                 # check for two word OOBs
+            for next_key in self.intents:
+                next_key = next_key.split(":") # split next key into words
+                if next_key[0] == 'O' and ua[0] == next_key[2] and ua[1] == next_key[1]:
+                    self.log.debug("UttProc:is_oob(): two-word OOB detected")
+                    return 't'
+        # end -MM            
+ 
         # in a system with decent aec you can just return 'f' here
-        self.log.debug("UttProc:is_oob() crappy_aec = %s" % (self.crappy_aec))
+        self.log.debug(f"UttProc:is_oob() crappy_aec = {self.crappy_aec}")
         if not self.crappy_aec:
             self.log.debug("UttProc:is_oob(): decent AEC - returning 'f'")
             return 'f'
@@ -110,11 +112,9 @@ class UttProc:
                     return 'o'
         self.log.debug("UttProc:is_oob(): fell through - returning 'f'")
         return 'f'
-      # self.log.debug("UttProc:is_oob(): fell through - returning 't'")
-      # return 't'
 
     def get_sentence_type(self, utt):
-        self.log.debug("UttProc:get_sentence_type() utt = %s" % (utt))
+        self.log.debug(f"UttProc:get_sentence_type() utt = {utt}")
         # very rough is question or not TODO - improve upon this
         vrb = utt.split(" ")[0]
         resp = "I"
@@ -122,13 +122,12 @@ class UttProc:
             if utt.startswith(wrd):
                 resp = "Q"
                 break
-        self.log.info("UttProc:get_sentence_type() resp = %s" % (resp))        
+        self.log.info(f"UttProc:get_sentence_type() resp = {resp}")        
         return resp
 
     def send_utt(self, utt):
         self.log.debug("UttProc:send_utt()")  
-        # sends an utterance to a 
-        # target and handles edge cases
+        # sends an utterance to a target and handles edge cases
         target = utt.get('skill_id','*')
         if target == '':
             target = '*'
@@ -141,7 +140,6 @@ class UttProc:
         self.bus.send(MSG_MEDIA, 'media_skill', info)
 
     def send_oob_to_system(self, utt, contents):
-        self.log.debug("UttProc:send_oob_to_system()")
         info = {
                 'error':'', 
                 'subtype':'oob', 
@@ -151,7 +149,8 @@ class UttProc:
                 'sentence':contents, 
                 'verb':utt, 
                 'intent_match':''
-                }
+               }
+        self.log.debug(f"UttProc:send_oob_to_system() info = {info}")       
         self.bus.send(MSG_SYSTEM, 'system_skill', info)
 
     def get_question_intent_match(self, info):
@@ -168,20 +167,20 @@ class UttProc:
                 skill_id = self.intents[intent]['skill_id']
                 intent_state = self.intents[intent]['state']
                 return skill_id, intent
-
         return skill_id, ''
 
     def get_intent_match(self, info):
-        self.log.debug("UttProc:get_intent_match()")  
+        self.log.debug("UttProc:get_intent_match() ")  
         aplay(self.earcon_filename)  # should be configurable
 
         # for utterances of type command an intent match is a subject:verb and we don't fuzzy match
         skill_id = ''
-
         intent_type = 'C'
         if info['sentence_type'] == 'I':
-            self.log.warning("Intent trying to match an informational statement which it is not designed to do! %s" % (info))
-            info['sentence_type'] == 'C'
+            self.log.warning(f"Intent trying to match an informational statement which it is not designed to do! {info}")
+            info['sentence_type'] == 'C'  
+          # should the previous line be:  
+          # info['sentence_type'] = 'C'
 
         subject = remove_articles(info['subject'])
         if subject:
@@ -189,28 +188,30 @@ class UttProc:
             subject = subject.strip()
 
         key = intent_type + ':' + subject.lower() + ':' + info['verb'].lower().strip()
-        self.log.debug("Intent match key is %s" % (key,))
+        self.log.debug(f"Intent match key = {key}")
 
         if key in self.intents:
             skill_id = self.intents[key]['skill_id']
             intent_state = self.intents[key]['state']
             self.log.debug("UttProc:get_intent_match(): Intent matched[%s] skill=%s, intent_state=%s" % (key, skill_id, intent_state))
             return skill_id, key
-
-        # no match will return ('','')
-        return skill_id, ''
+        return skill_id, ''                # no match will return ('','')
 
     def handle_register_intent(self, msg):
         data = msg.data
-
-        # the subject may contain colons which is what we prefer to use as a delimiter so we convert them here
-        subject = data['subject'].replace(":", ";")
-        key = data['intent_type'] + ':' + subject.lower() + ':' + data['verb']
+        subject = data['subject'].replace(":", ";") # convert colons to semicolons
+        verb = data['verb']
+        key = data['intent_type'] + ':' + subject.lower() + ':' + verb
+        
+        # try adding to recognized_verbs -MM
+        # if verb not in self.recognized_verbs:
+        #   self.recognized_verbs.append(data['verb'])
+        # end -MM  
 
         if key in self.intents:
-            self.log.warning("UttProc:handle_register_intent() Intent clash! key=%s, skill_id=%s ignored!" % (key, data['skill_id']))
+            self.log.warning(f"UttProc:handle_register_intent() Intent clash! key={key} skill_id=%{data['skill_id']}")
         else:
-            self.log.info("UttProc:handle_register_intent() key %s is in intent match" % (key))
+            self.log.info(f"UttProc:handle_register_intent() key {key} is in intent match")
             self.intents[key] = {'skill_id':data['skill_id'], 'state':'enabled'}
 
     def run(self):
@@ -233,7 +234,7 @@ class UttProc:
 
                 # we special case OOBs here
                 oob_type = self.is_oob(utt)
-                self.log.debug("UttProc.run() oob_type = %s utt_type = %s" % (oob_type, utt_type))
+                self.log.debug(f"UttProc.run() oob_type = {oob_type} utt_type = {utt_type} utt = {utt}")
                 if oob_type == 't':
                     res = self.send_oob_to_system(utt, contents) 
                 elif oob_type == 'o':
@@ -243,7 +244,7 @@ class UttProc:
                         self.bus.send(MSG_RAW, 'system_skill', {'utterance': contents[5:]})
                 else:
                     sentence_type = si.get_sentence_type(utt)
-                    self.log.debug("UttProc.run() sentence_type = %s utt = %s" % (sentence_type, utt))
+                    self.log.debug(f"UttProc.run() sentence_type = {sentence_type} utt = {utt}")
                     utt = normalize_sentence(utt)
                     if sentence_type != 'Q':
                         utt = remove_pleasantries(utt)
@@ -278,7 +279,7 @@ class UttProc:
                     # I - info (currently unsupported)
                     # U - unknown sentence structure
                     # M - media request
-                    # O - oob (out of bounds) request
+                    # O - oob (out of band) request
                     if si.sentence_type == 'Q':
                         print("Match Question. key=Q:%s:%s" % (si.insight.question,si.insight.subject))
                         info['skill_id'], info['intent_match'] = self.get_question_intent_match({'subject':info['subject'], 'qword':info['question']})
@@ -299,12 +300,10 @@ class UttProc:
                         if utt in self.recognized_verbs:
                             self.send_oob_to_system(utt, contents)
                         else:
-                            self.log.warning("UttProc.run() Ignoring not recognized OOB in intent_service '%s' not found in %s" % (utt, self.recognized_verbs))
+                            self.log.warning(f"UttProc.run() Ignoring not recognized OOB in intent_service {utt} not found in {self.recognized_verbs}")
                     else:
                         print(f"Unknown sentence type {si.sentence_type} or Informational sentence")
-
-                # remove input file from file system
-                os.remove(txt_file)
+                os.remove(txt_file)        # remove input file from file system
             time.sleep(0.125)
 
 if __name__ == '__main__':

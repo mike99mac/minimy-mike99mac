@@ -518,6 +518,7 @@ class MpcClient():
         ret_val = Music_info("none", None, None, None)      
     return ret_val
 
+  # TODO: fix playlists - they are not working 
   def manipulate_playlists(self, utterance):
     """
     List, create, add to, remove from and delete playlists
