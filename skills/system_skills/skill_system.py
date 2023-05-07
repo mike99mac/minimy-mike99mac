@@ -13,7 +13,7 @@ class SystemSkill(SimpleVoiceAssistant):
     """
     The system skill provides several important functions:
 
-    1) It handles out of band (oob) messages which are  basically single word verbs. typically these are things
+    1) It handles out of band (oob) messages which are basically single word verbs. typically these are things
     like 'stop', 'terminate', etc but it also handles common media commands like 'pause', 'rewind', etc. skills may
     also register new single verb oobs as well as overide defaults. for example, the alarm skill overides the 
     stop class of verbs when it has an active alarm. it should be noted that 'stop' is a special class of oob
@@ -38,10 +38,7 @@ class SystemSkill(SimpleVoiceAssistant):
 
         # TODO these need to come from a consistent source as they are shared by multiple scripts
         self.stop_aliases = ['stop', 'terminate', 'abort', 'cancel', 'kill', 'exit']
-
-        # these are considered out of band messages
-        self.recognized_verbs = {}
-
+        self.recognized_verbs = {}         # out of band messages
         self.stop_overide = None
         self.pause_requestor = None
         self.pause_requesting_skill_category = None
@@ -63,13 +60,12 @@ class SystemSkill(SimpleVoiceAssistant):
         subtype = 'pause'
         if self.pause_reason == INTERNAL_PAUSE:
             subtype = 'pause_internal'
-
         info = {
                 'error':'',
                 'subtype':subtype,
                 'skill_id':target_skill,
                 'from_skill_id':self.skill_id,
-                }
+               }
         self.bus.send(MSG_SYSTEM, target_skill, info)
 
     def send_resume(self, target_skill):
@@ -79,7 +75,7 @@ class SystemSkill(SimpleVoiceAssistant):
                 'subtype':'resume',
                 'skill_id':target_skill,
                 'from_skill_id':self.skill_id,
-                }
+               }
         self.bus.send(MSG_SYSTEM, target_skill, info)
 
     def respond_sys_info(self, data):
@@ -141,27 +137,21 @@ class SystemSkill(SimpleVoiceAssistant):
         self.log.debug("SystemSkill:output_focus_determination() ion. last_id:%s, last_cat:%s, new_cat:%s" % (last_active_skill_id, last_active_skill_category, new_skill_cat))
 
         if last_active_skill_category == 'media':
-            # media skills are paused by everything
-            # except a new media request which will
-            # terminate the previous media skill
+            # media skills are paused by everything except a new media request which will terminate the previous media skill
             if new_skill_cat == 'media':
                 return 'cancel'
             else:
                 return 'pause'
-
         if last_active_skill_category == 'qna':
-            # qna skills are paused by everything except
-            # media skills which terminate them
+            # qna skills are paused by everything except media skills which terminate them
             if new_skill_cat == 'media':
                 return 'cancel'
             else:
                 return 'pause'
-
         if last_active_skill_category == 'user':
             if new_skill_cat == 'system':
                 return 'pause'
             return 'cancel'
-
         return 'deny'
 
     def handle_raw(self, msg):
@@ -178,23 +168,24 @@ class SystemSkill(SimpleVoiceAssistant):
         """
         Normally we only handle system messages but we do handle raw messages to manage input focus.
         """
-        self.log.debug("SystemSkill:handle_message() msg = %s" % (msg))
+        self.log.debug(f"SystemSkill:handle_message() msg_type = {msg['msg_type']}")
         if msg['msg_type'] == 'raw':
             return self.handle_raw(msg)
 
-        # we only handle system messages and the raw exception above
+        # only handle system messages and the raw exception above
         if msg['msg_type'] != 'system':
             return False
-
         data = msg.data
-
+        self.log.debug(f"SystemSkill:handle_message() data[sub_type] = {data['subtype']}")
         if data['subtype'] == 'oob':       # if out of band single word verb ...
             verb = data['verb']
-            self.log.debug("SystemSkill:handle_message() verb = %s" % (verb))
-
+            # just use the first word - for example - 'next track' just means 'next'  -MM
+            verb = verb.split(' ', 1)[0]
+            # end -MM
+            self.log.debug(f"SystemSkill:handle_message() verb = {verb}")
             if verb in self.stop_aliases:
                 # if oob = stop
-                self.log.info("SystemSkill.handle_message(): Detected System Level Stop! %s" % (self.active_skills,))
+                self.log.info(f"SystemSkill.handle_message(): Detected System Level Stop, active_skills = {self.active_skills}")
                 #os.system("aplay /home/ken/MiniMy/framework/assets/stop.wav")
                 aplay(self.play_filename)
 
@@ -233,7 +224,6 @@ class SystemSkill(SimpleVoiceAssistant):
                 else:
                     # otherwise ignore stop oob
                     self.log.info("SystemSkill.handle_message() Stop Ignored Because active_skills array empty")
-
             elif verb in self.recognized_verbs:
                 # if oob recognized
                 skill_id = self.recognized_verbs[verb]
@@ -244,9 +234,8 @@ class SystemSkill(SimpleVoiceAssistant):
                         'from_skill_id':self.skill_id,
                         'verb':verb,
                         }
-                self.log.debug("SystemSkill.handle_message(): sending %s" % (info,))
+                self.log.debug(f"SystemSkill.handle_message(): skill_id = {skill_id} sending: {info}")
                 self.bus.send(MSG_SKILL, skill_id, info)
-
             else:
                 # we special case pause and resume
                 if verb == 'pause':
@@ -255,14 +244,12 @@ class SystemSkill(SimpleVoiceAssistant):
                         self.log.debug("SystemSkill.handle_message(): EXTERNAL PAUSE")
                         self.pause_reason = EXTERNAL_PAUSE
                         self.send_pause(last_active_skill_id)
-
                 elif verb == 'resume':
                     if len(self.active_skills) > 0:
                         last_active_skill_id = self.active_skills[len(self.active_skills) - 1]['skill_id']
                         self.log.debug("SystemSkill.handle_message(): EXTERNAL RESUME. send resume to %s array=%s" % (last_active_skill_id, self.active_skills))
                         self.send_resume(last_active_skill_id)
-                else:
-                    # else unrecognized oob 
+                else:                      # unrecognized oob 
                     self.log.info("SystemSkill.handle_message(): Unrecognized verb %s, data=%s" % (verb,data))
                     verb, subject = verb.split(" ")
                     utt = {

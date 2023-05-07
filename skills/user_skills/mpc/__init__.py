@@ -9,7 +9,7 @@ from mpc_client import MpcClient
 from music_info import Music_info
 import glob, os, requests, time
 from skills.sva_media_skill_base import MediaSkill
-from skills.sva_base import SimpleVoiceAssistant
+# from skills.sva_base import SimpleVoiceAssistant
 from threading import Event
 import subprocess
 
@@ -28,21 +28,21 @@ class MpcSkill(MediaSkill):
     self.mpc_client = MpcClient("/media/") # search for music under /media
     self.log.debug("MpcSkill.__init__(): skill base dir is %s" % (self.skill_base_dir))
     self.log.debug("MpcSkill.__init__(): registering 'next' intents") 
-    self.register_intent('C', 'next', 'song', self.handle_next)
-    self.register_intent('C', 'next', 'station', self.handle_next)
-    self.register_intent('C', 'next', 'title', self.handle_next)
-    self.register_intent('C', 'next', 'track', self.handle_next)
+    self.register_intent('O', 'next', 'song', self.handle_next)
+    self.register_intent('O', 'next', 'station', self.handle_next)
+    self.register_intent('O', 'next', 'title', self.handle_next)
+    self.register_intent('O', 'next', 'track', self.handle_next)
 
     self.log.debug("MpcSkill.__init__(): registering 'previous' intents") 
-    self.register_intent('C', 'previous', 'song', self.handle_prev)
-    self.register_intent('C', 'previous', 'station', self.handle_prev)
-    self.register_intent('C', 'previous', 'title', self.handle_prev)
-    self.register_intent('C', 'previous', 'track', self.handle_prev)
+    self.register_intent('O', 'previous', 'song', self.handle_prev)
+    self.register_intent('O', 'previous', 'station', self.handle_prev)
+    self.register_intent('O', 'previous', 'title', self.handle_prev)
+    self.register_intent('O', 'previous', 'track', self.handle_prev)
 
     self.log.debug("MpcSkill.__init__(): registering other OOB intents") 
-    self.register_intent('C', 'pause', 'music', self.handle_pause)
-    self.register_intent('C', 'resume', 'music', self.handle_resume)
-    self.register_intent('C', 'stop', 'music', self.handle_stop)
+    self.register_intent('O', 'pause', 'music', self.handle_pause)
+    self.register_intent('O', 'resume', 'music', self.handle_resume)
+    self.register_intent('O', 'stop', 'music', self.handle_stop)
 
   def initialize(self):
     self.log.debug("MpcSkill.initialize(): setting vars") 
@@ -53,8 +53,9 @@ class MpcSkill(MediaSkill):
 
   def fallback_internet(self, msg):
     """
-    Requested music was not found in the library - fallback to Internet search
+    Requested music was not found in library - fallback to Internet search
     """
+    self.log.debug(f"MpcSkill.fallback_internet(): calling mpc_client.search_internet({self.sentence})")
     self.music_info = self.mpc_client.search_internet(self.sentence)
 
   def get_media_confidence(self, msg):
@@ -62,7 +63,7 @@ class MpcSkill(MediaSkill):
     I am being asked if I can play this music
     """
     sentence = msg.data['msg_sentence']
-    self.log.debug("MpcSkill.get_media_confidence(): parse request %s" % (sentence))
+    self.log.debug(f"MpcSkill.get_media_confidence(): parse request {sentence}")
     sentence = sentence.lower()
  
     # if track or album is specified, assume it is a song, else search for 'radio', 'internet' or 'news' requests 
@@ -81,7 +82,7 @@ class MpcSkill(MediaSkill):
       request_type = "music"
 
     # search for music in (1) library, on (2) Internet radio, on (3) the Internet or (4) play NPR news
-    self.log.debug(f"MpcSkill.get_media_confidence(): sentence = {sentence} request_type = {request_type}")
+    self.log.debug(f"MpcSkill.get_media_confidence(): request_type = {request_type}")
     match request_type:
       case "music":                        # if not found in library, search internet
         self.music_info = self.mpc_client.search_library(sentence)
@@ -89,7 +90,9 @@ class MpcSkill(MediaSkill):
         if self.music_info.match_type == "none": # music not found in library
           self.sentence = sentence 
           self.log.debug(f"MpcSkill.get_media_confidence(): not found in library - searching Internet")
-          self.speak_lang(self.skill_base_dir, "searching_internet", None, self.fallback_internet) # tell user "searching internet"
+          mesg_file = "searching_internet"
+          mesg_info = {"sentence": sentence} 
+          self.speak_lang(self.skill_base_dir, mesg_file, mesg_info, self.fallback_internet) # tell user "searching internet"
       case "radio":
         self.music_info = self.mpc_client.parse_radio(sentence)
       case "internet":
@@ -131,6 +134,7 @@ class MpcSkill(MediaSkill):
     """
     callback to start music after media_play() speaks informational message
     """
+    self.log.debug(f"MpcSkill.start_music() calling mpc_client.start_music({self.music_info}")
     self.mpc_client.start_music(self.music_info) # play the music
 
   def search_news(self, utterance):
@@ -147,14 +151,14 @@ class MpcSkill(MediaSkill):
     page = res.text
     start_indx = page.find('audioUrl')
     if start_indx == -1:
-        self.log.debug(f"MpcSkill.search_news() cannot find url") 
-        return
+      self.log.debug(f"MpcSkill.search_news() cannot find url") 
+      return
     end_indx = start_indx + len('audioUrl')
     page = page[end_indx+3:]
     end_indx = page.find('?')
     if end_indx == -1:
-        print("Parse error")
-        return
+      self.log.debug(f"MpcSkill.search_news() Parse error")
+      return
     self.log.debug(f"MpcSkill.search_news() start_indx = {start_indx} end_indx = {end_indx} ")       
     new_url = page[:end_indx]
     new_url = new_url.replace("\\","")
@@ -196,7 +200,7 @@ class MpcSkill(MediaSkill):
     """
     Clear the mpc queue 
     """
-    self.log.info("MpcSkill.handle_resume() - calling mpc_client.mpc_cmd(toggle)")
+    self.log.info("MpcSkill.handle_resume() - calling mpc_client.mpc_cmd(clear)")
     self.mpc_client.mpc_cmd("clear") 
 
   def stop(self, message):
