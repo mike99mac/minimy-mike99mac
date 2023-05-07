@@ -85,7 +85,7 @@ class UttProc:
             if ua[0] in self.recognized_verbs or ua[0] in self.stop_aliases or ua[0] == 'pause' or ua[0] == 'resume':
                 self.log.debug("UttProc:is_oob(): Intent Barge-In Normal OOB Detected")
                 return 't'
-        elif len(ua) == 2:                 # check for two word OOBs
+        elif len(ua) == 2:                 # check for two-word OOBs
             for next_key in self.intents:
                 next_key = next_key.split(":") # split next key into words
                 if next_key[0] == 'O' and ua[0] == next_key[2] and ua[1] == next_key[1]:
@@ -203,7 +203,7 @@ class UttProc:
         verb = data['verb']
         key = data['intent_type'] + ':' + subject.lower() + ':' + verb
         
-        # try adding to recognized_verbs -MM
+        # try adding to recognized_verbs - it is not getting set -MM
         # if verb not in self.recognized_verbs:
         #   self.recognized_verbs.append(data['verb'])
         # end -MM  

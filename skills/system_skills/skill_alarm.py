@@ -39,10 +39,10 @@ class AlarmDetectThread(Thread):
         while not self._terminated:
             time.sleep(17)
             time_now = datetime.datetime.now()
-            self.log.debug("Checking for expired alarms: %s" % (time_now,))
+          # self.log.debug("Checking for expired alarms: %s" % (time_now,))
             tmp_alarms = self.alarms
             if len(tmp_alarms) == 0:
-                self.log.debug("No alarms found in the database")
+          #     self.log.debug("No alarms found in the database")
                 pass
             for alarm in tmp_alarms:
                 aa = alarm.split(",")

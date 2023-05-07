@@ -51,6 +51,9 @@ class Server:
 
             if target == '*':
                 # broadcast
+                # got this warning on the line below - how to fix?     MM
+                # DeprecationWarning: The explicit passing of coroutine objects to asyncio.wait() 
+                # is deprecated since Python 3.8, and scheduled for removal in Python 3.11.
                 await asyncio.wait([client.send(message) for client in self.clients])
             else: 
                 # directed
