@@ -70,17 +70,17 @@ class MpcClient():
            arg 2 - args to commands such as "add" or "load" 
     Return: True or False 
     """
-    self.log.debug("MpcClient.mpc_cmd(): arg1 = "+arg1+" arg2 = "+str(arg2))
     cmd = "/usr/bin/mpc "+arg1
     if arg2 != None:     
       cmd = cmd+" "+arg2
     try:
-      self.log.debug("MpcClient.mpc_cmd(): running command: "+cmd)
+      self.log.debug(f"MpcClient.mpc_cmd(): running command: {cmd}")
       result = subprocess.check_output(cmd, shell=True) 
-      self.log.debug("MpcClient.mpc_cmd(): result: "+str(result))
+      return True
     except subprocess.CalledProcessError as e:    
       self.mpc_rc = str(e.returncode)    
-    return True  
+      self.log.error(f"MpcClient.mpc_cmd(): mpc_rc = {self.mpc_rc}")
+      return False
 
   def mpc_update(self, wait: bool = True):
     """ 
@@ -97,8 +97,8 @@ class MpcClient():
     Start the mpc player   
     Return: boolean
     """
-    self.log.debug(f"MpcClient.mpc_play() - first sleeping for 1 sec")
-    time.sleep(1)
+    self.log.debug(f"MpcClient.mpc_play() - first sleeping for .1 sec")
+    time.sleep(.1)
     self.mpc_cmd("play")
 
   def start_music(self, music_info: Music_info):
@@ -805,7 +805,7 @@ class MpcClient():
     Return: list of URLs of station or None when not found   
     """
     self.log.debug(f"MpcClient.get_matching_stations() field_index: {field_index} search_name: {search_name}")
-    station_urls = []             # reset list of station indexes that match
+    station_urls = []                      # reset list of station indexes that match
     num_hits = 0
     index = 0
     for next_line in self.list_lines:
@@ -820,7 +820,7 @@ class MpcClient():
           self.station_language = next_line[3].strip()
           self.station_ads = next_line[4].strip()
           self.station_url = next_line[5].strip()
-        elif num_hits == self.max_queued:    # that's enough URLs
+        elif num_hits == self.max_queued:  # that's enough URLs
           self.log.debug("MpcClient.get_matching_stations() reached max_queued of "+str(max_queued))  
           break
       index += 1  

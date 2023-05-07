@@ -44,42 +44,40 @@ class FallbackSkill(SimpleVoiceAssistant):
             return self.handle_qna_response(msg)
 
     def handle_fallback(self,msg):
-        self.log.debug("FBS: handle_fallback() hit!")
+        self.log.debug("FallbackSkill:handle_fallback(): hit!")
         # for questions only right now
         data = msg.data['utt']
-
         if data['sentence_type'] == 'Q':
-            # send out message to all Q&A skills
-            # saying you got 3 seconds to give me 
-            # your confidence level. all Q&A skills
-            # need to respond to the 'get_confidence'
-            # message and the 'play_qna_answer' message
+            # send out message to all Q&A skills  saying you got 3 seconds to give me your confidence level. 
+            # All Q&A skills need to respond to the 'get_confidence' message and the 'play_qna_answer' message
             for skill_id in self.qna_skills:
                 # send 'q' getconf qna
                 # 'Q', 'getconf', 'qna',
-                self.log.debug("FBS: sending qna_get_confidence to %s" % (skill_id,))
+                self.log.debug(f"FallbackSkill:handle_fallback(): sending qna_get_confidence to {skill_id}")
                 info = {
-                    'subtype': 'qna_get_confidence',
-                    'skill_id': skill_id,
-                    'sentence_type': 'Q',
-                    'qword': 'getconf',
-                    'np': 'qna',
-                    'intent_match': 'Q:getconf:qna',
-                    'msg_np':data['np'],
-                    'msg_vp':data['vp'],
-                    'msg_aux':data['aux_verb'],
-                    'msg_qword':data['qword'],
-                    'msg_rule':data['rule'],
-                    'msg_tree':data['tree'],
-                    'msg_sentence':data['sentence']
-                    }
+                        'subtype': 'qna_get_confidence',
+                        'skill_id': skill_id,
+                        'sentence_type': 'Q',
+                        'qword': 'getconf',
+                        'np': 'qna',
+                        'intent_match': 'Q:getconf:qna',
+                        'msg_np':data['np'],
+                        'msg_vp':data['vp'],
+                        'msg_aux':data['aux_verb'],
+                        'msg_qword':data['qword'],
+                        'msg_rule':data['rule'],
+                        'msg_tree':data['tree'],
+                        'msg_sentence':data['sentence']
+                       }
                 self.bus.send(MSG_SKILL, skill_id, info)
         else:
             self.log.info("** Fallback Skill only handles sentences of type Question for now!, Utterance ignored! **")
 
-            message = {'subtype':'unrecognized_utterance', 
-                    'skill_id':'system_monitor_skill', 
-                'skill_data':data}
+            message = {
+                       'subtype':'unrecognized_utterance', 
+                       'skill_id':'system_monitor_skill', 
+                       'skill_data':data
+                      }
             self.send_message('system_monitor_skill', message)
             #aplay(self.boing_filename)
 
@@ -88,7 +86,7 @@ class FallbackSkill(SimpleVoiceAssistant):
             # with poor aec this can cause an infinite feedback loop 
             #self.speak("Sorry I do not understand %s" % (data['sentence'],))
 
-
+# main()
 if __name__ == '__main__':
     fs = FallbackSkill()
     Event().wait()  # Wait forever

@@ -4,6 +4,7 @@ from bus.Message import Message
 from bus.MsgBusClient import MsgBusClient
 from framework.util.utils import LOG, Config
 from threading import Event, Thread
+import subprocess
 
 from framework.message_types import (
         MSG_UTTERANCE, 
@@ -92,6 +93,25 @@ class SimpleVoiceAssistant:
         # single verb utterances but Q&A does not.
         self.bus.on(MSG_MEDIA, self.handle_media_msg)
         self.lang = "en-us"
+
+    def mpc_cmd(self, arg1, arg2 = None):
+        """ 
+        Run any mpc command that takes one or two arguments
+        Param: arg 1 - such as "clear" or "play"
+            arg 2 - args to commands such as "add" or "load" 
+        Return: True or False 
+        """
+        cmd = "/usr/bin/mpc "+arg1
+        if arg2 != None:     
+            cmd = cmd+" "+arg2
+        try:
+            self.log.debug(f"SimpleVoiceAssistant.mpc_cmd(): running command: {cmd}")
+            result = subprocess.check_output(cmd, shell=True) 
+            return True
+        except subprocess.CalledProcessError as e:    
+            self.mpc_rc = str(e.returncode)    
+            self.log.error(f"SimpleVoiceAssistant.mpc_cmd(): mpc_rc = {self.mpc_rc}")
+            return False
 
     # watchdog timer
     def start_watchdog(self, timeout, callback):
@@ -573,29 +593,31 @@ class SimpleVoiceAssistant:
 
                 if self.media_player_session_id != 0:
                     # stop media player
-                    info = {
-                            'error':'',
-                            'subtype':'media_player_command',
-                            'command':'stop_session',
-                            'session_id':self.media_player_session_id,
-                            'skill_id':'media_player_service',
-                            'from_skill_id':self.skill_control.skill_id,
-                            }
-                    self.media_player_session_id = 0
-                    self.bus.send(MSG_MEDIA, 'media_player_service', info)
+                    # call mpc directly so no need for messages -MM
+                    # info = {
+                    #         'error':'',
+                    #         'subtype':'media_player_command',
+                    #         'command':'stop_session',
+                    #         'session_id':self.media_player_session_id,
+                    #         'skill_id':'media_player_service',
+                    #         'from_skill_id':self.skill_control.skill_id,
+                    #         }
+                    # self.media_player_session_id = 0
+                    # self.bus.send(MSG_MEDIA, 'media_player_service', info)
+                    self.mpc_cmd("clear")  # clear the MPC queue
+                    # end -MM
                     self.i_am_paused = False
 
-                """
-                Commented out here down - next line was throwing an exception  -MM 
-                if self.stop:              # invoke user callback
-                    try:
-                        self.stop(message)
-                    except Exception as e:
-                        self.log.error("SimpleVoiceAssistant.handle_system_msg() Exception trying to invoke skill call back for skill = %s" % (self.skill_control.skill_id,))
-                        self.log.error(e)
-                else:
-                    selg.log.error(f"SimpleVoiceAssistant.handle_system_msg() [{self.skill_control.skill_id}]SVA_BASE stop received but no stop method!")
-                """ 
+                # Commented out here down - next line was throwing an exception  -MM 
+                # if self.stop:              # invoke user callback
+                #     try:
+                #         self.stop(message)
+                #     except Exception as e:
+                #         self.log.error("SimpleVoiceAssistant.handle_system_msg() Exception trying to invoke skill call back for skill = %s" % (self.skill_control.skill_id,))
+                #         self.log.error(e)
+                # else:
+                #     selg.log.error(f"SimpleVoiceAssistant.handle_system_msg() [{self.skill_control.skill_id}]SVA_BASE stop received but no stop method!")
+                # end -MM
 
             if message.data['subtype'] == 'request_input_focus_response':
                 self.log.info("[%s] acquired input focus!" % (self.skill_control.skill_id,))

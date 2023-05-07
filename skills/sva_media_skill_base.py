@@ -35,11 +35,11 @@ class MediaSkill(SimpleVoiceAssistant):
             self.media_play(msg)
 #       pass
 
-#   def get_media_confidence(self,msg):
-#       print("Error - unimplemented method: get_media_confidence(self,msg)!")
-#       pass
+    def get_media_confidence(self,msg):
+        print("Error - unimplemented method: get_media_confidence(self,msg)!")
+        pass
 
-#   def media_play(self,msg):
-#       print("Error - unimplemented method: media_play(self,msg)!")
-#       pass
+    def media_play(self,msg):
+        print("Error - unimplemented method: media_play(self,msg)!")
+        pass
 

@@ -196,10 +196,9 @@ class SystemSkill(SimpleVoiceAssistant):
 
                 # handle stop overide
                 if self.stop_overide is not None:
-                    # stop has been overidden by a skill, 
-                    # send stop to that skill only.
+                    # stop has been overidden by a skill, send stop to that skill only.
                     skill_id = self.stop_overide
-                    self.log.info("SystemSkill.handle_message(): STOP OVERIDE! Sending stop to %s" % (skill_id,))
+                    self.log.info(f"SystemSkill.handle_message(): STOP OVERIDE! Sending stop to {skill_id}")
                     info = {
                             'error':'',
                             'subtype':'stop',
@@ -221,11 +220,9 @@ class SystemSkill(SimpleVoiceAssistant):
                             'from_skill_id':self.skill_id,
                             }
                     self.bus.send(MSG_SYSTEM, skill_id, info)
-                else:
-                    # otherwise ignore stop oob
+                else:                      # otherwise ignore stop oob
                     self.log.info("SystemSkill.handle_message() Stop Ignored Because active_skills array empty")
-            elif verb in self.recognized_verbs:
-                # if oob recognized
+            elif verb in self.recognized_verbs: # if oob recognized
                 skill_id = self.recognized_verbs[verb]
                 info = {
                         'error':'',
@@ -236,8 +233,7 @@ class SystemSkill(SimpleVoiceAssistant):
                         }
                 self.log.debug(f"SystemSkill.handle_message(): skill_id = {skill_id} sending: {info}")
                 self.bus.send(MSG_SKILL, skill_id, info)
-            else:
-                # we special case pause and resume
+            else:                          # we special case pause and resume
                 if verb == 'pause':
                     if len(self.active_skills) > 0:
                         last_active_skill_id = self.active_skills[len(self.active_skills) - 1]['skill_id']

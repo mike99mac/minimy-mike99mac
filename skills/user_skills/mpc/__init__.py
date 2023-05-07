@@ -9,11 +9,10 @@ from mpc_client import MpcClient
 from music_info import Music_info
 import glob, os, requests, time
 from skills.sva_media_skill_base import MediaSkill
-# from skills.sva_base import SimpleVoiceAssistant
 from threading import Event
 import subprocess
 
-class MpcSkill(MediaSkill):
+class MpcSkill(MediaSkill): 
   """
   Play music skill for minimy.  It uses mpc and mpd to play music from:
   - A music library such as mp3 files
@@ -26,30 +25,13 @@ class MpcSkill(MediaSkill):
     self.url = ''
     self.lang = "en-us"                    # just US English for now
     self.mpc_client = MpcClient("/media/") # search for music under /media
-    self.log.debug("MpcSkill.__init__(): skill base dir is %s" % (self.skill_base_dir))
-    self.log.debug("MpcSkill.__init__(): registering 'next' intents") 
-    self.register_intent('O', 'next', 'song', self.handle_next)
-    self.register_intent('O', 'next', 'station', self.handle_next)
-    self.register_intent('O', 'next', 'title', self.handle_next)
-    self.register_intent('O', 'next', 'track', self.handle_next)
-
-    self.log.debug("MpcSkill.__init__(): registering 'previous' intents") 
-    self.register_intent('O', 'previous', 'song', self.handle_prev)
-    self.register_intent('O', 'previous', 'station', self.handle_prev)
-    self.register_intent('O', 'previous', 'title', self.handle_prev)
-    self.register_intent('O', 'previous', 'track', self.handle_prev)
-
-    self.log.debug("MpcSkill.__init__(): registering other OOB intents") 
-    self.register_intent('O', 'pause', 'music', self.handle_pause)
-    self.register_intent('O', 'resume', 'music', self.handle_resume)
-    self.register_intent('O', 'stop', 'music', self.handle_stop)
+    self.log.debug(f"MpcSkill.__init__(): skill_base_dir: {self.skill_base_dir}")
 
   def initialize(self):
     self.log.debug("MpcSkill.initialize(): setting vars") 
     self.music_info = Music_info("none", "", {}, []) # music to play
     self._is_playing = False
-    self.sentence = None                   # 
-    # self.mpc_client = MpcClient("/media/") # search for music under /media
+    self.sentence = None 
 
   def fallback_internet(self, msg):
     """
@@ -110,7 +92,9 @@ class MpcSkill(MediaSkill):
     """
     Either some music has been found, or an error message has to be spoken
     """
+
     self.log.debug(f"MpcSkill.media_play() match_type = {self.music_info.match_type}")
+    self.mpc_client.mpc_cmd("clear")       # stop any media that might be playing
     if self.music_info.match_type == "none": # no music was found
       self.log.debug("MpcSkill.media_play() no music found") 
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info) 
@@ -168,46 +152,7 @@ class MpcSkill(MediaSkill):
     file_name = file_names[0]
     return Music_info("news", None, None, [file_name])
 
-  def handle_prev(self, message):
-    """
-    Play previous track or station
-    """
-    self.log.debug("MpcSkill.handle_prev() - calling mpc_client.mpc_cmd(prev)")
-    self.mpc_client.mpc_cmd("prev")
-
-  def handle_next(self, message):
-    """
-    Play next track or station - called by the playback control skill
-    """
-    self.log.debug("MpcSkill.handle_next() - calling mpc_client.mpc_cmd(next)")
-    self.mpc_client.mpc_cmd("next")
-
-  def handle_pause(self, msg):
-    """
-    Pause what is playing
-    """
-    self.log.info("MpcSkill.handle_pause() - calling mpc_client.mpc_cmd(toggle)")
-    self.mpc_client.mpc_cmd("toggle")      # toggle between play and pause
-
-  def handle_resume(self, msg):
-    """
-    Resume what was playing
-    """
-    self.log.info("MpcSkill.handle_resume() - calling mpc_client.mpc_cmd(toggle)")
-    self.mpc_client.mpc_cmd("toggle")      # toggle between play and pause
-
-  def handle_stop(self, msg):
-    """
-    Clear the mpc queue 
-    """
-    self.log.info("MpcSkill.handle_resume() - calling mpc_client.mpc_cmd(clear)")
-    self.mpc_client.mpc_cmd("clear") 
-
-  def stop(self, message):
-    self.log.info("MpcSkill.stop() - pausing music")
-    self.mpc_client.mpc_cmd("pause")
-
-
+# main()
 if __name__ == '__main__':
   mpc = MpcSkill()
   Event().wait()                         # Wait forever

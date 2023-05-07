@@ -1,7 +1,9 @@
+
 from threading import Event
 from skills.sva_base import SimpleVoiceAssistant
 from bus.Message import Message
 from framework.message_types import MSG_SKILL, MSG_SYSTEM
+# import subprocess
 
 class SVAMediaSkill(SimpleVoiceAssistant):
     """
@@ -10,13 +12,11 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     def __init__(self, bus=None, timeout=5):
         super().__init__(msg_handler=self.handle_message, skill_id='media_skill', skill_category='media')
         self.skill_id = 'media_skill'
-        self.log.debug(f"SVAMediaSkill.__init__() skill_id = {self.skill_id}") 
-
-        # array of registered media skill handlers
-        self.media_skills = []
+        self.log.debug(f"SVAMediaSkill.__init__() skill_id = {self.skill_id} skill_base_dir = {self.skill_base_dir}") 
+        self.media_skills = []             # array of registered media skill handlers
         self.active_media_skill = None
 
-        # register OOBs - don't do this until a media skill goes active
+        # register OOBs
         info = {
                 'subtype':'reserve_oob', 
                 'skill_id':'system_skill', 
@@ -32,9 +32,39 @@ class SVAMediaSkill(SimpleVoiceAssistant):
         self.bus.send(MSG_SYSTEM, 'system_skill', info)
         info['verb'] = 'stop'
         self.bus.send(MSG_SYSTEM, 'system_skill', info)
+        self.log.debug("SVAMediaSkill.__init__(): registering OOB intents") 
+        self.register_intent('O', 'next', 'song', self.handle_next)
+        self.register_intent('O', 'next', 'station', self.handle_next)
+        self.register_intent('O', 'next', 'title', self.handle_next)
+        self.register_intent('O', 'next', 'track', self.handle_next)
+        self.register_intent('O', 'previous', 'song', self.handle_prev)
+        self.register_intent('O', 'previous', 'station', self.handle_prev)
+        self.register_intent('O', 'previous', 'title', self.handle_prev)
+        self.register_intent('O', 'previous', 'track', self.handle_prev)
+        self.register_intent('O', 'pause', 'music', self.handle_pause)
+        self.register_intent('O', 'resume', 'music', self.handle_resume)
+        self.register_intent('O', 'stop', 'music', self.handle_stop)
 
     def handle_oob_detected(self, msg):
-        self.log.error(f"SVAMediaSkill.handle_oob_detected() OOB detected by media base: {msg.data}")
+        self.log.debug(f"SVAMediaSkill.handle_oob_detected() OOB detected - msg: {msg}")
+        if self.active_media_skill == None: # no music playing
+            self.speak_lang(f"{self.skill_base_dir}/skills/user_skills/mpc", "no_music_playing", None) # tell user  
+        else:
+            oob_type = msg.data['verb']
+            self.log.debug(f"SVAMediaSkill.handle_oob_detected(): oob_type = {oob_type}")
+            match oob_type:
+                case "previous":
+                    self.handle_prev(msg)
+                case "next":
+                    self.handle_next(msg)
+                case "pause":
+                    self.handle_pause(msg)
+                case "resume":
+                    self.handle_resume(msg)
+                case "stop":
+                    self.handle_stop(msg)
+                case _:
+                    self.log.error(f"SVAMediaSkill.handle_oob_detected() unexpected OOB: {oob_type}")
 
     def handle_register_media(self, msg):
         data = msg.data
@@ -97,10 +127,68 @@ class SVAMediaSkill(SimpleVoiceAssistant):
         elif msg.data['subtype'] == 'oob_detect':
             return self.handle_oob_detected(msg)
         elif msg.data['from_skill_id'] == 'media_player_service' and msg.data['subtype'] == 'media_player_command_response' and msg.data['response'] == 'session_ended' and self.active_media_skill == msg.data['skill_id']:
-            self.log.debug(f"media session ended for {self.active_media_skill}")
+            self.log.debug(f"SVAMediaSkill.handle_message() media session ended for {self.active_media_skill}")
             self.active_media_skill = None
         else:
-            self.log.warning(f"SVAMediaSkill.handle_message() Error - unrecognized subtype = {msg.data['subtype']}")
+            self.log.warning(f"SVAMediaSkill.handle_message() unrecognized subtype = {msg.data['subtype']}")
+
+    # def mpc_cmd(self, arg1, arg2 = None):
+    #     """ 
+    #     Run any mpc command that takes one or two arguments
+    #     Param: arg 1 - such as "clear" or "play"
+    #         arg 2 - args to commands such as "add" or "load" 
+    #     Return: True or False 
+    #     """
+    #     cmd = "/usr/bin/mpc "+arg1
+    #     if arg2 != None:     
+    #         cmd = cmd+" "+arg2
+    #     try:
+    #         self.log.debug(f"SVAMediaSkill.mpc_cmd(): running command: {cmd}")
+    #         result = subprocess.check_output(cmd, shell=True) 
+    #         return True
+    #     except subprocess.CalledProcessError as e:    
+    #         self.mpc_rc = str(e.returncode)    
+    #         self.log.error(f"SVAMediaSkill.mpc_cmd(): mpc_rc = {self.mpc_rc}")
+    #         return False
+          
+    def handle_prev(self, message):
+        """
+        Play previous track or station
+        """
+        self.log.debug("SVAMediaSkill.handle_prev() - calling mpc_cmd(prev)")
+        self.mpc_cmd("prev")
+
+    def handle_next(self, message):
+        """
+        Play next track or station - called by the playback control skill
+        """
+        self.log.debug("SVAMediaSkill.handle_next() - calling mpc_cmd(next)")
+        self.mpc_cmd("next")
+
+    def handle_pause(self, msg):
+        """
+        Pause what is playing
+        """
+        self.log.info("SVAMediaSkill.handle_pause() - calling mpc_cmd(toggle)")
+        self.mpc_cmd("toggle")      # toggle between play and pause
+
+    def handle_resume(self, msg):
+        """
+        Resume what was playing
+        """
+        self.log.info("SVAMediaSkill.handle_resume() - calling mpc_cmd(toggle)")
+        self.mpc_cmd("toggle")      # toggle between play and pause
+
+    def handle_stop(self, msg):
+        """
+        Clear the mpc queue 
+        """
+        self.log.info("SVAMediaSkill.handle_resume() - calling mpc_cmd(clear)")
+        self.mpc_cmd("clear") 
+
+    def stop(self, message):
+        self.log.info("SVAMediaSkill.stop() - pausing music")
+        self.mpc_cmd("pause")      
 
 if __name__ == '__main__':
     sva_ms = SVAMediaSkill()
