@@ -119,7 +119,7 @@ class SVAMediaPlayerSkill:
         file_uri = message.data['file_uri']
         play_session_id = message.data['session_id']
         media_type = message.data.get('media_type', None)
-        self.log.info("SVAMediaPlayerSkill.play_file(): MediaType=%s, PlaySID=%s, CurrentSID=%s, play file:%s" % (media_type, play_session_id, self.current_session.session_id, file_uri))
+        self.log.info(f"SVAMediaPlayerSkill.play_file(): MediaType: {media_type} PlaySID: {play_session_id} CurrentSID: {self.current_session.session_id} file_uri: {file_uri}")
         if play_session_id == self.current_session.session_id:
             media_entry = {
                           'file_uri':file_uri,
@@ -369,10 +369,10 @@ class SVAMediaPlayerSkill:
                 self.log.debug("MediaPlayer - Unrecognized command = %s" % (command,))
 
     def wait_for_end_play(self, media_entry):
-        self.log.debug("MediaPlayer:wait_for_end_play() media_entry = %s" % (media_entry))
+        self.log.debug(f"MediaPlayer:wait_for_end_play() media_entry: {media_entry}")
         while not self.current_session.ce.is_completed() and self.state == 'playing':
             time.sleep(0.01)
-        self.log.debug("wait_for_end() state is %s, owner=%s, file=%s" % (self.state,self.current_session.owner,media_entry['file_uri']))
+        self.log.debug(f"wait_for_end() state: {self.state} owner: {self.current_session.owner} file_uri: {media_entry['file_uri']}")
 
         if self.state == 'paused':
             self.log.info("MediaPlayer Pausing current session")
@@ -445,7 +445,7 @@ class SVAMediaPlayerSkill:
                 media_entry = self.current_session.media_queue[0]
                 file_uri = media_entry['file_uri']
                 media_type = media_entry['media_type']
-                self.log.debug("MediaPlayer:run() file_uri = %s media_type = %s" % (file_uri, media_type))
+                self.log.debug(f"MediaPlayer:run() file_uri = {file_uri} media_type = {media_type}")
                 fa = file_uri.split(".")
                 file_ext = fa[len(fa) - 1]
 
@@ -472,26 +472,20 @@ class SVAMediaPlayerSkill:
                     # we use the hal to determine the command line for the actual player so we can support anything
                     self.current_session.media_type = media_type
                     media_player_cfg = self.hal.get('play_media', None)
-
                     if media_player_cfg:
                         cmd = media_player_cfg.get(self.current_session.media_type,'')
-
                     if cmd == '':
                         self.log.error("ERROR - invalid media player command line !")
                         return 
                     else:
                         cmd = cmd % (file_uri,)
-
                 self.log.info("cmd = %s" % (cmd,))
                 self.current_session.ce = CommandExecutor(cmd)
                 self.wait_for_end_play(media_entry)
-
             if self.state == 'resumed':
                 self.state = 'playing'
                 self.wait_for_end_play(media_entry)
-
-            if self.state == 'paused':
-                # clear current media entry
+            if self.state == 'paused':     # clear current media entry
                 self.current_session.owner = None
                 self.current_session.ce = None
                 self.log.info("MediaPlayer run() - setting current_session.sid to 0, it was %s" % (self.current_session.session_id,))
@@ -503,10 +497,9 @@ class SVAMediaPlayerSkill:
                 self.state = 'idle'
             time.sleep(0.01)
 
-
+# main()
 if __name__ == '__main__':
     sva_mps = SVAMediaPlayerSkill()
     sva_mps.is_running = True
     sva_mps.run()
     Event().wait()  # Wait forever
-

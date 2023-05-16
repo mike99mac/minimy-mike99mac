@@ -1,0 +1,39 @@
+#!/bin/bash
+#
+# stop-minimy.sh - kill processes with minimy strings in them and unmount tmpfs's
+#
+#+--------------------------------------------------------------------------+
+function umountTmpfs
+# Unmount a temporary file system if it is mounted 
+# Arg 1: file system to umount
+#+--------------------------------------------------------------------------+
+ {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+
+  fileSystem=$1
+  fsType=`mount | grep $fileSystem | awk '{print $1}'` # check if it's mounted
+  if [ "$fsType" = "tmpfs" ]; then 
+    sudo umount $fileSystem  
+  fi
+ }                                         # umountTmpfs()
+
+# main() 
+echo "Stopping Minimy ..." 
+procs=`ps -ef | egrep 'minimy/skills|skills/system_skills|framework/services|MsgBus|mimic3|skill_system.py' | grep -v grep`
+if [ ${#procs} = 0 ]; then 
+  echo "Minimy does not appear to be running"
+else
+  echo "$procs" | while read nextProc; do
+    pid=`echo $nextProc | awk '{print $2}'`
+    echo "killing process: $nextProc ..."
+    sudo kill $pid
+  done 
+fi
+sleep 2
+
+# unmount tmpfs file systems
+umountTmpfs /var/log
+umountTmpfs $HOME/minimy/logs
+umountTmpfs $HOME/minimy/tmp
+

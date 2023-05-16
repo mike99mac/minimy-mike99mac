@@ -7,6 +7,7 @@
 import csv
 from dataclasses import dataclass
 from enum import Enum
+import glob
 import logging
 from music_info import Music_info
 import os 
@@ -14,6 +15,8 @@ from pathlib import Path
 import random
 from random import shuffle
 import re
+import requests
+from skills.sva_base import SimpleVoiceAssistant
 import subprocess
 from subprocess import run
 import time
@@ -21,7 +24,7 @@ from typing import Union, Optional, List, Iterable
 import urllib.parse
 from youtube_search import YoutubeSearch
 
-class MpcClient():
+class MpcClient(SimpleVoiceAssistant):
   """ 
   Accept voice commands to communicate with mpd using mpc calls 
   Support cataloging of music files and accessing Internet radio stations
@@ -51,6 +54,8 @@ class MpcClient():
     self.station_URL = "unknown"  
     self.request_type = "unknown"  
     self.list_lines = []
+    base_dir = str(os.getenv('SVA_BASE_DIR'))
+    self.temp_dir = base_dir + "/logs"     # log dir should be a tmpfs so files self-delete at minimy restart
 
   def initialize(self, music_dir: Path):  
     """ 
@@ -62,25 +67,6 @@ class MpcClient():
     except subprocess.CalledProcessError as e:      
       self.mpc_rc = str(e.returncode)
       self.log.debug("MpcClient.__init__():  mpc single off return code = "+str(e.returncode)) 
-
-  def mpc_cmd(self, arg1, arg2 = None):
-    """ 
-    Run any mpc command that takes one or two arguments
-    Param: arg 1 - such as "clear" or "play"
-           arg 2 - args to commands such as "add" or "load" 
-    Return: True or False 
-    """
-    cmd = "/usr/bin/mpc "+arg1
-    if arg2 != None:     
-      cmd = cmd+" "+arg2
-    try:
-      self.log.debug(f"MpcClient.mpc_cmd(): running command: {cmd}")
-      result = subprocess.check_output(cmd, shell=True) 
-      return True
-    except subprocess.CalledProcessError as e:    
-      self.mpc_rc = str(e.returncode)    
-      self.log.error(f"MpcClient.mpc_cmd(): mpc_rc = {self.mpc_rc}")
-      return False
 
   def mpc_update(self, wait: bool = True):
     """ 
@@ -1038,3 +1024,37 @@ class MpcClient():
     if self.mpc_cmd("play") != True:
         self.log.debug("MpcClient.start_music(): mpc_cmd(play) failed")
         return False 
+
+  def search_news(self, utterance):
+    """
+    search for NPR news 
+    param: text of the request
+    return: Music_info object
+    """
+    self.log.debug(f"MpcClient.search_news() utterance = {utterance}")
+    url = "https://www.npr.org/podcasts/500005/npr-news-now"
+    self.log.debug(f"MpcClient.search_news() url = {url}") 
+    # self.speak("Getting the latest from N.P.R news")
+    res = requests.get(url)
+    page = res.text
+    start_indx = page.find('audioUrl')
+    if start_indx == -1:
+      self.log.debug(f"MpcClient.search_news() cannot find NPR news URL") 
+      return
+    end_indx = start_indx + len('audioUrl')
+    page = page[end_indx+3:]
+    end_indx = page.find('?')
+    if end_indx == -1:
+      self.log.debug(f"MpcClient.search_news() Parse error")
+      return
+    self.log.debug(f"MpcClient.search_news() start_indx = {start_indx} end_indx = {end_indx} ")       
+    new_url = page[:end_indx]
+    new_url = new_url.replace("\\","")
+    os.chdir(self.temp_dir)                # change to the logs directory which should be a tmpfs
+    self.log.debug(f"MpcSkill.search_news() current directory is: {os.getcwd()}")
+    cmd = f"wget {new_url}"
+    os.system(cmd)                         # get the file with wget
+    file_names = glob.glob("*.mp3")        # find the downloaded file
+    file_name = f"{self.temp_dir}/{file_names[0]}" # fully qualify file name
+    self.log.debug(f"MpcSkill.search_news() news file_name = {file_name}")
+    return Music_info("news", None, None, [file_name])
