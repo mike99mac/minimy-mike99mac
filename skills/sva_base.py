@@ -264,7 +264,7 @@ class SimpleVoiceAssistant:
 
         if self.media_player_session_id != 0:
             ## already active msid and play request - need to reset active session and reset pause
-            self.log.warning("SimpleVoiceAssistant.play_media() %s ** %s already has an active media session id=%s. play_media() reusing it" % (self.skill_control.skill_id,from_skill_id,self.media_player_session_id))
+            self.log.warning(f"SimpleVoiceAssistant.play_media() {self.skill_control.skill_id} ** {from_skill_id} already has an active media session id - reusing {self.media_player_session_id}")
             info = {
                    'error':'',
                    'subtype':'media_player_command',
@@ -361,7 +361,7 @@ class SimpleVoiceAssistant:
         if mesg_info != None:
           for key in mesg_info:              # replace variables in the message with their corresponding values
             variable = "{"+key+"}"           # variables are surrounded by {braces}
-            text = text.replace(variable, mesg_info[key])
+            text = text.replace(variable, str(mesg_info[key]))
         self.log.debug(f"SimpleVoiceAssistant.speak_lang() speaking message: {text}")
         self.speak(text, wait_callback)    # speak the message 
 
@@ -574,121 +574,74 @@ class SimpleVoiceAssistant:
             self.i_am_paused = True
 
     def handle_system_msg(self, message):
-        self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() skill_id = {self.skill_control.skill_id} message.data['subtype'] = {message.data['subtype']}")
+        self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() skill_id = {self.skill_control.skill_id} data['subtype'] = {message.data['subtype']}")
         if message.data['skill_id'] == self.skill_control.skill_id:
-            if message.data['subtype'] == 'stop':
-                if self.tts_service_session_id != 0:
-                    # stop tts
-                    info = {
-                            'error':'',
-                            'subtype':'tts_service_command',
-                            'command':'stop_session',
-                            'session_id':self.tts_service_session_id,
-                            'skill_id':'tts_service',
-                            'from_skill_id':self.skill_control.skill_id,
-                            }
-                    # don't do this here do it when you get the response
-                    #self.tts_service_session_id = 0
-                    self.send_message('tts_service', info)
-
-                if self.media_player_session_id != 0:
-                    # stop media player
-                    # call mpc directly so no need for messages -MM
-                    # info = {
-                    #         'error':'',
-                    #         'subtype':'media_player_command',
-                    #         'command':'stop_session',
-                    #         'session_id':self.media_player_session_id,
-                    #         'skill_id':'media_player_service',
-                    #         'from_skill_id':self.skill_control.skill_id,
-                    #         }
-                    # self.media_player_session_id = 0
-                    # self.bus.send(MSG_MEDIA, 'media_player_service', info)
+            match message.data['subtype']:
+                case "stop" | "stock":     # "stop" is often heard as "stock"
+                    self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() stop detected - calling 'mpc clear'")
                     self.mpc_cmd("clear")  # clear the MPC queue
-                    # end -MM
                     self.i_am_paused = False
-
-                # Commented out here down - next line was throwing an exception  -MM 
-                # if self.stop:              # invoke user callback
-                #     try:
-                #         self.stop(message)
-                #     except Exception as e:
-                #         self.log.error("SimpleVoiceAssistant.handle_system_msg() Exception trying to invoke skill call back for skill = %s" % (self.skill_control.skill_id,))
-                #         self.log.error(e)
-                # else:
-                #     selg.log.error(f"SimpleVoiceAssistant.handle_system_msg() [{self.skill_control.skill_id}]SVA_BASE stop received but no stop method!")
-                # end -MM
-
-            if message.data['subtype'] == 'request_input_focus_response':
-                self.log.info("[%s] acquired input focus!" % (self.skill_control.skill_id,))
-                # TODO error check and timeout check
-                self.waiting_for_input_focus = False
-
-                self.i_am_conversed = True
-                self.ignore_raw_ctr = 0
-
-            if message.data['subtype'] == 'request_output_focus_response':
-                self.log.info("SimpleVoiceAssistant.handle_system_msg() [%s] acquired output focus!" % (self.skill_control.skill_id,))
-                if message.data['status'] == 'confirm':
-                    # if state speak else must be state media
-                    if self.focus_mode == 'speech':
-                        self.tts_session_response = ''
-                        info = {
-                               'error':'',
-                               'subtype':'tts_service_command',
-                               'command':'start_session',
-                               'skill_id':'tts_service',
-                               'from_skill_id':self.skill_control.skill_id
-                               }
-                        self.send_message('tts_service', info)
+                case "request_input_focus_response":
+                    self.log.info("[%s] acquired input focus!" % (self.skill_control.skill_id,))
+                    # TODO error check and timeout check
+                    self.waiting_for_input_focus = False
+                    self.i_am_conversed = True
+                    self.ignore_raw_ctr = 0
+                case "request_output_focus_response":
+                    self.log.info(f"SimpleVoiceAssistant.handle_system_msg() {self.skill_control.skill_id} acquired output focus!")
+                    if message.data['status'] == 'confirm': # if state speak else must be state media
+                        if self.focus_mode == 'speech':
+                            self.tts_session_response = ''
+                            info = {
+                                'error':'',
+                                'subtype':'tts_service_command',
+                                'command':'start_session',
+                                'skill_id':'tts_service',
+                                'from_skill_id':self.skill_control.skill_id
+                                }
+                            self.send_message('tts_service', info)
+                        else:
+                            info = {
+                                    'error':'',
+                                    'subtype':'media_player_command',
+                                    'command':'start_session',
+                                    'skill_id':'media_player_service',
+                                    'from_skill_id':self.skill_control.skill_id
+                                    }
+                            self.bus.send(MSG_MEDIA, 'media_player_service', info)
                     else:
+                        self.log.warning(f"SimpleVoiceAssistant.handle_system_msg() {self.skill_control.skill_id} cannot acquire output focus!")
+                case "pause":
+                    if self.i_am_paused:
+                        self.log.debug("SimpleVoiceAssistant.handle_system_msg() IGNORE PAUSE BECAUSE ALREADY PAUSED!!!!!")
+                        return
+                    return self.pause_sessions()
+                case "pause_internal":
+                    self.log.debug("SimpleVoiceAssistant.handle_system_msg() ALREADY PAUSED BUT CANT IGNORE INTERNAL PAUSE !!!!")
+                    return self.pause_sessions()
+                case "resume":             # resume any active media sessions
+                    if self.media_player_session_id != 0:
                         info = {
                                 'error':'',
-                                 'subtype':'media_player_command',
-                                 'command':'start_session',
-                                 'skill_id':'media_player_service',
-                                 'from_skill_id':self.skill_control.skill_id
-                                }
+                                'subtype':'media_player_command',
+                                'command':'resume_session',
+                                'session_id':self.media_player_session_id,
+                                'skill_id':'media_player_service',
+                                'from_skill_id':self.skill_control.skill_id,
+                               }
                         self.bus.send(MSG_MEDIA, 'media_player_service', info)
-                else:
-                    self.log.warning(f"SimpleVoiceAssistant.handle_system_msg() {self.skill_control.skill_id} cannot acquire output focus!")
-
-            if message.data['subtype'] == 'pause':
-                if self.i_am_paused:
-                    self.log.debug("SimpleVoiceAssistant.handle_system_msg() IGNORE PAUSE BECAUSE ALREADY PAUSED!!!!!")
-                    return
-                return self.pause_sessions()
-
-            if message.data['subtype'] == 'pause_internal':
-                self.log.debug("SimpleVoiceAssistant.handle_system_msg() ALREADY PAUSED BUT CANT IGNORE INTERNAL PAUSE !!!!")
-                return self.pause_sessions()
-
-            if message.data['subtype'] == 'resume':
-                # resume any active media sessions
-                if self.media_player_session_id != 0:
-                    info = {
-                           'error':'',
-                           'subtype':'media_player_command',
-                           'command':'resume_session',
-                           'session_id':self.media_player_session_id,
-                           'skill_id':'media_player_service',
-                           'from_skill_id':self.skill_control.skill_id,
-                           }
-                    self.bus.send(MSG_MEDIA, 'media_player_service', info)
-                    self.i_am_paused = False
-
-                # resume any active tts sessions
-                if self.tts_service_session_id != 0:
-                    info = {
-                           'error':'',
-                           'subtype':'tts_service_command',
-                           'command':'resume_session',
-                           'session_id':self.tts_service_session_id,
-                           'skill_id':'tts_service',
-                           'from_skill_id':self.skill_control.skill_id,
-                           }
-                    self.send_message('tts_service', info)
-                    self.i_am_paused = False
+                        self.i_am_paused = False
+                        if self.tts_service_session_id != 0:  # resume any active tts sessions
+                            info = {
+                                    'error':'',
+                                    'subtype':'tts_service_command',
+                                    'command':'resume_session',
+                                    'session_id':self.tts_service_session_id,
+                                    'skill_id':'tts_service',
+                                    'from_skill_id':self.skill_control.skill_id,
+                                   }
+                            self.send_message('tts_service', info)
+                            self.i_am_paused = False
 
             # honor any registered message handlers
             if self.handle_message is not None:

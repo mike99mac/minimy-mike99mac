@@ -7,7 +7,7 @@
 from framework.message_types import MSG_MEDIA
 from mpc_client import MpcClient
 from music_info import Music_info
-import glob, os, requests, time
+import os, requests, time
 from skills.sva_media_skill_base import MediaSkill
 from threading import Event
 import subprocess
@@ -80,7 +80,7 @@ class MpcSkill(MediaSkill):
       case "internet":
         self.music_info = self.mpc_client.search_internet(sentence)
       case "news":
-        self.music_info = self.search_news(sentence)
+        self.music_info = self.mpc_client.search_news(sentence)
     if self.music_info.tracks_or_urls != None: # no error 
       self.log.debug("MpcSkill.get_media_confidence(): found tracks or URLs") 
     else:                                  # error encountered
@@ -92,27 +92,21 @@ class MpcSkill(MediaSkill):
     """
     Either some music has been found, or an error message has to be spoken
     """
-
     self.log.debug(f"MpcSkill.media_play() match_type = {self.music_info.match_type}")
     self.mpc_client.mpc_cmd("clear")       # stop any media that might be playing
     if self.music_info.match_type == "none": # no music was found
       self.log.debug("MpcSkill.media_play() no music found") 
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info) 
       return None
-
-    # speak what music will be playing and pass callback to start the music 
-    if self.music_info.match_type == "news":
-      file_name = self.music_info.tracks_or_urls[0]
-      self.play_media(self.skill_base_dir + '/' + file_name, delete_on_complete=True)
-    else:                                  # clear the mpc queue then add all matching station URLs or tracks 
-      self.mpc_client.mpc_cmd("clear")   
-      for next_url in self.music_info.tracks_or_urls:
-        self.log.debug(f"MpcSkill.media_play() adding URL to MPC queue: {next_url}")
-        self.mpc_client.mpc_cmd("add", next_url)
-      if self.music_info.mesg_file == None:  # no message
-        self.start_music()
-      else:                                  # speak message and pass callback  
-        self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.start_music)
+       
+    # clear the mpc queue then add all matching station URLs or tracks 
+    for next_url in self.music_info.tracks_or_urls:
+      self.log.debug(f"MpcSkill.media_play() adding URL to MPC queue: {next_url}")
+      self.mpc_client.mpc_cmd("add", next_url)
+    if self.music_info.mesg_file == None:  # no message
+      self.start_music()
+    else:                                  # speak message and pass callback  
+      self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.start_music)
     
   def start_music(self):
     """
@@ -120,37 +114,6 @@ class MpcSkill(MediaSkill):
     """
     self.log.debug(f"MpcSkill.start_music() calling mpc_client.start_music({self.music_info}")
     self.mpc_client.start_music(self.music_info) # play the music
-
-  def search_news(self, utterance):
-    """
-    search for NPR news 
-    param: text of the request
-    return: Music_info object
-    """
-    self.log.debug(f"MpcSkill.search_news() utterance = {utterance}")
-    url = "https://www.npr.org/podcasts/500005/npr-news-now"
-    self.log.debug(f"MpcSkill.search_news() url = {url}") 
-    # self.speak("Getting the latest from N.P.R news")
-    res = requests.get(url)
-    page = res.text
-    start_indx = page.find('audioUrl')
-    if start_indx == -1:
-      self.log.debug(f"MpcSkill.search_news() cannot find url") 
-      return
-    end_indx = start_indx + len('audioUrl')
-    page = page[end_indx+3:]
-    end_indx = page.find('?')
-    if end_indx == -1:
-      self.log.debug(f"MpcSkill.search_news() Parse error")
-      return
-    self.log.debug(f"MpcSkill.search_news() start_indx = {start_indx} end_indx = {end_indx} ")       
-    new_url = page[:end_indx]
-    new_url = new_url.replace("\\","")
-    cmd = "wget %s" % (new_url,)
-    os.system(cmd)
-    file_names = glob.glob("*.mp3")         # find the downloaded file
-    file_name = file_names[0]
-    return Music_info("news", None, None, [file_name])
 
 # main()
 if __name__ == '__main__':
