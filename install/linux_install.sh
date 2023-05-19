@@ -13,14 +13,14 @@ source venv_ngv/bin/activate
 pip install --upgrade pip
 pip install --upgrade wheel setuptools
 pip install setuptools -U
-sudo apt install python-dev
-sudo apt install build-essential
-sudo apt install portaudio19-dev
+sudo apt install -y python-dev
+sudo apt install -y build-essential
+sudo apt install -y portaudio19-dev
 # try skipping these
-#sudo apt install ffmpeg
-#sudo apt install curl
-#sudo apt install wget
-sudo apt install mpg123
+sudo apt install -y ffmpeg
+sudo apt install -y curl
+sudo apt install -y wget
+sudo apt install -y mpg123
 pip install -r install/requirements.txt
 
 deactivate
