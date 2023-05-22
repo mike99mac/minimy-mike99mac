@@ -546,7 +546,7 @@ class SimpleVoiceAssistant:
                 self.handle_message(message)
 
     def pause_sessions(self):
-        self.log.debug("SimpleVoiceAssistant.pause_sessions() media_player_session_id = {self.media_player_session_id}")
+        self.log.debug(f"SimpleVoiceAssistant.pause_sessions() media_player_session_id = {self.media_player_session_id}")
         # pause any active media sessions
         if self.media_player_session_id != 0:
             info = {
