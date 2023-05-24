@@ -5,7 +5,7 @@
 #     install/linux_install.sh
 #
 date
-echo 'Begin Installation, MiniMy Version 1.0.2'
+echo 'Begin Installation, MiniMy Version 1.0.3'
 sudo apt install python3-venv
 sudo apt install python3-dev
 python3 -m venv venv_ngv
@@ -13,21 +13,21 @@ source venv_ngv/bin/activate
 pip install --upgrade pip
 pip install --upgrade wheel setuptools
 pip install setuptools -U
-sudo apt install -y python-dev
+sudo apt install -y python3-dev
 sudo apt install -y build-essential
 sudo apt install -y portaudio19-dev
-# try skipping these
+sudo apt install -y mpg123
 sudo apt install -y ffmpeg
 sudo apt install -y curl
 sudo apt install -y wget
-sudo apt install -y mpg123
+python3 -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
 pip install -r install/requirements.txt
-
 deactivate
 
 echo 'Installing Internet music tools'
-pip install youtube-search 
-sudo curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl
+pip install youtube-search-python
+# try skipping this
+# sudo curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl
 sudo chmod a+rx /usr/local/bin/yotube-dl
 
 echo 'Installing Local NLP'
@@ -58,6 +58,7 @@ cd ../../../../..
 deactivate
 source framework/services/tts/local/mimic3/.venv/bin/activate
 pip install importlib-resources
+pip install youtube-search 
 deactivate
 
 source venv_ngv/bin/activate

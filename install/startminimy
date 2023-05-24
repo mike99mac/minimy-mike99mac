@@ -182,7 +182,7 @@ function loadUserSkills
   # loadOneSkill ../rfm RFM skill
   # loadOneSkill ../youtube YouTube skill 
   # loadOneSkill ../npr_news NPR News skill 
-  #echo 'WARNING! NOT loading Home Assistant skill!'
+  # do not load the Home Assistant skill for now'
   # loadOneSkill ../ha_skill Home Assistant skill
   loadOneSkill ../email Email skill
   loadOneSkill ../wiki Wiki skill
@@ -215,7 +215,6 @@ export PYTHONPATH="$baseDir:$baseDir/venv_ngv/lib/python3.10/site-packages"
 export SVA_BASE_DIR="$baseDir"
 
 mountLogDirs $@                            # mount tmpfs's over log mount tmpfs's over log directories
-/usr/local/sbin/rmlogs                     # remove old log files
 startSystem
 loadSystemSkills 
 loadUserSkills 
