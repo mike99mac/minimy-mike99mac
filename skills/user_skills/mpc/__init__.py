@@ -33,7 +33,7 @@ class MpcSkill(MediaSkill):
     self._is_playing = False
     self.sentence = None 
 
-  def fallback_internet(self, msg):
+  def fallback_internet(self):
     """
     Requested music was not found in library - fallback to Internet search
     """
@@ -72,9 +72,13 @@ class MpcSkill(MediaSkill):
         if self.music_info.match_type == "none": # music not found in library
           self.sentence = sentence 
           self.log.debug(f"MpcSkill.get_media_confidence(): not found in library - searching Internet")
-          mesg_file = "searching_internet"
-          mesg_info = {"sentence": sentence} 
-          self.speak_lang(self.skill_base_dir, mesg_file, mesg_info, self.fallback_internet) # tell user "searching internet"
+          self.music_info.mesg_file = "searching_internet"
+          self.music_info.mesg_info = {"sentence": sentence} 
+        # this did not work  
+        # self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.fallback_internet) # tell user "searching internet"
+          self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info)
+        # time.sleep(3) 
+          self.music_info = self.mpc_client.search_internet(self.sentence)
       case "radio":
         self.music_info = self.mpc_client.parse_radio(sentence)
       case "internet":
@@ -93,7 +97,7 @@ class MpcSkill(MediaSkill):
     Either some music has been found, or an error message has to be spoken
     """
     self.log.debug(f"MpcSkill.media_play() match_type = {self.music_info.match_type}")
-    self.mpc_client.mpc_cmd("clear")       # stop any media that might be playing
+  # self.mpc_client.mpc_cmd("clear")       # stop any media that might be playing
     if self.music_info.match_type == "none": # no music was found
       self.log.debug("MpcSkill.media_play() no music found") 
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info) 

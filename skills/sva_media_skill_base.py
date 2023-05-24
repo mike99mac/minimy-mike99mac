@@ -16,9 +16,7 @@ class MediaSkill(SimpleVoiceAssistant):
         super().__init__(msg_handler=self.handle_message, skill_id=skill_id, skill_category=skill_category)
         time.sleep(1)                      # give fall back skill a chance to initialize
         self.log.debug("MediaSkill.__init__()")
-
-        # register with the system media skill
-        info = {
+        info = {                           # register with the system media skill
             'subtype': 'media_register_request',
             'skill_id': 'media_skill',
             'media_skill_id': skill_id
@@ -26,20 +24,18 @@ class MediaSkill(SimpleVoiceAssistant):
         self.bus.send(MSG_SKILL, 'media_skill', info)
 
     def handle_message(self, msg):
-        self.log.debug("MediaSkill.handle_message()")
+        self.log.debug(f"MediaSkill.handle_message() msg: {msg}")
         if msg.data['subtype'] == 'media_get_confidence':
             skill_data = self.get_media_confidence(msg)
             message = {'subtype':'media_confidence_response','skill_id':'media_skill', 'skill_data':skill_data}
             self.send_message('media_skill', message)
         if msg.data['subtype'] == 'media_play':
             self.media_play(msg)
-#       pass
 
     def get_media_confidence(self,msg):
-        print("Error - unimplemented method: get_media_confidence(self,msg)!")
-        pass
+        print("Error - unimplemented method: MediaSkill.get_media_confidence(self,msg)!")
 
     def media_play(self,msg):
-        print("Error - unimplemented method: media_play(self,msg)!")
+        print("Error - unimplemented method: MediaSkill.media_play(self,msg)!")
         pass
 
