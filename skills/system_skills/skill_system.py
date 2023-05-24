@@ -134,7 +134,7 @@ class SystemSkill(SimpleVoiceAssistant):
         """
         last_active_skill_id = self.active_skills[len(self.active_skills) - 1]['skill_id']
         last_active_skill_category = self.active_skills[len(self.active_skills) - 1]['skill_category']
-        self.log.debug("SystemSkill:output_focus_determination() ion. last_id:%s, last_cat:%s, new_cat:%s" % (last_active_skill_id, last_active_skill_category, new_skill_cat))
+        self.log.debug(f"SystemSkill:output_focus_determination() last_id: {last_active_skill_id} last_cat {last_active_skill_category} new_cat: {new_skill_cat}")
 
         if last_active_skill_category == 'media':
             # media skills are paused by everything except a new media request which will terminate the previous media skill
@@ -174,6 +174,7 @@ class SystemSkill(SimpleVoiceAssistant):
 
         # only handle system messages and the raw exception above
         if msg['msg_type'] != 'system':
+            self.log.debug(f"SystemSkill:handle_message() msg_type = {msg_type} is not system - returning False")
             return False
         data = msg.data
         self.log.debug(f"SystemSkill:handle_message() data[sub_type] = {data['subtype']}")
@@ -184,7 +185,6 @@ class SystemSkill(SimpleVoiceAssistant):
             # end -MM
             self.log.debug(f"SystemSkill:handle_message() verb = {verb}")
             if verb in self.stop_aliases:
-                # if oob = stop
                 self.log.info(f"SystemSkill.handle_message(): Detected System Level Stop, active_skills = {self.active_skills}")
                 #os.system("aplay /home/ken/MiniMy/framework/assets/stop.wav")
                 aplay(self.play_filename)
@@ -262,11 +262,9 @@ class SystemSkill(SimpleVoiceAssistant):
                             "intent_match": ""
                             }
                     self.bus.send(MSG_UTTERANCE, '*', {'utt': utt,'subtype':'utt'})
-
         elif data['subtype'] == 'request_output_focus':
             from_skill_id = data['from_skill_id']
             requesting_skill_category = data['skill_category']
-
             allowed_to_activate = True
             focus_response = ''
 
@@ -279,10 +277,9 @@ class SystemSkill(SimpleVoiceAssistant):
                 """
                 last_active_skill_id = self.active_skills[len(self.active_skills) - 1]['skill_id']
                 focus_response = self.output_focus_determination(requesting_skill_category)
-                self.log.info("SystemSkill.handle_message(): Focus determination = %s, currently active skill:%s, new skill request category=%s, new skill id=%s" % (focus_response, last_active_skill_id, requesting_skill_category, from_skill_id,))
-
+                self.log.info(f"SystemSkill.handle_message(): focus_response: {focus_response} last_active_skill_id: {last_active_skill_id} requesting_skill_category: {requesting_skill_category} from_skill_id:{from_skill_id}") 
                 if focus_response == 'cancel':
-                    self.log.info("SystemSkill.handle_message(): Stopping skill %s" % (last_active_skill_id,))
+                    self.log.info(f"SystemSkill.handle_message(): Stopping skill {last_active_skill_id}")
                     info = {
                             'error':'',
                             'subtype':'stop',
@@ -291,16 +288,13 @@ class SystemSkill(SimpleVoiceAssistant):
                             }
                     self.bus.send(MSG_SYSTEM, last_active_skill_id, info)
 
-                    # remove from active skills aray
+                    # remove from active skills array
                     self.active_skills = self.active_skills[:-1]
-
                     self.log.debug("SystemSkill.handle_message(): Send activate accepted message")
                     allowed_to_activate = True
-
                 elif focus_response == 'pause':
                     self.pause_requestor = from_skill_id
                     self.pause_requesting_skill_category = requesting_skill_category
-
                     active_skill_entry = self.find_active_skill(self.pause_requestor)
                     if active_skill_entry is None:
                         self.active_skills.append( {'skill_id':self.pause_requestor, 'skill_category':self.pause_requesting_skill_category} )
@@ -312,17 +306,13 @@ class SystemSkill(SimpleVoiceAssistant):
                     self.pause_reason = INTERNAL_PAUSE
                     self.send_pause(last_active_skill_id)
                     return 
-
                 elif focus_response == 'deny':
                     allowed_to_activate = False
                     self.log.info("SystemSkill.handle_message(): Send activate declined message")
-
                 else:
                     allowed_to_activate = False
                     self.log.warning("SystemSkill.handle_message(): Creepy Internal Error 101 - undefined focus_response=%s" % (focus_response,))
                     self.log.warning("SystemSkill.handle_message(): Send activate declined message")
-
-
             if not allowed_to_activate:
                 self.log.warning("SystemSkill.handle_message(): Sending negative activate_response to %s" % (from_skill_id,))
                 info = {
@@ -343,7 +333,6 @@ class SystemSkill(SimpleVoiceAssistant):
                         }
                 self.log.debug("SystemSkill.handle_message(): Sending positive activate_response to %s --->%s" % (from_skill_id,info))
                 self.bus.send(MSG_SYSTEM, from_skill_id, info)
-
                 active_skill_entry = self.find_active_skill(from_skill_id)
                 if active_skill_entry is None:
                     self.active_skills.append( {'skill_id':from_skill_id, 'skill_category':requesting_skill_category} )
@@ -351,7 +340,6 @@ class SystemSkill(SimpleVoiceAssistant):
                 else:
                     self.active_skills.append( {'skill_id':from_skill_id, 'skill_category':requesting_skill_category} )
                     self.log.warning("SystemSkill.handle_message(): Warning skill already active %s. Positive response sent anyway" % (from_skill_id,))
-
         elif data['subtype'] == 'pause_confirmed':
             self.log.debug("SystemSkill.handle_message(): got pause confirmed. pause reason = %s, msg=%s" % (self.pause_reason, msg))
 
@@ -371,10 +359,8 @@ class SystemSkill(SimpleVoiceAssistant):
             elif self.pause_reason == EXTERNAL_PAUSE:
                 self.pause_reason = None
                 self.log.debug("SystemSkill.handle_message(): EXTERNAL_PAUSE confirmed, doing nothing")
-
             else:
                 self.log.debug("SystemSkill.handle_message(): Creepy Internal Error 105 - got paused confirmed with no reason!")
-
         elif data['subtype'] == 'release_output_focus':
             from_skill_id = data['from_skill_id']
             active_skill_entry = self.find_active_skill(from_skill_id)
@@ -391,7 +377,6 @@ class SystemSkill(SimpleVoiceAssistant):
         elif data['subtype'] == 'request_input_focus':
             if len(self.conversant_skills) > 0:
                 self.log.warning("SystemSkill.handle_message(): Warning already in conversant mode %s" % (self.conversant_skills,))
-
             requesting_skill_category = data['skill_category']
             if self.input_focus_determination(requesting_skill_category):
                 # add skill to converse array
@@ -418,7 +403,6 @@ class SystemSkill(SimpleVoiceAssistant):
                         }
                 self.log.warning("SystemSkill.handle_message(): Sending negative input focus_response to %s --->%s" % (data['from_skill_id'],info))
                 self.bus.send(MSG_SYSTEM, data['from_skill_id'], info)
-
         elif data['subtype'] == 'release_input_focus':
             # remove skill from converse array
             if len(self.conversant_skills) == 0:
