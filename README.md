@@ -65,30 +65,20 @@ If you only have access to a Windows system Install the Win 32 disk imager from 
 
 Further details are not provided.
 
-### Download Ubuntu Desktop 
-To download Ubuntu, perform the following steps:
-Download an Ubuntu Desktop image from: 
-https://ubuntu.com/download/raspberry-pi
-Click the Green Download 64-bit button on the left side of the page. This version is recommended because it includes “Long Term Service” (until 2025).
-A .zip or .xz file should be downloaded to your PC. For example:
-ubuntu-20-04.3-preinstalled-server-arm64++raspi.img.xz
-The .xz suffix implies the file is compressed in a format other than zip.
-Unzip the file with a zip tool. Most Operating Systems have these standard today. When the file is unzipped, it should have a name similar to:
-ubuntu-20-04.3-preinstalled-server-arm64++raspi.img
-You should now be ready to copy the image to a micro-SD card.
-Copy Ubuntu image to micro-SD card
-If you have a brand new SD card, you usually don’t need to format it. Most come preformatted with the FAT32 file system. 
-At this point you should have a micro-SD card with Ubuntu Desktop on it which should boot the RasPi.
-Connect the computer hardware
-To connect all the computer hardware, perform the following steps:
-TODO: add pictures
-Plug the micro-SD card into the back of the RasPi.
-You can access the Internet using either Wi-Fi or with an Ethernet patch cord with an RJ-45. 
-Plug the 5v power supply with a USB-C end into the RasPi 4.
+### Connect the computer hardware
+
 For the initial set up, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but that’s not available yet.
-Connect the mouse and keyboard to the USB connections on the RasPi.
-Connect the monitor to the RasPi with the HDMI cable.
-Boot the RasPi
+
+To connect all the computer hardware, perform the following steps:
+
+- Plug the micro-SD card into the back of the RasPi.
+- You can access the Internet using either Wi-Fi or with an Ethernet patch cord with an RJ-45. If you have a hard wire, plug it in.
+- Plug the 5v power supply with a USB-C end into the RasPi 4.
+- Connect the mouse and keyboard to the USB connections on the RasPi.
+- Connect the monitor to the RasPi with an appropriate HDMI cable.  If your Raspberry Pi has two micro HDMI ports, use the left one.
+
+### Boot the RasPi
+
 To prepare to boot the Raspberry Pi 4 for the first time, perform the following steps.
 Slide both the top and back covers off of the frame to have full access to the hardware.
 If you haven’t already, download 64-bit Ubuntu 22.04 (LTS) - described in “Download Ubuntu Desktop” on page 10. 
