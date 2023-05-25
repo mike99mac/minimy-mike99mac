@@ -77,40 +77,39 @@ If you have a Linux box with an SD card reader, you can use **``rpi-imager``**. 
 
 You should see a progress indicator as the image is copied to the SD card. It should take around five minutes.
 
-### Prepare on Windows
+### Prepare an SD card on Windows
 If you only have access to a Windows system Install the *Win 32 disk imager* from https://sourceforge.net/projects/win32diskimager/
 
-Further details are not provided.
+No further details are provided.
 
 ## Connect the computer hardware
 
-For the initial setup, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but that’s not available yet.
+For the initial setup, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but that’s not available yet. You can access the Internet using either Wi-Fi or with an Ethernet patch cord.
 
 To connect all the computer hardware, perform the following steps:
 
 - Plug the micro-SD card into the back of the RasPi.
-- You can access the Internet using either Wi-Fi or with an Ethernet patch cord. If you have wired ethernet, plug it in to the RJ-45 on the RasPi.
+- If you have wired ethernet, plug it in to the RJ-45 connector on the RasPi.
 - Connect the mouse and keyboard to the USB connections on the RasPi.
-- Connect the monitor to the RasPi with an appropriate HDMI cable.  If your Raspberry Pi has two micro HDMI ports, use the left one.
+- Connect the monitor to the RasPi with an appropriate micro-HDMI cable.  If your Raspberry Pi has two micro HDMI ports, use the left one.
 - Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. If you have an inline switch has a red LED below the on/off button.
 
 ### Boot the RasPi
 
 When you supply power to the Raspberry Pi, it should start booting.  On the top, back, left of the RasPi there are two LEDs:
 
-- The LED to the left should glow solid red. This signifies the RasPi has 5V DC power.
+- The LED to the left should glow solid red. This signifies it has 5V DC power.
 - The LED to the right of the red one should flicker green. This signifies that an operating system is communicating with the CPU. If there is a red light, but no green one, this probably means that the micro-SD card does not have Linux properly installed.
+- You should see a rainbow colored splash screen on the monitor, then the Ubuntu desktop should initialize.
 
 **IMPORTANT**: Never turn the RasPi off without first shutting Linux down with the **``halt``** or similar command. Doing so can damage the operating system and possibly even the RasPi itself.
 
-You should see a rainbow colored splash screen on the monitor, then the Ubuntu desktop should initialize.
-
-### Initial configuration
+### Initial Ubuntu Desktop configuration
 
 A welcome screen should open on the monitor. Perform the following steps:
 
 - On the *Welcome* window, choose your language and click **Continue**.
-- On the *Keyboard layout* window, choose your keyboard layout and click **Continue**.
+- On the *Keyboard layout* window, choose your layout and click **Continue**.
 - On the *Wireless* window, if you are not using a hard-wired Ethernet, click **Connect** and configure a Wi-Fi network. You must know the network SSID and will probably be prompted for a password.
 - On the *Where are you?* window, choose your time zone.
 - On the *Who are you?* window, set the following values:
@@ -120,13 +119,16 @@ A welcome screen should open on the monitor. Perform the following steps:
     - For the last option, **Log in automatically** is recommended.
     - Click **Continue**.
  - The install process will take a number of minutes configuring and will reboot the computer.
- - When the system reboots, an *Online Accounts* window should appear. Click **Skip**.
+ - When the system finishes rebooting, an *Online Accounts* window should appear. Click **Skip**.
  - Click **Next** at the *Enable Ubuntu Pro* window.
  - Choose an option on the *Help Improve Ubuntu* window and click **Next**.
  - Click **Next** at the *Privacy* window.
  - Click **Done** at the *Ready to go* window.
+ - Ubuntu Desktop 22-04 should now be installed. Run the uname -a command and compare output.
 
-Ubuntu Desktop should now be installed.
+    **``$ uname -a``**
+    
+    ``Linux model1500 5.15.0-1024-raspi #26-Ubuntu SMP PREEMPT Wed Jan 18 15:29:53 UTC 2023 aarch64 aarch64 aarch64 GNU/Linux``
 
 ## Install and configure software
 
