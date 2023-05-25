@@ -48,11 +48,11 @@ If you have a Linux system with an SD card reader, you can use **``rpi-imager``*
 
     **``$ rpi-imager``**
     
-You should see a window as shown in the following figure. **TODO**: add the screenshot
+You should see a window as shown in the following figure. **TODO**: add a screenshot
 
-Perform the following steps
+Perform the following steps:
 
-- Select your preferred **Operating System**. Ubuntu Desktop 22.04 LTS is recommended. It's a solid OS, and the LTS stands for Long Term Support.  Canonical promises to support it for at least four years. 
+- Select your preferred **Operating System**. Ubuntu Desktop 22.04 LTS is recommended. It's a solid OS, and the LTS stands for *Long Term Support*.  Canonical promises to support it for at least four years. 
 
 - Select the **Storage** device. Ideally you will see the one micro-SD card plugged in.
 
@@ -75,7 +75,7 @@ To connect all the computer hardware, perform the following steps:
 - You can access the Internet using either Wi-Fi or with an Ethernet patch cord with an RJ-45. If you have a hard wire, plug it in.
 - Connect the mouse and keyboard to the USB connections on the RasPi.
 - Connect the monitor to the RasPi with an appropriate HDMI cable.  If your Raspberry Pi has two micro HDMI ports, use the left one.
-- Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. If you have an inline switch has a red LED below the on/off button
+- Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. If you have an inline switch has a red LED below the on/off button.
 
 ### Boot the RasPi
 
@@ -86,21 +86,24 @@ When you supply power to the Raspberry Pi, it should start booting.  On the top,
 
 **Important**: Never turn the RasPi off without first shutting Linux down with the halt command. Doing so can damage the operating system and possibly even the RasPi itself.
 
-Observe the monitor. You should see a rainbow colored splash screen, then the Ubuntu desktop should initialize.
-Initial configuration
-A welcome screen should pop up.
-On the Welcome window, choose your language and click Continue.
-On the Keyboard layout window, choose your keyboard layout and click Continue.
-On the Wireless window, configure a Wi-Fi network unless you plan to only use a hard-wired ethernet cable.
-On the Where are you? window, choose your time zone.
-On the Who are you? window, set the following values.
-Set your name.
-Choose your computer’s name (host name).
-For a user name and password pi is recommended as it is documented in the reminder of this document.
-For the last option, Log in automatically is recommended.
-Click Continue. 
-The install process will take a while configuring and will reboot itself.
-An Online Accounts window should appear. Click Skip.
+You should see a rainbow colored splash screen on the monitor, then the Ubuntu desktop should initialize.
+
+### Initial configuration
+
+A welcome screen should pop up. Perform the following steps:
+
+- On the *Welcome* window, choose your language and click **Continue**.
+- On the *Keyboard layout* window, choose your keyboard layout and click **Continue**.
+- On the *Wireless* window, if you are not using a hard-wired Ethernet, click **Connect** and configure a Wi-Fi network. You must know the network SSID and will probably be prompted for a password.
+- On the *Where are you?* window, choose your time zone.
+- On the *Who are you?* window, set the following values.
+    - Set your name.
+    - Choose your computer’s name (host name).
+    - For a user name and password pi is recommended as it is documented in the reminder of this document.
+    - For the last option, **Log in automatically** is recommended.
+    - Click **Continue**.
+ - The install process will take a while configuring and will reboot itself.
+ - An Online Accounts window should appear. Click Skip.
 Choose an option on the Livepatch window.
 Choose an option on the Help Improve Ubuntu window and click Next.
 Click Next at the Privacy window.
