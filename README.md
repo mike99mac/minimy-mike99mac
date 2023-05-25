@@ -73,26 +73,18 @@ To connect all the computer hardware, perform the following steps:
 
 - Plug the micro-SD card into the back of the RasPi.
 - You can access the Internet using either Wi-Fi or with an Ethernet patch cord with an RJ-45. If you have a hard wire, plug it in.
-- Plug the 5v power supply with a USB-C end into the RasPi 4.
 - Connect the mouse and keyboard to the USB connections on the RasPi.
 - Connect the monitor to the RasPi with an appropriate HDMI cable.  If your Raspberry Pi has two micro HDMI ports, use the left one.
+- Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. If you have an inline switch has a red LED below the on/off button
 
 ### Boot the RasPi
 
-To prepare to boot the Raspberry Pi 4 for the first time, perform the following steps.
-Slide both the top and back covers off of the frame to have full access to the hardware.
-If you haven’t already, download 64-bit Ubuntu 22.04 (LTS) - described in “Download Ubuntu Desktop” on page 10. 
-If you haven’t already, copy Linux to the micro-SD card and plug it in the back of the RasPi. This is described in “Copy Ubuntu image to micro-SD card” on page 11
-Plug monitor, keyboard, mouse and microphone into the Raspberry Pi. The Raspberry Pi 4 has two micro-HDMI jacks as it can drive two displays. If you have only one display, use the jack closest to the power supply jack (the one to the left).
-Plug in boombox main power. The small inline button switch inside powers the Raspberry Pi. (TODO: screen shot)
-First boot
-When you supply power to the Raspberry Pi, it should start booting.
-If the RasPi switch has a red LED below the on/off button. If it is not glowing red, push the on/off button once. 
-Observe the top, back, left of the RasPi (which is under the DAC Hat). There are two LEDs:
-The LED to the left should glow solid red. This signifies the RasPi has 5V DC power.
-The LED to the right of the red one should flicker green. This signifies that an operating system is communicating with the CPU. If there is a red light, but no green one, this probably means that the micro-SD card does not have Linux properly installed.
+When you supply power to the Raspberry Pi, it should start booting.  On the top, back, left of the RasPi there are two LEDs:
 
-Important: Never turn the RasPi off without first shutting Linux down with the halt command. Doing so can damage the operating system and possibly even the RasPi itself.
+- The LED to the left should glow solid red. This signifies the RasPi has 5V DC power.
+- The LED to the right of the red one should flicker green. This signifies that an operating system is communicating with the CPU. If there is a red light, but no green one, this probably means that the micro-SD card does not have Linux properly installed.
+
+**Important**: Never turn the RasPi off without first shutting Linux down with the halt command. Doing so can damage the operating system and possibly even the RasPi itself.
 
 Observe the monitor. You should see a rainbow colored splash screen, then the Ubuntu desktop should initialize.
 Initial configuration
