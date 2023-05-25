@@ -225,21 +225,21 @@ It performs the following taksks:
 - Adds needed groups to users ``pi`` and ``mpd``
 - Copies a ``.bash_profile`` to your home directory
 - Turns ``default`` and ``vc4`` audio off and does not disable monitor overscan in the boot parameters file
-- Changes a line in the **``rsyslog``** configuration file to prevent *kernel messages floods*
-- Copies a systemctl configuration file to mount /var/log in a tmpfs which helps the life of the micro-SD card
+- Changes a line in the **``rsyslog``** configuration file to prevent *kernel message floods*
+- Copies a **``systemctl``** configuration file to mount ``/var/log/`` in a tmpfs which helps prolong the life of the micro-SD card
 - Sets **``pulseaudio``** to start as a system service at boot time, and allows anonymous access so audio services work
-- Configures ``**mpd**``, the music player daemon, which plays most of the sound
-- Turns off **bluetooth** as Linux makes it ridiculously hard, while most amplifiers make it ridiculously easy
+- Configures **``mpd``**, the music player daemon, which plays most of the sound
+- Turns off **bluetooth** as Linux makes connecting to it ridiculously hard, while most amplifiers make it ridiculously easy
 
 To run **``intall1``**, perform the following steps:
 
-- First verify it is in your PATH.
+- First verify it is in your ``PATH`` with the **``which``** command.
 
-    **``which install1``**
+    **``$ which install1``**
     
     ``/usr/local/sbin/install1``
 
-- Run the install1 script in the home directory and save the output to a file.
+- Run the **``install1``** script in the home directory and save the output to a file.
 
     **``# cd``**
     
@@ -252,15 +252,50 @@ To run **``intall1``**, perform the following steps:
     sys     0m0.646s
     ```
     
-- Test your environment with the newly installed **``lsenv``** script.
+- Test your environment with the newly installed **``lsenv``** script which reports on many aspects of your Linux system.
 
     **``$ lsenv``**
     
-...
-Mycroft and mpd should not be running. 
-Buttons should not be running
-Pulseaudio should be running as a user service. 
-The two log file systems should not be tmpfs.
+    ```
+    Status of minimy:
+     -) WARNING: minimy is not running as a service ... checking for processes ...
+        WARNING: no processes matching minimy - does not appear to be running ...
+    ---------------------------------------------------------------------------------
+    Status of buttons:
+     -) WARNING: buttons is not running as a service ... checking for processes ...
+        WARNING: no processes matching buttons - does not appear to be running ...
+    ---------------------------------------------------------------------------------
+    Status of mpd:
+     -) WARNING: mpd is not running as a service ... checking for processes ...
+        WARNING: no processes matching mpd - does not appear to be running ...
+    ---------------------------------------------------------------------------------
+    Status of pulseaudio:
+     -) WARNING: pulseaudio is not running as a service ... checking for processes ...
+        Found matching pulseaudio processes:
+        pi         34786   34768  0 09:00 ?        00:00:14 /usr/bin/pulseaudio --daemonize=no --log-target=journal
+    ---------------------------------------------------------------------------------
+         IP address : 192.168.1.148
+    CPU temperature : 50C / 122F
+      Root fs usage : 14%
+          CPU usage : 6%
+    Memory usage    :
+                     total        used        free      shared  buff/cache   available
+      Mem:           3.7Gi       1.5Gi       220Mi       156Mi       2.0Gi       1.9Gi
+      Swap:          1.0Gi       166Mi       857Mi
+    tmpfs filesystem?
+                          /var/log       Linux logs : no
+              /home/pi/minimy/logs      Minimy logs : no
+               /home/pi/minimy/tmp  Minimy temp dir : no
+    ```
+The output shows that:
+
+- Minimy processes are not running
+- The **``buttons``** daemon is not running, which traps and report physical button push
+- The Music Playing Daemon, **``mpd``** is not running
+- There is one **``pulseaudio``** process running, but it does not have **``--system``** as a parameter
+- Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage
+- Which of three file systems frequently written to are mounted over a tmpfs (in memory)
+
 Reboot your system and run lsenv again. Mycroft should not be running, but mpd should be. pulseaudio should also be running with the --system flag.
 $ sudo reboot
 ... reconnect ...
