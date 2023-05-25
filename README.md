@@ -16,7 +16,7 @@ I worked with the Mycroft free and open personal voice assistant since 2019, but
 
 I tried OVOS/Neon, but was not able to get it going after a couple weeks in early 2023.  I still haven't given up on that platform. There is no doubt it will only get better and easier to install.
 
-Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire, but it wasn't well received. Thankfully, Ken Smith put it up on github, I forked the code and here we are.  Ken has been a great help in answering my many questions - Thanks Dude! This is just a continuation of *giving back to the community* by standing on the shoulders of so many thousands of others.
+Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire, but it wasn't well received. Thankfully, Ken Smith put it on github, I forked the code, and here we are.  Ken has been a great help in answering my many questions - Thanks Dude! This is just a continuation of *giving back to the community* by standing on the shoulders of so many thousands of others.
 
 One of my mantras is *Less is more*, so I liked minimy as it is a MINI-MYcroft.  Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
 ```
@@ -31,7 +31,7 @@ My environment is a Raspberry Pi running Ubuntu Desktop inside a *boombox*. Howe
 
 This document is based on "The smart boombox cookbook" on https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf which describes much detail of building a boombox.  This document focus just on the steps to get the *software stack* running, and starts from the very beginning.
 
-## Preparing an SD card to boot Linux
+## Prepare an SD card to boot Linux
 So you have a device that can run Linux - probably from a micro-SD card. You want to *prime the pump* and put a Linux distribution on that card. 
 Hopefully you have another computer running Linux, but other OS's will work. The computer must have a hardware port to write to the card.
 
@@ -119,14 +119,14 @@ To configure Ubuntu, perform the following sections.
 
 ### Install SSH server and other software
 
-The ssh server is not installed by default on Ubuntu desktop. It is recommended that you install it so you can access your system remotely. To do so, perform the following steps.
+The ssh server is not installed by default on Ubuntu desktop (which is curious). Install it so you can access your system remotely. To do so, perform the following steps.
 
-- Open a terminal session by right-clicking the mouse anywhere on the desktop and choosing Open in Terminal. You should see a window pop up.
-- Install open SSH server, and other packages with the following command.  You will be prompted for your password.
+- Open a terminal session by right-clicking the mouse anywhere on the desktop and choosing **Open in Terminal**. You should see a window pop up.
+- From that window, install the ``openssh-server`` package, with the following command.  You will be prompted for your password.
     
     **``$ sudo apt-get install -y openssh-server ``**
     
-    **``[sudo] password for pi:``**
+    ``[sudo] password for pi:``
 
 - After it installs sshd should be running. Verify with the following command:
 
@@ -154,11 +154,11 @@ In this example, the IP address is 192.168.1.229.
 
 ### Start an SSH session
 
-You should now be able to start an SSH session as the user pi, if you want to continue from another desktop system. You can use putty to SSH in from a Windows PC, or just use the **``ssh``** command from a Linux or macOS terminal session.
+You should now be able to start an SSH session as the user pi, if you want to continue from another desktop system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS terminal session.
 
 ### Upgrade your system
 
-Update the system which prepares for the latest code for all installed packages.
+Update and upgrade youre system which installs the latest code for all installed packages.
 
 - Enter the following command.  You will be prompted for your password.
 
@@ -174,7 +174,7 @@ Your system should now be at the latest software levels.
 
 There is a github repo with some tools to help with the installation and testing of Minimy and associated audio resources.
 
-To install the mycroft-tools package, perform the following steps tools:
+To install the **``mycroft-tools``** package, perform the following steps:
   
 - Make **``vim``** the default editor.
 
@@ -192,11 +192,17 @@ To install the mycroft-tools package, perform the following steps tools:
     ...
     ```
 
-- Clone the mycroft-tools package in pi’s home directory with the following commands.
+- Clone the **``mycroft-tools``** package in pi’s home directory with the following commands.
 
     **``$ cd``**
     
     **``$ git clone https://github.com/mike99mac/mycroft-tools.git``**
+    
+    ```
+    Cloning into 'mycroft-tools'...
+    ...
+    Resolving deltas: 100% (366/366), done.
+    ```
     
 - Change to the newly installed directory and run the setup script. It will copy scripts to the directory ``/usr/local/sbin`` which is in the default PATH.
 
@@ -211,9 +217,29 @@ To install the mycroft-tools package, perform the following steps tools:
     
 ### Use a script to further cusomize
 
-An script named **``install1``** was written to perform many commands and thus save typing and time. 
+An script named **``install1``** was written to perform many commands and thus save typing and time.  It is in the mycroft-tools package you just installed.
+It performs the following taksks:
 
-- Run the install1 script in the home directory and save the output to a file
+- Installs the **``mlocate mpc mpd net-tools pandoc python3 python3-pip python3-rpi.gpio python3.10-venv``** packages
+- Sets  **``vim``** to a better color scheme and turns off the annoying auto-indent features
+- Adds needed groups to users ``pi`` and ``mpd``
+- Copies a ``.bash_profile`` to your home directory
+- Turns ``default`` and ``vc4`` audio off and does not disable monitor overscan in the boot parameters file
+- Changes a line in the **``rsyslog``** configuration file to prevent *kernel messages floods*
+- Copies a systemctl configuration file to mount /var/log in a tmpfs which helps the life of the micro-SD card
+- Sets **``pulseaudio``** to start as a system service at boot time, and allows anonymous access so audio services work
+- Configures ``**mpd**``, the music player daemon, which plays most of the sound
+- Turns off **bluetooth** as Linux makes it ridiculously hard, while most amplifiers make it ridiculously easy
+
+To run **``intall1``**, perform the following steps:
+
+- First verify it is in your PATH.
+
+    **``which install1``**
+    
+    ``/usr/local/sbin/install1``
+
+- Run the install1 script in the home directory and save the output to a file.
 
     **``# cd``**
     
