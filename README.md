@@ -67,7 +67,7 @@ If you have a Linux box with an SD card reader, you can use **``rpi-imager``**. 
 
 - To flash a Linux image to the card, perform the following steps:
 
-    - Select your preferred *Operating System*. **Ubuntu Desktop 22.04 LTS** is recommended. It's a solid OS, and the LTS stands for *Long Term Support*.  Canonical promises to support it for at least four years. 
+    - Select your preferred *Operating System*. **Ubuntu Desktop 22.04 LTS** is recommended and is what is documented on this page. It's a solid operating system, and the LTS stands for *Long Term Support*.  Canonical promises to support it for at least four years. 
 
     - Select the *Storage* device. Ideally you will see the one micro-SD card in the dropdown menu.
 
@@ -104,7 +104,9 @@ When you supply power to the Raspberry Pi, it should start booting.  On the top,
 
 **IMPORTANT**: Never turn the RasPi off without first shutting Linux down with the **``halt``** or similar command. Doing so can damage the operating system and possibly even the RasPi itself.
 
-### Initial Ubuntu Desktop configuration
+# Install and configure Linux
+
+## Initial Ubuntu Desktop configuration
 
 A welcome screen should open on the monitor. Perform the following steps:
 
@@ -178,11 +180,11 @@ You should now be able to start an SSH session as the user pi, if you want to co
 
 **IMPORTANT**: Do not run as ``root``. Doing so will almost certainly screw up your system.  It is recommended that you run as the user ``pi``.  Ideally, other user names should work, as the environment variable ``$HOME`` is used in scripts, but this path has never been tested.
 
-### Upgrade your system
+### Update and upgrade your system
 
 Update and upgrade your system which installs the latest code for all installed packages.
 
-- Enter the following command.  You will be prompted for your password.
+- Enter the following command to prepare for the upgrade.  You will be prompted for your password.
 
     **``$ sudo apt-get update``**
     
