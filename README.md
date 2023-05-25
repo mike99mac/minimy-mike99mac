@@ -164,9 +164,11 @@ In this example, the IP address is 192.168.1.229.
 
 You should now be able to start an SSH session as the user pi, if you want to continue from another desktop system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS terminal session.
 
+**IMPORTANT** Do not run as ``root``. Doing so will almost certainly screw up your system.  It is recommended that you run as the user ``pi``.  Ideally, other user names should work, as the environment variable ``$HOME`` is used, but this path has never been tested.
+
 ### Upgrade your system
 
-Update and upgrade youre system which installs the latest code for all installed packages.
+Update and upgrade your system which installs the latest code for all installed packages.
 
 - Enter the following command.  You will be prompted for your password.
 
@@ -190,7 +192,7 @@ To install the **``mycroft-tools``** package, perform the following steps:
     
     ``update-alternatives: using /usr/bin/vim to provide /usr/bin/editor (editor) in auto mode``
     
-- Allow members of the ``sudo`` group to be able to run sudo without a password, by adding **``NOPASSWD:``** to the line near the bottom of the file.
+- Allow members of the ``sudo`` group to be able to run **``sudo``** without a password, by adding **``NOPASSWD:``** to the line near the bottom of the file.
 
     **``$ sudo visudo``**
 
