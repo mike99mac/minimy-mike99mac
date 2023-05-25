@@ -134,7 +134,7 @@ The ssh server is not installed by default on Ubuntu desktop. It is recommended 
     
     ```
     ...
-    ...active (running)
+    Active: active (running) 
     ...
     ```
     
@@ -154,7 +154,7 @@ In this example, the IP address is 192.168.1.229.
 
 ### Start an SSH session
 
-You should now be able to start an SSH session as the user pi, if you want to continue from another desktop system. You can use putty to SSH in from a Windows PC, or just use the ssh command from a Linux or macOS terminal session.
+You should now be able to start an SSH session as the user pi, if you want to continue from another desktop system. You can use putty to SSH in from a Windows PC, or just use the **``ssh``** command from a Linux or macOS terminal session.
 
 ### Upgrade your system
 
@@ -175,24 +175,20 @@ Your system should now be at the latest software levels.
 There is a github repo with some tools to help with the installation and testing of Minimy and associated audio resources.
 
 To install the mycroft-tools package, perform the following steps tools:
-
-- Install git and vim with the following command. You will be prompted for your password.
-
-    **``$ sudo apt-get install -y git vim``**
-    
-- Make vim the default editor.
+  
+- Make **``vim``** the default editor.
 
     **``$ sudo update-alternatives --install /usr/bin/editor editor /usr/bin/vim 100``**
     
-- Allow pi to be able to run sudo without a password by adding ``NOPASSWD:`` to the sudo group line.
+    ``update-alternatives: using /usr/bin/vim to provide /usr/bin/editor (editor) in auto mode``
+    
+- Allow members of the ``sudo`` group to be able to run sudo without a password, by adding **``NOPASSWD:``** to the line near the bottom of the file.
 
     **``$ sudo visudo``**
-    
-- Allow members of group sudo to execute any command. The line is near the bottom of the file
 
     ```
     ...
-    $ sudo   ALL=(ALL:ALL) NOPASSWD: ALL
+    %sudo   ALL=(ALL:ALL) NOPASSWD: ALL
     ...
     ```
 
