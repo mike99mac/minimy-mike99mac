@@ -125,27 +125,29 @@ The ssh server is not installed by default on Ubuntu desktop. It is recommended 
     **``$ sudo apt-get install -y openssh-server ``**
     **``[sudo] password for pi:``**
 
-` After it installs sshd should be running. Verify with the following command:
+- After it installs sshd should be running. Verify with the following command:
 
     **``$ service sshd status``**
     
     **``...active (running)``**
     
-` You should have either a Wi-Fi (wlan0) or a hard-wired (eth0) connection. To verify, enter the following command. Note your IP address.
+- You should have either a Wi-Fi (wlan0) or a hard-wired (eth0) connection. To verify, enter the following command. Note your IP address.
     **``ip a``**
     ```
-1: lo:
-...
-2: eth0:
-...
-inet 192.168.1.229
-3: wlan0:
-...
-inet 192.168.1.x
+    1: lo:
+    ...
+    2: eth0:
+    ...
+    inet 192.168.1.229
+    3: wlan0:
+    ...
+    inet 192.168.1.x
     ```
     
 In this example, the IP address is 192.168.1.229.
-Start an SSH session
+
+### Start an SSH session
+
 You should now be able to start an SSH session as the user pi, if you want to continue from another desktop system. You can use putty to SSH in from a Windows PC, or just use the ssh command from a Linux or macOS terminal session.
 Upgrade your system
 Update the system which prepares for the latest code for all installed packages. 
