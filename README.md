@@ -27,15 +27,15 @@ minimy-mike99mac        9900              79
 ```
 So OVOS is half the size of Mycroft, and Minimy is about half the size of OVOS.
 
-My environment is a Raspberry Pi running Ubuntu Desktop inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if try it on different hardware, or a different distro - you're on your own - no warranties.
+My environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu Desktop inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro - you're on your own - no warranties.
 
-This document is based on "The smart boombox cookbook" on https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf which describes much detail of building a boombox.  This document focuses just on the steps to get the *software stack* running, and starts from the very beginning.
+This is based on "The smart boombox cookbook" on https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf which describes much detail of building a boombox.  This document focuses just on the steps to get the *software stack* running, and starts from the very beginning.
 
 I have probably reflashed and rebuilt this system 20 or 30 times, and each time I compare notes. So this document should be relatively solid.
 
 ## Prepare an SD card to boot Linux
 So you have a device that can run Linux - probably from a micro-SD card. You want to *prime the pump* and put a Linux distribution on that card. 
-Hopefully you have another computer running Linux, but other OS's will work. The computer must have a hardware port to write to the card.
+Hopefully you have another computer running Linux, but other OS's will work. The box you use must have a hardware port to write to the card.
 
 ### Prepare on Linux
 
@@ -58,11 +58,13 @@ To flash a Linux image to the card, perform the following steps:
 
 - Select your preferred *Operating System*. **Ubuntu Desktop 22.04 LTS** is recommended. It's a solid OS, and the LTS stands for *Long Term Support*.  Canonical promises to support it for at least four years. 
 
-- Select the *Storage* device. Ideally you will see the one micro-SD card plugged in.
+- Select the *Storage* device. Ideally you will see the one micro-SD card in the dropdown menu.
 
 - Click **Write**.
 
 - Enter the password of the current user.
+
+The tool will start copying to the SD card.  A 64 GB card should take around five minutes.
 
 ### Prepare on Windows
 If you only have access to a Windows system Install the *Win 32 disk imager* from https://sourceforge.net/projects/win32diskimager/
