@@ -16,11 +16,14 @@ I worked with Mycroft since 2019, but they went bankrupt in 2023, so had to move
 
 I tried OVOS/Neon, but was not able to get it going after a couple weeks in early 2023.  I still haven't given up on that platform - no doubt it will only get better.
 
-Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire, but it wasn't well accepted. Thankfully, Ken put it up on github, I forked the code and here we are.  This is just a continuation of "give back to the community".
+Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire, but it wasn't well accepted. Thankfully, Ken put it up on github, I forked the code and here we are.  Ken has been a great help in answering my many questions - Thanks Dude! This is just a continuation of "give back to the community".
 
 My environment is a Raspberry Pi running Ubuntu Desktop inside a 'boombox'. However, it should be portable to any hardware that can run Linux, and probably just about any distro (perhaps OVOS and RasPi OS are the two most likely), in any type of "enclosure" you fancy.
 
-This document is based on 
+This document is based on "The smart boombox cookbook" on https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf which describes much detail of the boombox enclosure.  This page has just the steps to get the software stack running.
+
+
+
 
 ## Installation
 Installation should be run as a non-root user such as 'pi'. Run the install script:
