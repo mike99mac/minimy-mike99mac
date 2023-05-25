@@ -3,22 +3,25 @@ Minimy is a simple NLU-based voice assistant framework.
 It is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
 
 ## Overview
-From Ken Smith:
+**From Ken Smith:**
 
 "The goal of this project is to provide a run-time environment which facilitates the development of 
 voice enabled applications. These voice enabled applications take the form of a 'skill' and are
 simply python programs which may do normal python things as well as call speak() and listen() and
 get called asynchronously when an utterance is matched to an intent the skill has previously registered."  
 
-From Mike Mac:
+**From Mike Mac:**
 
-I worked with since 2019 Mycroft, but they went bankrupt in 2023. :((
+I worked with Mycroft since 2019, but they went bankrupt in 2023, so had to move on. :((
 
-I tried OVOS/Neon, but was not able to get it going after a couple weeks.  I still haven't given up on that platform.
+I tried OVOS/Neon, but was not able to get it going after a couple weeks in early 2023.  I still haven't given up on that platform - no doubt it will only get better.
 
-Then I found Minimy. and was able to get it going in a few hours. I forked Ken's code and here we are.
+Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire, but it wasn't well accepted. Thankfully, Ken put it up on github, I forked the code and here we are.  This is just a continuation of "give back to the community".
 
-This project is designed to drive a Raspberry Pi running Ubuntu Desktop inside a 'boombox'. However, it should be portable to any hardware that can run Linux 
+My environment is a Raspberry Pi running Ubuntu Desktop inside a 'boombox'. However, it should be portable to any hardware that can run Linux, and probably just about any distro (perhaps OVOS and RasPi OS are the two most likely), in any type of "enclosure" you fancy.
+
+This document is based on 
+
 ## Installation
 Installation should be run as a non-root user such as 'pi'. Run the install script:
 ```
