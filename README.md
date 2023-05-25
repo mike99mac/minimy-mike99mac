@@ -153,35 +153,64 @@ In this example, the IP address is 192.168.1.229.
 ### Start an SSH session
 
 You should now be able to start an SSH session as the user pi, if you want to continue from another desktop system. You can use putty to SSH in from a Windows PC, or just use the ssh command from a Linux or macOS terminal session.
-Upgrade your system
-Update the system which prepares for the latest code for all installed packages. 
-$ sudo apt-get update
-Upgrade your system so you have all the latest code. This step could take up to 25 minutes.
-$ sudo apt-get upgrade -y
-...
+
+### Upgrade your system
+
+Update the system which prepares for the latest code for all installed packages.
+
+- Enter the following command.  You will be prompted for your password.
+
+    **``$ sudo apt-get update``**
+    
+- Upgrade your system so you have all the latest code. This step could take up to 25 minutes.
+
+    **``$ sudo apt-get upgrade -y``**
+    
 Your system should now be at the latest software levels.
-Install Mycroft tools
-The author of this guide, @mike99mac, has also written some small tools to help with the installation and testing of Mycroft and associated audio resources.
-Some initial setup is needed before installing the tools:
-Install git and vim with the following command:
-$ sudo apt-get install -y git vim
-Make vim the default editor.
-$ sudo update-alternatives --install /usr/bin/editor editor /usr/bin/vim 100
-Allow pi to be able to run sudo without a password by adding NOPASSWD: to the sudo group line.
-$ sudo visudo
-...
-# Allow members of group sudo to execute any command
-%sudo   ALL=(ALL:ALL) NOPASSWD: ALL
-...
-Clone the mycroft-tools package in pi’s home directory with the following commands.
-$ cd
-$ git clone https://github.com/mike99mac/mycroft-tools.git
-...
-Change to the newly installed directory and run the setup script. It will copy scripts to /usr/local/sbin which is in the default PATH.
-$ cd mycroft-tools
-$ sudo ./setup.sh
-Copying all scripts to /usr/local/sbin ...
-Success!  There are new scripts in your /usr/local/sbin/ directory
+
+### Install Mycroft tools
+
+There is a github repo with some tools to help with the installation and testing of Minimy and associated audio resources.
+
+To install the mycroft-tools package, perform the following steps tools:
+
+- Install git and vim with the following command:
+
+    **``$ sudo apt-get install -y git vim``**
+    
+- Make vim the default editor.
+
+    **``$ sudo update-alternatives --install /usr/bin/editor editor /usr/bin/vim 100``**
+    
+- Allow pi to be able to run sudo without a password by adding ``NOPASSWD:`` to the sudo group line.
+
+    **``$ sudo visudo``**
+    
+- Allow members of group sudo to execute any command. The line is near the bottom of the file
+
+    ```
+    ...
+    $ sudo   ALL=(ALL:ALL) NOPASSWD: ALL
+    ...
+    ```
+
+- Clone the mycroft-tools package in pi’s home directory with the following commands.
+
+    **``$ cd``**
+    
+    **``$ git clone https://github.com/mike99mac/mycroft-tools.git``**
+    
+- Change to the newly installed directory and run the setup script. It will copy scripts to the directory ``/usr/local/sbin`` which is in the default PATH.
+
+    **``$ cd mycroft-tools``**
+    
+    **``$ sudo ./setup.sh``**
+    
+    ```
+    Copying all scripts to /usr/local/sbin ...
+    Success!  There are new scripts in your /usr/local/sbin/ directory
+    ``
+    
 Use script 1 to install
 The install1 script was written to perform all commands in the following sections. Run it and you can skip down to section “Test Mic and Speakers”
 Run the install1 script in the home directory and save the output.
