@@ -18,7 +18,7 @@ I tried OVOS/Neon, but was not able to get my music skill going after a couple w
 
 Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire, but it wasn't well received. Thankfully, Ken Smith put it on github, I forked the code, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** So I continue to try to *give back to the community* while standing on the shoulders of so many thousands of others.
 
-One of my mantras is *Less is more*, so I liked minimy as it is a MINI-MYcroft.  Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
+One of my mantras is *Less is more*, so I liked minimy as it is a **Mini-My**croft.  Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
 ```
             Repo         Loc           files
     mycroft-core       38074             229
@@ -31,7 +31,11 @@ My environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu Desktop 
 
 This is based on "The smart boombox cookbook" on https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf which describes much detail of building a boombox.  This document focuses just on the steps to get the *software stack* running, and starts from the very beginning.
 
-I have probably reflashed and rebuilt this system 20 or 30 times, and each time I compare notes. So this document should be relatively solid.
+I have probably reflashed and rebuilt this system more than 25 times, and each time I compare notes. So this document should be relatively solid.
+
+# The Minimy software stack
+
+Perform the steps in each of the sections that follow to get to a running software stack.
 
 ## Prepare an SD card to boot Linux
 So you have a device that can run Linux - probably from a micro-SD card. A 32 GB card or larger is recommended. You need to *prime the pump* and put a Linux distribution on that card. 
@@ -344,13 +348,13 @@ To download and install Minimy, perform the following steps:
     
 - Change to the newly cloned directory and run the following install script:
     
-     **``cd minimy-mike99mac``**
+    **``$ cd minimy-mike99mac``**
     
     **``$ ./install/linux_install.sh``**
     
     This step can take up to ten minutes.
     
-### Configurae Minimy
+### Configure Minimy
 
 The system can use local or remote services for speech to text (STT), text to speech (TTS)
 and intent matching. Intent matching is accomplished using natutal language processing (NLP) based on
@@ -376,7 +380,7 @@ Ubuntu or (m) for the Mycroft MarkII running the Pantacor build.
 - Run the 
     **``$ ./mmconfig.py sa``**
     
-### Con    
+### Configure wake words
 ```
 
 ## Running
