@@ -44,7 +44,7 @@ If you have a Linux system with an SD card reader, you can use **``rpi-imager``*
 
     **``$ sudo apt-get install -y rpi-imager``**
 
-- Run the tool
+- Run the tool.
 
     **``$ rpi-imager``**
     
@@ -61,11 +61,11 @@ Perform the following steps:
 - Enter the password of the current user.
 
 ### Prepare on Windows
-If you only have access to a Windows system Install the Win 32 disk imager from https://sourceforge.net/projects/win32diskimager/
+If you only have access to a Windows system Install the *Win 32 disk imager* from https://sourceforge.net/projects/win32diskimager/
 
 Further details are not provided.
 
-### Connect the computer hardware
+## Connect the computer hardware
 
 For the initial set up, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but that’s not available yet.
 
@@ -104,7 +104,7 @@ A welcome screen should pop up. Perform the following steps:
     - Click **Continue**.
  - The install process will take a number of minutes configuring and will reboot the computer.
  - An *Online Accounts* window should appear. Click **Skip**.
- - Choose an option on the *Livepatch* window.
+ - Click **Next** at the *Enable Ubuntu Pro* window.
  - Choose an option on the *Help Improve Ubuntu* window and click **Next**.
  - Click **Next** at the *Privacy* window.
  - Click **Done** at the *Ready to go* window.
@@ -117,18 +117,23 @@ To configure Ubuntu, perform the following sections.
 
 ### Install SSH server and other software
 
-The ssh server is not installed by default on Ubuntu desktop. It is recommended that you install it so you can access your system remotely.
+The ssh server is not installed by default on Ubuntu desktop. It is recommended that you install it so you can access your system remotely. To do so, perform the following steps.
 
-Open a terminal session by right-clicking the mouse anywhere on the desktop and choosing Open in Terminal. You should see a window pop up.
-Install open SSH server, and other packages with the following command.
-$ sudo apt-get install -y openssh-server 
-[sudo] password for pi:
-...
-After it installs sshd should be running. Verify with the following command:
-$ service sshd status
-...active (running)
-You should have either a Wi-Fi (wlan0) or a hard-wired (eth0) connection. To verify, enter the following command. Note your IP address.
-ip a
+- Open a terminal session by right-clicking the mouse anywhere on the desktop and choosing Open in Terminal. You should see a window pop up.
+- Install open SSH server, and other packages with the following command.  You will be prompted for your password.
+    
+    **``$ sudo apt-get install -y openssh-server ``**
+    **``[sudo] password for pi:``**
+
+` After it installs sshd should be running. Verify with the following command:
+
+    **``$ service sshd status``**
+    
+    **``...active (running)``**
+    
+` You should have either a Wi-Fi (wlan0) or a hard-wired (eth0) connection. To verify, enter the following command. Note your IP address.
+    **``ip a``**
+    ```
 1: lo:
 ...
 2: eth0:
@@ -137,6 +142,8 @@ inet 192.168.1.229
 3: wlan0:
 ...
 inet 192.168.1.x
+    ```
+    
 In this example, the IP address is 192.168.1.229.
 Start an SSH session
 You should now be able to start an SSH session as the user pi, if you want to continue from another desktop system. You can use putty to SSH in from a Windows PC, or just use the ssh command from a Linux or macOS terminal session.
