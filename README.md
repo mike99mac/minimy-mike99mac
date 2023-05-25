@@ -52,11 +52,11 @@ You should see a window as shown in the following figure. **TODO**: add a screen
 
 ### Flash the drive
 
-To flash a Linux to the card, perform the following steps:
+To flash a Linux image to the card, perform the following steps:
 
-- Select your preferred **Operating System**. Ubuntu Desktop 22.04 LTS is recommended. It's a solid OS, and the LTS stands for *Long Term Support*.  Canonical promises to support it for at least four years. 
+- Select your preferred *Operating System*. **Ubuntu Desktop 22.04 LTS** is recommended. It's a solid OS, and the LTS stands for *Long Term Support*.  Canonical promises to support it for at least four years. 
 
-- Select the **Storage** device. Ideally you will see the one micro-SD card plugged in.
+- Select the *Storage* device. Ideally you will see the one micro-SD card plugged in.
 
 - Click **Write**.
 
@@ -74,7 +74,7 @@ For the initial set up, a keyboard, monitor and mouse are needed. Ideally there 
 To connect all the computer hardware, perform the following steps:
 
 - Plug the micro-SD card into the back of the RasPi.
-- You can access the Internet using either Wi-Fi or with an Ethernet patch cord with an RJ-45. If you have a hard wire, plug it in.
+- You can access the Internet using either Wi-Fi or with an Ethernet patch cord. If you have wired ethernet, plug it in to the RJ-45 on the RasPi.
 - Connect the mouse and keyboard to the USB connections on the RasPi.
 - Connect the monitor to the RasPi with an appropriate HDMI cable.  If your Raspberry Pi has two micro HDMI ports, use the left one.
 - Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. If you have an inline switch has a red LED below the on/off button.
@@ -176,7 +176,7 @@ There is a github repo with some tools to help with the installation and testing
 
 To install the mycroft-tools package, perform the following steps tools:
 
-- Install git and vim with the following command:
+- Install git and vim with the following command. You will be prompted for your password.
 
     **``$ sudo apt-get install -y git vim``**
     
