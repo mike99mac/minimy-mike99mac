@@ -123,13 +123,18 @@ The ssh server is not installed by default on Ubuntu desktop. It is recommended 
 - Install open SSH server, and other packages with the following command.  You will be prompted for your password.
     
     **``$ sudo apt-get install -y openssh-server ``**
+    
     **``[sudo] password for pi:``**
 
 - After it installs sshd should be running. Verify with the following command:
 
     **``$ service sshd status``**
     
-    **``...active (running)``**
+    ```
+    ...
+    ...active (running)
+    ...
+    ```
     
 - You should have either a Wi-Fi (wlan0) or a hard-wired (eth0) connection. To verify, enter the following command. Note your IP address.
     **``ip a``**
@@ -138,10 +143,9 @@ The ssh server is not installed by default on Ubuntu desktop. It is recommended 
     ...
     2: eth0:
     ...
-    inet 192.168.1.229
     3: wlan0:
     ...
-    inet 192.168.1.x
+    inet 192.168.1.229
     ```
     
 In this example, the IP address is 192.168.1.229.
