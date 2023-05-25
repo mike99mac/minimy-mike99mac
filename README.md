@@ -33,7 +33,7 @@ If you have a Linux system with an SD card reader, you can use the rpi-imager to
 - Plug the SD adapter into the card reader.
 - Download and install rpi-imager.
 
-**``$ sudo apt-get install -y rpi-imager``**
+    **``$ sudo apt-get install -y rpi-imager``**
 
 - Run the tool
 $ rpi-imager
