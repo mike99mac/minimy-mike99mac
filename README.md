@@ -91,7 +91,7 @@ When you supply power to the Raspberry Pi, it should start booting.  On the top,
 - The LED to the left should glow solid red. This signifies the RasPi has 5V DC power.
 - The LED to the right of the red one should flicker green. This signifies that an operating system is communicating with the CPU. If there is a red light, but no green one, this probably means that the micro-SD card does not have Linux properly installed.
 
-**Important**: Never turn the RasPi off without first shutting Linux down with the **``halt``** or similar command. Doing so can damage the operating system and possibly even the RasPi itself.
+**IMPORTANT**: Never turn the RasPi off without first shutting Linux down with the **``halt``** or similar command. Doing so can damage the operating system and possibly even the RasPi itself.
 
 You should see a rainbow colored splash screen on the monitor, then the Ubuntu desktop should initialize.
 
@@ -164,7 +164,7 @@ In this example, the IP address is 192.168.1.229.
 
 You should now be able to start an SSH session as the user pi, if you want to continue from another desktop system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS terminal session.
 
-**IMPORTANT** Do not run as ``root``. Doing so will almost certainly screw up your system.  It is recommended that you run as the user ``pi``.  Ideally, other user names should work, as the environment variable ``$HOME`` is used, but this path has never been tested.
+**IMPORTANT**: Do not run as ``root``. Doing so will almost certainly screw up your system.  It is recommended that you run as the user ``pi``.  Ideally, other user names should work, as the environment variable ``$HOME`` is used in scripts, but this path has never been tested.
 
 ### Upgrade your system
 
@@ -202,7 +202,7 @@ To install the **``mycroft-tools``** package, perform the following steps:
     ...
     ```
 
-- Clone the **``mycroft-tools``** package in pi’s home directory with the following commands.
+- Clone the **``mycroft-tools``** package in the ``pi`` home directory with the following commands:
 
     **``$ cd``**
     
@@ -214,7 +214,7 @@ To install the **``mycroft-tools``** package, perform the following steps:
     Resolving deltas: 100% (366/366), done.
     ```
     
-- Change to the newly installed directory and run the setup script. It will copy scripts to the directory ``/usr/local/sbin`` which is in the default PATH.
+- Change to the newly installed directory and run the setup script. It will copy scripts to the directory ``/usr/local/sbin`` which is in the default ``PATH``.
 
     **``$ cd mycroft-tools``**
     
@@ -227,8 +227,8 @@ To install the **``mycroft-tools``** package, perform the following steps:
     
 ### Use a script to further cusomize
 
-An script named **``install1``** was written to perform many commands and thus save typing and time.  It is in the mycroft-tools package you just installed.
-It performs the following taksks:
+An script named **``install1``** was written to perform many commands and thus save typing and time.  It is in the **``mycroft-tools``** package you just installed.
+It performs the following tasks:
 
 - Installs the **``mlocate mpc mpd net-tools pandoc python3 python3-pip python3-rpi.gpio python3.10-venv``** packages
 - Sets  **``vim``** to a better color scheme and turns off the annoying auto-indent features
@@ -249,7 +249,7 @@ To run **``intall1``**, perform the following steps:
     
     ``/usr/local/sbin/install1``
 
-- Run the **``install1``** script in the home directory and save the output to a file.
+- Run the **``install1``** script in the home directory and save the output to a file.  You may want to reference that file in case some steps don't work.
 
     **``# cd``**
     
@@ -299,44 +299,49 @@ To run **``intall1``**, perform the following steps:
     ```
 The output shows that:
 
-- Minimy processes are not running
-- The **``buttons``** daemon is not running, which traps and report physical button push
-- The Music Playing Daemon, **``mpd``** is not running
-- There is one **``pulseaudio``** process running, but it does not have **``--system``** as a parameter
+- Processes with ``minimy`` in their name are not running.
+- The **``buttons``** daemon is not running, which traps and report physical button push.
+- The Music Playing Daemon, **``mpd``** is not running.
+- There is one **``pulseaudio``** process running, but it does not have **``--system``** as a parameter.
 - Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage
-- Which of three file systems frequently written to are mounted over a tmpfs (in memory)
+- Which of three file systems frequently written to are mounted over a ``tmpfs`` (in-memory file system).
 
-Reboot your system and run lsenv again. Mycroft should not be running, but mpd should be. pulseaudio should also be running with the --system flag.
-$ sudo reboot
-... reconnect ...
-$ lsenv
-Status of mycroft:
- -) WARNING: mycroft is not running as a service ... 
-    WARNING: no processes matching mycroft found
--------------------------------------------------------------------------
-Status of mpd:
- -) mpd is running as a service:
-    Active: active (running) since Wed 2023-03-01 13:01:13 EST; 1min 15s ago
--------------------------------------------------------------------------
-Status of pulseaudio:
- -) pulseaudio is running as a service:
-    Active: active (running) since Wed 2023-03-01 13:01:11 EST; 1min 17s ago
-    pulseaudio processes:
-    pulse        819       1  0 13:01 ?        00:00:00 /usr/bin/pulseaudio --system --disallow-exit --disallow-module-loading --disable-shm --exit-idle-time=-1
+### Test the changes of the install script
+Some of the changes made by **``install1``** will not be realized until boot time.  
 
+To test this, perform the following steps:
 
-## Installation
-Installation should be run as a non-root user such as 'pi'. Run the install script:
-```
-$ ./install/linux_install.sh
-```
-This step can take up to ten minutes.
-## Configuration
-You can run a basic configuration with the command:
-```
-$ ./mmconfig.py
-```
-or, for more configuration options:
+- Reboot your system
+
+    **``$ sudo reboot``**
+    
+- Restart your SSH session.
+- Run the **``lsenv``** script again.
+
+    **``$ lsenv``**
+    
+    ````
+    TODO: get output
+    ````
+
+## Install Minimy 
+To install Minimy, perform the following steps:
+
+- Change to your home directory and copy the repo from github.
+
+    **``cd``**
+    **``git clone https://github.com/mike99mac/minimy-mike99mac``**
+
+- Change to the newly cloned directory and run the install script:
+    
+    **``$ ./install/linux_install.sh``**
+    
+    This step can take up to ten minutes.
+    
+## Configurae Minimy
+To configure Minimy, perform the following steps:
+
+- :
 ```
 $ ./mmconfig.py sa
 ```
