@@ -300,7 +300,7 @@ To run **``intall1``**, perform the following steps:
 The output shows that:
 
 - Processes with ``minimy`` in their name are not running.
-- The **``buttons``** daemon is not running, which traps and report physical button push.
+- The **``buttons``** daemon is not running, which traps and sends messages when physical buttons are pushed.
 - The Music Playing Daemon, **``mpd``** is not running.
 - There is one **``pulseaudio``** process running, but it does not have **``--system``** as a parameter.
 - Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage
@@ -324,26 +324,59 @@ To test this, perform the following steps:
     TODO: get output
     ````
 
-## Install Minimy 
-To install Minimy, perform the following steps:
+## Minimy
+Minimy must be copied, installed and configured.
+
+## Download and install Minimy 
+To download and install Minimy, perform the following steps:
 
 - Change to your home directory and copy the repo from github.
 
     **``cd``**
+    
     **``git clone https://github.com/mike99mac/minimy-mike99mac``**
 
-- Change to the newly cloned directory and run the install script:
+    ```
+    Cloning into 'minimy-mike99mac'...
+    ...
+    Resolving deltas: 100% (450/450), done.
+    ```
+    
+- Change to the newly cloned directory and run the following install script:
+    
+     **``cd minimy-mike99mac``**
     
     **``$ ./install/linux_install.sh``**
     
     This step can take up to ten minutes.
     
-## Configurae Minimy
-To configure Minimy, perform the following steps:
+### Configurae Minimy
 
-- :
-```
-$ ./mmconfig.py sa
+The system can use local or remote services for speech to text (STT), text to speech (TTS)
+and intent matching. Intent matching is accomplished using natutal language processing (NLP) based on
+the CMU link parser using a simpe enumerated approach referred to as shallow parsing.
+
+As a result you will be asked during configuration if you would like to use remote or local STT, TTS
+and NLP. Unless you have a good reason, for now you should always select local mode (remote=n) for NLP.
+
+Remote TTS using polly requires an Amazon ID and key.  If you prefer to not use polly for remote TTS you may 
+choose mimi2 from Mycroft which is a free remote TTS alternative. You could also select local only TTS in 
+which case mimic3 should work fine.
+
+By deault the system will fallback to local mode if a remote service fails. This will happen
+automatically and result in a slower overall response. If the internet is going to be out
+often you should probably just select local mode.  The differences are that remote STT is more accurate
+and remote TTS sounds better. Both are slower but only slightly when given a reasonable internet
+connection. Devices with decent connectivity should use remote for both.
+
+You will also be asked for operating environment.  Currently the options are (p) for piOS, (l) for 
+Ubuntu or (m) for the Mycroft MarkII running the Pantacor build.
+
+
+- Run the 
+    **``$ ./mmconfig.py sa``**
+    
+### Con    
 ```
 
 ## Running
@@ -396,28 +429,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/my/key/key_filename.json
 * ./mmconfig.py sa # super advanced options
 
 <br/>
-The system can use local or remote services for speech to text (STT), text to speech (TTS)
-and intent matching. Intent matching is accomplished using natutal language processing (NLP) based on
-the CMU link parser using a simpe enumerated approach referred to as shallow parsing.
 
-As a result you will be asked during configuration if you would like to use remote or local STT, TTS
-and NLP. Unless you have a good reason, for now you should always select local mode (remote=n) for NLP.
-
-Remote TTS using polly requires an Amazon ID and key.  If you prefer to not use polly for remote TTS you may 
-choose mimi2 from Mycroft which is a free remote TTS alternative. You could also select local only TTS in 
-which case mimic3 should work fine.
-
-By deault the system will fallback to local mode if a remote service fails. This will happen
-automatically and result in a slower overall response. If the internet is going to be out
-often you should probably just select local mode.  The differences are that remote STT is more accurate
-and remote TTS sounds better. Both are slower but only slightly when given a reasonable internet
-connection. Devices with decent connectivity should use remote for both.
-
-You will also be asked for operating environment.  Currently the options are (p) for piOS, (l) for 
-Ubuntu or (m) for the Mycroft MarkII running the Pantacor build.
-
-This system relies on the concept of a wake word.  A wake word is one or more words which will cause 
-the system to take notice of what you say next and then act upon this.
 
 During configuration you will be asked to provide one or more words to act as wake words. You will
 enter them separated by commas with no punctuation.  For example, 
