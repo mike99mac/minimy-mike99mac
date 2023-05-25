@@ -22,13 +22,14 @@ My environment is a Raspberry Pi running Ubuntu Desktop inside a *boombox*. Howe
 
 This document is based on "The smart boombox cookbook" on https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf which describes much detail of the boombox enclosure.  This document has just the steps to get the software stack running, and it starts from the very beginning.
 
-One of my mantras is *Less is more*, so I liked minimy as it is a MINI-MYcroft.  Here is a rough estimate of the lines of Python code in the three projects:
+One of my mantras is *Less is more*, so I liked minimy as it is a MINI-MYcroft.  Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
 ```
-           Repo         Loc       Num-files
-   mycroft-core       38074             229
-      ovos-core       18067             238
-minimy-mike99mac       9900              79
+            Repo         Loc       Num-files
+    mycroft-core       38074             229
+       ovos-core       18067             238
+minimy-mike99mac        9900              79
 ```
+So OVOS is half the size of Mycroft, and Minimy is about half the size of OVOS.
 
 ## Preparing an SD card to boot Linux
 So you have a device that can run Linux - probably from a micro-SD card. You want to prime the pump and put a Linux distribution on that card. 
