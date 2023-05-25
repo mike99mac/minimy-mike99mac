@@ -99,20 +99,26 @@ A welcome screen should pop up. Perform the following steps:
 - On the *Who are you?* window, set the following values.
     - Set your name.
     - Choose your computer’s name (host name).
-    - For a user name and password pi is recommended as it is documented in the reminder of this document.
+    - For a user name and password ``pi`` is recommended as it is documented in the reminder of this document.
     - For the last option, **Log in automatically** is recommended.
     - Click **Continue**.
- - The install process will take a while configuring and will reboot itself.
- - An Online Accounts window should appear. Click Skip.
-Choose an option on the Livepatch window.
-Choose an option on the Help Improve Ubuntu window and click Next.
-Click Next at the Privacy window.
-Click Done at the Ready to go window.
+ - The install process will take a number of minutes configuring and will reboot the computer.
+ - An *Online Accounts* window should appear. Click **Skip**.
+ - Choose an option on the *Livepatch* window.
+ - Choose an option on the *Help Improve Ubuntu* window and click **Next**.
+ - Click **Next** at the *Privacy* window.
+ - Click **Done** at the *Ready to go* window.
+
 Ubuntu Desktop should now be installed.
-Install and configure software
+
+## Install and configure software
+
 To configure Ubuntu, perform the following sections.
-Install SSH server and other software
-The ssh server is not installed by default on Ubuntu desktop. It is recommended that you install it so you can access your boombox remotely.
+
+### Install SSH server and other software
+
+The ssh server is not installed by default on Ubuntu desktop. It is recommended that you install it so you can access your system remotely.
+
 Open a terminal session by right-clicking the mouse anywhere on the desktop and choosing Open in Terminal. You should see a window pop up.
 Install open SSH server, and other packages with the following command.
 $ sudo apt-get install -y openssh-server 
