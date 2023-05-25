@@ -18,13 +18,13 @@ I tried OVOS/Neon, but was not able to get it going after a couple weeks in earl
 
 Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire, but it wasn't well accepted. Thankfully, Ken put it up on github, I forked the code and here we are.  Ken has been a great help in answering my many questions - Thanks Dude! This is just a continuation of "give back to the community".
 
-My environment is a Raspberry Pi running Ubuntu Desktop inside a *boombox*. However, it should be portable to any hardware that can run Linux, and probably just about any distro (perhaps OVOS and RasPi OS are the two most likely), in any type of *enclosure* you fancy.
+My environment is a Raspberry Pi running Ubuntu Desktop inside a *boombox*. However, it should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.
 
 This document is based on "The smart boombox cookbook" on https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf which describes much detail of the boombox enclosure.  This document has just the steps to get the software stack running, and it starts from the very beginning.
 
 One of my mantras is *Less is more*, so I liked minimy as it is a MINI-MYcroft.  Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
 ```
-            Repo         Loc       Num-files
+            Repo         Loc           files
     mycroft-core       38074             229
        ovos-core       18067             238
 minimy-mike99mac        9900              79
@@ -45,24 +45,27 @@ If you have a Linux system with an SD card reader, you can use **``rpi-imager``*
     **``$ sudo apt-get install -y rpi-imager``**
 
 - Run the tool
+
     **``$ rpi-imager``**
     
-You should see a window as shown in the following figure. TODO: add the screenshot
+You should see a window as shown in the following figure. **TODO**: add the screenshot
 
 Perform the following steps
 
-- Select your preferred operating system. Ubuntu Desktop 22.04 LTS is recommended. It's a solid OS, and the LTS stands for Long Term Support.  Canonical promises to support it for at least four years. 
+- Select your preferred **Operating System**. Ubuntu Desktop 22.04 LTS is recommended. It's a solid OS, and the LTS stands for Long Term Support.  Canonical promises to support it for at least four years. 
 
-- Sel
+- Select the **Storage** device. Ideally you will see the one micro-SD card plugged in.
 
+- Click **Write**.
 
-Prepare on Windows
-If you only have access to a Windows system Install the Win 32 disk imager 
-This software will allow you to copy a downloaded Linux image onto a micro-SD card. If you have an application that will do this, you can skip this step.
-Download the Win 32 disk imager to a Windows PC
-https://sourceforge.net/projects/win32diskimager/
-Install it.
-Download Ubuntu Desktop 
+- Enter the password of the current user.
+
+### Prepare on Windows
+If you only have access to a Windows system Install the Win 32 disk imager from https://sourceforge.net/projects/win32diskimager/
+
+Further details are not provided.
+
+### Download Ubuntu Desktop 
 To download Ubuntu, perform the following steps:
 Download an Ubuntu Desktop image from: 
 https://ubuntu.com/download/raspberry-pi
