@@ -30,7 +30,13 @@ So OVOS is half the size of Mycroft, and Minimy is about half the size of OVOS.
 
 My environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro - you're on your own - no warranties.
 
-This is based on "The smart boombox cookbook" on https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf which describes much detail of building a boombox.  This document focuses just on the steps to get the *software stack* running, and starts from the very beginning.
+This is based on "The smart boombox cookbook" on 
+
+https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
+
+It describes much detail of the construction of a boombox.  
+
+This document focuses just on the steps to get the *software stack* running, and starts from the very beginning.
 
 I have probably reflashed and rebuilt this system more than 25 times, and each time I compare notes. So this document should be relatively solid.
 
