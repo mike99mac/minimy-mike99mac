@@ -209,19 +209,29 @@ To install the mycroft-tools package, perform the following steps tools:
     ```
     Copying all scripts to /usr/local/sbin ...
     Success!  There are new scripts in your /usr/local/sbin/ directory
-    ``
+    ```
     
-Use script 1 to install
-The install1 script was written to perform all commands in the following sections. Run it and you can skip down to section “Test Mic and Speakers”
-Run the install1 script in the home directory and save the output.
-# cd
-$ time install1 | tee install1.out 2>&1
-...
-real    3m25.141s
-user    0m0.299s
-sys     0m0.646s
-Test your environment.
-$ lsenv
+### Use a script to further cusomize
+
+An script named **``install1``** was written to perform many commands and thus save typing and time. 
+
+- Run the install1 script in the home directory and save the output to a file
+
+    **``# cd``**
+    
+    **``$ time install1 | tee install1.out 2>&1``**
+    
+    ```
+    ...
+    real    3m25.141s
+    user    0m0.299s
+    sys     0m0.646s
+    ```
+    
+- Test your environment with the newly installed **``lsenv``** script.
+
+    **``$ lsenv``**
+    
 ...
 Mycroft and mpd should not be running. 
 Buttons should not be running
