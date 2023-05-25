@@ -37,10 +37,10 @@ Hopefully you have another computer running Linux, but other OS's will work. The
 
 ### Prepare on Linux
 
-If you have a Linux system with an SD card reader, you can use **``rpi-imager``**. To do so, perform the following tasks.
+If you have a Linux box with an SD card reader, you can use **``rpi-imager``**. To do so, perform the following tasks.
 - Put a micro-SD card into an SD adapter.
 - Plug the SD adapter into the card reader.
-- Download and install rpi-imager.
+- Download and install the tool.
 
     **``$ sudo apt-get install -y rpi-imager``**
 
@@ -50,7 +50,9 @@ If you have a Linux system with an SD card reader, you can use **``rpi-imager``*
     
 You should see a window as shown in the following figure. **TODO**: add a screenshot
 
-Perform the following steps:
+### Flash the drive
+
+To flash a Linux to the card, perform the following steps:
 
 - Select your preferred **Operating System**. Ubuntu Desktop 22.04 LTS is recommended. It's a solid OS, and the LTS stands for *Long Term Support*.  Canonical promises to support it for at least four years. 
 
