@@ -92,7 +92,7 @@ You should see a rainbow colored splash screen on the monitor, then the Ubuntu d
 
 ### Initial configuration
 
-A welcome screen should pop up. Perform the following steps:
+A welcome screen should open on the monitor. Perform the following steps:
 
 - On the *Welcome* window, choose your language and click **Continue**.
 - On the *Keyboard layout* window, choose your keyboard layout and click **Continue**.
