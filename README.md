@@ -1,5 +1,6 @@
-# minimy
+# Minimy
 Minimy is a simple NLU-based voice assistant framework.
+
 It is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
 
 ## Overview
@@ -35,7 +36,7 @@ I have probably reflashed and rebuilt this system more than 25 times, and each t
 
 # The Minimy software stack
 
-Perform the steps in each of the sections that follow to get to a running software stack.
+Perform the steps in each of the following sections to get to a running software stack.
 
 ## Prepare an SD card to boot Linux
 So you have a device that can run Linux - probably from a micro-SD card. A 32 GB card or larger is recommended. You need to *prime the pump* and put a Linux distribution on that card. 
@@ -57,19 +58,19 @@ If you have a Linux box with an SD card reader, you can use **``rpi-imager``**. 
 
     **``$ rpi-imager``**
     
-You should see a window as shown in the following figure. **TODO**: add a screenshot
+    You should see a window as shown in the following figure. **TODO**: add a screenshot
 
-To flash a Linux image to the card, perform the following steps:
+- To flash a Linux image to the card, perform the following steps:
 
-- Select your preferred *Operating System*. **Ubuntu Desktop 22.04 LTS** is recommended. It's a solid OS, and the LTS stands for *Long Term Support*.  Canonical promises to support it for at least four years. 
+    - Select your preferred *Operating System*. **Ubuntu Desktop 22.04 LTS** is recommended. It's a solid OS, and the LTS stands for *Long Term Support*.  Canonical promises to support it for at least four years. 
 
-- Select the *Storage* device. Ideally you will see the one micro-SD card in the dropdown menu.
+    - Select the *Storage* device. Ideally you will see the one micro-SD card in the dropdown menu.
 
-- Click **Write**.
+    - Click **Write**.
 
-- Enter the password of the current user.
+    - Enter the password of the current user.
 
-The tool will start copying to the SD card.  A 64 GB card should take around five minutes.
+You should see a progress indicator as the image is copied to the SD card. It should take around five minutes.
 
 ### Prepare on Windows
 If you only have access to a Windows system Install the *Win 32 disk imager* from https://sourceforge.net/projects/win32diskimager/
