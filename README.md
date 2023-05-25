@@ -20,9 +20,181 @@ Then I found Minimy, and was able to get it running in a few hours. Apparently, 
 
 My environment is a Raspberry Pi running Ubuntu Desktop inside a 'boombox'. However, it should be portable to any hardware that can run Linux, and probably just about any distro (perhaps OVOS and RasPi OS are the two most likely), in any type of "enclosure" you fancy.
 
-This document is based on "The smart boombox cookbook" on https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf which describes much detail of the boombox enclosure.  This page has just the steps to get the software stack running.
+This document is based on "The smart boombox cookbook" on https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf which describes much detail of the boombox enclosure.  This document has just the steps to get the software stack running, and it starts from the very beginning.
+
+## Preparing an SD card to boot Linux
+So you have a device that can run Linux - probably from a micro-SD card. You want to prime the pump and put a Linux distribution on that card. 
+Hopefully you have another computer running Linux, but other OS's will work. The computer must have a hardware port to write to the  for a card.
+
+### Prepare on Linux
+
+If you have a Linux system with an SD card reader, you can use the rpi-imager tool. To do so, perform the following tasks.
+- Put a micro-SD card into an SD adapter.
+- Plug the SD adapter into the card reader.
+- Download and install rpi-imager.
+
+**``$ sudo apt-get install -y rpi-imager``**
+
+- Run the tool
+$ rpi-imager
+You should see a window as shown in the following figure.
+Select the operating system. In this example it is Ubuntu Desktop 22.04 LTS.
 
 
+rpi-imager main window
+
+Prepare on Windows
+If you only have access to a Windows system Install the Win 32 disk imager 
+This software will allow you to copy a downloaded Linux image onto a micro-SD card. If you have an application that will do this, you can skip this step.
+Download the Win 32 disk imager to a Windows PC
+https://sourceforge.net/projects/win32diskimager/
+Install it.
+Download Ubuntu Desktop 
+To download Ubuntu, perform the following steps:
+Download an Ubuntu Desktop image from: 
+https://ubuntu.com/download/raspberry-pi
+Click the Green Download 64-bit button on the left side of the page. This version is recommended because it includes “Long Term Service” (until 2025).
+A .zip or .xz file should be downloaded to your PC. For example:
+ubuntu-20-04.3-preinstalled-server-arm64++raspi.img.xz
+The .xz suffix implies the file is compressed in a format other than zip.
+Unzip the file with a zip tool. Most Operating Systems have these standard today. When the file is unzipped, it should have a name similar to:
+ubuntu-20-04.3-preinstalled-server-arm64++raspi.img
+You should now be ready to copy the image to a micro-SD card.
+Copy Ubuntu image to micro-SD card
+If you have a brand new SD card, you usually don’t need to format it. Most come preformatted with the FAT32 file system. 
+At this point you should have a micro-SD card with Ubuntu Desktop on it which should boot the RasPi.
+Connect the computer hardware
+To connect all the computer hardware, perform the following steps:
+TODO: add pictures
+Plug the micro-SD card into the back of the RasPi.
+You can access the Internet using either Wi-Fi or with an Ethernet patch cord with an RJ-45. 
+Plug the 5v power supply with a USB-C end into the RasPi 4.
+For the initial set up, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but that’s not available yet.
+Connect the mouse and keyboard to the USB connections on the RasPi.
+Connect the monitor to the RasPi with the HDMI cable.
+Boot the RasPi
+To prepare to boot the Raspberry Pi 4 for the first time, perform the following steps.
+Slide both the top and back covers off of the frame to have full access to the hardware.
+If you haven’t already, download 64-bit Ubuntu 22.04 (LTS) - described in “Download Ubuntu Desktop” on page 10. 
+If you haven’t already, copy Linux to the micro-SD card and plug it in the back of the RasPi. This is described in “Copy Ubuntu image to micro-SD card” on page 11
+Plug monitor, keyboard, mouse and microphone into the Raspberry Pi. The Raspberry Pi 4 has two micro-HDMI jacks as it can drive two displays. If you have only one display, use the jack closest to the power supply jack (the one to the left).
+Plug in boombox main power. The small inline button switch inside powers the Raspberry Pi. (TODO: screen shot)
+First boot
+When you supply power to the Raspberry Pi, it should start booting.
+If the RasPi switch has a red LED below the on/off button. If it is not glowing red, push the on/off button once. 
+Observe the top, back, left of the RasPi (which is under the DAC Hat). There are two LEDs:
+The LED to the left should glow solid red. This signifies the RasPi has 5V DC power.
+The LED to the right of the red one should flicker green. This signifies that an operating system is communicating with the CPU. If there is a red light, but no green one, this probably means that the micro-SD card does not have Linux properly installed.
+
+Important: Never turn the RasPi off without first shutting Linux down with the halt command. Doing so can damage the operating system and possibly even the RasPi itself.
+
+Observe the monitor. You should see a rainbow colored splash screen, then the Ubuntu desktop should initialize.
+Initial configuration
+A welcome screen should pop up.
+On the Welcome window, choose your language and click Continue.
+On the Keyboard layout window, choose your keyboard layout and click Continue.
+On the Wireless window, configure a Wi-Fi network unless you plan to only use a hard-wired ethernet cable.
+On the Where are you? window, choose your time zone.
+On the Who are you? window, set the following values.
+Set your name.
+Choose your computer’s name (host name).
+For a user name and password pi is recommended as it is documented in the reminder of this document.
+For the last option, Log in automatically is recommended.
+Click Continue. 
+The install process will take a while configuring and will reboot itself.
+An Online Accounts window should appear. Click Skip.
+Choose an option on the Livepatch window.
+Choose an option on the Help Improve Ubuntu window and click Next.
+Click Next at the Privacy window.
+Click Done at the Ready to go window.
+Ubuntu Desktop should now be installed.
+Install and configure software
+To configure Ubuntu, perform the following sections.
+Install SSH server and other software
+The ssh server is not installed by default on Ubuntu desktop. It is recommended that you install it so you can access your boombox remotely.
+Open a terminal session by right-clicking the mouse anywhere on the desktop and choosing Open in Terminal. You should see a window pop up.
+Install open SSH server, and other packages with the following command.
+$ sudo apt-get install -y openssh-server 
+[sudo] password for pi:
+...
+After it installs sshd should be running. Verify with the following command:
+$ service sshd status
+...active (running)
+You should have either a Wi-Fi (wlan0) or a hard-wired (eth0) connection. To verify, enter the following command. Note your IP address.
+ip a
+1: lo:
+...
+2: eth0:
+...
+inet 192.168.1.229
+3: wlan0:
+...
+inet 192.168.1.x
+In this example, the IP address is 192.168.1.229.
+Start an SSH session
+You should now be able to start an SSH session as the user pi, if you want to continue from another desktop system. You can use putty to SSH in from a Windows PC, or just use the ssh command from a Linux or macOS terminal session.
+Upgrade your system
+Update the system which prepares for the latest code for all installed packages. 
+$ sudo apt-get update
+Upgrade your system so you have all the latest code. This step could take up to 25 minutes.
+$ sudo apt-get upgrade -y
+...
+Your system should now be at the latest software levels.
+Install Mycroft tools
+The author of this guide, @mike99mac, has also written some small tools to help with the installation and testing of Mycroft and associated audio resources.
+Some initial setup is needed before installing the tools:
+Install git and vim with the following command:
+$ sudo apt-get install -y git vim
+Make vim the default editor.
+$ sudo update-alternatives --install /usr/bin/editor editor /usr/bin/vim 100
+Allow pi to be able to run sudo without a password by adding NOPASSWD: to the sudo group line.
+$ sudo visudo
+...
+# Allow members of group sudo to execute any command
+%sudo   ALL=(ALL:ALL) NOPASSWD: ALL
+...
+Clone the mycroft-tools package in pi’s home directory with the following commands.
+$ cd
+$ git clone https://github.com/mike99mac/mycroft-tools.git
+...
+Change to the newly installed directory and run the setup script. It will copy scripts to /usr/local/sbin which is in the default PATH.
+$ cd mycroft-tools
+$ sudo ./setup.sh
+Copying all scripts to /usr/local/sbin ...
+Success!  There are new scripts in your /usr/local/sbin/ directory
+Use script 1 to install
+The install1 script was written to perform all commands in the following sections. Run it and you can skip down to section “Test Mic and Speakers”
+Run the install1 script in the home directory and save the output.
+# cd
+$ time install1 | tee install1.out 2>&1
+...
+real    3m25.141s
+user    0m0.299s
+sys     0m0.646s
+Test your environment.
+$ lsenv
+...
+Mycroft and mpd should not be running. 
+Buttons should not be running
+Pulseaudio should be running as a user service. 
+The two log file systems should not be tmpfs.
+Reboot your system and run lsenv again. Mycroft should not be running, but mpd should be. pulseaudio should also be running with the --system flag.
+$ sudo reboot
+... reconnect ...
+$ lsenv
+Status of mycroft:
+ -) WARNING: mycroft is not running as a service ... 
+    WARNING: no processes matching mycroft found
+-------------------------------------------------------------------------
+Status of mpd:
+ -) mpd is running as a service:
+    Active: active (running) since Wed 2023-03-01 13:01:13 EST; 1min 15s ago
+-------------------------------------------------------------------------
+Status of pulseaudio:
+ -) pulseaudio is running as a service:
+    Active: active (running) since Wed 2023-03-01 13:01:11 EST; 1min 17s ago
+    pulseaudio processes:
+    pulse        819       1  0 13:01 ?        00:00:00 /usr/bin/pulseaudio --system --disallow-exit --disallow-module-loading --disable-shm --exit-idle-time=-1
 
 
 ## Installation
