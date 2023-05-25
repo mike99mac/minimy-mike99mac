@@ -16,11 +16,11 @@ I worked with the Mycroft free and open personal voice assistant since 2019, but
 
 I tried OVOS/Neon, but was not able to get it going after a couple weeks in early 2023.  I still haven't given up on that platform. There is no doubt it will only get better.
 
-Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire, but it wasn't well received. Thankfully, Ken Smith put it up on github, I forked the code and here we are.  Ken has been a great help in answering my many questions - Thanks Dude! This is just a continuation of *give back to the community* by standing on the shoulds of so many others.
+Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire, but it wasn't well received. Thankfully, Ken Smith put it up on github, I forked the code and here we are.  Ken has been a great help in answering my many questions - Thanks Dude! This is just a continuation of *giving back to the community* by standing on the shoulders of so many thousands of others.
 
-My environment is a Raspberry Pi running Ubuntu Desktop inside a *boombox*. However, it should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.
+My environment is a Raspberry Pi running Ubuntu Desktop inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.
 
-This document is based on "The smart boombox cookbook" on https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf which describes much detail of the boombox enclosure.  This document has just the steps to get the software stack running, and it starts from the very beginning.
+This document is based on "The smart boombox cookbook" on https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf which describes much detail of the boombox enclosure.  This document has all the steps to get the *software stack* running, and it starts from the very beginning.
 
 One of my mantras is *Less is more*, so I liked minimy as it is a MINI-MYcroft.  Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
 ```
@@ -32,8 +32,8 @@ minimy-mike99mac        9900              79
 So OVOS is half the size of Mycroft, and Minimy is about half the size of OVOS.
 
 ## Preparing an SD card to boot Linux
-So you have a device that can run Linux - probably from a micro-SD card. You want to prime the pump and put a Linux distribution on that card. 
-Hopefully you have another computer running Linux, but other OS's will work. The computer must have a hardware port to write to the  for a card.
+So you have a device that can run Linux - probably from a micro-SD card. You want to *prime the pump* and put a Linux distribution on that card. 
+Hopefully you have another computer running Linux, but other OS's will work. The computer must have a hardware port to write to the card.
 
 ### Prepare on Linux
 
@@ -44,13 +44,13 @@ If you have a Linux box with an SD card reader, you can use **``rpi-imager``**. 
 
     **``$ sudo apt-get install -y rpi-imager``**
 
+### Flash the drive
+
 - Run the tool.
 
     **``$ rpi-imager``**
     
 You should see a window as shown in the following figure. **TODO**: add a screenshot
-
-### Flash the drive
 
 To flash a Linux image to the card, perform the following steps:
 
