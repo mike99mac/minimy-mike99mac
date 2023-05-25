@@ -27,14 +27,15 @@ minimy-mike99mac        9900              79
 ```
 So OVOS is half the size of Mycroft, and Minimy is about half the size of OVOS.
 
-My environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu Desktop inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro - you're on your own - no warranties.
+My environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro - you're on your own - no warranties.
 
 This is based on "The smart boombox cookbook" on https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf which describes much detail of building a boombox.  This document focuses just on the steps to get the *software stack* running, and starts from the very beginning.
 
 I have probably reflashed and rebuilt this system 20 or 30 times, and each time I compare notes. So this document should be relatively solid.
 
 ## Prepare an SD card to boot Linux
-So you have a device that can run Linux - probably from a micro-SD card. You want to *prime the pump* and put a Linux distribution on that card. 
+So you have a device that can run Linux - probably from a micro-SD card. A 32 GB card or larger is recommended. You need to *prime the pump* and put a Linux distribution on that card. 
+
 Hopefully you have another computer running Linux, but other OS's will work. The box you use must have a hardware port to write to the card.
 
 ### Prepare on Linux
@@ -73,7 +74,7 @@ Further details are not provided.
 
 ## Connect the computer hardware
 
-For the initial set up, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but that’s not available yet.
+For the initial setup, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but that’s not available yet.
 
 To connect all the computer hardware, perform the following steps:
 
@@ -90,7 +91,7 @@ When you supply power to the Raspberry Pi, it should start booting.  On the top,
 - The LED to the left should glow solid red. This signifies the RasPi has 5V DC power.
 - The LED to the right of the red one should flicker green. This signifies that an operating system is communicating with the CPU. If there is a red light, but no green one, this probably means that the micro-SD card does not have Linux properly installed.
 
-**Important**: Never turn the RasPi off without first shutting Linux down with the halt command. Doing so can damage the operating system and possibly even the RasPi itself.
+**Important**: Never turn the RasPi off without first shutting Linux down with the **``halt``** or similar command. Doing so can damage the operating system and possibly even the RasPi itself.
 
 You should see a rainbow colored splash screen on the monitor, then the Ubuntu desktop should initialize.
 
@@ -102,14 +103,14 @@ A welcome screen should open on the monitor. Perform the following steps:
 - On the *Keyboard layout* window, choose your keyboard layout and click **Continue**.
 - On the *Wireless* window, if you are not using a hard-wired Ethernet, click **Connect** and configure a Wi-Fi network. You must know the network SSID and will probably be prompted for a password.
 - On the *Where are you?* window, choose your time zone.
-- On the *Who are you?* window, set the following values.
+- On the *Who are you?* window, set the following values:
     - Set your name.
-    - Choose your computer’s name (host name).
+    - Set your computer’s name (host name).
     - For a user name and password ``pi`` is recommended as it is documented in the reminder of this document.
     - For the last option, **Log in automatically** is recommended.
     - Click **Continue**.
  - The install process will take a number of minutes configuring and will reboot the computer.
- - An *Online Accounts* window should appear. Click **Skip**.
+ - When the system reboots, an *Online Accounts* window should appear. Click **Skip**.
  - Click **Next** at the *Enable Ubuntu Pro* window.
  - Choose an option on the *Help Improve Ubuntu* window and click **Next**.
  - Click **Next** at the *Privacy* window.
@@ -123,16 +124,18 @@ To configure Ubuntu, perform the following sections.
 
 ### Install SSH server and other software
 
-The ssh server is not installed by default on Ubuntu desktop (which is curious). Install it so you can access your system remotely. To do so, perform the following steps.
+The secure shell (SSH) server is not installed by default on Ubuntu desktop (which is curious). Install it so you can access your system remotely. 
 
-- Open a terminal session by right-clicking the mouse anywhere on the desktop and choosing **Open in Terminal**. You should see a window pop up.
+To do so, perform the following steps:
+
+- Open a terminal session by right-clicking the mouse anywhere on the desktop and choosing **Open in Terminal**. You should see a console window open.
 - From that window, install the ``openssh-server`` package, with the following command.  You will be prompted for your password.
     
     **``$ sudo apt-get install -y openssh-server ``**
     
     ``[sudo] password for pi:``
 
-- After it installs sshd should be running. Verify with the following command:
+- After it installs **``sshd``** should be running. Verify with the following command:
 
     **``$ service sshd status``**
     
@@ -142,7 +145,8 @@ The ssh server is not installed by default on Ubuntu desktop (which is curious).
     ...
     ```
     
-- You should have either a Wi-Fi (wlan0) or a hard-wired (eth0) connection. To verify, enter the following command. Note your IP address.
+- You should have either a Wi-Fi (``wlan0``) or a hard-wired (``eth0``) connection. To verify, enter the following command. Note your IP address.
+
     **``ip a``**
     ```
     1: lo:
