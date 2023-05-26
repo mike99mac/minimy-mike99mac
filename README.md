@@ -1,7 +1,9 @@
 # Minimy
 Minimy is a simple NLU-based voice assistant framework.
 
-It is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
+It is a fork of Ken-Mycroft's code at: 
+
+    https://github.com/ken-mycroft/minimy
 
 ## Overview
 **From Ken Smith:**
@@ -404,16 +406,46 @@ Always source the virtual environment before you run anything.
 
 The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properly in your ``~/.bash_profile``.
 
-- Run the following configuration script.
-- 
+- Run the following configuration script. In this example all defaults were accepted by pressing **Enter** for each question. At the end **y** was entered to save the changes.  
+ 
     **``$ ./mmconfig.py sa``**
+    
+    ```
+    Advanced Options Selected sa
+    ... all defaults taken ...
+    Save Changes?y
+    Configuration Updated
+      Advanced
+        ('CrappyAEC', 'n')
+        ('InputDeviceId', '0')
+        ('InputLevelControlName', 'Mic')
+        ('LogLevel', 'd')
+        ('NLP', {'UseRemote': 'n'})
+        ('OutputDeviceName', '')
+        ('OutputLevelControlName', 'Speaker')
+        ('Platform', 'ubuntu')
+        ('STT', {'UseRemote': 'y'})
+        ('TTS', {'Local': 'm', 'Remote': 'p', 'UseRemote': 'y'})
+      Basic
+        ('AWSId', '')
+        ('AWSKey', '')
+        ('BaseDir', '/home/pi/minimy-mike99mac')
+        ('GoogleApiKeyPath', 'install/my_google_key.json')
+        ('Version', '1.0.4')
+        ('WakeWords', ['hey computer', 'computer'])
+    ```
 
 ## Running
-The system uses **``startminimy``** and **``stopminimy``** to start and stop processes. 
+The scripts **``startminimy``** and **``stopminimy``** are used to start and stop processes. 
 Each skill and service run in their own process space and use the message bus or file system to synchronize. 
 Their output is written to the ``logs/`` directory under the main install directory. 
 
-The system relies on the environment variables ``SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS`` which are typically set in **``startminimy``** .
+The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS`` which are set in **``startminimy``** with the following code:
+    ```
+    export PYTHONPATH=`pwd`
+    export SVA_BASE_DIR=`pwd`
+    export GOOGLE_APPLICATION_CREDENTIALS="/home/pi/minimy/install/my-google-key.json"
+    ```
 
 The SVA_BASE_DIR is set to the install directory of your system. The Google variable is set based on where your Google Speech API key is located. 
 
@@ -437,10 +469,10 @@ For example:
 
 If you don't have a Google Speech API key you can get one from here ...
 
-https://console.cloud.google.com/freetrial/signup/tos
+    https://console.cloud.google.com/freetrial/signup/tos
 
-The start.sh file must then be modified to use this key. The Google Python module actually requires this
-enviornment variable but as mentioned it is typically set in the start.sh script. You could, if you like, set it manually.
+The Google Python module actually requires this enviornment variable but as mentioned it is typically set in the start.sh script. 
+You could, if you like, set it manually.
 
 ```
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/my/key/key_filename.json
