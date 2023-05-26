@@ -22,6 +22,7 @@ sudo apt install -y curl
 sudo apt install -y wget
 python3 -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
 pip install -r install/requirements.txt
+pip install lingua_franca
 deactivate
 
 echo 'Installing Internet music tools'
