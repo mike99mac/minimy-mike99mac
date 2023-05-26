@@ -512,24 +512,18 @@ The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and 
     export GOOGLE_APPLICATION_CREDENTIALS="/home/pi/minimy/install/my-google-key.json"
     ```
 
-- Start Minimy with:
+- Start Minimy, ensuring it is run from the base directory, as follows.
 
-
+    **``(venv_ngv) $ cd $HOME/minimy-mike99mac``**
     **``(venv_ngv) $ ./startminimy``**
 
 - Stop Minimy with:
 
     **``(venv_ngv) $ ./stopminimy``**
 
-These must be run from the base directory.  The base directory is defined as where you installed this code to. 
-For example:
-```
-/home/pi/minimy-mike99mac
 ```
 
-If you don't have a Google Speech API key you can get one from here ...
-
-    https://console.cloud.google.com/freetrial/signup/tos
+If you don't have a Google Speech API key you can get one from https://console.cloud.google.com/freetrial/signup/tos
 
 The Google Python module actually requires this enviornment variable but as mentioned it is typically set in the start.sh script. 
 You could, if you like, set it manually.
