@@ -38,7 +38,7 @@ This document focuses just on the steps to get the *software stack* running, and
 
 # The Minimy software stack
 
-The overall steps to get this everything working are:
+The overall steps to get this invention working are:
 
 - Acquire the hardware - basically a Raspberry Pi or equivalent with a microphone and speakers
 - Flash a Linux image to a memory device
@@ -47,8 +47,11 @@ The overall steps to get this everything working are:
 - Install and customize Minimy
 - Start using your new personal voice assistant!
 
+## Acquire the hardware
+I would recommend a Raspberry Pi 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible.
+
 ## Prepare an SD card to boot Linux
-So you have a device that can run Linux - probably from a micro-SD card. A 32 GB card or larger is recommended. You need to *prime the pump* and put a Linux distribution on that card. 
+So you have a device that can run Linux - probably from a micro-SD card. A 32 GB card or larger is recommended. You need to *prime the pump* and put a Linux distribution on it. 
 
 Hopefully you have another computer running Linux, but other OS's will work. The box you use must have a hardware port to write to the card.
 
@@ -57,7 +60,7 @@ Hopefully you have another computer running Linux, but other OS's will work. The
 If you have a Linux box with an SD card reader, you can use **``rpi-imager``**. To do so, perform the following tasks.
 - Put a micro-SD card into an SD adapter.
 - Plug the SD adapter into the card reader.
-- Download and install the tool.
+- If you don't have it already, download and install the tool.
 
     **``$ sudo apt-get install -y rpi-imager``**
 
@@ -73,7 +76,7 @@ If you have a Linux box with an SD card reader, you can use **``rpi-imager``**. 
 
     - Select your preferred *Operating System*. **Ubuntu Desktop 22.04 LTS** is recommended. It's a solid operating system, that combined with the RasPi, is capable of being a general purpose computer. LTS stands for *Long Term Support* - Canonical promises to support it for at least four years. 
 
-    - Select the *Storage* device. Ideally you will see the one micro-SD card in the dropdown menu.
+    - Select the *Storage* device. You should see just one micro-SD card in the dropdown menu.
 
     - Click **Write**.
 
@@ -88,7 +91,7 @@ No further details are provided.
 
 ## Connect the computer hardware
 
-For the initial setup, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but that’s not available yet. You can access the Internet using either Wi-Fi or with an Ethernet patch cord.
+For the initial setup, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but that’s not available yet. You can access the Internet using either Wi-Fi or with an Ethernet cord.
 
 To connect all the computer hardware, perform the following steps:
 
@@ -96,7 +99,7 @@ To connect all the computer hardware, perform the following steps:
 - If you have wired ethernet, plug it in to the RJ-45 connector on the RasPi.
 - Connect the mouse and keyboard to the USB connections on the RasPi.
 - Connect the monitor to the RasPi with an appropriate micro-HDMI cable.  If your Raspberry Pi has two micro HDMI ports, use the left one.
-- Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. If you have an inline switch has a red LED below the on/off button.
+- Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. If you have an inline switch, be sure it is on.
 
 ### Boot the RasPi
 
@@ -288,6 +291,25 @@ To run **``intall1``**, perform the following steps:
     
     ``...``
     
+### Test microphone and speakers
+
+It is important to know your microphone and speakers are working. 
+There are scripts in mycroft-tools named **``testrecord``** and **``testplay``**. They are wrappers around **``arecord``** and **``aplay``** 
+designed to make it easier to test recording audio to a file and playing it back on the speakers.
+
+- To test your microphone and speakers, issue the following command then speak into the microphone for up to five seconds. 
+
+    **``$ testrecord``**
+    
+    ```
+    Testing your microphone for 5 seconds - SAY SOMETHING!
+    INFO: running command: arecord -r 44100  -f S24_LE -d 5 /tmp/test-mic.wav
+    Recording WAVE '/tmp/test-mic.wav' : Signed 24 bit Little Endian, Rate 44100 Hz, Mono
+    ```
+    
+You should hear your words played back to you. essful the script will attempt to play it back.  If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
+
+
 - Test your environment with the newly installed **``lsenv``** script which reports on many aspects of your Linux system.
 
     **``$ lsenv``**
