@@ -388,9 +388,9 @@ To download and install Minimy, perform the following steps:
 
 - Change to your home directory and clone the repo from github.
 
-    **``cd``**
+    **``$ cd``**
     
-    **``git clone https://github.com/mike99mac/minimy-mike99mac``**
+    **``$ git clone https://github.com/mike99mac/minimy-mike99mac``**
 
     ```
     Cloning into 'minimy-mike99mac'...
@@ -398,7 +398,7 @@ To download and install Minimy, perform the following steps:
     Resolving deltas: 100% (450/450), done.
     ```
     
-- Change to the newly cloned directory
+- Change to the newly cloned directory.
     
     **``$ cd minimy-mike99mac``**
     
@@ -410,11 +410,11 @@ To download and install Minimy, perform the following steps:
     
 - Open a virtual environment.
 
-    **``venv``**
+    **``$ venv``**
     
-    You should notice ``(venv_ngv)`` prefix on the command line.
+    You should notice a new ``(venv_ngv)`` prefix on the command line.
     
-- Run the following install script:
+- Run the following script to install minimy.
     
     **``(venv_ngv) $ ./install/linux_install.sh``**
     
