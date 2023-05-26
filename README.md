@@ -499,7 +499,7 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
         ('WakeWords', ['hey computer', 'computer'])
     ```
 
-## Running
+## Run Minimy
 The scripts **``startminimy``** and **``stopminimy``** are used to start and stop processes. 
 Each skill and service run in their own process space and use the message bus or file system to synchronize. 
 Their output is written to the ``logs/`` directory under the main install directory. 
@@ -520,8 +520,6 @@ The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and 
 - Stop Minimy with:
 
     **``(venv_ngv) $ ./stopminimy``**
-
-```
 
 If you don't have a Google Speech API key you can get one from https://console.cloud.google.com/freetrial/signup/tos
 
