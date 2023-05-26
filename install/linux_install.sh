@@ -66,5 +66,6 @@ source venv_ngv/bin/activate
 echo ' '
 echo 'Install Complete'
 echo ' '
-cat doc/final_instructions.txt
+# out of date:
+# cat doc/final_instructions.txt
 date
