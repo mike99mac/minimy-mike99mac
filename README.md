@@ -16,13 +16,13 @@ get called asynchronously when an utterance is matched to an intent the skill ha
 
 I worked with the Mycroft free and open personal voice assistant since 2019, but the company went bankrupt in 2023, so had to move on. :((
 
-I tried OVOS but was not able to get a music skill working after a couple weeks.  I still haven't given up on that platform. There is no doubt it will only get better and easier to install.
+I tried OVOS but was not able to get a music skill working after a couple weeks.  I still haven't given up on that platform - no doubt it will only get better and easier to install.
 
-Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire, but wasn't well received. Thankfully, Ken Smith put it on github, I forked the code, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** 
+Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire but wasn't well received. Thankfully, Ken Smith put it on github, I forked the code, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** 
 
 So I continue to try to *give back to the community* while *standing on the shoulders* of so many thousands of others.
 
-One of my mantras is *Less is more*, so I liked minimy as it is a **Mini-My**croft.  Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
+One of my mantras is *Less is more*. I liked minimy as it is a **Mini-My**croft. Less code is more.  Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
 ```
             Repo         Loc           files
     mycroft-core       38074             229
