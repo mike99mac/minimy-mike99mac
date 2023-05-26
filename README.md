@@ -127,12 +127,9 @@ A welcome screen should open on the monitor. Perform the following steps:
  - Choose an option on the *Help Improve Ubuntu* window and click **Next**.
  - Click **Next** at the *Privacy* window.
  - Click **Done** at the *Ready to go* window.
- - Ubuntu Desktop 22-04 should now be installed. Run the uname -a command and compare output.
 
-    **``$ uname -a``**
-    
-    ``Linux model1500 5.15.0-1024-raspi #26-Ubuntu SMP PREEMPT Wed Jan 18 15:29:53 UTC 2023 aarch64 aarch64 aarch64 GNU/Linux``
-
+Ubuntu Desktop 22-04 should now be installed
+ 
 ### Install the SSH server
 
 The secure shell (SSH) server is not installed by default on Ubuntu desktop (which is curious). Install it so you can access your system remotely. 
@@ -140,6 +137,12 @@ The secure shell (SSH) server is not installed by default on Ubuntu desktop (whi
 To do so, perform the following steps:
 
 - Open a terminal session by right-clicking the mouse anywhere on the desktop and choosing **Open in Terminal**. You should see a console window open.
+- Run the uname -a command just to show the Ubuntu release level and architecture.
+
+    **``$ uname -a``**
+    
+    ``Linux model1500 5.15.0-1024-raspi #26-Ubuntu SMP PREEMPT Wed Jan 18 15:29:53 UTC 2023 aarch64 aarch64 aarch64 GNU/Linux``
+
 - From that window, install the ``openssh-server`` package, with the following command.  You will be prompted for your password.
     
     **``$ sudo apt-get install -y openssh-server ``**
