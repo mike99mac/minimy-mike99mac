@@ -414,7 +414,18 @@ To download and copy Minimy, perform the following steps:
     
 ### Install Minimy    
     
-- Confirm that **``venv``** is alias which should have been set in your ``.bash_profile`` after the reboot.
+- Run the following script to install minimy.
+    
+    **``$ ./install/linux_install.sh``**
+    
+    ```
+    ...
+    Install Complete
+    ```
+    
+    This step can take up to ten minutes.
+    
+- Confirm that **``venv``** is an alias which should have been set in your ``.bash_profile`` after the reboot.
 
     **``alias venv``**
     
@@ -425,17 +436,6 @@ To download and copy Minimy, perform the following steps:
     **``$ venv``**
     
     You should notice a new ``(venv_ngv)`` prefix on the command line.
-    
-- Run the following script to install minimy.
-    
-    **``(venv_ngv) $ ./install/linux_install.sh``**
-    
-    ```
-    ...
-    Install Complete
-    ```
-    
-    This step can take up to ten minutes.
     
 ### Configure Minimy
 
