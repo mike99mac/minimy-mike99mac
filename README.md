@@ -1,9 +1,7 @@
 # Minimy
 Minimy is a simple NLU-based voice assistant framework.
 
-It is a fork of Ken-Mycroft's code at: 
-
-    https://github.com/ken-mycroft/minimy
+It is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
 
 ## Overview
 **From Ken Smith:**
@@ -28,13 +26,12 @@ One of my mantras is *Less is more*, so I liked minimy as it is a **Mini-My**cro
        ovos-core       18067             238
 minimy-mike99mac        9900              79
 ```
-So OVOS is half the size of Mycroft, and Minimy is about half the size of OVOS.
+So OVOS is half the size of Mycroft, and Minimy is about half again smaller
 
 My environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro - you're on your own - no warranties.
 
-This is based on *The smart boombox cookbook* which also describes the construction of a boombox. It is on the Web at:  
-
-    https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
+This is based on *The smart boombox cookbook* which also describes the construction of a boombox. 
+It is on the Web at: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
 
 This document focuses just on the steps to get the *software stack* running, and starts from the very beginning.
 
@@ -260,7 +257,7 @@ It performs the following tasks:
 - Sets  **``vim``** to a better color scheme and turns off the annoying auto-indent features
 - Adds needed groups to users ``pi`` and ``mpd``
 - Copies a ``.bash_profile`` to your home directory
-- Turns ``default`` and ``vc4`` audio off and does not disable monitor overscan in the boot parameters file
+- Turns ``default`` and ``vc4`` audio off and does not disable monitor overscan in the Linux boot parameters file
 - Changes a line in the **``rsyslog``** configuration file to prevent *kernel message floods*
 - Copies a **``systemctl``** configuration file to mount ``/var/log/`` in a *tmpfs* which helps prolong the life of the micro-SD card
 - Sets **``pulseaudio``** to start as a system service at boot time, and allows anonymous access so audio services work
@@ -277,7 +274,7 @@ To run **``intall1``**, perform the following steps:
 
 - Run the **``install1``** script in the home directory and save the output to a file.  You may want to reference that file in case some steps don't work.
 
-    **``# cd``**
+    **``$ cd``**
     
     **``$ install1 | tee install1.out 2>&1``**
     
@@ -383,8 +380,12 @@ The output shows three changes:
 ## Minimy
 Minimy must be downloaded, installed and configured.
 
-## Download and install Minimy 
-To download and install Minimy, perform the following steps:
+### Download and copy Minimy 
+It is recommended that you make a second copy of Minimy after you download it.  This way, if you make some changes to the running code, you'll have a reference copy. Also the copy of the code that you run should not have a ``.git/`` directory, thus removing any connection to github.
+
+The directory the copy will run in **must be named**  ``minimy``, removing the ``-mike99mac`` suffix. 
+
+To download and copy Minimy, perform the following steps:
 
 - Change to your home directory and clone the repo from github.
 
@@ -398,15 +399,25 @@ To download and install Minimy, perform the following steps:
     Resolving deltas: 100% (450/450), done.
     ```
     
-- Change to the newly created directory.
+- Copy the directory recursively from ``minimy-mike99mac`` to ``minimy``.
+
+    **``$ cp -a minimy-mike99mac minimy``**
     
-    **``$ cd minimy-mike99mac``**
+- Remove the ``.git`` directory from the copy.
+
+    **``$ cd minimy``**
+    
+    **``$ rm -fr .git``**
+    
+    Now the code will run and you can work in ``minimy`` and keep ``minimy-mike99mac`` as a reference copy.
+    
+### Install Minimy    
     
 - Confirm that **``venv``** is alias which should have been set in your ``.bash_profile`` after the reboot.
 
     **``alias venv``**
     
-    ``alias venv='source /home/pi/minimy-mike99mac/venv_ngv/bin/activate'``
+    ``alias venv='source /home/pi/minimy/venv_ngv/bin/activate'``
     
 - Open a virtual environment.
 
@@ -493,7 +504,7 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
       Basic
         ('AWSId', '')
         ('AWSKey', '')
-        ('BaseDir', '/home/pi/minimy-mike99mac')
+        ('BaseDir', '/home/pi/minimy')
         ('GoogleApiKeyPath', 'install/my_google_key.json')
         ('Version', '1.0.4')
         ('WakeWords', ['hey computer', 'computer'])
@@ -514,15 +525,19 @@ The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and 
 
 - Start Minimy, ensuring it is run from the base directory, as follows.
 
-    **``(venv_ngv) $ cd $HOME/minimy-mike99mac``**
+    **``(venv_ngv) $ cd $HOME/minimy``**
     **``(venv_ngv) $ ./startminimy``**
 
 - Stop Minimy with:
 
     **``(venv_ngv) $ ./stopminimy``**
 
-If you don't have a Google Speech API key you can get one from https://console.cloud.google.com/freetrial/signup/tos
+If you don't have a Google Speech API key you can get one from: https://console.cloud.google.com/freetrial/signup/tos
 
 Once you confirm your changes you can see what was produced by typing 'cat install/mmconfig.yml'. You 
 should not modify this file.
+
+## Use Minimy
+
+**TODO** Add quite a number of sample utterances
 
