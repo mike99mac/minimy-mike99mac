@@ -334,12 +334,12 @@ To test this, perform the following steps:
     ````
 
 ## Minimy
-Minimy must be copied, installed and configured.
+Minimy must be downloaded, installed and configured.
 
 ## Download and install Minimy 
 To download and install Minimy, perform the following steps:
 
-- Change to your home directory and copy the repo from github.
+- Change to your home directory and clone the repo from github.
 
     **``cd``**
     
@@ -366,7 +366,7 @@ and intent matching. Intent matching is accomplished using natutal language proc
 the CMU link parser using a simpe enumerated approach referred to as shallow parsing.
 
 As a result you will be asked during configuration if you would like to use remote or local STT, TTS
-and NLP. Unless you have a good reason, for now you should always select local mode (remote=n) for NLP.
+and NLP. Unless you have a good reason, for now you should always select local mode (``remote=n``) for NLP.
 
 Remote TTS using polly requires an Amazon ID and key.  If you prefer to not use polly for remote TTS you may 
 choose mimi2 from Mycroft which is a free remote TTS alternative. You could also select local only TTS in 
@@ -380,8 +380,6 @@ connection. Devices with decent connectivity should use remote for both.
 
 You will also be asked for operating environment.  Currently the options are (p) for piOS, (l) for 
 Ubuntu or (m) for the Mycroft MarkII running the Pantacor build.
-  
-#### Configure wake words
 
 During configuration you will be asked to provide one or more words to act as wake words. You will
 enter them separated by commas with no punctuation.  For example, 
@@ -406,7 +404,8 @@ Always source the virtual environment before you run anything.
 
 The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properly in your ``~/.bash_profile``.
 
-- Run the 
+- Run the following configuration script.
+- 
     **``$ ./mmconfig.py sa``**
 
 ## Running
@@ -418,34 +417,30 @@ The system relies on the environment variables ``SVA_BASE_DIR`` and ``GOOGLE_APP
 
 The SVA_BASE_DIR is set to the install directory of your system. The Google variable is set based on where your Google Speech API key is located. 
 
-Start a virtual environment
-```
-source venv_ngv/bin/activate<br/><br/>
-```
-Then start Minimy with:
-```
-$ ./start.sh
-```
-To stop Minimy:
-```
-$ ./stop.py
-```
+- Start a virtual environment
+
+    **``$ source venv_ngv/bin/activate``**
+
+- Start Minimy with:
+- 
+    **``./startminimy``**
+
+- Stop Minimy with:
+- 
+    **``$ ./stopminimy``**
+
 These must be run from the base directory.  The base directory is defined as where you installed this code to. 
 For example:
 ```
 /home/pi/minimy-mike99mac
 ```
 
-If you don't have a Google Speech API key you 
-can get one from here ...
+If you don't have a Google Speech API key you can get one from here ...
 
 https://console.cloud.google.com/freetrial/signup/tos
 
-The start.sh file must then be modified to use this
-key. The Google Python module actually requires this
-enviornment variable but as mentioned it is typically 
-set in the start.sh script. You could, if you like,
-set it manually.
+The start.sh file must then be modified to use this key. The Google Python module actually requires this
+enviornment variable but as mentioned it is typically set in the start.sh script. You could, if you like, set it manually.
 
 ```
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/my/key/key_filename.json
