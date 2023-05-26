@@ -38,14 +38,14 @@ This document focuses just on the steps to get the *software stack* running, and
 
 # The Minimy software stack
 
-The overall steps to get this stack working are:
+The overall steps to get this everything working are:
 
-- Acquire the hardware
-- Flash a Linux image
+- Acquire the hardware - basically a Raspberry Pi or equivalent with a microphone and speakers
+- Flash a Linux image to a memory device
 - Install and configure Linux
 - Install a toolbox written for Minimy
 - Install and customize Minimy
-- Start Minimy and use it!
+- Start using your new personal voice assistant!
 
 ## Prepare an SD card to boot Linux
 So you have a device that can run Linux - probably from a micro-SD card. A 32 GB card or larger is recommended. You need to *prime the pump* and put a Linux distribution on that card. 
