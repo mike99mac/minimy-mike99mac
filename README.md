@@ -1,4 +1,7 @@
 # Minimy
+
+# HI ABIGAIL!!
+
 Minimy is a simple NLU-based voice assistant framework.
 
 It is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
