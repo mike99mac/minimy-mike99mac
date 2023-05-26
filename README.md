@@ -18,7 +18,9 @@ I worked with the Mycroft free and open personal voice assistant since 2019, but
 
 I tried OVOS but was not able to get a music skill working after a couple weeks.  I still haven't given up on that platform. There is no doubt it will only get better and easier to install.
 
-Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire, but wasn't well received. Thankfully, Ken Smith put it on github, I forked the code, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** So I continue to try to *give back to the community* while *standing on the shoulders* of so many thousands of others.
+Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire, but wasn't well received. Thankfully, Ken Smith put it on github, I forked the code, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** 
+
+So I continue to try to *give back to the community* while *standing on the shoulders* of so many thousands of others.
 
 One of my mantras is *Less is more*, so I liked minimy as it is a **Mini-My**croft.  Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
 ```
@@ -29,18 +31,18 @@ minimy-mike99mac        9900              79
 ```
 So OVOS is half the size of Mycroft, and Minimy is about half again smaller.
 
-My environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro, expect the unexpected :)).
+The test environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro, expect the unexpected :))
 
 This is based on *The smart boombox cookbook* which also describes the construction of a boombox. 
 It is on the Web at: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
 
-This document focuses just on the steps to get the *software stack* running, and starts from the very beginning.
+This document focuses on the steps to get the *software stack* running, and starts from the very beginning.
 
 # The Minimy software stack
 
-The overall steps to get this invention working are:
+The overall steps are:
 
-- Acquire the hardware - basically a Raspberry Pi or equivalent with a microphone and speakers
+- Acquire the hardware - typically a Raspberry Pi with a microphone and speakers
 - Flash a Linux image to a memory device
 - Install and configure Linux
 - Install a toolbox written for Minimy
