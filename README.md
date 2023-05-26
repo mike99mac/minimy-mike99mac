@@ -66,7 +66,7 @@ If you have a Linux box with an SD card reader, you can use **``rpi-imager``**. 
 
 - To flash a Linux image to the card, perform the following steps:
 
-    - Select your preferred *Operating System*. **Ubuntu Desktop 22.04 LTS** is recommended and is what is documented on this page. It's a solid operating system, and the LTS stands for *Long Term Support*.  Canonical promises to support it for at least four years. 
+    - Select your preferred *Operating System*. **Ubuntu Desktop 22.04 LTS** is recommended. It's a solid operating system, that combined with the RasPi, is capable of being a general purpose computer. LTS stands for *Long Term Support* - Canonical promises to support it for at least four years. 
 
     - Select the *Storage* device. Ideally you will see the one micro-SD card in the dropdown menu.
 
@@ -279,14 +279,9 @@ To run **``intall1``**, perform the following steps:
 
     **``# cd``**
     
-    **``$ time install1 | tee install1.out 2>&1``**
+    **``$ install1 | tee install1.out 2>&1``**
     
-    ```
-    ...
-    real    3m25.141s
-    user    0m0.299s
-    sys     0m0.646s
-    ```
+    ``...``
     
 - Test your environment with the newly installed **``lsenv``** script which reports on many aspects of your Linux system.
 
@@ -326,11 +321,11 @@ To run **``intall1``**, perform the following steps:
 The output shows that:
 
 - Processes with ``minimy`` in their name are not running.
-- The **``buttons``** daemon is not running, which traps and sends messages when physical buttons are pushed.
+- The **``buttons``** daemon, which traps and sends messages when physical buttons are pushed, is not running.
 - The Music Playing Daemon, **``mpd``** is not running.
 - There is one **``pulseaudio``** process running, but it does not have **``--system``** as a parameter.
-- Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage
-- None of three file systems frequently written to are mounted over a ``tmpfs`` (in-memory file system).
+- Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage.
+- None of three file systems frequently commonly written to are mounted over a in-memory ``tmpfs`` file system.
 
 ### Test the changes of the install script
 Some of the changes made by **``install1``** will not be realized until boot time.  
@@ -342,7 +337,7 @@ To test this, perform the following steps:
     **``$ sudo reboot``**
     
 - Restart your SSH session.
-- Run the **``lsenv``** script again.
+- Run the same script again.
 
     **``$ lsenv``**
     
@@ -383,6 +378,7 @@ The output shows three changes:
 
 - The Music Playing Daemon, **``mpd``** is now running.
 - The one **``pulseaudio``** process has **``--system``** as a parameter which is vital to audio output working correctly.
+- The **``/var/log/``** file system is now mounted over an in-memory tmpfs.
 
 ## Minimy
 Minimy must be downloaded, installed and configured.
@@ -402,11 +398,25 @@ To download and install Minimy, perform the following steps:
     Resolving deltas: 100% (450/450), done.
     ```
     
-- Change to the newly cloned directory and run the following install script:
+- Change to the newly cloned directory
     
     **``$ cd minimy-mike99mac``**
     
-    **``$ ./install/linux_install.sh``**
+- Confirm that **``venv``** is alias which should have been set in your ``.bash_profile`` after the reboot.
+
+    **``alias venv``**
+    
+    ``alias venv='source /home/pi/minimy-mike99mac/venv_ngv/bin/activate'``
+    
+- Open a virtual environment.
+
+    **``venv``**
+    
+    You should notice ``(venv_ngv)`` prefix on the command line.
+    
+- Run the following install script:
+    
+    **``(venv_ngv) $ ./install/linux_install.sh``**
     
     This step can take up to ten minutes.
     
@@ -457,7 +467,7 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
 
 - Run the following configuration script. In this example all defaults were accepted by pressing **Enter** for each question. At the end **y** was entered to save the changes.  
  
-    **``$ ./mmconfig.py sa``**
+    **``(venv_ngv) $ ./mmconfig.py sa``**
     
     ```
     Advanced Options Selected sa
@@ -498,17 +508,13 @@ The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and 
 
 The SVA_BASE_DIR is set to the install directory of your system. The Google variable is set based on where your Google Speech API key is located. 
 
-- Start a virtual environment
-
-    **``$ source venv_ngv/bin/activate``**
-
 - Start Minimy with:
 - 
-    **``./startminimy``**
+    **``(venv_ngv) $ ./startminimy``**
 
 - Stop Minimy with:
 - 
-    **``$ ./stopminimy``**
+    **``(venv_ngv) $ ./stopminimy``**
 
 These must be run from the base directory.  The base directory is defined as where you installed this code to. 
 For example:
