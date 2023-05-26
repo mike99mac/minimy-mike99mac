@@ -34,10 +34,7 @@ This is based on *The smart boombox cookbook* which also describes the construct
 
     https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
 
-
 This document focuses just on the steps to get the *software stack* running, and starts from the very beginning.
-
-I have probably reflashed and rebuilt this system more than 25 times, and each time I compare notes. So this document should be relatively solid.
 
 # The Minimy software stack
 
@@ -104,9 +101,11 @@ When you supply power to the Raspberry Pi, it should start booting.  On the top,
 
 **IMPORTANT**: Never turn the RasPi off without first shutting Linux down with the **``halt``** or similar command. Doing so can damage the operating system and possibly even the RasPi itself.
 
-# Install and configure Linux
+## Install and configure Linux
 
-## Initial Ubuntu Desktop configuration
+To configure Ubuntu, perform the following sections.
+
+### Initial Ubuntu Desktop configuration
 
 A welcome screen should open on the monitor. Perform the following steps:
 
@@ -132,11 +131,7 @@ A welcome screen should open on the monitor. Perform the following steps:
     
     ``Linux model1500 5.15.0-1024-raspi #26-Ubuntu SMP PREEMPT Wed Jan 18 15:29:53 UTC 2023 aarch64 aarch64 aarch64 GNU/Linux``
 
-## Install and configure software
-
-To configure Ubuntu, perform the following sections.
-
-### Install SSH server and other software
+### Install the SSH server
 
 The secure shell (SSH) server is not installed by default on Ubuntu desktop (which is curious). Install it so you can access your system remotely. 
 
@@ -385,13 +380,34 @@ connection. Devices with decent connectivity should use remote for both.
 
 You will also be asked for operating environment.  Currently the options are (p) for piOS, (l) for 
 Ubuntu or (m) for the Mycroft MarkII running the Pantacor build.
+  
+### Configure wake words
 
+During configuration you will be asked to provide one or more words to act as wake words. You will
+enter them separated by commas with no punctuation.  For example, 
+```
+hey Bubba, bubba
+```
+or
+```
+computer
+```
+
+Wake words work best when you choose multi-syllable words. Longer names like 'Esmerelda' or  words like
+'computer' or words with distinct sounds like 'expression' (the 'x') or 'kamakazi' (two hard
+'k's) will always work better than words like 'hey' or 'Joe'. You can use the test_recognition.sh 
+script to see how well your recognition is working.  Just using the word 'computer' should work adequately.
+
+You will also be asked to provide an input device index. If you do not know what this means enter the
+value 0. If you would like to see your options you can run 'python framework/tests/list_input_devices.py'.
+Remember, if you do not source your virtual environment first, things will not go well for you. 
+
+Always source the virtual environment before you run anything. 
+
+The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properly in your ``~/.bash_profile``.
 
 - Run the 
     **``$ ./mmconfig.py sa``**
-    
-### Configure wake words
-```
 
 ## Running
 The system uses ./start.sh and ./stop.py to start and stop the system en masse. Each
@@ -444,28 +460,6 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/my/key/key_filename.json
 
 <br/>
 
-
-During configuration you will be asked to provide one or more words to act as wake words. You will
-enter them separated by commas with no punctuation.  For example, 
-```
-hey Bubba, bubba
-```
-or
-```
-computer
-```
-
-Wake words work best when you choose multi-syllable words. Longer names like 'Esmerelda' or  words like
-'computer' or words with distinct sounds like 'expression' (the 'x') or 'kamakazi' (two hard
-'k's) will always work better than words like 'hey' or 'Joe'. You can use the test_recognition.sh 
-script to see how well your recognition is working.  Just using the word 'computer' should work adequately.
-
-You will also be asked to provide an input device index. If you do not know what this means enter the
-value 0. If you would like to see your options you can run 'python framework/tests/list_input_devices.py'.
-Remember, if you do not source your virtual environment first, things will not go well for you. 
-
-So remember to always source the virtual environment before you run anything. The SVA_BASE_DIR and 
-PYTHONPATH environments being set properly also helps.
 
 You may also modify the default audio output device.  This value is used by the system aplay command 
 and the system mpg123 command. To see your options run 
