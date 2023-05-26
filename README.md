@@ -412,15 +412,12 @@ To download and copy Minimy, perform the following steps:
     Now the code will run and you can work in ``minimy`` and keep ``minimy-mike99mac`` as a reference copy.
     
 ### Install Minimy    
-- Change to the newly copied directory.
-    
-    **``$ cd minimy``**
     
 - Confirm that **``venv``** is alias which should have been set in your ``.bash_profile`` after the reboot.
 
     **``alias venv``**
     
-    ``alias venv='source /home/pi/minimy-mike99mac/venv_ngv/bin/activate'``
+    ``alias venv='source /home/pi/minimy/venv_ngv/bin/activate'``
     
 - Open a virtual environment.
 
@@ -507,7 +504,7 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
       Basic
         ('AWSId', '')
         ('AWSKey', '')
-        ('BaseDir', '/home/pi/minimy-mike99mac')
+        ('BaseDir', '/home/pi/minimy')
         ('GoogleApiKeyPath', 'install/my_google_key.json')
         ('Version', '1.0.4')
         ('WakeWords', ['hey computer', 'computer'])
@@ -528,7 +525,7 @@ The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and 
 
 - Start Minimy, ensuring it is run from the base directory, as follows.
 
-    **``(venv_ngv) $ cd $HOME/minimy-mike99mac``**
+    **``(venv_ngv) $ cd $HOME/minimy``**
     **``(venv_ngv) $ ./startminimy``**
 
 - Stop Minimy with:
