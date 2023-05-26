@@ -381,7 +381,7 @@ connection. Devices with decent connectivity should use remote for both.
 You will also be asked for operating environment.  Currently the options are (p) for piOS, (l) for 
 Ubuntu or (m) for the Mycroft MarkII running the Pantacor build.
   
-### Configure wake words
+#### Configure wake words
 
 During configuration you will be asked to provide one or more words to act as wake words. You will
 enter them separated by commas with no punctuation.  For example, 
@@ -395,7 +395,7 @@ computer
 
 Wake words work best when you choose multi-syllable words. Longer names like 'Esmerelda' or  words like
 'computer' or words with distinct sounds like 'expression' (the 'x') or 'kamakazi' (two hard
-'k's) will always work better than words like 'hey' or 'Joe'. You can use the test_recognition.sh 
+'k's) will always work better than words like 'hey' or 'Joe'. You can use the ``test_recognition.sh`` 
 script to see how well your recognition is working.  Just using the word 'computer' should work adequately.
 
 You will also be asked to provide an input device index. If you do not know what this means enter the
@@ -410,15 +410,13 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
     **``$ ./mmconfig.py sa``**
 
 ## Running
-The system uses ./start.sh and ./stop.py to start and stop the system en masse. Each
-skill and service run in their own process space and use the message bus or file system
-to synchronize. Their output may be found in the directory named 'logs/'. 
+The system uses **``startminimy``** and **``stopminimy``** to start and stop processes. 
+Each skill and service run in their own process space and use the message bus or file system to synchronize. 
+Their output is written to the ``logs/`` directory under the main install directory. 
 
-The system relies on the environment variables ``SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS``.
-These are typically set in the start.sh script.
+The system relies on the environment variables ``SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS`` which are typically set in **``startminimy``** .
 
-The SVA_BASE_DIR is set to the install directory of your system. The Google variable is set
-based on where your Google Speech API key is located. 
+The SVA_BASE_DIR is set to the install directory of your system. The Google variable is set based on where your Google Speech API key is located. 
 
 Start a virtual environment
 ```
