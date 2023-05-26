@@ -149,7 +149,7 @@ To do so, perform the following steps:
     ...
     ```
     
-- From that window, install the ``openssh-server`` package, with the following command.  You will be prompted for your password.
+- Install the ``openssh-server`` package, with the following command.  You will be prompted for your password.
     
     **``$ sudo apt-get install -y openssh-server ``**
     
@@ -206,6 +206,12 @@ There is a github repo with some tools to help with the installation and testing
 
 To install the **``mycroft-tools``** package, perform the following steps:
   
+- install **``vim``** and **``vim``** packages.
+
+    **``$ sudo apt-get install -y git vim``**
+    
+    **``...``**
+    
 - Make **``vim``** the default editor.
 
     **``$ sudo update-alternatives --install /usr/bin/editor editor /usr/bin/vim 100``**
