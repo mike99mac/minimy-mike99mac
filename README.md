@@ -16,9 +16,9 @@ get called asynchronously when an utterance is matched to an intent the skill ha
 
 I worked with the Mycroft free and open personal voice assistant since 2019, but the company went bankrupt in 2023, so had to move on. :((
 
-I tried OVOS/Neon, but was not able to get my music skill going after a couple weeks in early 2023.  I still haven't given up on that platform. There is no doubt it will only get better and easier to install.
+I tried OVOS but was not able to get my music skill going after a couple weeks in early 2023.  I still haven't given up on that platform. There is no doubt it will only get better and easier to install.
 
-Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire, but it wasn't well received. Thankfully, Ken Smith put it on github, I forked the code, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** So I continue to try to *give back to the community* while standing on the shoulders of so many thousands of others.
+Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire, but wasn't well received. Thankfully, Ken Smith put it on github, I forked the code, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** So I continue to try to *give back to the community* while *standing on the shoulders* of so many thousands of others.
 
 One of my mantras is *Less is more*, so I liked minimy as it is a **Mini-My**croft.  Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
 ```
@@ -27,9 +27,9 @@ One of my mantras is *Less is more*, so I liked minimy as it is a **Mini-My**cro
        ovos-core       18067             238
 minimy-mike99mac        9900              79
 ```
-So OVOS is half the size of Mycroft, and Minimy is about half again smaller
+So OVOS is half the size of Mycroft, and Minimy is about half again smaller.
 
-My environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro - you're on your own - no warranties.
+My environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro, expect the unexpected :)).
 
 This is based on *The smart boombox cookbook* which also describes the construction of a boombox. 
 It is on the Web at: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
@@ -38,7 +38,14 @@ This document focuses just on the steps to get the *software stack* running, and
 
 # The Minimy software stack
 
-Perform the steps in each of the following sections to get to a running software stack.
+The overall steps to get this stack working are:
+
+- Acquire the hardware
+- Flash a Linux image
+- Install and configure Linux
+- Install a toolbox written for Minimy
+- Install and customize Minimy
+- Start Minimy and use it!
 
 ## Prepare an SD card to boot Linux
 So you have a device that can run Linux - probably from a micro-SD card. A 32 GB card or larger is recommended. You need to *prime the pump* and put a Linux distribution on that card. 
