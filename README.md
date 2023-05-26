@@ -538,48 +538,6 @@ You could, if you like, set it manually.
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/my/key/key_filename.json
 ```
 
-## Configuration Explained
-
-* ./mmconfig.py # basic
-* ./mmconfig.py sa # super advanced options
-
-<br/>
-
-
-You may also modify the default audio output device.  This value is used by the system aplay command 
-and the system mpg123 command. To see your options run 
-```
-aplay -L
-```
-Which will produce a series of lines which look something like this ...
-```
-sysdefault:CARD=Headset
-```
-Remove the 'CARD=' and provide the value 
-```
-sysdefault:Headset
-```
-To the configuration program.
-
-Local TTS refers to the local TTS engine.  Currently three are supported. Espeak, Coqui
-and mimic3. Mimic3 is strongly recommended.
-
-The Mark2 does not have Coqui as an option as it does not currently work on the Mark2. Espeak is
-very fast but the sound quality is poor. Coqui sound quality is excellent but it takes forever
-to produce a wav file (3-8 seconds). 
-
-The crappy AEC value is used to determine if the system needs to work around poor quality AEC or
-if it does not. Good quality AEC is typically provided by a standard set of headphones whereas
-poor quality AEC is what you normally have if you were using a laptop's built in speaker and mic.
-
-An easy way to test this setting in your environment would be to run the 'example 1' skill and see how 
-well it recognizes you.
-```
-Hey Computer ---> run example one
-```
-Finally, you must provide a logging level. The characters 'e', 'w', 'i', 'd' correspond to the 
-standard log levels. Specifically 'e' sets the log level to 'error' and 'd' sets it to 'debug', etc.
-
 Once you confirm your changes you can see what was produced by typing 'cat install/mmconfig.yml'. You 
 should not modify this file by hand even thought it may be enticing to do so.
 
