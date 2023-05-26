@@ -1,0 +1,20 @@
+# systemd unit file that mounts /home/pi/minimy/tmp as a tmpfs 
+[Unit]
+Description=Mount tmpfs file system over /home/pi/minimy/tmp 
+Documentation=man:hier(7)
+Documentation=http://www.freedesktop.org/wiki/Software/systemd/APIFileSystems
+ConditionPathIsSymbolicLink=!/home/pi/minimy/tmp
+DefaultDependencies=no
+Conflicts=umount.target
+Before=local-fs.target umount.target
+After=swap.target
+
+[Mount]
+What=tmpfs
+Where=/home/pi/minimy/tmp
+Type=tmpfs
+Options=mode=1777,strictatime,nosuid,nodev
+
+[Install]
+WantedBy=multi-user.target
+
