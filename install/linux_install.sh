@@ -27,9 +27,9 @@ deactivate
 
 echo 'Installing Internet music tools'
 pip install youtube-search-python
-# try skipping this
+# try skipping youtube-dl - is it no longer used?
 # sudo curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl
-sudo chmod a+rx /usr/local/bin/yotube-dl
+#sudo chmod a+rx /usr/local/bin/yotube-dl
 
 echo 'Installing Local NLP'
 cd framework/services/intent/nlp/local
@@ -61,6 +61,12 @@ source framework/services/tts/local/mimic3/.venv/bin/activate
 pip install importlib-resources
 pip install youtube-search 
 deactivate
+
+echo "Copying and enabling systemd .mount files to create in-memory file systems"
+sudo cp home-pi-minimy-logs.mount /etc/systemd/system 
+sudo cp home-pi-minimy-tmp.mount /etc/systemd/system 
+sudo systemctl enable home-pi-minimy-logs.mount 
+sudo systemctl enable home-pi-minimy-tmp.mount 
 
 source venv_ngv/bin/activate
 echo ' '
