@@ -1,9 +1,7 @@
 # Minimy
 Minimy is a simple NLU-based voice assistant framework.
 
-It is a fork of Ken-Mycroft's code at: 
-
-    https://github.com/ken-mycroft/minimy
+It is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
 
 ## Overview
 **From Ken Smith:**
@@ -32,9 +30,8 @@ So OVOS is half the size of Mycroft, and Minimy is about half the size of OVOS.
 
 My environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro - you're on your own - no warranties.
 
-This is based on *The smart boombox cookbook* which also describes the construction of a boombox. It is on the Web at:  
-
-    https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
+This is based on *The smart boombox cookbook* which also describes the construction of a boombox. 
+It is on the Web at: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
 
 This document focuses just on the steps to get the *software stack* running, and starts from the very beginning.
 
@@ -383,8 +380,12 @@ The output shows three changes:
 ## Minimy
 Minimy must be downloaded, installed and configured.
 
-## Download and install Minimy 
-To download and install Minimy, perform the following steps:
+### Download and copy Minimy 
+It is recommended that you make a second copy of Minimy after you download it.  This way, if make some changes to the running code, you'll have a reference copy. Also the copy of the code that you run should not have a ``.git/`` directory, thus removing any connection to github.
+
+The directory the copy will run in **must be named**  ``minimy``, removing the ``-mike99mac`` suffix. 
+
+To download and copy Minimy, perform the following steps:
 
 - Change to your home directory and clone the repo from github.
 
@@ -398,6 +399,17 @@ To download and install Minimy, perform the following steps:
     Resolving deltas: 100% (450/450), done.
     ```
     
+- Copy the directory recursively from ``minimy-mike99mac`` to ``minimy``.
+
+    **``$ cp -a minimy-mike99mac minimy``**
+    
+- Remove the ``.git`` directory from the copy.
+
+    **``$ cd minimy``**
+    
+    **``$ rm -fr .git``**
+    
+### Install Minimy    
 - Change to the newly created directory.
     
     **``$ cd minimy-mike99mac``**
@@ -521,8 +533,12 @@ The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and 
 
     **``(venv_ngv) $ ./stopminimy``**
 
-If you don't have a Google Speech API key you can get one from https://console.cloud.google.com/freetrial/signup/tos
+If you don't have a Google Speech API key you can get one from: https://console.cloud.google.com/freetrial/signup/tos
 
 Once you confirm your changes you can see what was produced by typing 'cat install/mmconfig.yml'. You 
 should not modify this file.
+
+## Use Minimy
+
+**TODO** Add quite a number of sample utterances
 
