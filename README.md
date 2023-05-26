@@ -445,7 +445,7 @@ and remote TTS sounds better. Both are slower but only slightly when given a rea
 connection. Devices with decent connectivity should use remote for both.
 
 You will also be asked for operating environment.  Currently the options are (p) for piOS, (l) for 
-Ubuntu or (m) for the Mycroft MarkII running the Pantacor build.
+Ubuntu or (m) for the Mycroft MarkII.
 
 During configuration you will be asked to provide one or more words to act as wake words. You will
 enter them separated by commas with no punctuation.  For example, 
@@ -505,20 +505,20 @@ Each skill and service run in their own process space and use the message bus or
 Their output is written to the ``logs/`` directory under the main install directory. 
 
 The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS`` which are set in **``startminimy``** with the following code:
+
     ```
     export PYTHONPATH=`pwd`
     export SVA_BASE_DIR=`pwd`
     export GOOGLE_APPLICATION_CREDENTIALS="/home/pi/minimy/install/my-google-key.json"
     ```
 
-The SVA_BASE_DIR is set to the install directory of your system. The Google variable is set based on where your Google Speech API key is located. 
-
 - Start Minimy with:
-- 
+
+
     **``(venv_ngv) $ ./startminimy``**
 
 - Stop Minimy with:
-- 
+
     **``(venv_ngv) $ ./stopminimy``**
 
 These must be run from the base directory.  The base directory is defined as where you installed this code to. 
