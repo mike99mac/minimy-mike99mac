@@ -52,15 +52,15 @@ The overall steps are:
 That sounds easy, right?
 
 ## Acquire the hardware
-I would recommend a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. 
+I would recommend a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. Hopefully the RasPi 5 is coming soon and easy to get.
 
 Don't buy a cheap USB microphone. The sweet spot might be around $25 for flat disk type with an on-off switch for visible privacy. 
 It is best to move the microphone away from the speakers
 
-You can start with just about any speakers with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope.
+You can start with just about any speakers with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
 
 ## Prepare an SD card to boot Linux
-So you have a device that can run Linux - probably from a micro-SD card. A 32 GB card or larger is recommended. You need to *prime the pump* and put a Linux distribution on it. 
+The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and put a Linux distribution on it. Yes it can now boot from USB drives, but stick with the SD card for now.
 
 Hopefully you have another computer running Linux, but other OS's will work. The box you use must have a hardware port to write to the card.
 
