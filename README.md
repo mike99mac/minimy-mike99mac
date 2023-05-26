@@ -1,7 +1,9 @@
 # Minimy
 Minimy is a simple NLU-based voice assistant framework.
 
-It is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
+It is a fork of Ken-Mycroft's code at: 
+
+    https://github.com/ken-mycroft/minimy
 
 ## Overview
 **From Ken Smith:**
@@ -404,9 +406,79 @@ Always source the virtual environment before you run anything.
 
 The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properly in your ``~/.bash_profile``.
 
-- Run the following configuration script.
-- 
+- Run the following configuration script. It is recommended to take all defaults by pressing enter.  However, three entries should be typed in
+    - ubuntu, pios or mark2 [l] --->**ubuntu**
+    -  Input Level Control Name (typically Record or Mic) [] --->**Mic**
+    -  Output Level Control Name (typically Playback or Speaker) [] --->**Speaker**
+ 
     **``$ ./mmconfig.py sa``**
+    
+    ```
+    
+    Advanced Options Selected sa
+
+    Basic Settings
+    --------------
+    Comma Separated List of Wake Words [['hey computer', 'computer']] --->
+    Using: ['hey computer', 'computer']
+    Google API Key File Location [install/my_google_key.json] --->
+    Using: install/my_google_key.json
+    AWS ID [] --->
+    Using:
+    AWS Key [] --->
+    Using:
+
+    Advanced Settings
+    -----------------
+    ubuntu, pios or mark2 [l] --->ubuntu
+    Using: ubuntu
+    Use Remote STT (y/n) [y] --->
+    Using: y
+    Use Remote TTS (y/n) [y] --->
+    Using: y
+    Use Remote NLP (y/n) [n] --->
+    Using: n
+    Crappy AEC (y/n) [n] --->
+    Using: n
+
+    Super Advanced Settings
+    -----------------------
+    Logging Level (e,w,i,d) [i] --->d
+    Using: d
+    Local TTS (e)speak, (c)oqui, or (m)imic3 [m] --->
+    Using: m
+    Remote TTS (p)olly, (m)imic2 [p] --->
+    Using: p
+    Input Device ID (0 means use default) [0] --->
+    Using: 0
+    Output Device Name (empty string means use default) [] --->
+    Using:
+    Input Level Control Name (typically Record or Mic) [] --->Mic
+    Using: Mic
+    Output Level Control Name (typically Playback or Speaker) [] --->Speaker
+    Using: Speaker
+
+    Save Changes?y
+    Configuration Updated
+      Advanced
+        ('CrappyAEC', 'n')
+        ('InputDeviceId', '0')
+        ('InputLevelControlName', 'Mic')
+        ('LogLevel', 'd')
+        ('NLP', {'UseRemote': 'n'})
+        ('OutputDeviceName', '')
+        ('OutputLevelControlName', 'Speaker')
+        ('Platform', 'ubuntu')
+        ('STT', {'UseRemote': 'y'})
+        ('TTS', {'Local': 'm', 'Remote': 'p', 'UseRemote': 'y'})
+      Basic
+        ('AWSId', '')
+        ('AWSKey', '')
+        ('BaseDir', '/home/pi/minimy-mike99mac')
+        ('GoogleApiKeyPath', 'install/my_google_key.json')
+        ('Version', '1.0.4')
+        ('WakeWords', ['hey computer', 'computer'])
+    ```
 
 ## Running
 The system uses **``startminimy``** and **``stopminimy``** to start and stop processes. 
@@ -437,10 +509,10 @@ For example:
 
 If you don't have a Google Speech API key you can get one from here ...
 
-https://console.cloud.google.com/freetrial/signup/tos
+    https://console.cloud.google.com/freetrial/signup/tos
 
-The start.sh file must then be modified to use this key. The Google Python module actually requires this
-enviornment variable but as mentioned it is typically set in the start.sh script. You could, if you like, set it manually.
+The Google Python module actually requires this enviornment variable but as mentioned it is typically set in the start.sh script. 
+You could, if you like, set it manually.
 
 ```
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/my/key/key_filename.json
