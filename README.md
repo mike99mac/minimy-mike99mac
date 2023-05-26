@@ -406,15 +406,11 @@ Always source the virtual environment before you run anything.
 
 The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properly in your ``~/.bash_profile``.
 
-- Run the following configuration script. It is recommended to take all defaults by pressing enter.  However, three entries should be typed in
-    - ubuntu, pios or mark2 [l] --->**ubuntu**
-    -  Input Level Control Name (typically Record or Mic) [] --->**Mic**
-    -  Output Level Control Name (typically Playback or Speaker) [] --->**Speaker**
+- Run the following configuration script. In this example all defaults were accepted by pressing **Enter** for each question. At the end **y** was entered to save the changes.  
  
     **``$ ./mmconfig.py sa``**
     
     ```
-    
     Advanced Options Selected sa
 
     Basic Settings
@@ -430,7 +426,7 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
 
     Advanced Settings
     -----------------
-    ubuntu, pios or mark2 [l] --->ubuntu
+    ubuntu, pios or mark2 [ubuntu] --->
     Using: ubuntu
     Use Remote STT (y/n) [y] --->
     Using: y
@@ -443,7 +439,7 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
 
     Super Advanced Settings
     -----------------------
-    Logging Level (e,w,i,d) [i] --->d
+    Logging Level (e,w,i,d) [d] --->
     Using: d
     Local TTS (e)speak, (c)oqui, or (m)imic3 [m] --->
     Using: m
@@ -453,9 +449,9 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
     Using: 0
     Output Device Name (empty string means use default) [] --->
     Using:
-    Input Level Control Name (typically Record or Mic) [] --->Mic
+    Input Level Control Name (Mic) [Mic] --->
     Using: Mic
-    Output Level Control Name (typically Playback or Speaker) [] --->Speaker
+    Output Level Control Name (Speaker) [Speaker] --->
     Using: Speaker
 
     Save Changes?y
@@ -478,6 +474,8 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
         ('GoogleApiKeyPath', 'install/my_google_key.json')
         ('Version', '1.0.4')
         ('WakeWords', ['hey computer', 'computer'])
+
+  
     ```
 
 ## Running
