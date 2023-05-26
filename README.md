@@ -523,13 +523,6 @@ The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and 
 
 If you don't have a Google Speech API key you can get one from https://console.cloud.google.com/freetrial/signup/tos
 
-The Google Python module actually requires this enviornment variable but as mentioned it is typically set in the start.sh script. 
-You could, if you like, set it manually.
-
-```
-export GOOGLE_APPLICATION_CREDENTIALS=/path/to/my/key/key_filename.json
-```
-
 Once you confirm your changes you can see what was produced by typing 'cat install/mmconfig.yml'. You 
-should not modify this file by hand even thought it may be enticing to do so.
+should not modify this file.
 
