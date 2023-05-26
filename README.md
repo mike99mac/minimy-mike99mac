@@ -38,16 +38,18 @@ It is on the Web at: https://github.com/mike99mac/mycroft-tools/blob/master/smar
 
 This document focuses on the steps to get the *software stack* running, and starts from the very beginning.
 
-# The Minimy software stack
+# Put it all together
 
 The overall steps are:
 
-- Acquire the hardware - typically a Raspberry Pi with a microphone and speakers
+- Acquire the hardware - at minimum a Raspberry Pi with a microphone and speakers
 - Flash a Linux image to a memory device
 - Install and configure Linux
 - Install a toolbox written for Minimy
 - Install and customize Minimy
 - Start using your new personal voice assistant!
+
+That sounds easy, right?
 
 ## Acquire the hardware
 I would recommend a Raspberry Pi 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible.
