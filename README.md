@@ -262,7 +262,7 @@ It performs the following tasks:
 - Copies a ``.bash_profile`` to your home directory
 - Turns ``default`` and ``vc4`` audio off and does not disable monitor overscan in the boot parameters file
 - Changes a line in the **``rsyslog``** configuration file to prevent *kernel message floods*
-- Copies a **``systemctl``** configuration file to mount ``/var/log/`` in a tmpfs which helps prolong the life of the micro-SD card
+- Copies a **``systemctl``** configuration file to mount ``/var/log/`` in a *tmpfs* which helps prolong the life of the micro-SD card
 - Sets **``pulseaudio``** to start as a system service at boot time, and allows anonymous access so audio services work
 - Configures **``mpd``**, the music player daemon, which plays most of the sound
 - Turns off **bluetooth** as Linux makes connecting to it ridiculously hard, while most amplifiers make it ridiculously easy
@@ -325,7 +325,7 @@ The output shows that:
 - The Music Playing Daemon, **``mpd``** is not running.
 - There is one **``pulseaudio``** process running, but it does not have **``--system``** as a parameter.
 - Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage.
-- None of three file systems frequently commonly written to are mounted over a in-memory ``tmpfs`` file system.
+- None of three file systems frequently commonly written to is mounted over an in-memory *tmpfs* file systems.
 
 ### Test the changes of the install script
 Some of the changes made by **``install1``** will not be realized until boot time.  
@@ -398,7 +398,7 @@ To download and install Minimy, perform the following steps:
     Resolving deltas: 100% (450/450), done.
     ```
     
-- Change to the newly cloned directory.
+- Change to the newly created directory.
     
     **``$ cd minimy-mike99mac``**
     
@@ -417,6 +417,11 @@ To download and install Minimy, perform the following steps:
 - Run the following script to install minimy.
     
     **``(venv_ngv) $ ./install/linux_install.sh``**
+    
+    ```
+    ...
+    Install Complete
+    ```
     
     This step can take up to ten minutes.
     
