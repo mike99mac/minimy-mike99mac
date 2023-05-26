@@ -273,11 +273,11 @@ To run **``intall1``**, perform the following steps:
     
     ``/usr/local/sbin/install1``
 
-- Run the **``install1``** script in the home directory and save the output to a file.  You may want to reference that file in case some steps don't work.
+- Run the **``install1``** script in the home directory and stdout and stderr to a file.  You may want to reference that file in case some steps don't work.
 
     **``$ cd``**
     
-    **``$ install1 | tee install1.out 2>&1``**
+    **``$ install1 2?&1 | tee install1.out``**
     
     ``...``
     
@@ -414,9 +414,9 @@ To download and copy Minimy, perform the following steps:
     
 ### Install Minimy    
     
-- Run the following script to install minimy.
+- Run the following script to install minimy and direct stdout and stderr to a file.
     
-    **``$ ./install/linux_install.sh``**
+    **``$ ./install/linux_install.sh 2>&1 | tee linux_install.out``**
     
     ```
     ...
