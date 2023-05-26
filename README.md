@@ -330,7 +330,7 @@ The output shows that:
 - The Music Playing Daemon, **``mpd``** is not running.
 - There is one **``pulseaudio``** process running, but it does not have **``--system``** as a parameter.
 - Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage
-- Which of three file systems frequently written to are mounted over a ``tmpfs`` (in-memory file system).
+- None of three file systems frequently written to are mounted over a ``tmpfs`` (in-memory file system).
 
 ### Test the changes of the install script
 Some of the changes made by **``install1``** will not be realized until boot time.  
@@ -347,8 +347,42 @@ To test this, perform the following steps:
     **``$ lsenv``**
     
     ````
-    TODO: get output
+    Status of minimy:
+     -) WARNING: minimy is not running as a service ... checking for processes ...
+        WARNING: no processes matching minimy - does not appear to be running ...
+    ---------------------------------------------------------------------------------
+    Status of buttons:
+     -) WARNING: buttons is not running as a service ... checking for processes ...
+        WARNING: no processes matching buttons - does not appear to be running ...
+    ---------------------------------------------------------------------------------
+    Status of mpd:
+     -) mpd is running as a service:
+        Active: active (running) since Fri 2023-05-26 12:08:04 EDT; 1min 46s ago
+    ---------------------------------------------------------------------------------
+    Status of pulseaudio:
+     -) pulseaudio is running as a service:
+        Active: active (running) since Fri 2023-05-26 12:08:02 EDT; 1min 48s ago
+        pulseaudio processes:
+        pulse        842       1  0 12:08 ?        00:00:00 /usr/bin/pulseaudio --system --disallow-exit --disallow-module-loading --disable-shm --exit-idle-time=-1
+    ---------------------------------------------------------------------------------
+         IP address : 192.168.1.148
+    CPU temperature : 55C / 131F
+      Root fs usage : 14%
+          CPU usage : 0%
+    Memory usage    :
+                     total        used        free      shared  buff/cache   available
+      Mem:           3.7Gi       779Mi       2.2Gi        27Mi       718Mi       2.8Gi
+      Swap:          1.0Gi          0B       1.0Gi
+    tmpfs filesystem?
+                          /var/log       Linux logs : yes
+              /home/pi/minimy/logs      Minimy logs : no
+               /home/pi/minimy/tmp  Minimy temp dir : no
     ````
+    
+The output shows three changes:
+
+- The Music Playing Daemon, **``mpd``** is now running.
+- The one **``pulseaudio``** process has **``--system``** as a parameter which is vital to audio output working correctly.
 
 ## Minimy
 Minimy must be downloaded, installed and configured.
