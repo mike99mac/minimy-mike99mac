@@ -66,7 +66,7 @@ If you have a Linux box with an SD card reader, you can use **``rpi-imager``**. 
 
 - To flash a Linux image to the card, perform the following steps:
 
-    - Select your preferred *Operating System*. **Ubuntu Desktop 22.04 LTS** is recommended and is what is documented on this page. It's a solid operating system, and the LTS stands for *Long Term Support*.  Canonical promises to support it for at least four years. 
+    - Select your preferred *Operating System*. **Ubuntu Desktop 22.04 LTS** is recommended. It's a solid operating system, that combined with the RasPi, is capable of being a general purpose computer. LTS stands for *Long Term Support* - Canonical promises to support it for at least four years. 
 
     - Select the *Storage* device. Ideally you will see the one micro-SD card in the dropdown menu.
 
@@ -127,12 +127,9 @@ A welcome screen should open on the monitor. Perform the following steps:
  - Choose an option on the *Help Improve Ubuntu* window and click **Next**.
  - Click **Next** at the *Privacy* window.
  - Click **Done** at the *Ready to go* window.
- - Ubuntu Desktop 22-04 should now be installed. Run the uname -a command and compare output.
 
-    **``$ uname -a``**
-    
-    ``Linux model1500 5.15.0-1024-raspi #26-Ubuntu SMP PREEMPT Wed Jan 18 15:29:53 UTC 2023 aarch64 aarch64 aarch64 GNU/Linux``
-
+Ubuntu Desktop 22-04 should now be installed
+ 
 ### Install the SSH server
 
 The secure shell (SSH) server is not installed by default on Ubuntu desktop (which is curious). Install it so you can access your system remotely. 
@@ -140,7 +137,19 @@ The secure shell (SSH) server is not installed by default on Ubuntu desktop (whi
 To do so, perform the following steps:
 
 - Open a terminal session by right-clicking the mouse anywhere on the desktop and choosing **Open in Terminal**. You should see a console window open.
-- From that window, install the ``openssh-server`` package, with the following command.  You will be prompted for your password.
+- Show the contents of the ``/etc/os-release`` file just to confirm the Ubuntu release level.
+
+    **``$ cat /etc/os-release``**
+    
+    ```
+    PRETTY_NAME="Ubuntu 22.04.2 LTS"
+    NAME="Ubuntu"
+    VERSION_ID="22.04"
+    VERSION="22.04.2 LTS (Jammy Jellyfish)"
+    ...
+    ```
+    
+- Install the ``openssh-server`` package, with the following command.  You will be prompted for your password.
     
     **``$ sudo apt-get install -y openssh-server ``**
     
@@ -197,6 +206,12 @@ There is a github repo with some tools to help with the installation and testing
 
 To install the **``mycroft-tools``** package, perform the following steps:
   
+- install **``vim``** and **``vim``** packages.
+
+    **``$ sudo apt-get install -y git vim``**
+    
+    **``...``**
+    
 - Make **``vim``** the default editor.
 
     **``$ sudo update-alternatives --install /usr/bin/editor editor /usr/bin/vim 100``**
@@ -247,7 +262,7 @@ It performs the following tasks:
 - Copies a ``.bash_profile`` to your home directory
 - Turns ``default`` and ``vc4`` audio off and does not disable monitor overscan in the boot parameters file
 - Changes a line in the **``rsyslog``** configuration file to prevent *kernel message floods*
-- Copies a **``systemctl``** configuration file to mount ``/var/log/`` in a tmpfs which helps prolong the life of the micro-SD card
+- Copies a **``systemctl``** configuration file to mount ``/var/log/`` in a *tmpfs* which helps prolong the life of the micro-SD card
 - Sets **``pulseaudio``** to start as a system service at boot time, and allows anonymous access so audio services work
 - Configures **``mpd``**, the music player daemon, which plays most of the sound
 - Turns off **bluetooth** as Linux makes connecting to it ridiculously hard, while most amplifiers make it ridiculously easy
@@ -264,14 +279,9 @@ To run **``intall1``**, perform the following steps:
 
     **``# cd``**
     
-    **``$ time install1 | tee install1.out 2>&1``**
+    **``$ install1 | tee install1.out 2>&1``**
     
-    ```
-    ...
-    real    3m25.141s
-    user    0m0.299s
-    sys     0m0.646s
-    ```
+    ``...``
     
 - Test your environment with the newly installed **``lsenv``** script which reports on many aspects of your Linux system.
 
@@ -311,11 +321,11 @@ To run **``intall1``**, perform the following steps:
 The output shows that:
 
 - Processes with ``minimy`` in their name are not running.
-- The **``buttons``** daemon is not running, which traps and sends messages when physical buttons are pushed.
+- The **``buttons``** daemon, which traps and sends messages when physical buttons are pushed, is not running.
 - The Music Playing Daemon, **``mpd``** is not running.
 - There is one **``pulseaudio``** process running, but it does not have **``--system``** as a parameter.
-- Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage
-- Which of three file systems frequently written to are mounted over a ``tmpfs`` (in-memory file system).
+- Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage.
+- None of three file systems frequently commonly written to is mounted over an in-memory *tmpfs* file systems.
 
 ### Test the changes of the install script
 Some of the changes made by **``install1``** will not be realized until boot time.  
@@ -327,13 +337,48 @@ To test this, perform the following steps:
     **``$ sudo reboot``**
     
 - Restart your SSH session.
-- Run the **``lsenv``** script again.
+- Run the same script again.
 
     **``$ lsenv``**
     
     ````
-    TODO: get output
+    Status of minimy:
+     -) WARNING: minimy is not running as a service ... checking for processes ...
+        WARNING: no processes matching minimy - does not appear to be running ...
+    ---------------------------------------------------------------------------------
+    Status of buttons:
+     -) WARNING: buttons is not running as a service ... checking for processes ...
+        WARNING: no processes matching buttons - does not appear to be running ...
+    ---------------------------------------------------------------------------------
+    Status of mpd:
+     -) mpd is running as a service:
+        Active: active (running) since Fri 2023-05-26 12:08:04 EDT; 1min 46s ago
+    ---------------------------------------------------------------------------------
+    Status of pulseaudio:
+     -) pulseaudio is running as a service:
+        Active: active (running) since Fri 2023-05-26 12:08:02 EDT; 1min 48s ago
+        pulseaudio processes:
+        pulse        842       1  0 12:08 ?        00:00:00 /usr/bin/pulseaudio --system --disallow-exit --disallow-module-loading --disable-shm --exit-idle-time=-1
+    ---------------------------------------------------------------------------------
+         IP address : 192.168.1.148
+    CPU temperature : 55C / 131F
+      Root fs usage : 14%
+          CPU usage : 0%
+    Memory usage    :
+                     total        used        free      shared  buff/cache   available
+      Mem:           3.7Gi       779Mi       2.2Gi        27Mi       718Mi       2.8Gi
+      Swap:          1.0Gi          0B       1.0Gi
+    tmpfs filesystem?
+                          /var/log       Linux logs : yes
+              /home/pi/minimy/logs      Minimy logs : no
+               /home/pi/minimy/tmp  Minimy temp dir : no
     ````
+    
+The output shows three changes:
+
+- The Music Playing Daemon, **``mpd``** is now running.
+- The one **``pulseaudio``** process has **``--system``** as a parameter which is vital to audio output working correctly.
+- The **``/var/log/``** file system is now mounted over an in-memory tmpfs.
 
 ## Minimy
 Minimy must be downloaded, installed and configured.
@@ -343,9 +388,9 @@ To download and install Minimy, perform the following steps:
 
 - Change to your home directory and clone the repo from github.
 
-    **``cd``**
+    **``$ cd``**
     
-    **``git clone https://github.com/mike99mac/minimy-mike99mac``**
+    **``$ git clone https://github.com/mike99mac/minimy-mike99mac``**
 
     ```
     Cloning into 'minimy-mike99mac'...
@@ -353,11 +398,30 @@ To download and install Minimy, perform the following steps:
     Resolving deltas: 100% (450/450), done.
     ```
     
-- Change to the newly cloned directory and run the following install script:
+- Change to the newly created directory.
     
     **``$ cd minimy-mike99mac``**
     
-    **``$ ./install/linux_install.sh``**
+- Confirm that **``venv``** is alias which should have been set in your ``.bash_profile`` after the reboot.
+
+    **``alias venv``**
+    
+    ``alias venv='source /home/pi/minimy-mike99mac/venv_ngv/bin/activate'``
+    
+- Open a virtual environment.
+
+    **``$ venv``**
+    
+    You should notice a new ``(venv_ngv)`` prefix on the command line.
+    
+- Run the following script to install minimy.
+    
+    **``(venv_ngv) $ ./install/linux_install.sh``**
+    
+    ```
+    ...
+    Install Complete
+    ```
     
     This step can take up to ten minutes.
     
@@ -381,7 +445,7 @@ and remote TTS sounds better. Both are slower but only slightly when given a rea
 connection. Devices with decent connectivity should use remote for both.
 
 You will also be asked for operating environment.  Currently the options are (p) for piOS, (l) for 
-Ubuntu or (m) for the Mycroft MarkII running the Pantacor build.
+Ubuntu or (m) for the Mycroft MarkII.
 
 During configuration you will be asked to provide one or more words to act as wake words. You will
 enter them separated by commas with no punctuation.  For example, 
@@ -408,7 +472,7 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
 
 - Run the following configuration script. In this example all defaults were accepted by pressing **Enter** for each question. At the end **y** was entered to save the changes.  
  
-    **``$ ./mmconfig.py sa``**
+    **``(venv_ngv) $ ./mmconfig.py sa``**
     
     ```
     Advanced Options Selected sa
@@ -435,91 +499,30 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
         ('WakeWords', ['hey computer', 'computer'])
     ```
 
-## Running
+## Run Minimy
 The scripts **``startminimy``** and **``stopminimy``** are used to start and stop processes. 
 Each skill and service run in their own process space and use the message bus or file system to synchronize. 
 Their output is written to the ``logs/`` directory under the main install directory. 
 
 The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS`` which are set in **``startminimy``** with the following code:
+
     ```
     export PYTHONPATH=`pwd`
     export SVA_BASE_DIR=`pwd`
     export GOOGLE_APPLICATION_CREDENTIALS="/home/pi/minimy/install/my-google-key.json"
     ```
 
-The SVA_BASE_DIR is set to the install directory of your system. The Google variable is set based on where your Google Speech API key is located. 
+- Start Minimy, ensuring it is run from the base directory, as follows.
 
-- Start a virtual environment
-
-    **``$ source venv_ngv/bin/activate``**
-
-- Start Minimy with:
-- 
-    **``./startminimy``**
+    **``(venv_ngv) $ cd $HOME/minimy-mike99mac``**
+    **``(venv_ngv) $ ./startminimy``**
 
 - Stop Minimy with:
-- 
-    **``$ ./stopminimy``**
 
-These must be run from the base directory.  The base directory is defined as where you installed this code to. 
-For example:
-```
-/home/pi/minimy-mike99mac
-```
+    **``(venv_ngv) $ ./stopminimy``**
 
-If you don't have a Google Speech API key you can get one from here ...
-
-    https://console.cloud.google.com/freetrial/signup/tos
-
-The Google Python module actually requires this enviornment variable but as mentioned it is typically set in the start.sh script. 
-You could, if you like, set it manually.
-
-```
-export GOOGLE_APPLICATION_CREDENTIALS=/path/to/my/key/key_filename.json
-```
-
-## Configuration Explained
-
-* ./mmconfig.py # basic
-* ./mmconfig.py sa # super advanced options
-
-<br/>
-
-
-You may also modify the default audio output device.  This value is used by the system aplay command 
-and the system mpg123 command. To see your options run 
-```
-aplay -L
-```
-Which will produce a series of lines which look something like this ...
-```
-sysdefault:CARD=Headset
-```
-Remove the 'CARD=' and provide the value 
-```
-sysdefault:Headset
-```
-To the configuration program.
-
-Local TTS refers to the local TTS engine.  Currently three are supported. Espeak, Coqui
-and mimic3. Mimic3 is strongly recommended.
-
-The Mark2 does not have Coqui as an option as it does not currently work on the Mark2. Espeak is
-very fast but the sound quality is poor. Coqui sound quality is excellent but it takes forever
-to produce a wav file (3-8 seconds). 
-
-The crappy AEC value is used to determine if the system needs to work around poor quality AEC or
-if it does not. Good quality AEC is typically provided by a standard set of headphones whereas
-poor quality AEC is what you normally have if you were using a laptop's built in speaker and mic.
-
-An easy way to test this setting in your environment would be to run the 'example 1' skill and see how 
-well it recognizes you.
-```
-Hey Computer ---> run example one
-```
-Finally, you must provide a logging level. The characters 'e', 'w', 'i', 'd' correspond to the 
-standard log levels. Specifically 'e' sets the log level to 'error' and 'd' sets it to 'debug', etc.
+If you don't have a Google Speech API key you can get one from https://console.cloud.google.com/freetrial/signup/tos
 
 Once you confirm your changes you can see what was produced by typing 'cat install/mmconfig.yml'. You 
-should not modify this file by hand even thought it may be enticing to do so.
+should not modify this file.
 
