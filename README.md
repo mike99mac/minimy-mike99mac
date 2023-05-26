@@ -137,12 +137,18 @@ The secure shell (SSH) server is not installed by default on Ubuntu desktop (whi
 To do so, perform the following steps:
 
 - Open a terminal session by right-clicking the mouse anywhere on the desktop and choosing **Open in Terminal**. You should see a console window open.
-- Run the uname -a command just to show the Ubuntu release level and architecture.
+- Show the contents of the ``/etc/os-release`` file just to confirm the Ubuntu release level.
 
-    **``$ uname -a``**
+    **``$ cat /etc/os-release``**
     
-    ``Linux model1500 5.15.0-1024-raspi #26-Ubuntu SMP PREEMPT Wed Jan 18 15:29:53 UTC 2023 aarch64 aarch64 aarch64 GNU/Linux``
-
+    ```
+    PRETTY_NAME="Ubuntu 22.04.2 LTS"
+    NAME="Ubuntu"
+    VERSION_ID="22.04"
+    VERSION="22.04.2 LTS (Jammy Jellyfish)"
+    ...
+    ```
+    
 - From that window, install the ``openssh-server`` package, with the following command.  You will be prompted for your password.
     
     **``$ sudo apt-get install -y openssh-server ``**
