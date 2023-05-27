@@ -270,7 +270,7 @@ To install **``mycroft-tools``** perform the following steps:
     
 ### Further customize 
 
-An script named **``install1``** was written to perform many commands and thus save typing and time.  It is in the **``mycroft-tools``** package you just installed.
+An script named **``install1``** was written to perform many commands and thus save typing, time and possible errors.  It is in the **``mycroft-tools``** package you just installed.
 It performs the following tasks:
 
 - Installs the **``mlocate mpc mpd net-tools pandoc python3 python3-pip python3-rpi.gpio python3.10-venv``** packages
