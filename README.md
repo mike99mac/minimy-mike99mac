@@ -554,17 +554,21 @@ The scripts **``startminimy``** and **``stopminimy``** are used to start and sto
 Each skill and service run in their own process space and use the message bus or file system to synchronize. 
 Their output is written to the ``logs/`` directory under the main install directory. 
 
-The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS`` which are set in **``startminimy``** with the following code:
+The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS`` which are set in **``startminimy``** 
+with this code:
 
     ```
+    ...
     export PYTHONPATH=`pwd`
     export SVA_BASE_DIR=`pwd`
     export GOOGLE_APPLICATION_CREDENTIALS="/home/pi/minimy/install/my-google-key.json"
+    ...
     ```
 
 - Start Minimy, ensuring it is run from the base directory, as follows.
 
     **``(venv_ngv) $ cd $HOME/minimy``**
+    
     **``(venv_ngv) $ ./startminimy``**
 
 - Stop Minimy with:
