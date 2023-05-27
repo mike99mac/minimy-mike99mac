@@ -32,8 +32,3 @@ else
 fi
 sleep 2
 
-# unmount tmpfs file systems
-umountTmpfs /var/log
-umountTmpfs $HOME/minimy/logs
-umountTmpfs $HOME/minimy/tmp
-
