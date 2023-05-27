@@ -258,13 +258,10 @@ To install **``mycroft-tools``** perform the following steps:
     
 - Change to the newly installed directory and run the setup script. It will copy scripts to the directory ``/usr/local/sbin`` which is in the default ``PATH``.
 
-    **
-    ```
-    $ cd mycroft-tools
-    $ sudo ./setup.sh    
-    ```
-    **
+    **``$ cd mycroft-tools``**
+    **``$ sudo ./setup.sh``**
     
+    ```
     Copying all scripts to /usr/local/sbin ...
     Success!  There are new scripts in your /usr/local/sbin/ directory
     ```
