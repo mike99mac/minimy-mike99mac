@@ -262,11 +262,13 @@ To install **``mycroft-tools``** perform the following steps:
     **``$ sudo ./setup.sh``**
     
     ```
-    Copying all scripts to /usr/local/sbin ...
+    Copying all scripts to /usr/local/sbin ... 
     Success!  There are new scripts in your /usr/local/sbin/ directory
     ```
     
-### Use a script to further cusomize
+    The **``mycroft-tools``** repo is now installed.
+    
+### Further customize 
 
 An script named **``install1``** was written to perform many commands and thus save typing and time.  It is in the **``mycroft-tools``** package you just installed.
 It performs the following tasks:
