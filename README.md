@@ -220,7 +220,7 @@ Your system should now be at the latest software levels on the planet.
 
 The **``mycroft-tools``** repo has been developed to help with the installation, configuration, use and testing of the free and open personal voice assistants.
 
-To install **``mycroft-tools``** package, perform the following steps:
+To install **``mycroft-tools``** perform the following steps:
   
 - install **``git``** and **``vim``**.
 
