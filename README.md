@@ -307,7 +307,7 @@ It is important to know your microphone and speakers are working.
 There are scripts in mycroft-tools named **``testrecord``** and **``testplay``**. 
 They are wrappers around the **``arecord``** and **``aplay``** commands designed to make it easier to test recording audio to a file and playing it back on the speakers.
 
-- To test your microphone and speakers, issue the following command then speak up to five seconds. 
+- To test your microphone and speakers, issue the following command then speak for up to five seconds. 
 
     **``$ testrecord``**
     
@@ -319,6 +319,7 @@ They are wrappers around the **``arecord``** and **``aplay``** commands designed
     
 You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
 
+### Test the changes
 
 - Test your environment with the newly installed **``lsenv``** script which reports on many aspects of your Linux system.
 
