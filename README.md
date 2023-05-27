@@ -1,7 +1,5 @@
 # Minimy
 
-# HI ABIGAIL!!
-
 Minimy is a simple NLU-based voice assistant framework.
 
 It is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
@@ -18,32 +16,52 @@ get called asynchronously when an utterance is matched to an intent the skill ha
 
 I worked with the Mycroft free and open personal voice assistant since 2019, but the company went bankrupt in 2023, so had to move on. :((
 
-I tried OVOS/Neon, but was not able to get my music skill going after a couple weeks in early 2023.  I still haven't given up on that platform. There is no doubt it will only get better and easier to install.
+I tried OVOS but was not able to get a music skill working after a couple weeks.  I still haven't given up on that platform - no doubt it will only get better and easier to install.
 
-Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire, but it wasn't well received. Thankfully, Ken Smith put it on github, I forked the code, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** So I continue to try to *give back to the community* while standing on the shoulders of so many thousands of others.
+Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire but wasn't well received. Thankfully, Ken Smith put it on github, I forked the code, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** 
 
-One of my mantras is *Less is more*, so I liked minimy as it is a **Mini-My**croft.  Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
+So I continue to try to *give back to the community* while *standing on the shoulders* of so many thousands of others.
+
+One of my mantras is *Less is more*. I like minimy because it is a **Mini-My**croft. Less code is more.  Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
 ```
             Repo         Loc           files
     mycroft-core       38074             229
        ovos-core       18067             238
 minimy-mike99mac        9900              79
 ```
-So OVOS is half the size of Mycroft, and Minimy is about half again smaller
+So OVOS is half the size of Mycroft, and Minimy is about half again smaller.
 
-My environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro - you're on your own - no warranties.
+The test environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro, expect the unexpected :))
 
-This is based on *The smart boombox cookbook* which also describes the construction of a boombox. 
+This document  is based on *The smart boombox cookbook* which also describes the construction of a boombox. 
 It is on the Web at: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
+It focuses on how to get the *software stack* running, and starts from the very beginning.
 
-This document focuses just on the steps to get the *software stack* running, and starts from the very beginning.
+# Put it all together
 
-# The Minimy software stack
+The overall steps are:
 
-Perform the steps in each of the following sections to get to a running software stack.
+- Acquire the hardware - at minimum a Raspberry Pi with a microphone and speakers
+- Flash a Linux image to a memory device
+- Install and configure Linux
+- Install a toolbox written for Minimy
+- Install and customize Minimy
+- Start using your new personal voice assistant!
+
+That sounds easy, right?
+
+## Acquire the hardware
+I would recommend a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. Hopefully the RasPi 5 is coming soon and will be faster, stronger cheaper and easy to procure.
+
+Don't buy a cheap USB microphone. The sweet spot might be around $25 for flat disk type with an on-off switch for visible privacy. 
+It is best to move the microphone away from the speakers
+
+You can start with just about any speakers with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
 
 ## Prepare an SD card to boot Linux
-So you have a device that can run Linux - probably from a micro-SD card. A 32 GB card or larger is recommended. You need to *prime the pump* and put a Linux distribution on that card. 
+The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and put a Linux distribution on it. 
+
+Yes the RasPi can now boot from USB drives, but stick with the SD card for now.
 
 Hopefully you have another computer running Linux, but other OS's will work. The box you use must have a hardware port to write to the card.
 
@@ -52,7 +70,7 @@ Hopefully you have another computer running Linux, but other OS's will work. The
 If you have a Linux box with an SD card reader, you can use **``rpi-imager``**. To do so, perform the following tasks.
 - Put a micro-SD card into an SD adapter.
 - Plug the SD adapter into the card reader.
-- Download and install the tool.
+- If you don't have it already, download and install the tool.
 
     **``$ sudo apt-get install -y rpi-imager``**
 
@@ -68,7 +86,7 @@ If you have a Linux box with an SD card reader, you can use **``rpi-imager``**. 
 
     - Select your preferred *Operating System*. **Ubuntu Desktop 22.04 LTS** is recommended. It's a solid operating system, that combined with the RasPi, is capable of being a general purpose computer. LTS stands for *Long Term Support* - Canonical promises to support it for at least four years. 
 
-    - Select the *Storage* device. Ideally you will see the one micro-SD card in the dropdown menu.
+    - Select the *Storage* device. You should see just one micro-SD card in the dropdown menu.
 
     - Click **Write**.
 
@@ -83,22 +101,22 @@ No further details are provided.
 
 ## Connect the computer hardware
 
-For the initial setup, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but that’s not available yet. You can access the Internet using either Wi-Fi or with an Ethernet patch cord.
+For the initial setup, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but that’s not available yet. You can access the Internet using either Wi-Fi or with an Ethernet cord.
 
 To connect all the computer hardware, perform the following steps:
 
-- Plug the micro-SD card into the back of the RasPi.
+- Plug the micro-SD card into the back underside of the RasPi.
 - If you have wired ethernet, plug it in to the RJ-45 connector on the RasPi.
 - Connect the mouse and keyboard to the USB connections on the RasPi.
 - Connect the monitor to the RasPi with an appropriate micro-HDMI cable.  If your Raspberry Pi has two micro HDMI ports, use the left one.
-- Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. If you have an inline switch has a red LED below the on/off button.
+- Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. An official RasPi power supply is recommended to avoid "*undervoltage* warnings.  If you have an inline switch, be sure it is on.
 
 ### Boot the RasPi
 
-When you supply power to the Raspberry Pi, it should start booting.  On the top, back, left of the RasPi there are two LEDs:
+When you supply power to the Raspberry Pi, it should start booting.  On the top, back, left side of the RasPi there are two LEDs:
 
 - The LED to the left should glow solid red. This signifies it has 5V DC power.
-- The LED to the right of the red one should flicker green. This signifies that an operating system is communicating with the CPU. If there is a red light, but no green one, this probably means that the micro-SD card does not have Linux properly installed.
+- The LED to the right should flicker green. This signifies that there is communicaiton with the CPU. If there is a red light, but no green one, it's likely the micro-SD card does not have Linux properly installed.
 - You should see a rainbow colored splash screen on the monitor, then the Ubuntu desktop should initialize.
 
 **IMPORTANT**: Never turn the RasPi off without first shutting Linux down with the **``halt``** or similar command. Doing so can damage the operating system and possibly even the RasPi itself.
@@ -178,13 +196,11 @@ To do so, perform the following steps:
     inet 192.168.1.229
     ```
     
-In this example, the IP address is 192.168.1.229.
-
 ### Start an SSH session
 
 You should now be able to start an SSH session as the user pi, if you want to continue from another desktop system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS terminal session.
 
-**IMPORTANT**: Do not run as ``root``. Doing so will almost certainly screw up your system.  It is recommended that you run as the user ``pi``.  Ideally, other user names should work, as the environment variable ``$HOME`` is used in scripts, but this path has never been tested.
+**IMPORTANT**: Do not run as ``root``. Doing so will almost certainly screw up your system.  It is recommended that you run as the user ``pi``.  Ideally, other user names should work, as the environment variable ``$HOME`` is used in scripts, but this has never been tested.
 
 ### Update and upgrade your system
 
@@ -198,15 +214,15 @@ Update and upgrade your system which installs the latest code for all installed 
 
     **``$ sudo apt-get upgrade -y``**
     
-Your system should now be at the latest software levels.
+Your system should now be at the latest software levels on the planet.
 
 ### Install Mycroft tools
 
-There is a github repo with some tools to help with the installation and testing of Minimy and associated audio resources.
+The **``mycroft-tools``** repo has been developed to help with the installation, configuration, use and testing of the free and open personal voice assistants.
 
-To install the **``mycroft-tools``** package, perform the following steps:
+To install **``mycroft-tools``** perform the following steps:
   
-- install **``vim``** and **``vim``** packages.
+- install **``git``** and **``vim``**.
 
     **``$ sudo apt-get install -y git vim``**
     
@@ -218,7 +234,7 @@ To install the **``mycroft-tools``** package, perform the following steps:
     
     ``update-alternatives: using /usr/bin/vim to provide /usr/bin/editor (editor) in auto mode``
     
-- Allow members of the ``sudo`` group to be able to run **``sudo``** without a password, by adding **``NOPASSWD:``** to the line near the bottom of the file.
+- Allow members of the ``sudo`` group to be able to run **``sudo``** commands without a password, by adding **``NOPASSWD:``** to the line near the bottom of the file.
 
     **``$ sudo visudo``**
 
@@ -247,13 +263,15 @@ To install the **``mycroft-tools``** package, perform the following steps:
     **``$ sudo ./setup.sh``**
     
     ```
-    Copying all scripts to /usr/local/sbin ...
+    Copying all scripts to /usr/local/sbin ... 
     Success!  There are new scripts in your /usr/local/sbin/ directory
     ```
     
-### Use a script to further cusomize
+    The **``mycroft-tools``** repo is now installed.
+    
+### Further customize 
 
-An script named **``install1``** was written to perform many commands and thus save typing and time.  It is in the **``mycroft-tools``** package you just installed.
+The script **``install1``** runs many commands and thus save typing, time and possible errors.  It is in the **``mycroft-tools``** package you just installed.
 It performs the following tasks:
 
 - Installs the **``mlocate mpc mpd net-tools pandoc python3 python3-pip python3-rpi.gpio python3.10-venv``** packages
@@ -275,14 +293,34 @@ To run **``intall1``**, perform the following steps:
     
     ``/usr/local/sbin/install1``
 
-- Run the **``install1``** script in the home directory and save the output to a file.  You may want to reference that file in case some steps don't work.
+- Run the **``install1``** script in the home directory and send stdout and stderr to a file.  You may want to reference that file in case of errors.
 
     **``$ cd``**
     
-    **``$ install1 | tee install1.out 2>&1``**
+    **``$ install1 2?&1 | tee install1.out``**
     
     ``...``
     
+### Test microphone and speakers
+
+It is important to know your microphone and speakers are working. 
+There are scripts in mycroft-tools named **``testrecord``** and **``testplay``**. 
+They are wrappers around the **``arecord``** and **``aplay``** commands designed to make it easier to test recording audio to a file and playing it back on the speakers.
+
+- To test your microphone and speakers, issue the following command then speak for up to five seconds. 
+
+    **``$ testrecord``**
+    
+    ```
+    Testing your microphone for 5 seconds - SAY SOMETHING!
+    INFO: running command: arecord -r 44100  -f S24_LE -d 5 /tmp/test-mic.wav
+    Recording WAVE '/tmp/test-mic.wav' : Signed 24 bit Little Endian, Rate 44100 Hz, Mono
+    ```
+    
+You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
+
+### Test the changes
+
 - Test your environment with the newly installed **``lsenv``** script which reports on many aspects of your Linux system.
 
     **``$ lsenv``**
@@ -327,10 +365,8 @@ The output shows that:
 - Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage.
 - None of three file systems frequently commonly written to is mounted over an in-memory *tmpfs* file systems.
 
-### Test the changes of the install script
-Some of the changes made by **``install1``** will not be realized until boot time.  
-
-To test this, perform the following steps:
+### Test changes of install1 script
+Some of the changes made by **``install1``** will not be realized until boot time. To test this, perform the following steps:
 
 - Reboot your system
 
@@ -386,7 +422,7 @@ Minimy must be downloaded, installed and configured.
 ### Download and copy Minimy 
 It is recommended that you make a second copy of Minimy after you download it.  This way, if you make some changes to the running code, you'll have a reference copy. Also the copy of the code that you run should not have a ``.git/`` directory, thus removing any connection to github.
 
-The directory the copy will run in **must be named**  ``minimy``, removing the ``-mike99mac`` suffix. 
+The directory the copy will run in **must be named**  ``minimy``, removing the ``-mike99mac`` suffix.  Otherwise things will break.
 
 To download and copy Minimy, perform the following steps:
 
@@ -416,7 +452,18 @@ To download and copy Minimy, perform the following steps:
     
 ### Install Minimy    
     
-- Confirm that **``venv``** is alias which should have been set in your ``.bash_profile`` after the reboot.
+- Run the following script to install minimy and direct stdout and stderr to a file.
+    
+    **``$ ./install/linux_install.sh 2>&1 | tee linux_install.out``**
+    
+    ```
+    ...
+    Install Complete
+    ```
+    
+    This step can take up to ten minutes.
+    
+- Confirm that **``venv``** is an alias which should have been set in your ``.bash_profile`` after the reboot.
 
     **``alias venv``**
     
@@ -427,17 +474,6 @@ To download and copy Minimy, perform the following steps:
     **``$ venv``**
     
     You should notice a new ``(venv_ngv)`` prefix on the command line.
-    
-- Run the following script to install minimy.
-    
-    **``(venv_ngv) $ ./install/linux_install.sh``**
-    
-    ```
-    ...
-    Install Complete
-    ```
-    
-    This step can take up to ten minutes.
     
 ### Configure Minimy
 
