@@ -24,6 +24,7 @@ sudo apt install -y wget
 python3 -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
 pip install -r install/requirements.txt
 pip install lingua_franca
+pip install youtube-search 
 deactivate
 
 echo
@@ -66,7 +67,6 @@ cd ../../../../..
 deactivate
 source framework/services/tts/local/mimic3/.venv/bin/activate
 pip install importlib-resources
-pip install youtube-search 
 deactivate
 
 echo
