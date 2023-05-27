@@ -22,7 +22,7 @@ Then I found Minimy, and was able to get it running in a few hours. Apparently, 
 
 So I continue to try to *give back to the community* while *standing on the shoulders* of so many thousands of others.
 
-One of my mantras is *Less is more*. I liked minimy as it is a **Mini-My**croft. Less code is more.  Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
+One of my mantras is *Less is more*. I like minimy because it is a **Mini-My**croft. Less code is more.  Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
 ```
             Repo         Loc           files
     mycroft-core       38074             229
@@ -33,10 +33,9 @@ So OVOS is half the size of Mycroft, and Minimy is about half again smaller.
 
 The test environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro, expect the unexpected :))
 
-This is based on *The smart boombox cookbook* which also describes the construction of a boombox. 
+This document  is based on *The smart boombox cookbook* which also describes the construction of a boombox. 
 It is on the Web at: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
-
-This document focuses on the steps to get the *software stack* running, and starts from the very beginning.
+It focuses on how to get the *software stack* running, and starts from the very beginning.
 
 # Put it all together
 
