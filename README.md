@@ -297,28 +297,10 @@ To run **``intall1``**, perform the following steps:
 
     **``$ cd``**
     
-    **``$ install1 2?&1 | tee install1.out``**
+    **``$ install1 2>&1 | tee install1.out``**
     
     ``...``
     
-### Test microphone and speakers
-
-It is important to know your microphone and speakers are working. 
-There are scripts in mycroft-tools named **``testrecord``** and **``testplay``**. 
-They are wrappers around the **``arecord``** and **``aplay``** commands designed to make it easier to test recording audio to a file and playing it back on the speakers.
-
-- To test your microphone and speakers, issue the following command then speak for up to five seconds. 
-
-    **``$ testrecord``**
-    
-    ```
-    Testing your microphone for 5 seconds - SAY SOMETHING!
-    INFO: running command: arecord -r 44100  -f S24_LE -d 5 /tmp/test-mic.wav
-    Recording WAVE '/tmp/test-mic.wav' : Signed 24 bit Little Endian, Rate 44100 Hz, Mono
-    ```
-    
-You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
-
 ### Test the changes
 
 - Test your environment with the newly installed **``lsenv``** script which reports on many aspects of your Linux system.
@@ -415,6 +397,24 @@ The output shows three changes:
 - The Music Playing Daemon, **``mpd``** is now running.
 - The one **``pulseaudio``** process has **``--system``** as a parameter which is vital to audio output working correctly.
 - The **``/var/log/``** file system is now mounted over an in-memory tmpfs.
+
+### Test microphone and speakers
+
+It is important to know your microphone and speakers are working. 
+There are scripts in mycroft-tools named **``testrecord``** and **``testplay``**. 
+They are wrappers around the **``arecord``** and **``aplay``** commands designed to make it easier to test recording audio to a file and playing it back on the speakers.
+
+- To test your microphone and speakers, issue the following command then speak for up to five seconds. 
+
+    **``$ testrecord``**
+    
+    ```
+    Testing your microphone for 5 seconds - SAY SOMETHING!
+    INFO: running command: arecord -r 44100  -f S24_LE -d 5 /tmp/test-mic.wav
+    Recording WAVE '/tmp/test-mic.wav' : Signed 24 bit Little Endian, Rate 44100 Hz, Mono
+    ```
+    
+You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
 
 ## Minimy
 Minimy must be downloaded, installed and configured.
@@ -575,10 +575,10 @@ with this code:
 
 If you don't have a Google Speech API key you can get one from: https://console.cloud.google.com/freetrial/signup/tos
 
-Once you confirm your changes you can see what was produced by typing 'cat install/mmconfig.yml'. You 
-should not modify this file.
+Once you confirm your changes you can see what was produced with ``cat install/mmconfig.yml``. 
+You should not modify this file.
 
 ## Use Minimy
 
-**TODO** Add quite a number of sample utterances
+**TODO**: Add quite a number of sample utterances
 
