@@ -196,8 +196,6 @@ To do so, perform the following steps:
     inet 192.168.1.229
     ```
     
-In this example, the IP address is 192.168.1.229.
-
 ### Start an SSH session
 
 You should now be able to start an SSH session as the user pi, if you want to continue from another desktop system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS terminal session.
@@ -220,9 +218,9 @@ Your system should now be at the latest software levels on the planet.
 
 ### Install Mycroft tools
 
-The mycroft-tools repo has been developed to help with the installation, configuration, use and testing of the free and open personal voice assistants.
+The **``mycroft-tools``** repo has been developed to help with the installation, configuration, use and testing of the free and open personal voice assistants.
 
-To install the **``mycroft-tools``** package, perform the following steps:
+To install **``mycroft-tools``** package, perform the following steps:
   
 - install **``vim``** and **``vim``** packages.
 
