@@ -69,8 +69,8 @@ deactivate
 
 echo
 echo "Copying and enabling systemd .mount files to create in-memory file systems"
-sudo cp home-pi-minimy-logs.mount /etc/systemd/system 
-sudo cp home-pi-minimy-tmp.mount /etc/systemd/system 
+sudo cp install/home-pi-minimy-logs.mount /etc/systemd/system 
+sudo cp install/home-pi-minimy-tmp.mount /etc/systemd/system 
 sudo systemctl enable home-pi-minimy-logs.mount 
 sudo systemctl enable home-pi-minimy-tmp.mount 
 
