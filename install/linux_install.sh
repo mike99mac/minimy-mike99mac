@@ -4,8 +4,9 @@
 # Example:
 #     install/linux_install.sh
 #
+echo
 date
-echo 'Begin Installation, MiniMy Version 1.0.3'
+echo "Begin Installation, MiniMy Version 1.1.0"
 sudo apt install python3-venv
 sudo apt install python3-dev
 python3 -m venv venv_ngv
@@ -25,20 +26,23 @@ pip install -r install/requirements.txt
 pip install lingua_franca
 deactivate
 
-echo 'Installing Internet music tools'
+echo
+echo "Installing Internet music tools"
 pip install youtube-search-python
 # try skipping youtube-dl - is it no longer used?
 # sudo curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl
 #sudo chmod a+rx /usr/local/bin/yotube-dl
 
-echo 'Installing Local NLP'
+echo
+echo "Installing Local NLP"
 cd framework/services/intent/nlp/local
 tar xzfv cmu_link-4.1b.tar.gz
 cd link-4.1b
 make
 cd ../../../../../..
 
-echo 'Installing Local STT'
+echo
+echo "Installing Local STT"
 cd framework/services/stt/local/CoquiSTT/ds_model
 wget https://github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/huge-vocabulary.scorer
 wget https://github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/alphabet.txt
@@ -47,7 +51,8 @@ cd ..
 bash install_linux.sh
 cd ../../../../..
 
-echo 'Installing Local TTS'
+echo
+echo "Installing Local TTS"
 cd framework/services/tts/local
 wget http://rioespana.com/images/mimic3.tgz
 tar xzfv mimic3.tgz
@@ -62,6 +67,7 @@ pip install importlib-resources
 pip install youtube-search 
 deactivate
 
+echo
 echo "Copying and enabling systemd .mount files to create in-memory file systems"
 sudo cp home-pi-minimy-logs.mount /etc/systemd/system 
 sudo cp home-pi-minimy-tmp.mount /etc/systemd/system 
@@ -69,9 +75,9 @@ sudo systemctl enable home-pi-minimy-logs.mount
 sudo systemctl enable home-pi-minimy-tmp.mount 
 
 source venv_ngv/bin/activate
-echo ' '
-echo 'Install Complete'
-echo ' '
+echo " "
+echo "Install Complete"
+echo " "
 # out of date:
 # cat doc/final_instructions.txt
 date
