@@ -292,7 +292,7 @@ To run **``intall1``**, perform the following steps:
     
     ``/usr/local/sbin/install1``
 
-- Run the **``install1``** script in the home directory and stdout and stderr to a file.  You may want to reference that file in case some steps don't work.
+- Run the **``install1``** script in the home directory and send stdout and stderr to a file.  You may want to reference that file in case of errors.
 
     **``$ cd``**
     
@@ -303,8 +303,8 @@ To run **``intall1``**, perform the following steps:
 ### Test microphone and speakers
 
 It is important to know your microphone and speakers are working. 
-There are scripts in mycroft-tools named **``testrecord``** and **``testplay``**. They are wrappers around **``arecord``** and **``aplay``** 
-designed to make it easier to test recording audio to a file and playing it back on the speakers.
+There are scripts in mycroft-tools named **``testrecord``** and **``testplay``**. 
+They are wrappers around the **``arecord``** and **``aplay``** commands designed to make it easier to test recording audio to a file and playing it back on the speakers.
 
 - To test your microphone and speakers, issue the following command then speak into the microphone for up to five seconds. 
 
@@ -316,7 +316,7 @@ designed to make it easier to test recording audio to a file and playing it back
     Recording WAVE '/tmp/test-mic.wav' : Signed 24 bit Little Endian, Rate 44100 Hz, Mono
     ```
     
-You should hear your words played back to you. essful the script will attempt to play it back.  If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
+You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
 
 
 - Test your environment with the newly installed **``lsenv``** script which reports on many aspects of your Linux system.
