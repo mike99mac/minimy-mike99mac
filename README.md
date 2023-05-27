@@ -51,7 +51,7 @@ The overall steps are:
 That sounds easy, right?
 
 ## Acquire the hardware
-I would recommend a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. Hopefully the RasPi 5 is coming soon and easy to get.
+I would recommend a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. Hopefully the RasPi 5 is coming soon and will be faster, stronger cheaper and easy to get.
 
 Don't buy a cheap USB microphone. The sweet spot might be around $25 for flat disk type with an on-off switch for visible privacy. 
 It is best to move the microphone away from the speakers
