@@ -29,6 +29,8 @@ deactivate
 echo
 echo "Installing Internet music tools"
 pip install youtube-search-python
+sudo cp install/ytplay /usr/local/sbin
+sudo ln -s /usr/local/sbin/ytplay /usr/local/sbin/ytadd
 # try skipping youtube-dl - is it no longer used?
 # sudo curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl
 #sudo chmod a+rx /usr/local/bin/yotube-dl
