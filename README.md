@@ -234,7 +234,7 @@ To install **``mycroft-tools``** perform the following steps:
     
     ``update-alternatives: using /usr/bin/vim to provide /usr/bin/editor (editor) in auto mode``
     
-- Allow members of the ``sudo`` group to be able to run **``sudo``** without a password, by adding **``NOPASSWD:``** to the line near the bottom of the file.
+- Allow members of the ``sudo`` group to be able to run **``sudo``** commands without a password, by adding **``NOPASSWD:``** to the line near the bottom of the file.
 
     **``$ sudo visudo``**
 
@@ -258,11 +258,10 @@ To install **``mycroft-tools``** perform the following steps:
     
 - Change to the newly installed directory and run the setup script. It will copy scripts to the directory ``/usr/local/sbin`` which is in the default ``PATH``.
 
-    **``$ cd mycroft-tools``**
-    
-    **``$ sudo ./setup.sh``**
-    
-    ```
+    **```
+    $ cd mycroft-tools
+    $ sudo ./setup.sh    
+    ```**
     Copying all scripts to /usr/local/sbin ...
     Success!  There are new scripts in your /usr/local/sbin/ directory
     ```
