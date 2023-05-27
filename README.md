@@ -222,7 +222,7 @@ The **``mycroft-tools``** repo has been developed to help with the installation,
 
 To install **``mycroft-tools``** package, perform the following steps:
   
-- install **``vim``** and **``vim``** packages.
+- install **``git``** and **``vim``**.
 
     **``$ sudo apt-get install -y git vim``**
     
