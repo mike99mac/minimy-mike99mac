@@ -1,0 +1,41 @@
+#!/bin/bash
+#
+# ytadd  - add a youtube video to the mpc queue, but don't play (symlink to ytplay)
+# ytplay - add a youtube video to the mpc queue, then play it
+# Arg 1:   YouTube URL of the music/video to play
+#
+this_cmd=`basename $0`
+if [ $# = 0 ]; then
+  echo "ERROR: no URL passed in"
+  echo "Usage: $this_cmd YouTube-URL"
+  exit 1
+elif [ $# != 1 ]; then
+  echo "ERROR: too many args"
+  echo "Usage: $this_cmd YouTube-URL"
+  exit 1
+else
+  which yt-dlp >/dev/null 2>&1
+  if [ $? != 0 ]; then
+    echo "ERROR: yt-dlp not installed"
+    echo "Try: python3 -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz"
+    exit 2
+  fi
+  which mpc >/dev/null 2>&1
+  if [ $? != 0 ]; then
+    echo "ERROR: mpc not installed"
+    exit 3
+  fi
+  URL=$1
+  mpc_URLs=`yt-dlp -g $URL`                # convert browser URL to streamable
+  rc=$?
+  if [ "$rc" != 0 ]; then
+    echo "ERROR: yt-dlp -g $URL returned $rc"
+    exit 4
+  fi
+  mpc_URL=`echo "$mpc_URLs" | tail -1`     # need only the last of the two URLs
+  mpc add $mpc_URL                         # add audio to mpc queue
+  if [ "$this_cmd" = ytplay ]; then
+    mpc play
+  fi
+fi
+
