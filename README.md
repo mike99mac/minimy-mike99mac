@@ -259,6 +259,7 @@ To install **``mycroft-tools``** perform the following steps:
 - Change to the newly installed directory and run the setup script. It will copy scripts to the directory ``/usr/local/sbin`` which is in the default ``PATH``.
 
     **``$ cd mycroft-tools``**
+    
     **``$ sudo ./setup.sh``**
     
     ```
@@ -270,7 +271,7 @@ To install **``mycroft-tools``** perform the following steps:
     
 ### Further customize 
 
-An script named **``install1``** was written to perform many commands and thus save typing, time and possible errors.  It is in the **``mycroft-tools``** package you just installed.
+The script **``install1``** runs many commands and thus save typing, time and possible errors.  It is in the **``mycroft-tools``** package you just installed.
 It performs the following tasks:
 
 - Installs the **``mlocate mpc mpd net-tools pandoc python3 python3-pip python3-rpi.gpio python3.10-venv``** packages
