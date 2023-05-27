@@ -365,10 +365,8 @@ The output shows that:
 - Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage.
 - None of three file systems frequently commonly written to is mounted over an in-memory *tmpfs* file systems.
 
-### Test the changes of the install script
-Some of the changes made by **``install1``** will not be realized until boot time.  
-
-To test this, perform the following steps:
+### Test changes of install1 script
+Some of the changes made by **``install1``** will not be realized until boot time. To test this, perform the following steps:
 
 - Reboot your system
 
