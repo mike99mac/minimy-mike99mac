@@ -557,13 +557,11 @@ Their output is written to the ``logs/`` directory under the main install direct
 The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS`` which are set in **``startminimy``** 
 with this code:
 
-    ```
     ...
     export PYTHONPATH=`pwd`
     export SVA_BASE_DIR=`pwd`
     export GOOGLE_APPLICATION_CREDENTIALS="/home/pi/minimy/install/my-google-key.json"
     ...
-    ```
 
 - Start Minimy, ensuring it is run from the base directory, as follows.
 
