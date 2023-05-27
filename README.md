@@ -51,7 +51,7 @@ The overall steps are:
 That sounds easy, right?
 
 ## Acquire the hardware
-I would recommend a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. Hopefully the RasPi 5 is coming soon and will be faster, stronger cheaper and easy to get.
+I would recommend a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. Hopefully the RasPi 5 is coming soon and will be faster, stronger cheaper and easy to procure.
 
 Don't buy a cheap USB microphone. The sweet spot might be around $25 for flat disk type with an on-off switch for visible privacy. 
 It is best to move the microphone away from the speakers
@@ -59,7 +59,9 @@ It is best to move the microphone away from the speakers
 You can start with just about any speakers with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
 
 ## Prepare an SD card to boot Linux
-The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and put a Linux distribution on it. Yes it can now boot from USB drives, but stick with the SD card for now.
+The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and put a Linux distribution on it. 
+
+Yes the RasPi can now boot from USB drives, but stick with the SD card for now.
 
 Hopefully you have another computer running Linux, but other OS's will work. The box you use must have a hardware port to write to the card.
 
@@ -103,18 +105,18 @@ For the initial setup, a keyboard, monitor and mouse are needed. Ideally there w
 
 To connect all the computer hardware, perform the following steps:
 
-- Plug the micro-SD card into the back of the RasPi.
+- Plug the micro-SD card into the back underside of the RasPi.
 - If you have wired ethernet, plug it in to the RJ-45 connector on the RasPi.
 - Connect the mouse and keyboard to the USB connections on the RasPi.
 - Connect the monitor to the RasPi with an appropriate micro-HDMI cable.  If your Raspberry Pi has two micro HDMI ports, use the left one.
-- Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. If you have an inline switch, be sure it is on.
+- Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. An official RasPi power supply is recommended to avoid "*undervoltage* warnings.  If you have an inline switch, be sure it is on.
 
 ### Boot the RasPi
 
-When you supply power to the Raspberry Pi, it should start booting.  On the top, back, left of the RasPi there are two LEDs:
+When you supply power to the Raspberry Pi, it should start booting.  On the top, back, left side of the RasPi there are two LEDs:
 
 - The LED to the left should glow solid red. This signifies it has 5V DC power.
-- The LED to the right of the red one should flicker green. This signifies that an operating system is communicating with the CPU. If there is a red light, but no green one, this probably means that the micro-SD card does not have Linux properly installed.
+- The LED to the right should flicker green. This signifies that there is communicaiton with the CPU. If there is a red light, but no green one, it's likely the micro-SD card does not have Linux properly installed.
 - You should see a rainbow colored splash screen on the monitor, then the Ubuntu desktop should initialize.
 
 **IMPORTANT**: Never turn the RasPi off without first shutting Linux down with the **``halt``** or similar command. Doing so can damage the operating system and possibly even the RasPi itself.
