@@ -42,7 +42,7 @@ This document focuses on how to get the entire *software stack* running, and sta
 
 The overall steps are:
 
-- Acquire the hardware - at minimum a Raspberry Pi with a microphone and speakers
+- Acquire the hardware - a minimum of a Raspberry Pi, microphone and speaker(s)
 - Flash a Linux image to a memory device
 - Install and configure Linux
 - Install a toolbox written for Minimy
@@ -52,9 +52,9 @@ The overall steps are:
 That sounds easy, right?
 
 ## Acquire the hardware
-I would recommend a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. Hopefully the RasPi 5 is coming soon and will be faster, stronger cheaper and easy to procure.
+I would recommend a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. A Rasberry Pi 400 is also a good choice. Hopefully the RasPi 5 is coming soon and will be more powerful and easy to procure.
 
-Don't buy a cheap USB microphone. The sweet spot might be around $25 for flat disk type with an on-off switch for visible privacy. 
+Don't buy a cheap USB microphone. The sweet spot might be around $25 for flat disk type with a mute/unmute switch for visible privacy. 
 It is best to move the microphone away from the speakers and closer to the center of the room.
 
 You can start with just about any speakers with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
@@ -62,7 +62,7 @@ You can start with just about any speakers with a 3.5mm jack that will plug into
 ## Prepare an SD card to boot Linux
 The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and put a Linux distribution on it. 
 
-Yes the RasPi can now boot from USB drives, but stick with the SD card for now.
+Yes the RasPi can now boot from USB drives, but it is recommended to stick with SD cards for now.
 
 Hopefully you have another computer running Linux, but other OS's will work. It must have a hardware port to write to the card.
 
@@ -83,7 +83,7 @@ If you have a Linux box with an SD card reader, you can use **``rpi-imager``**. 
 
 - To flash a Linux image to the card, perform the following steps:
 
-    - Select your preferred *Operating System*. **Ubuntu Desktop 22.04 LTS** is recommended. It's a solid operating system, that combined with the RasPi, is capable of being a general purpose computer. LTS stands for *Long Term Support* - Canonical promises to support it for at least four years. 
+    - Select your preferred *Operating System*. **Ubuntu Desktop 22.04 LTS** is recommended. It's a solid operating system, that combined with the RasPi, is capable of being a general purpose computer. LTS stands for *Long Term Support* - Canonical promises to support it for at least five years. 
 
     - Select the *Storage* device. You should see just one micro-SD card in the dropdown menu.
 
@@ -151,7 +151,7 @@ Ubuntu Desktop 22-04 should now be installed
  
 ### Install the SSH server
 
-The secure shell (SSH) server is not installed by default on Ubuntu desktop (which is curious). Install it so you can access your system remotely. 
+The secure shell (SSH) server is not installed by default on Ubuntu desktop. Install it so you can access your system remotely. 
 
 To do so, perform the following steps:
 
