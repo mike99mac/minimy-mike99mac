@@ -22,7 +22,7 @@ Then I found Minimy, and was able to get it running in a few hours. Apparently, 
 
 So I continue to try to *give back to the community* while *standing on the shoulders* of so many thousands of others.
 
-One of my mantras is *Less is more*. I like minimy because it is a **Mini-My**croft. Less code is more.  Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
+One of my mantras is *Less is more*. I like minimy because it is a **Mini-My**croft. Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
 ```
             Repo         Loc           files
     mycroft-core       38074             229
@@ -35,7 +35,8 @@ The test environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu De
 
 This document  is based on *The smart boombox cookbook* which also describes the construction of a boombox. 
 It is on the Web at: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
-It focuses on how to get the *software stack* running, and starts from the very beginning.
+
+This document focuses on how to get the entire *software stack* running, and starts from the very beginning.
 
 # Put it all together
 
@@ -54,7 +55,7 @@ That sounds easy, right?
 I would recommend a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. Hopefully the RasPi 5 is coming soon and will be faster, stronger cheaper and easy to procure.
 
 Don't buy a cheap USB microphone. The sweet spot might be around $25 for flat disk type with an on-off switch for visible privacy. 
-It is best to move the microphone away from the speakers
+It is best to move the microphone away from the speakers and closer to the center of the room.
 
 You can start with just about any speakers with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
 
@@ -63,7 +64,7 @@ The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card
 
 Yes the RasPi can now boot from USB drives, but stick with the SD card for now.
 
-Hopefully you have another computer running Linux, but other OS's will work. The box you use must have a hardware port to write to the card.
+Hopefully you have another computer running Linux, but other OS's will work. It must have a hardware port to write to the card.
 
 ### Prepare on Linux
 
@@ -73,8 +74,6 @@ If you have a Linux box with an SD card reader, you can use **``rpi-imager``**. 
 - If you don't have it already, download and install the tool.
 
     **``$ sudo apt-get install -y rpi-imager``**
-
-### Flash the drive
 
 - Run the tool.
 
@@ -101,14 +100,16 @@ No further details are provided.
 
 ## Connect the computer hardware
 
-For the initial setup, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but that’s not available yet. You can access the Internet using either Wi-Fi or with an Ethernet cord.
+For the initial setup, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but we're not there yet. 
+
+You can access the Internet using either Wi-Fi or with an Ethernet cord.
 
 To connect all the computer hardware, perform the following steps:
 
 - Plug the micro-SD card into the back underside of the RasPi.
 - If you have wired ethernet, plug it in to the RJ-45 connector on the RasPi.
 - Connect the mouse and keyboard to the USB connections on the RasPi.
-- Connect the monitor to the RasPi with an appropriate micro-HDMI cable.  If your Raspberry Pi has two micro HDMI ports, use the left one.
+- Connect the monitor to the RasPi with an appropriate micro-HDMI cable.  The RasPi 4 two micro HDMI ports - use the left one.
 - Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. An official RasPi power supply is recommended to avoid "*undervoltage* warnings.  If you have an inline switch, be sure it is on.
 
 ### Boot the RasPi
@@ -412,6 +413,8 @@ They are wrappers around the **``arecord``** and **``aplay``** commands designed
     Testing your microphone for 5 seconds - SAY SOMETHING!
     INFO: running command: arecord -r 44100  -f S24_LE -d 5 /tmp/test-mic.wav
     Recording WAVE '/tmp/test-mic.wav' : Signed 24 bit Little Endian, Rate 44100 Hz, Mono
+    Calling testplay to play back the recording ...
+    Playing WAVE '/tmp/test-mic.wav' : Signed 24 bit Little Endian, Rate 44100 Hz, Mono
     ```
     
 You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
