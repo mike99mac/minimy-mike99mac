@@ -223,7 +223,7 @@ The **``mycroft-tools``** repo has been developed to help with the installation,
 
 To install **``mycroft-tools``** perform the following steps:
   
-- install **``git``** and **``vim``**.
+- Install **``git``** and **``vim``** as they are needed shortly.
 
     **``$ sudo apt-get install -y git vim``**
     
@@ -552,6 +552,14 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
         ('WakeWords', ['hey computer', 'computer'])
     ```
 
+### Get a Google API key
+
+You need a Google Speech API key in order to be able to convert speech to text.
+
+Get one from: https://console.cloud.google.com/freetrial/signup/tos
+
+Once you get your key, copy it to the default location ``/home/pi/minimy/install/my-google-key.json``.
+
 ## Run Minimy
 The scripts **``startminimy``** and **``stopminimy``** are used to start and stop processes. 
 Each skill and service run in their own process space and use the message bus or file system to synchronize. 
@@ -576,10 +584,6 @@ with this code:
 
     **``(venv_ngv) $ ./stopminimy``**
 
-If you don't have a Google Speech API key you can get one from: https://console.cloud.google.com/freetrial/signup/tos
-
-Once you confirm your changes you can see what was produced with ``cat install/mmconfig.yml``. 
-You should not modify this file.
 
 ## Use Minimy
 
