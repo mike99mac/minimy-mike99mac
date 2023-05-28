@@ -22,7 +22,7 @@ Then I found Minimy, and was able to get it running in a few hours. Apparently, 
 
 So I continue to try to *give back to the community* while *standing on the shoulders* of so many thousands of others.
 
-One of my mantras is *Less is more*. I like minimy because it is a **Mini-My**croft. Less code is more.  Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
+One of my mantras is *Less is more*. I like minimy because it is a **Mini-My**croft. Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
 ```
             Repo         Loc           files
     mycroft-core       38074             229
@@ -55,7 +55,7 @@ That sounds easy, right?
 I would recommend a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. Hopefully the RasPi 5 is coming soon and will be faster, stronger cheaper and easy to procure.
 
 Don't buy a cheap USB microphone. The sweet spot might be around $25 for flat disk type with an on-off switch for visible privacy. 
-It is best to move the microphone away from the speakers
+It is best to move the microphone away from the speakers and closer to the center of the room.
 
 You can start with just about any speakers with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
 
@@ -64,7 +64,7 @@ The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card
 
 Yes the RasPi can now boot from USB drives, but stick with the SD card for now.
 
-Hopefully you have another computer running Linux, but other OS's will work. The box you use must have a hardware port to write to the card.
+Hopefully you have another computer running Linux, but other OS's will work. It must have a hardware port to write to the card.
 
 ### Prepare on Linux
 
@@ -74,8 +74,6 @@ If you have a Linux box with an SD card reader, you can use **``rpi-imager``**. 
 - If you don't have it already, download and install the tool.
 
     **``$ sudo apt-get install -y rpi-imager``**
-
-### Flash the drive
 
 - Run the tool.
 
