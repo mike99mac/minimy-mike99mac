@@ -985,8 +985,8 @@ class MpcClient(SimpleVoiceAssistant):
     phrase = phrase.replace('on the internet', '') 
     self.log.debug("MpcClient.search_internet() searching for phrase: "+phrase)
 
-    # the ytadd script takes around 5 seconds to add a URL - so limit results to 1
-    results = YoutubeSearch(phrase, max_results=1).to_dict() # return a dictionary
+    # the ytadd script takes around 5 seconds to add a URL - so limit results to 3
+    results = YoutubeSearch(phrase, max_results=3).to_dict() # return a dictionary
     num_hits = len(results)
     if num_hits == 0:
       self.log.info("MpcClient.search_internet() did not find any music on the internet")
