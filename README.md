@@ -35,7 +35,8 @@ The test environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu De
 
 This document  is based on *The smart boombox cookbook* which also describes the construction of a boombox. 
 It is on the Web at: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
-It focuses on how to get the *software stack* running, and starts from the very beginning.
+
+This document focuses on how to get the entire *software stack* running, and starts from the very beginning.
 
 # Put it all together
 
@@ -412,6 +413,8 @@ They are wrappers around the **``arecord``** and **``aplay``** commands designed
     Testing your microphone for 5 seconds - SAY SOMETHING!
     INFO: running command: arecord -r 44100  -f S24_LE -d 5 /tmp/test-mic.wav
     Recording WAVE '/tmp/test-mic.wav' : Signed 24 bit Little Endian, Rate 44100 Hz, Mono
+    Calling testplay to play back the recording ...
+    Playing WAVE '/tmp/test-mic.wav' : Signed 24 bit Little Endian, Rate 44100 Hz, Mono
     ```
     
 You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
