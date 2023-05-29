@@ -47,6 +47,7 @@ The overall steps are:
 - Install and configure Linux
 - Install a toolbox written for Minimy
 - Install and customize Minimy
+- Install a daemon to send messages when buttons are pressed (if your enclosure has physical buttons)
 - Start using your new personal voice assistant!
 
 That sounds easy, right?
@@ -441,14 +442,6 @@ To download and copy Minimy, perform the following steps:
     Resolving deltas: 100% (450/450), done.
     ```
     
-    **``  $ git clone https://github.com/mike99mac/mycroft-messagebus-mike99mac``**
-  
-    ```
-    Cloning into 'mycroft-messagebus-mike99mac'...
-    ...
-    Resolving deltas: 100% (198/198), done.
-    ```
-    
 - Copy the directory recursively from ``minimy-mike99mac`` to ``minimy``.
 
     **``$ cp -a minimy-mike99mac minimy``**
@@ -592,6 +585,27 @@ with this code:
 
     **``(venv_ngv) $ ./stopminimy``**
 
+## Start the buttons daemon
+
+The smart boombox enclosure has three pushbuttons on the front panel to allow quick previous track, pause/resume, and next track functions. If your enclosure does not have them, you can skip this step.
+
+Previously you cloned ``mycroft-tools`` from github which contains the Python ``buttons.py`` and the bash script ``buttons``. Both of these should be in ``/usr/local/sbin/``.  
+
+**TODO**: Extend the code so the daemon can trap arrow keys on a Raspberry Pi 400, if that is the CPU of choice.
+
+To start the **``buttons``** daemon, perform the following steps:
+
+- Clone the messagebus repo from github which will allow buttons to *talk to* Minimy.
+
+ **``  $ git clone https://github.com/mike99mac/mycroft-messagebus-mike99mac``**
+  
+    ```
+    Cloning into 'mycroft-messagebus-mike99mac'...
+    ...
+    Resolving deltas: 100% (198/198), done.
+    ```
+    
+- Now what?  We need to get the code running first ... watch this space ...    
 
 ## Use Minimy
 
