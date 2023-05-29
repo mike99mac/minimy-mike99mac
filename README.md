@@ -591,9 +591,11 @@ with this code:
 
 ## Start the buttons daemon
 
-The model of the smart boombox with the RasPi on-board has three pushbuttons on the front panel to allow quick previous track, pause/resume, and next track functions. If your enclosure does not have them, you can skip this step.
+The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick previous track, pause/resume, and next track functions.  The **``buttons``** daemon traps button pushes and sends corresponding messages to Minimy.
 
-Another model has Lithium-ion batteries on-board, and the computer is a RaspPi 400 which looks like a plain keyboard.
+If your enclosure does not have them, you can skip this step.
+
+On the other model the computer is a RaspPi 400, which allows Lithium-ion batteries to be on-board. That will need a different flavor of the **``buttons``** daemon running.
 
 Previously you cloned ``mycroft-tools`` from github which contains the Python ``buttons.py`` and the bash script ``buttons``. Both of these should be in ``/usr/local/sbin/``.  
 
