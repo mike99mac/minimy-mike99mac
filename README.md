@@ -441,6 +441,14 @@ To download and copy Minimy, perform the following steps:
     Resolving deltas: 100% (450/450), done.
     ```
     
+    **``  $ git clone https://github.com/mike99mac/mycroft-messagebus-mike99mac``**
+  
+    ```
+    Cloning into 'mycroft-messagebus-mike99mac'...
+    ...
+    Resolving deltas: 100% (198/198), done.
+    ```
+    
 - Copy the directory recursively from ``minimy-mike99mac`` to ``minimy``.
 
     **``$ cp -a minimy-mike99mac minimy``**
