@@ -31,7 +31,7 @@ minimy-mike99mac        9900              79
 ```
 So OVOS is half the size of Mycroft, and Minimy is about half again smaller.
 
-The test environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro, expect the unexpected :))
+The test environment is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro, expect the unexpected :))
 
 This document  is based on *The smart boombox cookbook* which also describes the construction of a boombox. 
 It is on the Web at: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
@@ -42,7 +42,7 @@ This document focuses on how to get the entire *software stack* running, and sta
 
 The overall steps are:
 
-- Acquire the hardware - a minimum of a Raspberry Pi, microphone and speaker(s)
+- Acquire the hardware - a minimum of a RasPi, a microphone and a speaker
 - Flash a Linux image to a memory device
 - Install and configure Linux
 - Install a toolbox written for Minimy
@@ -53,7 +53,11 @@ The overall steps are:
 That sounds easy, right?
 
 ## Acquire the hardware
-I would recommend a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. A Rasberry Pi 400 is also a good choice. Hopefully the RasPi 5 is coming soon and will be more powerful and easy to procure.
+I would recommend a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. 
+
+A Rasberry Pi 400 is another option.  On the boombox enclousres, it frees up space to house lithium-ion batteries.
+
+Hopefully the RasPi 5 is coming soon and will be more powerful and easy to procure.
 
 Don't buy a cheap USB microphone. The sweet spot might be around $25 for flat disk type with a mute/unmute switch for visible privacy. 
 It is best to move the microphone away from the speakers and closer to the center of the room.
@@ -587,7 +591,9 @@ with this code:
 
 ## Start the buttons daemon
 
-The smart boombox enclosure has three pushbuttons on the front panel to allow quick previous track, pause/resume, and next track functions. If your enclosure does not have them, you can skip this step.
+The model of the smart boombox with the RasPi on-board has three pushbuttons on the front panel to allow quick previous track, pause/resume, and next track functions. If your enclosure does not have them, you can skip this step.
+
+Another model has Lithium-ion batteries on-board, and the computer is a RaspPi 400 which looks like a plain keyboard.
 
 Previously you cloned ``mycroft-tools`` from github which contains the Python ``buttons.py`` and the bash script ``buttons``. Both of these should be in ``/usr/local/sbin/``.  
 
