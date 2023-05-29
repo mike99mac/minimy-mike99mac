@@ -119,7 +119,7 @@ To connect all the computer hardware, perform the following steps:
 
 ### Boot the RasPi
 
-When you supply power to the Raspberry Pi, it should start booting.  On the top, back, left side of the RasPi there are two LEDs:
+When you supply power to the RasPi, it should start booting.  On the top, back, left side of the RasPi there are two LEDs:
 
 - The LED to the left should glow solid red. This signifies it has 5V DC power.
 - The LED to the right should flicker green. This signifies that there is communicaiton with the CPU. If there is a red light, but no green one, it's likely the micro-SD card does not have Linux properly installed.
@@ -597,13 +597,13 @@ Another model has Lithium-ion batteries on-board, and the computer is a RaspPi 4
 
 Previously you cloned ``mycroft-tools`` from github which contains the Python ``buttons.py`` and the bash script ``buttons``. Both of these should be in ``/usr/local/sbin/``.  
 
-**TODO**: Extend the code so the daemon can trap arrow keys on a Raspberry Pi 400, if that is the CPU of choice.
+**TODO**: Extend the code so the daemon can trap arrow keys on a RasPi 400, if that is the CPU of choice.
 
 To start the **``buttons``** daemon, perform the following steps:
 
 - Clone the messagebus repo from github which will allow buttons to *talk to* Minimy.
 
- **``  $ git clone https://github.com/mike99mac/mycroft-messagebus-mike99mac``**
+    **``  $ git clone https://github.com/mike99mac/mycroft-messagebus-mike99mac``**
   
     ```
     Cloning into 'mycroft-messagebus-mike99mac'...
