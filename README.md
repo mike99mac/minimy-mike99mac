@@ -12,7 +12,7 @@ voice enabled applications. These voice enabled applications take the form of a 
 simply python programs which may do normal python things as well as call speak() and listen() and
 get called asynchronously when an utterance is matched to an intent the skill has previously registered."  
 
-**From Mike Mac, who is working on a fork:**
+**From Mike Mac, who is working on this fork of the code:**
 
 I worked with the Mycroft free and open personal voice assistant since 2019, but the company went bankrupt in 2023, so had to move on. :((
 
@@ -50,7 +50,7 @@ The overall steps are:
 - Install a daemon to send messages when buttons are pressed (if your enclosure has physical buttons)
 - Start using your new personal voice assistant!
 
-That sounds easy, right?
+Sounds easy, right?
 
 ## Acquire the hardware
 I would recommend a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. 
