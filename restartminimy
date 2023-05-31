@@ -48,8 +48,7 @@ echo
 stopminimy
 
 echo
-echo "Unmounting tmpfs file system $fileSystem..."
-umountTmpfs /var/log
+echo "Unmounting Minimy's two tmpfs file systems..."
 umountTmpfs $HOME/minimy/logs
 umountTmpfs $HOME/minimy/tmp
 
