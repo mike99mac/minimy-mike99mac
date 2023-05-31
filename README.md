@@ -5,14 +5,14 @@ Minimy is a simple NLU-based voice assistant framework.
 It is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
 
 ## Overview
-**From Ken Smith:**
+**From Ken Smith, who is the original author:**
 
 "The goal of this project is to provide a run-time environment which facilitates the development of 
 voice enabled applications. These voice enabled applications take the form of a 'skill' and are
 simply python programs which may do normal python things as well as call speak() and listen() and
 get called asynchronously when an utterance is matched to an intent the skill has previously registered."  
 
-**From Mike Mac:**
+**From Mike Mac, who is working on this fork of the code:**
 
 I worked with the Mycroft free and open personal voice assistant since 2019, but the company went bankrupt in 2023, so had to move on. :((
 
@@ -31,7 +31,7 @@ minimy-mike99mac        9900              79
 ```
 So OVOS is half the size of Mycroft, and Minimy is about half again smaller.
 
-The test environment is a Raspberry Pi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro, expect the unexpected :))
+The test environment is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro, expect the unexpected :))
 
 This document  is based on *The smart boombox cookbook* which also describes the construction of a boombox. 
 It is on the Web at: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
@@ -42,19 +42,24 @@ This document focuses on how to get the entire *software stack* running, and sta
 
 The overall steps are:
 
-- Acquire the hardware - at minimum a Raspberry Pi with a microphone and speakers
+- Acquire the hardware - a minimum of a RasPi, a microphone and a speaker
 - Flash a Linux image to a memory device
 - Install and configure Linux
 - Install a toolbox written for Minimy
 - Install and customize Minimy
+- Install a daemon to send messages when buttons are pressed (if your enclosure has physical buttons)
 - Start using your new personal voice assistant!
 
-That sounds easy, right?
+Sounds easy, right?
 
 ## Acquire the hardware
-I would recommend a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. Hopefully the RasPi 5 is coming soon and will be faster, stronger cheaper and easy to procure.
+I would recommend a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. 
 
-Don't buy a cheap USB microphone. The sweet spot might be around $25 for flat disk type with an on-off switch for visible privacy. 
+A Rasberry Pi 400 is another option.  On the boombox enclousres, it frees up space to house lithium-ion batteries.
+
+Hopefully the RasPi 5 is coming soon and will be more powerful and easy to procure.
+
+Don't buy a cheap USB microphone. The sweet spot might be around $25 for flat disk type with a mute/unmute switch for visible privacy. 
 It is best to move the microphone away from the speakers and closer to the center of the room.
 
 You can start with just about any speakers with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
@@ -62,7 +67,7 @@ You can start with just about any speakers with a 3.5mm jack that will plug into
 ## Prepare an SD card to boot Linux
 The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and put a Linux distribution on it. 
 
-Yes the RasPi can now boot from USB drives, but stick with the SD card for now.
+Yes the RasPi can now boot from USB drives, but it is recommended to stick with SD cards for now.
 
 Hopefully you have another computer running Linux, but other OS's will work. It must have a hardware port to write to the card.
 
@@ -83,7 +88,7 @@ If you have a Linux box with an SD card reader, you can use **``rpi-imager``**. 
 
 - To flash a Linux image to the card, perform the following steps:
 
-    - Select your preferred *Operating System*. **Ubuntu Desktop 22.04 LTS** is recommended. It's a solid operating system, that combined with the RasPi, is capable of being a general purpose computer. LTS stands for *Long Term Support* - Canonical promises to support it for at least four years. 
+    - Select your preferred *Operating System*. **Ubuntu Desktop 22.04 LTS** is recommended. It's a solid operating system, that combined with the RasPi, is capable of being a general purpose computer. LTS stands for *Long Term Support* - Canonical promises to support it for at least five years. 
 
     - Select the *Storage* device. You should see just one micro-SD card in the dropdown menu.
 
@@ -114,7 +119,7 @@ To connect all the computer hardware, perform the following steps:
 
 ### Boot the RasPi
 
-When you supply power to the Raspberry Pi, it should start booting.  On the top, back, left side of the RasPi there are two LEDs:
+When you supply power to the RasPi, it should start booting.  On the top, back, left side of the RasPi there are two LEDs:
 
 - The LED to the left should glow solid red. This signifies it has 5V DC power.
 - The LED to the right should flicker green. This signifies that there is communicaiton with the CPU. If there is a red light, but no green one, it's likely the micro-SD card does not have Linux properly installed.
@@ -151,7 +156,7 @@ Ubuntu Desktop 22-04 should now be installed
  
 ### Install the SSH server
 
-The secure shell (SSH) server is not installed by default on Ubuntu desktop (which is curious). Install it so you can access your system remotely. 
+The secure shell (SSH) server is not installed by default on Ubuntu desktop. Install it so you can access your system remotely. 
 
 To do so, perform the following steps:
 
@@ -223,7 +228,7 @@ The **``mycroft-tools``** repo has been developed to help with the installation,
 
 To install **``mycroft-tools``** perform the following steps:
   
-- install **``git``** and **``vim``**.
+- Install **``git``** and **``vim``** as they are needed shortly.
 
     **``$ sudo apt-get install -y git vim``**
     
@@ -552,6 +557,14 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
         ('WakeWords', ['hey computer', 'computer'])
     ```
 
+### Get a Google API key
+
+You need a Google Speech API key in order to be able to convert speech to text.
+
+Get one from: https://console.cloud.google.com/freetrial/signup/tos
+
+Once you get your key, copy it to the default location ``/home/pi/minimy/install/my-google-key.json``.
+
 ## Run Minimy
 The scripts **``startminimy``** and **``stopminimy``** are used to start and stop processes. 
 Each skill and service run in their own process space and use the message bus or file system to synchronize. 
@@ -576,10 +589,31 @@ with this code:
 
     **``(venv_ngv) $ ./stopminimy``**
 
-If you don't have a Google Speech API key you can get one from: https://console.cloud.google.com/freetrial/signup/tos
+## Start the buttons daemon
 
-Once you confirm your changes you can see what was produced with ``cat install/mmconfig.yml``. 
-You should not modify this file.
+The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick previous track, pause/resume, and next track functions.  The **``buttons``** daemon traps button pushes and sends corresponding messages to Minimy.
+
+If your enclosure does not have them, you can skip this step.
+
+On the other model the computer is a RaspPi 400, which allows Lithium-ion batteries to be on-board. That will need a different flavor of the **``buttons``** daemon running.
+
+Previously you cloned ``mycroft-tools`` from github which contains the Python ``buttons.py`` and the bash script ``buttons``. Both of these should be in ``/usr/local/sbin/``.  
+
+**TODO**: Extend the code so the daemon can trap arrow keys on a RasPi 400, if that is the CPU of choice.
+
+To start the **``buttons``** daemon, perform the following steps:
+
+- Clone the messagebus repo from github which will allow buttons to *talk to* Minimy.
+
+    **``  $ git clone https://github.com/mike99mac/mycroft-messagebus-mike99mac``**
+  
+    ```
+    Cloning into 'mycroft-messagebus-mike99mac'...
+    ...
+    Resolving deltas: 100% (198/198), done.
+    ```
+    
+- Now what?  We need to get the code running first ... watch this space ...    
 
 ## Use Minimy
 
