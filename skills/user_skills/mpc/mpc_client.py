@@ -1,8 +1,5 @@
 #
-#            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-#   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
-#
-#  0. You just DO WHAT THE FUCK YOU WANT TO.
+# This code is distributed under the Apache License, v2.0 
 #
 import csv
 from dataclasses import dataclass
@@ -100,9 +97,6 @@ class MpcClient(SimpleVoiceAssistant):
     elif music_info.match_type == "next" or music_info.match_type == "prev":
       self.mpc_cmd(music_info.match_type)  # call 'mpc next' or 'mpc prev'
       return True
-  #  elif music_info.match_type == "news":
-  #    self.play_news(music_info)
-  #    return True
     elif music_info.tracks_or_urls == None:
       self.log.debug("MpcClient.start_music() Unexpected: no music found")
       return False
