@@ -71,7 +71,7 @@ Hopefully you have another computer running Linux, but other OS's will work. It 
 
 ### Prepare on Linux
 
-If you have a Linux box with an SD card reader, you can use **``rpi-imager``**. To do so, perform the following tasks.
+If you have a Linux box with an SD card reader, you can use **``rpi-imager``** to copy the Linux image. To do so, perform the following tasks.
 - Put a micro-SD card into an SD adapter.
 - Plug the SD adapter into the card reader.
 - If you don't have it already, download and install the tool.
@@ -103,7 +103,7 @@ No further details are provided.
 
 ## Connect the computer hardware
 
-For the initial setup, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but we're not there yet. 
+For the initial setup, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but that's not ready yet.
 
 You can access the Internet using either Wi-Fi or with an Ethernet cord.
 
@@ -127,7 +127,7 @@ When you supply power to the RasPi, it should start booting.  On the top, back, 
 
 ## Install and configure Linux
 
-To configure Ubuntu, perform the following sections.
+To configure Ubuntu Desktop, perform the following sections.
 
 ### Initial Ubuntu Desktop configuration
 
@@ -154,9 +154,7 @@ Ubuntu Desktop 22-04 should now be installed
  
 ### Install the SSH server
 
-The secure shell (SSH) server is not installed by default on Ubuntu desktop. Install it so you can access your system remotely. 
-
-To do so, perform the following steps:
+The secure shell (SSH) server is not installed by default on Ubuntu desktop. Install it so you can access your system remotely. To do so, perform the following steps:
 
 - Open a terminal session by right-clicking the mouse anywhere on the desktop and choosing **Open in Terminal**. You should see a console window open.
 - Show the contents of the ``/etc/os-release`` file just to confirm the Ubuntu release level.
@@ -218,7 +216,7 @@ Update and upgrade your system which installs the latest code for all installed 
 
     **``$ sudo apt-get upgrade -y``**
     
-Your system should now be at the latest software levels on the planet.
+Your system should now be at the latest software level.
 
 ### Install Mycroft tools
 
