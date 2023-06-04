@@ -65,9 +65,7 @@ It is best to move the microphone away from the speakers and closer to the cente
 You can start with just about any speakers with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
 
 ## Prepare an SD card to boot Linux
-The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and put a Linux distribution on it. 
-
-Yes the RasPi can now boot from USB drives, but it is recommended to stick with SD cards for now.
+The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and copy a Linux distribution to it. 
 
 Hopefully you have another computer running Linux, but other OS's will work. It must have a hardware port to write to the card.
 
