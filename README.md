@@ -286,7 +286,7 @@ It performs the following tasks:
 - Copies a **``systemctl``** configuration file to mount ``/var/log/`` in a ``tmpfs`` which helps prolong the life of the micro-SD card
 - Sets **``pulseaudio``** to start as a system service at boot time, and allows anonymous access so audio services work
 - Configures **``mpd``**, the music player daemon, which plays most of the sound
-- Turns off **bluetooth** as Linux makes connecting to it ridiculously hard, while most amplifiers make it ridiculously easy
+- Turns off **bluetooth** as Linux makes connecting to it ridiculously hard, while most amplifiers make it easy
 
 To run **``intall1``**, perform the following steps:
 
@@ -296,7 +296,7 @@ To run **``intall1``**, perform the following steps:
     
     ``/usr/local/sbin/install1``
 
-- Run the **``install1``** script in the home directory and send stdout and stderr to a file.  You may want to reference that file in case of errors.
+- Run the **``install1``** script in the home directory and send ``stdout`` and ``stderr`` to a file.  You may want to reference that file in case of errors.
 
     **``$ cd``**
     
@@ -348,7 +348,7 @@ The output shows that:
 - The Music Playing Daemon, **``mpd``** is not running.
 - There is one **``pulseaudio``** process running, but it does not have **``--system``** as a parameter.
 - Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage.
-- None of three file systems frequently commonly written to is mounted over an in-memory *tmpfs* file systems.
+- None of three file systems frequently written to is mounted over an in-memory ``tmpfs`` file systems.
 
 ### Test changes of install1 script
 Some of the changes made by **``install1``** will not be realized until boot time. To test this, perform the following steps:
