@@ -280,7 +280,7 @@ It performs the following tasks:
 - Sets  **``vim``** to a better color scheme and turns off the annoying auto-indent features
 - Adds needed groups to users ``pi`` and ``mpd``
 - Copies a ``.bash_profile`` to your home directory
-- Turns ``default`` and ``vc4`` audio off and does not disable monitor overscan in the Linux boot parameters file
+- Turns ``default`` and ``vc4`` audio off and does not disable monitor overscan in the Linux boot parameters file.
 - Changes a line in the **``rsyslog``** configuration file to prevent *kernel message floods*
 - Copies a **``systemctl``** configuration file to mount ``/var/log/`` in a *tmpfs* which helps prolong the life of the micro-SD card
 - Sets **``pulseaudio``** to start as a system service at boot time, and allows anonymous access so audio services work
