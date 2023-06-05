@@ -62,7 +62,7 @@ Hopefully the RasPi 5 is coming soon and will be more powerful and easy to procu
 Don't buy a cheap USB microphone. The sweet spot might be around $25 for flat disk type with a mute/unmute switch for visible privacy. 
 It is best to move the microphone away from the speakers and closer to the center of the room.
 
-You can start with just about any speakers with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
+You can start with just about any speaker(s) with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
 
 ## Prepare an SD card to boot Linux
 The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and copy a Linux distribution to it. 
@@ -273,7 +273,8 @@ To install **``mycroft-tools``** perform the following steps:
     
 ### Further customize 
 
-The script **``install1``** runs many commands and thus save typing, time and possible errors.  It is in the **``mycroft-tools``** package you just installed.
+The script **``install1``**, in the **``mycroft-tools``** package you just installed, runs many commands and thus save typing, time and possible errors.
+
 It performs the following tasks:
 
 - Installs the **``mlocate mpc mpd net-tools pandoc python3 python3-pip python3-rpi.gpio python3.10-venv``** packages
