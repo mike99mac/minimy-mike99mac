@@ -280,10 +280,10 @@ It performs the following tasks:
 - Installs the **``mlocate mpc mpd net-tools pandoc python3 python3-pip python3-rpi.gpio python3.10-venv``** packages
 - Sets  **``vim``** to a better color scheme and turns off the annoying auto-indent features
 - Adds needed groups to users ``pi`` and ``mpd``
-- Copies a ``.bash_profile`` to your home directory
+- Copies a ``.bash_profile`` to the user's home directory
 - Turns ``default`` and ``vc4`` audio off and does not disable monitor overscan in the Linux boot parameters file.
 - Changes a line in the **``rsyslog``** configuration file to prevent *kernel message floods*
-- Copies a **``systemctl``** configuration file to mount ``/var/log/`` in a *tmpfs* which helps prolong the life of the micro-SD card
+- Copies a **``systemctl``** configuration file to mount ``/var/log/`` in a ``tmpfs`` which helps prolong the life of the micro-SD card
 - Sets **``pulseaudio``** to start as a system service at boot time, and allows anonymous access so audio services work
 - Configures **``mpd``**, the music player daemon, which plays most of the sound
 - Turns off **bluetooth** as Linux makes connecting to it ridiculously hard, while most amplifiers make it ridiculously easy
