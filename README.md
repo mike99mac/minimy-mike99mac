@@ -525,7 +525,7 @@ Always source the virtual environment before you run anything.
 
 The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properly in your ``~/.bash_profile``.
 
-- Run the following configuration script. In this example all defaults were accepted by pressing **Enter** for each question. At the end **y** was entered to save the changes.  
+- Run the following configuration script. In this example all defaults were accepted by pressing **Enter** for each question (except the log level was set to debug). At the end **y** was entered to save the changes.  
  
     **``(venv_ngv) $ ./mmconfig.py sa``**
     
