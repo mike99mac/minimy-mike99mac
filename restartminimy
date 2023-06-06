@@ -2,56 +2,10 @@
 #
 # restart - restart minimy 
 #
-#+--------------------------------------------------------------------------+
-function umountTmpfs
-# Unmount a temporary file system if it is mounted
-# Arg 1: file system to umount
-#+--------------------------------------------------------------------------+
- {
-  : SOURCE: ${BASH_SOURCE}
-  : STACK:  ${FUNCNAME[@]}
-
-  fileSystem=$1
-  echo "Unmounting tmpfs file system $fileSystem..."
-  fsType=`mount | grep $fileSystem | awk '{print $1}'` # check if it's mounted
-  if [ "$fsType" = "tmpfs" ]; then
-    sudo umount $fileSystem
-  fi
- }                                         # umountTmpfs()
-
-#+--------------------------------------------------------------------------+
-function rmLogs
-# Remove log files 
-#+--------------------------------------------------------------------------+
- {
-  : SOURCE: ${BASH_SOURCE}
-  : STACK:  ${FUNCNAME[@]}
-
-  echo "Removing log files in /home/pi/minimy/logs..."
-  if [ -f $HOME/minimy/logs/*.log ]; then
-     rm $HOME/minimy/logs/*.log
-  fi
-  if [ -f $HOME/minimy/logs/save_audio/*.wav ]; then
-    rm $HOME/minimy/logs/save_audio/*.wav
-  fi
-  if [ -f $HOME/minimy/logs/save_text/*.wav ]; then
-    rm $HOME/minimy/logs/save_text/*.wav
-  fi
-  if [ -f $HOME/minimy/logs/save_tts/*.wav ]; then
-    rm $HOME/minimy/logs/save_tts/*.wav
-  fi
- }                                # rmLogs()
-
 # main() 
 echo "Stopping Minimy..."
 echo
 stopminimy
-
-echo
-echo "Unmounting Minimy's two tmpfs file systems..."
-umountTmpfs $HOME/minimy/logs
-umountTmpfs $HOME/minimy/tmp
-
 echo
 echo "Starting Minimy..."
 echo

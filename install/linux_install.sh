@@ -26,6 +26,7 @@ pip install -r install/requirements.txt
 pip install lingua_franca
 pip install youtube-search 
 pip install pyee 
+pip install RPi.GPIO
 deactivate
 
 echo
