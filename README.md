@@ -53,27 +53,25 @@ The overall steps are:
 Sounds easy, right?
 
 ## Acquire the hardware
-I would recommend a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. 
+The minimum recommended hardware is a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. 
 
-A Rasberry Pi 400 is another option.  On the boombox enclousres, it frees up space to house lithium-ion batteries.
+A Rasberry Pi 400, also with at least 4GB, is another option.  On the boombox enclousres, it frees up space to house lithium-ion batteries.
 
 Hopefully the RasPi 5 is coming soon and will be more powerful and easy to procure.
 
 Don't buy a cheap USB microphone. The sweet spot might be around $25 for flat disk type with a mute/unmute switch for visible privacy. 
 It is best to move the microphone away from the speakers and closer to the center of the room.
 
-You can start with just about any speakers with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
+You can start with just about any speaker(s) with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
 
 ## Prepare an SD card to boot Linux
-The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and put a Linux distribution on it. 
-
-Yes the RasPi can now boot from USB drives, but it is recommended to stick with SD cards for now.
+The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and copy a Linux distribution to it. 
 
 Hopefully you have another computer running Linux, but other OS's will work. It must have a hardware port to write to the card.
 
 ### Prepare on Linux
 
-If you have a Linux box with an SD card reader, you can use **``rpi-imager``**. To do so, perform the following tasks.
+If you have a Linux box with an SD card reader, you can use **``rpi-imager``** to copy the Linux image. To do so, perform the following tasks.
 - Put a micro-SD card into an SD adapter.
 - Plug the SD adapter into the card reader.
 - If you don't have it already, download and install the tool.
@@ -105,7 +103,7 @@ No further details are provided.
 
 ## Connect the computer hardware
 
-For the initial setup, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but we're not there yet. 
+For the initial setup, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but that's not ready yet.
 
 You can access the Internet using either Wi-Fi or with an Ethernet cord.
 
@@ -129,7 +127,7 @@ When you supply power to the RasPi, it should start booting.  On the top, back, 
 
 ## Install and configure Linux
 
-To configure Ubuntu, perform the following sections.
+To configure Ubuntu Desktop, perform the following sections.
 
 ### Initial Ubuntu Desktop configuration
 
@@ -156,9 +154,7 @@ Ubuntu Desktop 22-04 should now be installed
  
 ### Install the SSH server
 
-The secure shell (SSH) server is not installed by default on Ubuntu desktop. Install it so you can access your system remotely. 
-
-To do so, perform the following steps:
+The secure shell (SSH) server is not installed by default on Ubuntu desktop. Install it so you can access your system remotely. To do so, perform the following steps:
 
 - Open a terminal session by right-clicking the mouse anywhere on the desktop and choosing **Open in Terminal**. You should see a console window open.
 - Show the contents of the ``/etc/os-release`` file just to confirm the Ubuntu release level.
@@ -220,7 +216,7 @@ Update and upgrade your system which installs the latest code for all installed 
 
     **``$ sudo apt-get upgrade -y``**
     
-Your system should now be at the latest software levels on the planet.
+Your system should now be at the latest software level.
 
 ### Install Mycroft tools
 
@@ -277,19 +273,20 @@ To install **``mycroft-tools``** perform the following steps:
     
 ### Further customize 
 
-The script **``install1``** runs many commands and thus save typing, time and possible errors.  It is in the **``mycroft-tools``** package you just installed.
+The script **``install1``**, in the **``mycroft-tools``** package you just installed, runs many commands and thus save typing, time and possible errors.
+
 It performs the following tasks:
 
 - Installs the **``mlocate mpc mpd net-tools pandoc python3 python3-pip python3-rpi.gpio python3.10-venv``** packages
 - Sets  **``vim``** to a better color scheme and turns off the annoying auto-indent features
 - Adds needed groups to users ``pi`` and ``mpd``
-- Copies a ``.bash_profile`` to your home directory
-- Turns ``default`` and ``vc4`` audio off and does not disable monitor overscan in the Linux boot parameters file
+- Copies a ``.bash_profile`` to the user's home directory
+- Turns ``default`` and ``vc4`` audio off and does not disable monitor overscan in the Linux boot parameters file.
 - Changes a line in the **``rsyslog``** configuration file to prevent *kernel message floods*
-- Copies a **``systemctl``** configuration file to mount ``/var/log/`` in a *tmpfs* which helps prolong the life of the micro-SD card
+- Copies a **``systemctl``** configuration file to mount ``/var/log/`` in a ``tmpfs`` which helps prolong the life of the micro-SD card
 - Sets **``pulseaudio``** to start as a system service at boot time, and allows anonymous access so audio services work
 - Configures **``mpd``**, the music player daemon, which plays most of the sound
-- Turns off **bluetooth** as Linux makes connecting to it ridiculously hard, while most amplifiers make it ridiculously easy
+- Turns off **bluetooth** as Linux makes connecting to it ridiculously hard, while most amplifiers make it easy
 
 To run **``intall1``**, perform the following steps:
 
@@ -299,7 +296,7 @@ To run **``intall1``**, perform the following steps:
     
     ``/usr/local/sbin/install1``
 
-- Run the **``install1``** script in the home directory and send stdout and stderr to a file.  You may want to reference that file in case of errors.
+- Run the **``install1``** script in the home directory and send ``stdout`` and ``stderr`` to a file.  You may want to reference that file in case of errors.
 
     **``$ cd``**
     
@@ -351,7 +348,7 @@ The output shows that:
 - The Music Playing Daemon, **``mpd``** is not running.
 - There is one **``pulseaudio``** process running, but it does not have **``--system``** as a parameter.
 - Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage.
-- None of three file systems frequently commonly written to is mounted over an in-memory *tmpfs* file systems.
+- None of three file systems frequently written to is mounted over an in-memory ``tmpfs`` file systems.
 
 ### Test changes of install1 script
 Some of the changes made by **``install1``** will not be realized until boot time. To test this, perform the following steps:
