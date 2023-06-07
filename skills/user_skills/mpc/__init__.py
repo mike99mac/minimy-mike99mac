@@ -71,11 +71,11 @@ class MpcSkill(MediaSkill):
           self.log.debug(f"MpcSkill.get_media_confidence(): not found in library - searching Internet")
           self.music_info.mesg_file = "searching_internet"
           self.music_info.mesg_info = {"sentence": sentence} 
-        # this did not work  
+        # the callback did not get called  
         # self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.fallback_internet) # tell user "searching internet"
           self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info)
         # time.sleep(3) 
-          self.music_info = self.mpc_client.search_internet(self.sentence)
+          self.music_info = self.mpc_client.search_internet(self.sentence) # search Internet as fallback
       case "radio":
         self.music_info = self.mpc_client.parse_radio(sentence)
       case "internet":

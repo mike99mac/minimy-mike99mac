@@ -132,25 +132,6 @@ class SVAMediaSkill(SimpleVoiceAssistant):
         else:
             self.log.warning(f"SVAMediaSkill.handle_message() unrecognized subtype = {msg.data['subtype']}")
 
-    # def mpc_cmd(self, arg1, arg2 = None):
-    #     """ 
-    #     Run any mpc command that takes one or two arguments
-    #     Param: arg 1 - such as "clear" or "play"
-    #         arg 2 - args to commands such as "add" or "load" 
-    #     Return: True or False 
-    #     """
-    #     cmd = "/usr/bin/mpc "+arg1
-    #     if arg2 != None:     
-    #         cmd = cmd+" "+arg2
-    #     try:
-    #         self.log.debug(f"SVAMediaSkill.mpc_cmd(): running command: {cmd}")
-    #         result = subprocess.check_output(cmd, shell=True) 
-    #         return True
-    #     except subprocess.CalledProcessError as e:    
-    #         self.mpc_rc = str(e.returncode)    
-    #         self.log.error(f"SVAMediaSkill.mpc_cmd(): mpc_rc = {self.mpc_rc}")
-    #         return False
-          
     def handle_prev(self, message):
         """
         Play previous track or station

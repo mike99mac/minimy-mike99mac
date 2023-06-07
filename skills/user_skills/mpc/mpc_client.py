@@ -144,25 +144,27 @@ class MpcClient(SimpleVoiceAssistant):
       play (album|record) {album} by (artist|band) {artist}
       play (any|all|my|random|some|) music 
       play (playlist) {playlist}
-      play (genre) {genre}     
+      play (genre|johnra) {genre}     
     Returns: Music_info object
 
     """
     artist_name = "unknown_artist"
-    found_by = "yes"                     # assume "by" is in the phrase
-    intent = "unknown"                   # album, album_artist, artist, genre, music, playlist,
-                                         #   track, track_artist, unknown_artist or unknown
-    phrase = phrase.split(' ', 1)[1]     # remove first word (always 'play'?)
-    phrase = phrase.lower()              # fold to lower case
+    found_by = "yes"                       # assume "by" is in the phrase
+    intent = "unknown"                     # album, album_artist, artist, genre, music, playlist,
+                                           #   track, track_artist, unknown_artist or unknown
+    phrase = phrase.split(' ', 1)[1]       # remove first word (always 'play'?)
+    phrase = phrase.lower()                # fold to lower case
 
-    match_type = "unknown"               # album, artist, song or unknown
-    music_name = ""                      # search term of music being sought
-    tracks_or_urls = []                  # files of songs to be played
+    match_type = "unknown"                 # album, artist, song or unknown
+    music_name = ""                        # search term of music being sought
+    tracks_or_urls = []                    # files of songs to be played
     self.log.debug("MpcClient.search_library() phrase: " + phrase)
 
     # check for a partial request with no music_name
     match phrase:
-      case "album" | "track" | "song" | "artist" | "genre" | "playlist":
+      case "album" | "track" | "song" | "artist" | "genre" | "johnra" | "playlist":
+        if phrase == "johnra":             # fix the spelling
+          phrase = "genre"
         self.log.debug("MpcClient.search_library() not enough information in request "+str(phrase))
         mesg_info = {"phrase": phrase}
         self.log.debug("MpcClient.search_library() mesg_info = "+str(mesg_info))
@@ -170,9 +172,9 @@ class MpcClient(SimpleVoiceAssistant):
         self.log.debug("MpcClient.search_library() ret_val.mesg_info = "+str(ret_val.mesg_info))
         return ret_val
     key = re.split(" by ", phrase)
-    if len(key) == 1:                    # did not find "by"
+    if len(key) == 1:                      # did not find "by"
       found_by = "no"
-      music_name = str(key[0])           # check for all music, genre and playlist
+      music_name = str(key[0])             # check for all music, genre and playlist
       self.log.debug("MpcClient.search_library() music_name = "+music_name)
       match music_name:
         case "any music" | "all music" | "my music" | "random music" | "some music" | "music":
@@ -180,7 +182,7 @@ class MpcClient(SimpleVoiceAssistant):
           ret_val = self.get_music("music", music_name, artist_name)
           return ret_val
       key = re.split("^genre ", music_name)
-      if len(key) == 2:                  # found first word "genre"
+      if len(key) == 2:                    # found first word "genre"
         genre = str(key[1])
         self.log.debug("MpcClient.search_library() removed keyword "+music_name+" from music_name")
         ret_val = self.get_music("genre", genre, artist_name)
