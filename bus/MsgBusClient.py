@@ -61,7 +61,9 @@ class MsgBusClient:
         self.outbound_q = Queue()
         self.msg_handlers = {}
         self.client_id = client_id
-        self.ws = create_connection("ws://localhost:4000/%s" % (self.client_id,))
+        # switch to port 8181  -MM
+        # self.ws = create_connection("ws://localhost:4000/%s" % (self.client_id,))
+        self.ws = create_connection(f"ws://localhost:8181/{self.client_id}")
 
         threading.Thread( target=rcv_bridge, args=(self.ws, self.rcv_client_msg,self.client_id) ).start()
         threading.Thread( target=process_inbound_messages, args=(self.inbound_q, self.msg_handlers, self.client_id) ).start()

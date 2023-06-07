@@ -32,10 +32,4 @@ class MediaSkill(SimpleVoiceAssistant):
         if msg.data['subtype'] == 'media_play':
             self.media_play(msg)
 
-    def get_media_confidence(self,msg):
-        print("Error - unimplemented method: MediaSkill.get_media_confidence(self,msg)!")
-
-    def media_play(self,msg):
-        print("Error - unimplemented method: MediaSkill.media_play(self,msg)!")
-        pass
 

@@ -273,7 +273,7 @@ def get_raw(sentence):
         minute = sa[1]
     else:
         hour,minute = get_hour_min(sentence)
-
+    print(f"get_raw()- hour: {hour} minute: {minute}, sentence: {sentence}")
     # TODO maybe - if we have time but no date assume today?
     return None, int(hour), int(minute)
 
@@ -308,9 +308,9 @@ def get_time_from_utterance(sentence):
                 dt = dt.replace(hour=hour, minute=minute)
         else:
             have_time = True
-    else:                                  # else lingua franca can't help - last resort fall back
+    else:                                  # lingua franca can't help - last resort fall back
         dt, hour, minute  = get_raw(sentence)
-        print(f"get_time_from_utt()- have_date: {have_date} have_time: {have_time} hour: {hour} minute: {minute}, dt: {dt} sentence: {sentence}")
+    print(f"get_time_from_utt()- have_date: {have_date} have_time: {have_time} hour: {hour} minute: {minute}, dt: {dt} sentence: {sentence}")
     return have_date, have_time, hour, minute, dt
 
 def get_wake_words():

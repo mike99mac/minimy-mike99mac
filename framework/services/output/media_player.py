@@ -86,7 +86,7 @@ class SVAMediaPlayerSkill:
         self.state = 'idle'
         local_q = self.current_session.media_queue
         for mentry in local_q:
-            self.log.error("SVAMediaPlayerSkill.clear_q() BUG! ClearQ must deal with this file:%s" % (mentry['file_uri'],))
+            self.log.error(f"SVAMediaPlayerSkill.clear_q() BUG! ClearQ must deal with this file: {mentry['file_uri']}")
         self.current_session.media_queue = []
 
     def reset_session(self, message):
@@ -116,10 +116,10 @@ class SVAMediaPlayerSkill:
         self.log.info(f"SVAMediaPlayerSkill.play_file(): MediaType: {media_type} PlaySID: {play_session_id} CurrentSID: {self.current_session.session_id} file_uri: {file_uri}")
         if play_session_id == self.current_session.session_id:
             media_entry = {
-                          'file_uri':file_uri,
-                          'media_type':media_type,
-                          'delete_on_complete':message.data['delete_on_complete'],
-                          'from_skill_id':from_skill
+                           'file_uri':file_uri,
+                           'media_type':media_type,
+                           'delete_on_complete':message.data['delete_on_complete'],
+                           'from_skill_id':from_skill
                           }
             self.current_session.media_queue.append(media_entry)
             if self.state == 'idle':

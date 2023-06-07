@@ -17,6 +17,7 @@ class Server:
 
     async def register(self, ws: WebSocketServerProtocol) -> None:
         identifier = ws.path[1:]
+        # print(f"Server.register() identifier = {identifier} self.identifiers = {self.identifiers}")
         if identifier in self.identifiers:
             return False
  
@@ -51,7 +52,7 @@ class Server:
 
             if target == '*':
                 # broadcast
-                # got this warning on the line below - how to fix?     MM
+                # got this warning on the line below - how to fix?    -MM
                 # DeprecationWarning: The explicit passing of coroutine objects to asyncio.wait() 
                 # is deprecated since Python 3.8, and scheduled for removal in Python 3.11.
                 await asyncio.wait([client.send(message) for client in self.clients])
@@ -77,7 +78,7 @@ class Server:
             finally:
                 await self.unregister(ws)
         else:
-            logging.warning("Warning, can't register %s, dropping connection" % (ws.path,))
+            logging.warning(f"Warning, can't register {ws.path}, dropping connection")
 
     async def distribute(self, ws: WebSocketServerProtocol) -> None:
         async for message in ws:
@@ -86,9 +87,10 @@ class Server:
 if __name__ == "__main__":
     server = Server()
     # only allow local (on device) access
-    #start_server = websockets.serve(server.ws_handler,'localhost',4000)
     # allow external devices to access the msg bus
-    start_server = websockets.serve(server.ws_handler,'0.0.0.0',4000)
+    # start_server = websockets.serve(server.ws_handler,'0.0.0.0',4000)
+    # switch to port 8181  -MM
+    start_server = websockets.serve(server.ws_handler,'0.0.0.0',8181)
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(start_server)

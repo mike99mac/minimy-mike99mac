@@ -46,33 +46,27 @@ class SimpleVoiceAssistant:
         self.skill_control = SkillControl()
         self.skill_control.skill_id = skill_id
         self.skill_control.category = skill_category
-
         if bus is None:
             bus = MsgBusClient(self.skill_control.skill_id)
         self.bus = bus
-
         base_dir = str(os.getenv('SVA_BASE_DIR'))
         log_filename = base_dir + '/logs/skills.log'
         self.log = LOG(log_filename).log
         self.skill_base_dir = os.getcwd()
         self.handle_message = msg_handler
         self.log.debug(f"SimpleVoiceAssistant.__init__() skill_id = {skill_id} skill_category = {skill_category}")
-
         self.focus_mode = 'speech'
         self.user_callback = None
         self.speak_callback = None
         self.bridge = Event()
         self.watchdog_thread = None
-
         self.i_am_active = False
-        self.i_am_paused = False   # this skill has been paused by the user
+        self.i_am_paused = False           # this skill has been paused by the user
         self.i_am_conversed = False
         self.done_speaking = True
-
         self.ignore_raw_ctr = 0
         cfg = Config()
         self.crappy_aec = cfg.get_cfg_val('Advanced.CrappyAEC')
-
         self._converse_callback = None
         self.activate_response = ''
         self.tts_session_response = ''
@@ -198,9 +192,8 @@ class SimpleVoiceAssistant:
             self.prompt_callback()
 
     def handle_raw_msg(self, message):
-        self.log.debug("SimpleVoiceAssistant.handle_raw_msg() starting")
-        # special handling for the system skill 
-        if self.skill_control.skill_id == 'system_skill':
+        self.log.debug(f"SimpleVoiceAssistant.handle_raw_msg() message: {message.data}")
+        if self.skill_control.skill_id == 'system_skill': # special handling for the system skill 
             self.handle_message(message)
             return True
 
@@ -208,13 +201,13 @@ class SimpleVoiceAssistant:
         if self.i_am_conversed:
             if self.crappy_aec == 'y':
                 # ignore first stt on bad systems because it is probably what you just said
-                self.log.info("SimpleVoiceAssistant.handle_raw_msg() skill_id = %s IGNORING = %s" % (self.skill_control.skill_id, message.data))
+                self.log.info(f"SimpleVoiceAssistant.handle_raw_msg() skill_id: {self.skill_control.skill_id} ")
                 if self.ignore_raw_ctr == 0:
                     self.ignore_raw_ctr += 1
                     return False
                 self.ignore_raw_ctr = 0
 
-            self.log.info("SimpleVoiceAssistant.handle_raw_msg %s ** Handle Raw Msg = %s" % (self.skill_control.skill_id,message))
+            self.log.info(f"SimpleVoiceAssistant.handle_raw_msg() message: {message}")
             self.i_am_conversed = False
             info = {
                    'error':'',
@@ -233,7 +226,7 @@ class SimpleVoiceAssistant:
         self.bus.send(MSG_SKILL, target, message)
 
     def play_media(self, file_uri, delete_on_complete='false', media_type=None):
-        self.log.debug("SimpleVoiceAssistant.play_media() starting")
+        self.log.debug(f"SimpleVoiceAssistant.play_media() file_uri: {file_uri} delete_on_complete: {delete_on_complete}")
 
         # try to acquire a media player session and play a media file
         from_skill_id = self.skill_control.skill_id
@@ -275,6 +268,7 @@ class SimpleVoiceAssistant:
 
         # else we need to acquire a media session
         # BUG - these probably need to be stacked !!!
+        self.log.warning(f"SimpleVoiceAssistant.play_media(): setting file_uri to {file_uri} media_type to {media_type}")
         self.file_uri = file_uri
         self.media_type = media_type
         self.delete_on_complete = delete_on_complete
@@ -456,7 +450,7 @@ class SimpleVoiceAssistant:
 
     ## message bus handlers ##
     def handle_skill_msg(self, message):
-        self.log.debug(f"SimpleVoiceAssistant.handle_skill_msg() message = {message}")
+        self.log.debug(f"SimpleVoiceAssistant.handle_skill_msg() self.skill_control.skill_id: {self.skill_control.skill_id} message: {message}")
         if message.data['skill_id'] == self.skill_control.skill_id:
             if message.data['subtype'] == 'media_player_command_response':
                 self.media_session_response = message.data['response']
@@ -473,7 +467,7 @@ class SimpleVoiceAssistant:
                 elif self.media_session_response == 'session_confirm':
                     self.media_player_session_id = message.data['session_id']
                     # otherwise we are good to go
-                    self.log.info("SimpleVoiceAssistant.handle_skill_msg() Play media {self.skill_control.skill_id}")
+                    self.log.info(f"SimpleVoiceAssistant.handle_skill_msg() Play media {self.skill_control.skill_id}")
                     self.i_am_active = True
                     info = {
                             'error':'',
@@ -526,7 +520,6 @@ class SimpleVoiceAssistant:
             # else could be a stt_start/end notification which is useful for converse()
             if message.data['subtype'] == 'stt_start':
                 self.stt_is_active = True
-
             if message.data['subtype'] == 'stt_end':
                 self.stt_is_active = False
 
@@ -565,7 +558,7 @@ class SimpleVoiceAssistant:
             self.i_am_paused = True
 
     def handle_system_msg(self, message):
-        self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() skill_id = {self.skill_control.skill_id} data['subtype'] = {message.data['subtype']}")
+        self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() self.skill_id = {self.skill_control.skill_id} message: {message}")
         if message.data['skill_id'] == self.skill_control.skill_id:
             match message.data['subtype']:
                 case "stop" | "stock":     # "stop" is often heard as "stock"
