@@ -614,5 +614,38 @@ To start the **``buttons``** daemon, perform the following steps:
 
 ## Use Minimy
 
-**TODO**: Add quite a number of sample utterances
+### Vocabulary
+Following is a summary of Minimy's vocabulary.
+#### connectivity skill
 
+``TODO``
+ 
+#### email skill
+
+``TODO``
+ 
+#### example1 skill
+
+``TODO``
+ 
+#### help skill
+
+``TODO``
+ 
+#### mpc skill
+
+#### timedate skill
+
+What time is it?
+
+``TODO: finish``
+ 
+#### weather skill
+
+What's the weather
+``TODO``
+ 
+#### wiki skill
+
+``TODO``
+ 
