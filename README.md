@@ -608,7 +608,7 @@ The ``buttons.py`` code is here: https://github.com/mike99mac/minimy-mike99mac/b
 One source of buttons is here: https://www.amazon.com/dp/B09C8C53DM
     
 
-**TODO:** On another model, the computer is a RaspPi 400 which is *offboard*. This allows Lithium-ion batteries to be on-board. That will need a different flavor of the **``buttons``** daemon running which uses the arrow keys for the same function.
+**TODO:** On another model, the computer is a RaspPi 400 which is *offboard*. This allows Lithium-ion batteries to be on-board. That will need new code that uses the arrow keys for the same function.
 
 ## Use Minimy
 
@@ -706,4 +706,9 @@ What's the weather
 #### Wiki skill
 
 ``TODO``
+
+*** What can I say?
+
+**TODO** Add a lot of sample utternaces here ...
+
  
