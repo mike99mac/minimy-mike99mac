@@ -633,7 +633,17 @@ Following is a summary of Minimy's vocabulary.
 
 ``TODO``
  
-#### mpc skill
+#### MPC skill
+
+The MPC skill can search:
+
+- Your music library
+- Internet radio stations
+- Internet music
+- NPR news 
+
+Following are the vocabularies for the MPC skill
+
 - Music library vocabulary
     ```
     Music playing vocabulary of search phrase:
