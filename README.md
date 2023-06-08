@@ -33,7 +33,8 @@ The overall steps to build a *Smart Boombox* are:
 - Flash Linux to a memory device
 - Connect the hardware
 - Install and configure Linux
-- Install mycroft-tools
+- Install and use mycroft-tools
+- Test microphone and speakers
 - Install and configure Minimy
 - Start Minimy and use it!
 
@@ -392,7 +393,7 @@ You should see three changes:
 - The one **``pulseaudio``** process has **``--system``** as a parameter which is vital to audio output working correctly.
 - The **``/var/log/``** file system is now mounted over an in-memory tmpfs.
 
-### Test microphone and speakers
+## Test microphone and speakers
 
 It is important to know your microphone and speakers are working. 
 There are scripts in mycroft-tools named **``testrecord``** and **``testplay``**. 
@@ -411,6 +412,14 @@ They are wrappers around the **``arecord``** and **``aplay``** commands designed
     ```
     
 You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
+
+## Install and configure Minimy
+
+In this section you will perform the following steps:
+- Download and copy Minimy
+- Install Minimy
+- Configure Minimy
+- Run Minimy
 
 ### Download and copy Minimy 
 It is recommended that you make a second copy of Minimy after you download it.  This way, if you make some changes to the running code, you'll have a reference copy. Also the copy of the code that you run should not have a ``.git/`` directory, thus removing any connection to github.
