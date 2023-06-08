@@ -111,7 +111,7 @@ To connect all the computer hardware, perform the following steps:
 - If you have wired ethernet, plug it in to the RJ-45 connector on the RasPi.
 - Connect the mouse and keyboard to the USB connections on the RasPi.
 - Connect the monitor to the RasPi with an appropriate micro-HDMI cable.  The RasPi 4 two micro HDMI ports - use the left one.
-- Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. An official RasPi power supply is recommended to avoid "*undervoltage* warnings.  If you have an inline switch, be sure it is on.
+- Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. An official RasPi power supply is recommended to avoid *undervoltage* warnings.  If you have an inline switch, turn it on.
 
 ### Boot the RasPi
 
@@ -198,7 +198,7 @@ The secure shell (SSH) server is not installed by default on Ubuntu desktop. Ins
     
 ### Start an SSH session
 
-You should now be able to start an SSH session as the user pi, if you want to continue from another desktop system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS terminal session.
+You should now be able to start an SSH session as the user ``pi``, if you want to continue from another desktop system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS terminal session.
 
 **IMPORTANT**: Do not run as ``root``. Doing so will almost certainly screw up your system.  It is recommended that you run as the user ``pi``.  Ideally, other user names should work, as the environment variable ``$HOME`` is used in scripts, but this has never been tested.
 
@@ -284,7 +284,7 @@ It performs the following tasks:
 - Copies a **``systemctl``** configuration file to mount ``/var/log/`` in a ``tmpfs`` which helps prolong the life of the micro-SD card
 - Sets **``pulseaudio``** to start as a system service at boot time, and allows anonymous access so audio services work
 - Configures **``mpd``**, the music player daemon, which plays most of the sound
-- Turns off **bluetooth** as Linux makes connecting to it ridiculously hard, while most amplifiers make it easy
+- Turns off **``bluetooth``** as Linux makes connecting to it ridiculously hard, while most amplifiers make it easy
 
 To run **``intall1``**, perform the following steps:
 
@@ -393,7 +393,7 @@ Some of the changes made by **``install1``** will not be realized until boot tim
                /home/pi/minimy/tmp  Minimy temp dir : no
     ````
     
-The output shows three changes:
+You should see three changes:
 
 - The Music Playing Daemon, **``mpd``** is now running.
 - The one **``pulseaudio``** process has **``--system``** as a parameter which is vital to audio output working correctly.
@@ -464,7 +464,7 @@ To download and copy Minimy, perform the following steps:
     Install Complete
     ```
     
-    This step can take up to ten minutes.
+    This step can take up to ten minutes. It is recommended that you review the output file, checking for warnings or errors.
     
 - Confirm that **``venv``** is an alias which should have been set in your ``.bash_profile`` after the reboot.
 
@@ -529,7 +529,7 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
     
     ```
     Advanced Options Selected sa
-    ... all defaults taken ...
+    ... all defaults taken except debug level ...
     Save Changes?y
     Configuration Updated
       Advanced
