@@ -38,7 +38,7 @@ It is on the Web at: https://github.com/mike99mac/mycroft-tools/blob/master/smar
 
 This document focuses on how to get the entire *software stack* running, and starts from the very beginning.
 
-# Put it all together
+## Overview of build process
 
 The overall steps are:
 
@@ -50,7 +50,9 @@ The overall steps are:
 - Install a daemon to send messages when buttons are pressed (if your enclosure has physical buttons)
 - Start using your new personal voice assistant!
 
-Sounds easy, right?
+As of June of 2023, Mycroft Mark II's are available here: https://mycroft.ai/shop/
+
+**TODO:** Test installing Minimy on a Mark II
 
 ## Acquire the hardware
 The minimum recommended hardware is a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. 
@@ -418,9 +420,6 @@ They are wrappers around the **``arecord``** and **``aplay``** commands designed
     ```
     
 You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
-
-## Minimy
-Minimy must be downloaded, installed and configured.
 
 ### Download and copy Minimy 
 It is recommended that you make a second copy of Minimy after you download it.  This way, if you make some changes to the running code, you'll have a reference copy. Also the copy of the code that you run should not have a ``.git/`` directory, thus removing any connection to github.
