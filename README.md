@@ -569,7 +569,7 @@ Their output is written to the ``logs/`` directory under the main install direct
 The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS`` which are set in **``startminimy``** 
 with this code:
 
-**TODO:** the first two should be ``$HOME/minimy``
+**TODO:** the first two varaibles should be ``$HOME/minimy``. The third should use $HOME.
 
     ...
     export PYTHONPATH=`pwd`
@@ -586,6 +586,8 @@ with this code:
 - Stop Minimy with:
 
     **``(venv_ngv) $ ./stopminimy``**
+    
+**TODO:** Show some output of running startminimy and run lsenv again.    
 
 ## The buttons process
 
@@ -708,7 +710,7 @@ What's the weather
 
 ``TODO``
 
-### What can I say?
+## What can I say?
 
 **TODO** Add a lot of sample utternaces here ...
 
