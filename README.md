@@ -33,9 +33,6 @@ So OVOS is half the size of Mycroft, and Minimy is about half again smaller.
 
 The test environment is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro, expect the unexpected :))
 
-This document  is based on *The smart boombox cookbook* which also describes the construction of a boombox. 
-It is on the Web at: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
-
 This document focuses on how to get the entire *software stack* running, and starts from the very beginning.
 
 ## Overview of build process
@@ -50,6 +47,10 @@ The overall steps are:
 - Start using your new music machine and personal voice assistant!
 
 Ideally Minimy would run on a Mycroft Mark II, however there is no code supporting the monitor, SJ-201 and associated hardware.
+
+This document  is based on *The smart boombox cookbook* which also describes the construction of a boombox. 
+
+It is here: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
 
 ## Acquire the hardware
 The minimum recommended hardware is a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. 
