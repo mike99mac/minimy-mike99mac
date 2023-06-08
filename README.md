@@ -588,9 +588,9 @@ with this code:
 
     **``(venv_ngv) $ ./stopminimy``**
 
-## The buttons daemon
+## The buttons process
 
-The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick previous track, pause/resume, and next track functions.  The **``buttons``** daemon traps button pushes and sends corresponding messages to Minimy.
+The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick access to *previous track*, *pause/resume*, and *next track* operations.  A new **``buttons``** system skill traps button pushes and sends corresponding messages to to the bus.
 
 If your enclosure does not have them, you can skip this step.  Or, if you want to add buttons, attach them to the following GPIO pins:
 
