@@ -210,7 +210,7 @@ Update and upgrade your system which installs the latest code for all installed 
     
 Your system should now be at the latest software level.
 
-## Install Mycroft tools
+## Install and use mycroft-tools
 
 The **``mycroft-tools``** repo has been developed to help with the installation, configuration, use and testing of the free and open personal voice assistants.
 
@@ -611,7 +611,10 @@ One source of buttons is here: https://www.amazon.com/dp/B09C8C53DM
 
 **TODO:** On another model, the computer is a RaspPi 400 which is *offboard*. This allows Lithium-ion batteries to be on-board. That will need new code that uses the arrow keys for the same function.
 
-## Use Minimy
+# Reference
+The following reference sections follow:
+- Vocabulary
+- Other Documentation
 
 ### Vocabulary
 
