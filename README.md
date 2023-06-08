@@ -103,9 +103,7 @@ No further details are provided.
 
 ## Connect the computer hardware
 
-For the initial setup, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but that's not ready yet.
-
-You can access the Internet using either Wi-Fi or with an Ethernet cord.
+For the initial setup, a keyboard, monitor and mouse are needed. You can access the Internet using either Wi-Fi or with an Ethernet cable.
 
 To connect all the computer hardware, perform the following steps:
 
