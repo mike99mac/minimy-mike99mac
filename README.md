@@ -47,10 +47,9 @@ The overall steps are:
 - Install and configure Linux
 - Install a toolbox written for Minimy
 - Install and customize Minimy
-- Install a daemon to send messages when buttons are pressed (if your enclosure has physical buttons)
-- Start using your new personal voice assistant!
+- Start using your new music machine and personal voice assistant!
 
-Ideally Minimy would run on a Mark II, however there is no code supporting the monitor, SJ-201 and associated hardware.
+Ideally Minimy would run on a Mycroft Mark II, however there is no code supporting the monitor, SJ-201 and associated hardware.
 
 ## Acquire the hardware
 The minimum recommended hardware is a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. 
