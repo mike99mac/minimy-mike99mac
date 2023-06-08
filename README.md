@@ -617,19 +617,19 @@ To start the **``buttons``** daemon, perform the following steps:
 ### Vocabulary
 Following is a summary of Minimy's vocabulary.
 
-#### connectivity skill
+#### Connectivity skill
 
 ``TODO``
  
-#### email skill
+#### Email skill
 
 ``TODO``
  
-#### example1 skill
+#### Example1 skill
 
 ``TODO``
  
-#### help skill
+#### Help skill
 
 ``TODO``
  
@@ -694,18 +694,18 @@ Following are the vocabularies for the MPC skill
       what are (my|the) playlists
     ```  
 
-#### timedate skill
+#### Timedate skill
 
 What time is it?
 
 ``TODO: finish``
  
-#### weather skill
+#### Weather skill
 
 What's the weather
 ``TODO``
  
-#### wiki skill
+#### Wiki skill
 
 ``TODO``
  
