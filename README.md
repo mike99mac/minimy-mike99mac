@@ -609,24 +609,6 @@ The buttons.py code is here:
 
 **TODO** On another model, the computer is a RaspPi 400 which is *offboard*. This allows Lithium-ion batteries to be on-board. That will need a different flavor of the **``buttons``** daemon running which uses the arrow keys for the same function.
 
-Previously you cloned ``mycroft-tools`` from github which contains the Python ``buttons.py`` and the bash script ``buttons``. Both of these should be in ``/usr/local/sbin/``.  
-
-**TODO**: Extend the code so the daemon can trap arrow keys on a RasPi 400, if that is the CPU of choice.
-
-To start the **``buttons``** daemon, perform the following steps:
-
-- Clone the messagebus repo from github which will allow buttons to *talk to* Minimy.
-
-    **``  $ git clone https://github.com/mike99mac/mycroft-messagebus-mike99mac``**
-  
-    ```
-    Cloning into 'mycroft-messagebus-mike99mac'...
-    ...
-    Resolving deltas: 100% (198/198), done.
-    ```
-    
-- Now what?  We need to get the code running first ... watch this space ...    
-
 ## Use Minimy
 
 ### Vocabulary
