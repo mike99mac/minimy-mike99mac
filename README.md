@@ -614,7 +614,7 @@ One source of buttons is here: https://www.amazon.com/dp/B09C8C53DM
 
 ### Vocabulary
 
-In the samples that follow (words) in parenthesis are the actual words spoken, while {words} in curly brackets are variables populated with the actual words spoken. When a (multiple|words|) are separated by vertical bars any of those can be spoken, and a trailing vertical bar means that word can be omitted.
+In the samples that follow (words) in parenthesis are the actual words spoken, while {words} in curly brackets become variables populated with the actual words spoken. When (multiple|words|) are separated by vertical bars any of those can be spoken, and a trailing vertical bar means that word can be omitted.
 
 Following is a summary of Minimy's vocabulary.
 
@@ -647,12 +647,11 @@ Following are the vocabularies for the MPC skill
 
 - Music library vocabulary
     ```
-    Music playing vocabulary of search phrase:
-      play (track|song|title|) {track} by (artist|band|) {artist}
-      play (album|record) {album} by (artist|band) {artist}
-      play (any|all|my|random|some|) music 
-      play (playlist) {playlist}
-      play (genre|johnra) {genre}    
+    play (track|song|title|) {track} by (artist|band|) {artist}
+    play (album|record) {album} by (artist|band) {artist}
+    play (any|all|my|random|some|) music 
+    play (playlist) {playlist}
+    play (genre|johnra) {genre}    
     ```
 
 - Internet radio vocabulary
