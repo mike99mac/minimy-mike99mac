@@ -590,7 +590,7 @@ with this code:
 
 ## The buttons process
 
-The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick access to *previous track*, *pause/resume*, and *next track* operations.  A new **``buttons``** system skill traps button pushes and sends corresponding messages to to the bus.
+The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick access to *previous track*, *pause/resume*, and *next track* operations.  A new **``buttons``** system skill traps button presses and sends corresponding messages to to the bus.
 
 If your enclosure does not have them, you can skip this step.  Or, if you want to add buttons, attach them to the following GPIO pins:
 
@@ -603,11 +603,12 @@ If your enclosure does not have them, you can skip this step.  Or, if you want t
     | 15  | GPIO22 | Next track                    |
     +-----+--------+-------------------------------+
 
-The buttons.py code is here:
+The ``buttons.py`` code is here: https://github.com/mike99mac/minimy-mike99mac/blob/main/framework/services/input/buttons.py
+    
+One source of buttons is here: https://www.amazon.com/dp/B09C8C53DM
+    
 
-    https://github.com/mike99mac/minimy-mike99mac/blob/main/framework/services/input/buttons.py
-
-**TODO** On another model, the computer is a RaspPi 400 which is *offboard*. This allows Lithium-ion batteries to be on-board. That will need a different flavor of the **``buttons``** daemon running which uses the arrow keys for the same function.
+**TODO:** On another model, the computer is a RaspPi 400 which is *offboard*. This allows Lithium-ion batteries to be on-board. That will need a different flavor of the **``buttons``** daemon running which uses the arrow keys for the same function.
 
 ## Use Minimy
 
