@@ -22,20 +22,11 @@ Then I found Minimy, and was able to get it running in a few hours. Apparently, 
 
 So I continue to try to *give back to the community* while *standing on the shoulders* of so many thousands of others.
 
-One of my mantras is *Less is more*. I like minimy because it is a **Mini-My**croft. Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
-```
-            Repo         Loc           files
-    mycroft-core       38074             229
-       ovos-core       18067             238
-minimy-mike99mac        9900              79
-```
-So OVOS is half the size of Mycroft, and Minimy is about half again smaller.
-
-The test environment is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro, expect the unexpected :))
-
 This document focuses on how to get the entire *software stack* running, and starts from the very beginning.
 
 ## Overview of build process
+
+The test environment is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro, expect the unexpected :))
 
 The overall steps to build a *Smart Boombox* are:
 
@@ -714,6 +705,17 @@ What's the weather
 
 **TODO** Add a lot of sample utternaces here ...
 
-# More documentation
+## More documentation
 
 There is more documentation, by the original author Ken Smith, here: https://github.com/ken-mycroft/minimy/tree/main/doc
+
+## Afterthought
+
+One of my mantras is *Less is more*. I like minimy because it is a **Mini-My**croft. Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
+```
+            Repo         Loc           files
+    mycroft-core       38074             229
+       ovos-core       18067             238
+minimy-mike99mac        9900              79
+```
+So OVOS is half the size of Mycroft, and Minimy is about half again smaller.
