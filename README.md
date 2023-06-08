@@ -50,9 +50,7 @@ The overall steps are:
 - Install a daemon to send messages when buttons are pressed (if your enclosure has physical buttons)
 - Start using your new personal voice assistant!
 
-As of June of 2023, Mycroft Mark II's are available here: https://mycroft.ai/shop/
-
-**TODO:** Test installing Minimy on a Mark II
+Ideally Minimy would run on a Mark II, however there is no code supporting the monitor, SJ-201 and associated hardware.
 
 ## Acquire the hardware
 The minimum recommended hardware is a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. 
