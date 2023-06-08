@@ -600,6 +600,7 @@ If your enclosure does not have them, you can skip this step.  Or, if you want t
     | 9   | GND    | Ground common to all buttons  |
     | 11  | GPIO17 | Previous track                |
     | 13  | GPIO27 | Pause/resume                  |
+    | 15  | GPIO22 | Next track                    |
     +-----+--------+-------------------------------+
 
 The buttons.py code is here: https://github.com/mike99mac/minimy-mike99mac/blob/main/framework/services/input/buttons.py
