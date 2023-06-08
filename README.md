@@ -37,7 +37,7 @@ This document focuses on how to get the entire *software stack* running, and sta
 
 ## Overview of build process
 
-The overall steps are:
+The overall steps to build a *Smart Boombox* are:
 
 - Acquire the hardware - a minimum of a RasPi, a microphone and a speaker
 - Flash a Linux image to a memory device
@@ -48,7 +48,7 @@ The overall steps are:
 
 Ideally Minimy would run on a Mycroft Mark II, however there is no code supporting the monitor, SJ-201 and associated hardware.
 
-This document  is based on *The smart boombox cookbook* which also describes the construction of a boombox. 
+This document  is based on *The smart boombox cookbook* which also has some details on the construction of an enclosure that looks like a *boombox*. 
 
 It is here: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
 
@@ -196,9 +196,11 @@ The secure shell (SSH) server is not installed by default on Ubuntu desktop. Ins
     inet 192.168.1.229
     ```
     
-### Start an SSH session
+### Start a terminal or SSH session
 
-You should now be able to start an SSH session as the user ``pi``, if you want to continue from another desktop system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS terminal session.
+You can continue to work from a *terminal session*.  Right click anywhere on the desktop wallpaper and choose **Open in Terminal**.  A console window should appear.
+
+You can also start an SSH session as the user ``pi``, if you want to continue from another system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS console.
 
 **IMPORTANT**: Do not run as ``root``. Doing so will almost certainly screw up your system.  It is recommended that you run as the user ``pi``.  Ideally, other user names should work, as the environment variable ``$HOME`` is used in scripts, but this has never been tested.
 
