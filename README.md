@@ -613,6 +613,8 @@ One source of buttons is here: https://www.amazon.com/dp/B09C8C53DM
 ## Use Minimy
 
 ### Vocabulary
+
+In the samples that follow (words) in parenthesis are the actual words spoken, while {words} in curly brackets are variables with the words spoken. When a (multiple|words|) are separated by vertical bars any of those can be spoken, and a trailing vertical bar means that word can be omitted.
 Following is a summary of Minimy's vocabulary.
 
 #### Connectivity skill
@@ -707,7 +709,7 @@ What's the weather
 
 ``TODO``
 
-*** What can I say?
+### What can I say?
 
 **TODO** Add a lot of sample utternaces here ...
 
