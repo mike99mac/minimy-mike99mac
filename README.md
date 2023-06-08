@@ -682,15 +682,15 @@ Following are the vocabularies for the MPC skill
 - Playlist vocabulary (NOTE: code is not complete yet)
 
     ```
-     (create|make) playlist {playlist} from track {track}
-      (delete|remove) playlist {playlist}
-      add (track|song|title) {track} to playlist {playlist}
-      add (album|record) {album} to playlist {playlist}
-      (remove|delete) (track|song|title) {track} from playlist {playlist}
-      (remove|delete) (album|record) {album} from playlist {playlist}
-      list (my|) playlists
-      what playlists (do i have|are there)
-      what are (my|the) playlists
+    (create|make) playlist {playlist} from track {track}
+    (delete|remove) playlist {playlist}
+    add (track|song|title) {track} to playlist {playlist}
+    add (album|record) {album} to playlist {playlist}
+    (remove|delete) (track|song|title) {track} from playlist {playlist}
+    (remove|delete) (album|record) {album} from playlist {playlist}
+    list (my|) playlists
+    what playlists (do i have|are there)
+    what are (my|the) playlists
     ```  
 
 #### Timedate skill
@@ -712,4 +712,7 @@ What's the weather
 
 **TODO** Add a lot of sample utternaces here ...
 
- 
+# More documentation
+
+There is more documentation, written by the original author Ken Smith, here: https://github.com/mike99mac/minimy-mike99mac/tree/main/doc
+
