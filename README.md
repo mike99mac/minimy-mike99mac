@@ -554,15 +554,15 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
 
 ### Get a Google API key
 
-You need a Google Speech API key in order to be able to convert speech to text.
+You need a Google Speech API key in order to be able to convert speech to text.  An alternative is to use a different STT engine.
 
 Get one from: https://console.cloud.google.com/freetrial/signup/tos
 
-Once you get your key, copy it to the default location ``/home/pi/minimy/install/my-google-key.json``.
+Once you get your key, copy it to ``/home/pi/minimy/install/my-google-key.json``.
 
 ## Run Minimy
 The scripts **``startminimy``** and **``stopminimy``** are used to start and stop processes. 
-Each skill and service run in their own process space and use the message bus or file system to synchronize. 
+Each skill and service run as processes and use the message bus or file system to synchronize. 
 Their output is written to the ``logs/`` directory under the main install directory. 
 
 The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS`` which are set in **``startminimy``** 
@@ -584,7 +584,7 @@ with this code:
 
     **``(venv_ngv) $ ./stopminimy``**
 
-## Start the buttons daemon
+## The buttons daemon
 
 The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick previous track, pause/resume, and next track functions.  The **``buttons``** daemon traps button pushes and sends corresponding messages to Minimy.
 
