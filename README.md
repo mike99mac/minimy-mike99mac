@@ -616,6 +616,7 @@ To start the **``buttons``** daemon, perform the following steps:
 
 ### Vocabulary
 Following is a summary of Minimy's vocabulary.
+
 #### connectivity skill
 
 ``TODO``
@@ -633,6 +634,55 @@ Following is a summary of Minimy's vocabulary.
 ``TODO``
  
 #### mpc skill
+- Music library vocabulary
+    ```
+    Music playing vocabulary of search phrase:
+      play (track|song|title|) {track} by (artist|band|) {artist}
+      play (album|record) {album} by (artist|band) {artist}
+      play (any|all|my|random|some|) music 
+      play (playlist) {playlist}
+      play (genre|johnra) {genre}    
+    ```
+
+- Internet radio vocabulary
+
+    ```
+    play (the|) radio
+    play music (on the|on my|) radio
+    play genre {genre} (on the|on my|) radio
+    play station {station} (on the|on my|) radio
+    play (the|) (radio|) station {station}
+    play (the|) radio (from|from country|from the country) {country}
+    play (the|) radio (spoken|) (in|in language|in the language) {language}
+    play (another|a different|next) (radio|) station
+    (different|next) (radio|) station
+    ```  
+    
+- Internet music vocabulary
+
+    ```
+    play (track|artist|album|) {music} (from|on) (the|) internet
+    ```
+    
+- News vocabulary    
+
+    ```
+    play (NPR|the|) news
+    ```
+    
+- Playlist vocabulary (NOTE: code is not complete yet)
+
+    ```
+     (create|make) playlist {playlist} from track {track}
+      (delete|remove) playlist {playlist}
+      add (track|song|title) {track} to playlist {playlist}
+      add (album|record) {album} to playlist {playlist}
+      (remove|delete) (track|song|title) {track} from playlist {playlist}
+      (remove|delete) (album|record) {album} from playlist {playlist}
+      list (my|) playlists
+      what playlists (do i have|are there)
+      what are (my|the) playlists
+    ```  
 
 #### timedate skill
 
