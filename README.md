@@ -55,7 +55,7 @@ Sounds easy, right?
 ## Acquire the hardware
 The minimum recommended hardware is a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. 
 
-A Rasberry Pi 400, also with at least 4GB, is another option.  On the boombox enclousres, it frees up space to house lithium-ion batteries.
+A Rasberry Pi 400, also with at least 4GB, is another option.  On the boombox enclousres, having the CPU offboard frees up space to house lithium-ion batteries.
 
 Hopefully the RasPi 5 is coming soon and will be more powerful and easy to procure.
 
@@ -74,7 +74,7 @@ Hopefully you have another computer running Linux, but other OS's will work. It 
 If you have a Linux box with an SD card reader, you can use **``rpi-imager``** to copy the Linux image. To do so, perform the following tasks.
 - Put a micro-SD card into an SD adapter.
 - Plug the SD adapter into the card reader.
-- If you don't have it already, download and install the tool.
+- If you don't have it already, install the tool.
 
     **``$ sudo apt-get install -y rpi-imager``**
 
