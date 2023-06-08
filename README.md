@@ -554,19 +554,23 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
 
 ### Get a Google API key
 
-You need a Google Speech API key in order to be able to convert speech to text.  An alternative is to use a different STT engine.
+You need a Google Speech API key in order to be able to convert speech to text.  
 
 Get one from: https://console.cloud.google.com/freetrial/signup/tos
 
 Once you get your key, copy it to ``/home/pi/minimy/install/my-google-key.json``.
 
+An alternative is to use a different STT engine.
+
 ## Run Minimy
 The scripts **``startminimy``** and **``stopminimy``** are used to start and stop processes. 
-Each skill and service run as processes and use the message bus or file system to synchronize. 
+Each skill and service run as process and use the message bus or file system to synchronize. 
 Their output is written to the ``logs/`` directory under the main install directory. 
 
 The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS`` which are set in **``startminimy``** 
 with this code:
+
+**TODO:** the first two should be ``$HOME/minimy``
 
     ...
     export PYTHONPATH=`pwd`
@@ -588,9 +592,17 @@ with this code:
 
 The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick previous track, pause/resume, and next track functions.  The **``buttons``** daemon traps button pushes and sends corresponding messages to Minimy.
 
-If your enclosure does not have them, you can skip this step.
+If your enclosure does not have them, you can skip this step.  Or, if you want to add buttons, attach them to the following GPIO pins:
 
-On the other model the computer is a RaspPi 400, which allows Lithium-ion batteries to be on-board. That will need a different flavor of the **``buttons``** daemon running.
+    | Pin | Label  | Description
+    |-----|--------|------------
+    | 9   | GND    | Ground common to all buttons
+    | 11  | GPIO17 | Previous track
+    | 13  | GPIO27 | Pause/resume
+
+The buttons.py code is here: https://github.com/mike99mac/minimy-mike99mac/blob/main/framework/services/input/buttons.py
+
+**TODO** On another model, the computer is a RaspPi 400 which is *offboard*. This allows Lithium-ion batteries to be on-board. That will need a different flavor of the **``buttons``** daemon running which uses the arrow keys for the same function.
 
 Previously you cloned ``mycroft-tools`` from github which contains the Python ``buttons.py`` and the bash script ``buttons``. Both of these should be in ``/usr/local/sbin/``.  
 
