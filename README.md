@@ -23,18 +23,19 @@ So I continue to try to *give back to the community* while *standing on the shou
 
 This document focuses on how to get the entire *software stack* running, and starts from the very beginning.
 
-## Overview of build process
+## Overview of the build
 
 The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro, expect the unexpected :))
 
 The overall steps to build a *Smart Boombox* are:
 
-- Acquire the hardware - a minimum of a RasPi, a microphone and a speaker
-- Flash a Linux image to a memory device
+- Acquire the hardware 
+- Flash Linux to a memory device
+- Connect the hardware
 - Install and configure Linux
-- Install a toolbox written for Minimy
-- Install and customize Minimy
-- Start using your new music machine and personal voice assistant!
+- Install mycroft-tools
+- Install and configure Minimy
+- Start Minimy and use it!
 
 Ideally Minimy would run on a Mycroft Mark II, however there is no code supporting the monitor, SJ-201 and associated hardware.
 
@@ -54,7 +55,7 @@ It is best to move the microphone away from the speakers and closer to the cente
 
 You can start with just about any speaker(s) with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
 
-## Prepare an SD card to boot Linux
+## Flash Linux to a memory device
 The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and copy a Linux distribution to it. 
 
 Hopefully you have another computer running Linux, but other OS's will work. It must have a hardware port to write to the card.
@@ -91,7 +92,7 @@ If you only have access to a Windows system Install the *Win 32 disk imager* fro
 
 No further details are provided.
 
-## Connect the computer hardware
+## Connect the hardware
 
 For the initial setup, a keyboard, monitor and mouse are needed. You can access the Internet using either Wi-Fi or with an Ethernet cable.
 
@@ -103,6 +104,10 @@ To connect all the computer hardware, perform the following steps:
 - Connect the monitor to the RasPi with an appropriate micro-HDMI cable.  The RasPi 4 two micro HDMI ports - use the left one.
 - Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. An official RasPi power supply is recommended to avoid *undervoltage* warnings.  If you have an inline switch, turn it on.
 
+## Install and configure Linux
+
+To configure Ubuntu Desktop, perform the following sections.
+
 ### Boot the RasPi
 
 When you supply power to the RasPi, it should start booting.  On the top, back, left side of the RasPi there are two LEDs:
@@ -112,10 +117,6 @@ When you supply power to the RasPi, it should start booting.  On the top, back, 
 - You should see a rainbow colored splash screen on the monitor, then the Ubuntu desktop should initialize.
 
 **IMPORTANT**: Never turn the RasPi off without first shutting Linux down with the **``halt``** or similar command. Doing so can damage the operating system and possibly even the RasPi itself.
-
-## Install and configure Linux
-
-To configure Ubuntu Desktop, perform the following sections.
 
 ### Initial Ubuntu Desktop configuration
 
@@ -208,7 +209,7 @@ Update and upgrade your system which installs the latest code for all installed 
     
 Your system should now be at the latest software level.
 
-### Install Mycroft tools
+## Install Mycroft tools
 
 The **``mycroft-tools``** repo has been developed to help with the installation, configuration, use and testing of the free and open personal voice assistants.
 
