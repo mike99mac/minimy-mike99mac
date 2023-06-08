@@ -714,5 +714,4 @@ What's the weather
 
 # More documentation
 
-There is more documentation, written by the original author Ken Smith, here:[ https://github.com/mike99mac/minimy-mike99mac/tree/main/doc](https://github.com/ken-mycroft/minimy/tree/main/doc)
-
+There is more documentation, by the original author Ken Smith, here: https://github.com/ken-mycroft/minimy/tree/main/doc
