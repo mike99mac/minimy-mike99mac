@@ -23,7 +23,7 @@ So I continue to try to *give back to the community* while *standing on the shou
 
 This document focuses on how to get the entire *software stack* running, and starts from the very beginning.
 
-## Overview of the build
+## The build
 
 The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro, expect the unexpected :))
 
@@ -107,7 +107,13 @@ To connect all the computer hardware, perform the following steps:
 
 ## Install and configure Linux
 
-To configure Ubuntu Desktop, perform the following sections.
+To install and configure Ubuntu Desktop Linux, perform the following sections.
+
+- Boot the RasPi
+- Initial Ubuntu Desktop configuration
+- Install the SSH server
+- Start a terminal or SSH session
+- Update and upgrade your system
 
 ### Boot the RasPi
 
@@ -419,7 +425,7 @@ In this section you will perform the following steps:
 - Download and copy Minimy
 - Install Minimy
 - Configure Minimy
-- Run Minimy
+- Get a Google API key
 
 ### Download and copy Minimy 
 It is recommended that you make a second copy of Minimy after you download it.  This way, if you make some changes to the running code, you'll have a reference copy. Also the copy of the code that you run should not have a ``.git/`` directory, thus removing any connection to github.
@@ -634,9 +640,10 @@ Following are examples of Connectivity skill requests:
 
 Following is a summary of the Email skill vocabulary.
 
-``(compose|create|new|start email)``
-
-``send email``
+```
+(compose|create|new|start email)``
+send email
+```
 
 Following are examples of Email skill requests:
 
