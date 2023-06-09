@@ -641,15 +641,15 @@ Following are examples of Connectivity skill requests:
 Following is a summary of the Email skill vocabulary.
 
 ```
-(compose|create|new|start email)``
+(compose|create|new|start email)
 send email
 ```
 
 Following are examples of Email skill requests:
 
-- start email
+- **``start email``**
 - ... dialog continues ...
-- send email
+- **``send email``**
  
 ### Example1 skill
 
@@ -659,11 +659,11 @@ Following is a summary of the Example1 skill vocabulary.
  
 Following are examples of Example1 skill requests:
  
-- run exmple one
+- **``run exmple one``**
  
 ### Help skill
 
-**NOTE:*** Help skill is not finished!
+**TODO:*** Code is not finished for the Help skill!
 
 Following is a summary of the Help skill vocabulary.
 
@@ -671,12 +671,14 @@ Following are examples of Help skill requests:
  
 ### MPC skill
 
-The MPC skill can search:
+The MPC skill can:
 
-- Your music library
-- Internet radio stations
-- Internet music
-- NPR news 
+- Play from your music library
+- Play Internet radio stations
+- Play Internet music
+- Play NPR news
+- Create, manipulate, delete and play playlists (**NOTE:** code is not finished yet)
+- Perform basic player operations 
 
 Following are the vocabularies for the MPC skill:
 
@@ -715,7 +717,7 @@ Following are the vocabularies for the MPC skill:
     play (NPR|the|) news
     ```
     
-- Playlist vocabulary (NOTE: code is not complete yet)
+- Playlist vocabulary (**NOTE:** code is not complete yet)
 
     ```
     (create|make) playlist {playlist} from track {track}
@@ -728,6 +730,19 @@ Following are the vocabularies for the MPC skill:
     what playlists (do i have|are there)
     what are (my|the) playlists
     ```  
+    
+- Basic player commands vocabulary (**NOTE:** code is not complete yet)
+
+    ```
+    previous (song|station|title|track|)
+    next (song|station|title|track|)
+    pause                               # stop music but maintain queue
+    resume
+    stop                                # stop music and clear queue
+    
+    increase volume
+    decrease volume
+    ```
 
 Following are examples of MPC skill's requests:
 - Play track 
