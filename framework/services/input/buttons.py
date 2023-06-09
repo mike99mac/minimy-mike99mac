@@ -40,8 +40,7 @@ import sys
 from threading import Event
 from framework.message_types import (MSG_UTTERANCE, MSG_MEDIA, MSG_SKILL, MSG_SYSTEM)
 
-class Buttons(SimpleVoiceAssistant):
-# class Buttons(MediaSkill):  
+class Buttons(SimpleVoiceAssistant):  
   """
   Trap when buttons are pressed and perform 'previous', 'pause/resume' or 'next' actions
   """
@@ -102,7 +101,6 @@ class Buttons(SimpleVoiceAssistant):
 	          'subtype': 'oob_detect',
 		        'skill_id': 'media_skill',
 		        'from_skill_id': self.skill_id,
-          # 'sentence_type': "I",
 		        'verb': verb
            }    
     self.bus.send(MSG_SKILL, "media_skill", info)
