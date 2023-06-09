@@ -9,7 +9,7 @@ from skills.sva_media_skill_base import MediaSkill
 from threading import Event
 import subprocess
 
-class MpcSkill(MediaSkill): 
+class MpcSkill(MediaSkill):  
   """
   Play music skill for minimy.  It uses mpc and mpd to play music from:
   - A music library such as mp3 files
@@ -86,7 +86,7 @@ class MpcSkill(MediaSkill):
       self.log.debug("MpcSkill.get_media_confidence(): found tracks or URLs") 
     else:                                  # error encountered
       self.log.debug(f"MpcSkill.get_media_confidence() did not find music: mesg_file = {self.music_info.mesg_file} mesg_info = {self.music_info.mesg_info}")
-    confidence = 100                       # always return 100%
+    confidence = 100                       # running uncontested - always return 100%
     return {'confidence':confidence, 'correlator':0, 'sentence':sentence, 'url':self.url}
 
   def media_play(self, msg):
@@ -94,7 +94,7 @@ class MpcSkill(MediaSkill):
     Either some music has been found, or an error message has to be spoken
     """
     self.log.debug(f"MpcSkill.media_play() match_type = {self.music_info.match_type}")
-  # self.mpc_client.mpc_cmd("clear")       # stop any media that might be playing
+    self.mpc_client.mpc_cmd("clear")       # stop any media that might be playing
     if self.music_info.match_type == "none": # no music was found
       self.log.debug("MpcSkill.media_play() no music found") 
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info) 

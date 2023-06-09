@@ -966,6 +966,8 @@ class MpcClient(SimpleVoiceAssistant):
     Search for music on the internet and if found, return all URLs in Music_info object 
     param:  search term
     Return: Music_info object 
+    Vocabulary:
+      play (track|artist|album|) {music} (from|on) (the|) internet
     """
     mesg_file = "" 
     mesg_info = {}
@@ -1006,7 +1008,8 @@ class MpcClient(SimpleVoiceAssistant):
     param: Music_info object 
     """
     self.log.debug("MpcClient.stream_internet_music() streaming all tracks from the Internet")
-    self.mpc_cmd("clear")                  # clear playlist in memory
+    # queue should already by clear?
+    # self.mpc_cmd("clear")                  # clear playlist in memory
     for next_url in music_info.tracks_or_urls: # queue up tracks in mpc
       self.log.debug(f"MpcClient.stream_internet_music() streaming from URL: {next_url}")
       cmd = "/usr/local/sbin/ytadd "+next_url # add URL to mpc queue
