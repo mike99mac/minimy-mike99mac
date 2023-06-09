@@ -19,43 +19,35 @@ I worked with the Mycroft free and open personal voice assistant since 2019, but
 I tried OVOS but was not able to get a music skill working after a couple weeks.  I still haven't given up on that platform - no doubt it will only get better and easier to install.
 
 Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire but wasn't well received. Thankfully, Ken Smith put it on github, I forked the code, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** 
-
 So I continue to try to *give back to the community* while *standing on the shoulders* of so many thousands of others.
-
-One of my mantras is *Less is more*. I like minimy because it is a **Mini-My**croft. Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
-```
-            Repo         Loc           files
-    mycroft-core       38074             229
-       ovos-core       18067             238
-minimy-mike99mac        9900              79
-```
-So OVOS is half the size of Mycroft, and Minimy is about half again smaller.
-
-The test environment is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro, expect the unexpected :))
-
-This document  is based on *The smart boombox cookbook* which also describes the construction of a boombox. 
-It is on the Web at: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
 
 This document focuses on how to get the entire *software stack* running, and starts from the very beginning.
 
-# Put it all together
+## Overview of the build
 
-The overall steps are:
+The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro, expect the unexpected :))
 
-- Acquire the hardware - a minimum of a RasPi, a microphone and a speaker
-- Flash a Linux image to a memory device
+The overall steps to build a *Smart Boombox* are:
+
+- Acquire the hardware 
+- Flash Linux to a memory device
+- Connect the hardware
 - Install and configure Linux
-- Install a toolbox written for Minimy
-- Install and customize Minimy
-- Install a daemon to send messages when buttons are pressed (if your enclosure has physical buttons)
-- Start using your new personal voice assistant!
+- Install and use mycroft-tools
+- Test microphone and speakers
+- Install and configure Minimy
+- Start Minimy and use it!
 
-Sounds easy, right?
+Ideally Minimy would run on a Mycroft Mark II, however there is no code supporting the monitor, SJ-201 and associated hardware.
+
+This document  is based on *The smart boombox cookbook* which also has some details on the construction of an enclosure that looks like a *boombox*. 
+
+It is here: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
 
 ## Acquire the hardware
 The minimum recommended hardware is a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. 
 
-A Rasberry Pi 400, also with at least 4GB, is another option.  On the boombox enclousres, it frees up space to house lithium-ion batteries.
+A Rasberry Pi 400, also with at least 4GB, is another option.  On the boombox enclousres, having the CPU offboard frees up space to house lithium-ion batteries.
 
 Hopefully the RasPi 5 is coming soon and will be more powerful and easy to procure.
 
@@ -64,7 +56,7 @@ It is best to move the microphone away from the speakers and closer to the cente
 
 You can start with just about any speaker(s) with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
 
-## Prepare an SD card to boot Linux
+## Flash Linux to a memory device
 The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and copy a Linux distribution to it. 
 
 Hopefully you have another computer running Linux, but other OS's will work. It must have a hardware port to write to the card.
@@ -74,7 +66,7 @@ Hopefully you have another computer running Linux, but other OS's will work. It 
 If you have a Linux box with an SD card reader, you can use **``rpi-imager``** to copy the Linux image. To do so, perform the following tasks.
 - Put a micro-SD card into an SD adapter.
 - Plug the SD adapter into the card reader.
-- If you don't have it already, download and install the tool.
+- If you don't have it already, install the tool.
 
     **``$ sudo apt-get install -y rpi-imager``**
 
@@ -101,11 +93,9 @@ If you only have access to a Windows system Install the *Win 32 disk imager* fro
 
 No further details are provided.
 
-## Connect the computer hardware
+## Connect the hardware
 
-For the initial setup, a keyboard, monitor and mouse are needed. Ideally there will be a way of setting up “headlessly”, but that's not ready yet.
-
-You can access the Internet using either Wi-Fi or with an Ethernet cord.
+For the initial setup, a keyboard, monitor and mouse are needed. You can access the Internet using either Wi-Fi or with an Ethernet cable.
 
 To connect all the computer hardware, perform the following steps:
 
@@ -113,7 +103,11 @@ To connect all the computer hardware, perform the following steps:
 - If you have wired ethernet, plug it in to the RJ-45 connector on the RasPi.
 - Connect the mouse and keyboard to the USB connections on the RasPi.
 - Connect the monitor to the RasPi with an appropriate micro-HDMI cable.  The RasPi 4 two micro HDMI ports - use the left one.
-- Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. An official RasPi power supply is recommended to avoid "*undervoltage* warnings.  If you have an inline switch, be sure it is on.
+- Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. An official RasPi power supply is recommended to avoid *undervoltage* warnings.  If you have an inline switch, turn it on.
+
+## Install and configure Linux
+
+To configure Ubuntu Desktop, perform the following sections.
 
 ### Boot the RasPi
 
@@ -124,10 +118,6 @@ When you supply power to the RasPi, it should start booting.  On the top, back, 
 - You should see a rainbow colored splash screen on the monitor, then the Ubuntu desktop should initialize.
 
 **IMPORTANT**: Never turn the RasPi off without first shutting Linux down with the **``halt``** or similar command. Doing so can damage the operating system and possibly even the RasPi itself.
-
-## Install and configure Linux
-
-To configure Ubuntu Desktop, perform the following sections.
 
 ### Initial Ubuntu Desktop configuration
 
@@ -198,9 +188,11 @@ The secure shell (SSH) server is not installed by default on Ubuntu desktop. Ins
     inet 192.168.1.229
     ```
     
-### Start an SSH session
+### Start a terminal or SSH session
 
-You should now be able to start an SSH session as the user pi, if you want to continue from another desktop system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS terminal session.
+You can continue to work from a *terminal session*.  Right click anywhere on the desktop wallpaper and choose **Open in Terminal**.  A console window should appear.
+
+You can also start an SSH session as the user ``pi``, if you want to continue from another system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS console.
 
 **IMPORTANT**: Do not run as ``root``. Doing so will almost certainly screw up your system.  It is recommended that you run as the user ``pi``.  Ideally, other user names should work, as the environment variable ``$HOME`` is used in scripts, but this has never been tested.
 
@@ -218,7 +210,7 @@ Update and upgrade your system which installs the latest code for all installed 
     
 Your system should now be at the latest software level.
 
-### Install Mycroft tools
+## Install and use mycroft-tools
 
 The **``mycroft-tools``** repo has been developed to help with the installation, configuration, use and testing of the free and open personal voice assistants.
 
@@ -286,7 +278,7 @@ It performs the following tasks:
 - Copies a **``systemctl``** configuration file to mount ``/var/log/`` in a ``tmpfs`` which helps prolong the life of the micro-SD card
 - Sets **``pulseaudio``** to start as a system service at boot time, and allows anonymous access so audio services work
 - Configures **``mpd``**, the music player daemon, which plays most of the sound
-- Turns off **bluetooth** as Linux makes connecting to it ridiculously hard, while most amplifiers make it easy
+- Turns off **``bluetooth``** as Linux makes connecting to it ridiculously hard, while most amplifiers make it easy
 
 To run **``intall1``**, perform the following steps:
 
@@ -395,13 +387,13 @@ Some of the changes made by **``install1``** will not be realized until boot tim
                /home/pi/minimy/tmp  Minimy temp dir : no
     ````
     
-The output shows three changes:
+You should see three changes:
 
 - The Music Playing Daemon, **``mpd``** is now running.
 - The one **``pulseaudio``** process has **``--system``** as a parameter which is vital to audio output working correctly.
 - The **``/var/log/``** file system is now mounted over an in-memory tmpfs.
 
-### Test microphone and speakers
+## Test microphone and speakers
 
 It is important to know your microphone and speakers are working. 
 There are scripts in mycroft-tools named **``testrecord``** and **``testplay``**. 
@@ -421,8 +413,13 @@ They are wrappers around the **``arecord``** and **``aplay``** commands designed
     
 You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
 
-## Minimy
-Minimy must be downloaded, installed and configured.
+## Install and configure Minimy
+
+In this section you will perform the following steps:
+- Download and copy Minimy
+- Install Minimy
+- Configure Minimy
+- Run Minimy
 
 ### Download and copy Minimy 
 It is recommended that you make a second copy of Minimy after you download it.  This way, if you make some changes to the running code, you'll have a reference copy. Also the copy of the code that you run should not have a ``.git/`` directory, thus removing any connection to github.
@@ -466,7 +463,7 @@ To download and copy Minimy, perform the following steps:
     Install Complete
     ```
     
-    This step can take up to ten minutes.
+    This step can take up to ten minutes. It is recommended that you review the output file, checking for warnings or errors.
     
 - Confirm that **``venv``** is an alias which should have been set in your ``.bash_profile`` after the reboot.
 
@@ -531,7 +528,7 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
     
     ```
     Advanced Options Selected sa
-    ... all defaults taken ...
+    ... all defaults taken except debug level ...
     Save Changes?y
     Configuration Updated
       Advanced
@@ -556,19 +553,23 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
 
 ### Get a Google API key
 
-You need a Google Speech API key in order to be able to convert speech to text.
+You need a Google Speech API key in order to be able to convert speech to text.  
 
 Get one from: https://console.cloud.google.com/freetrial/signup/tos
 
-Once you get your key, copy it to the default location ``/home/pi/minimy/install/my-google-key.json``.
+Once you get your key, copy it to ``/home/pi/minimy/install/my-google-key.json``.
+
+An alternative is to use a different STT engine.
 
 ## Run Minimy
 The scripts **``startminimy``** and **``stopminimy``** are used to start and stop processes. 
-Each skill and service run in their own process space and use the message bus or file system to synchronize. 
+Each skill and service run as process and use the message bus or file system to synchronize. 
 Their output is written to the ``logs/`` directory under the main install directory. 
 
 The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS`` which are set in **``startminimy``** 
 with this code:
+
+**TODO:** the first two varaibles should be ``$HOME/minimy``. The third should use $HOME.
 
     ...
     export PYTHONPATH=`pwd`
@@ -585,34 +586,148 @@ with this code:
 - Stop Minimy with:
 
     **``(venv_ngv) $ ./stopminimy``**
+    
+**TODO:** Show some output of running startminimy and run lsenv again.    
 
-## Start the buttons daemon
+## The buttons process
 
-The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick previous track, pause/resume, and next track functions.  The **``buttons``** daemon traps button pushes and sends corresponding messages to Minimy.
+The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick access to *previous track*, *pause/resume*, and *next track* operations.  A new **``buttons``** system skill traps button presses and sends corresponding messages to to the bus.
 
-If your enclosure does not have them, you can skip this step.
+If your enclosure does not have them, you can skip this step.  Or, if you want to add buttons, attach them to the following GPIO pins:
 
-On the other model the computer is a RaspPi 400, which allows Lithium-ion batteries to be on-board. That will need a different flavor of the **``buttons``** daemon running.
+    +-----+--------+-------------------------------+
+    | Pin | Label  | Description                   |
+    |-----|--------|-------------------------------|
+    | 9   | GND    | Ground common to all buttons  |
+    | 11  | GPIO17 | Previous track                |
+    | 13  | GPIO27 | Pause/resume                  |
+    | 15  | GPIO22 | Next track                    |
+    +-----+--------+-------------------------------+
 
-Previously you cloned ``mycroft-tools`` from github which contains the Python ``buttons.py`` and the bash script ``buttons``. Both of these should be in ``/usr/local/sbin/``.  
+The ``buttons.py`` code is here: https://github.com/mike99mac/minimy-mike99mac/blob/main/framework/services/input/buttons.py
+    
+One source of buttons is here: https://www.amazon.com/dp/B09C8C53DM
+    
 
-**TODO**: Extend the code so the daemon can trap arrow keys on a RasPi 400, if that is the CPU of choice.
+**TODO:** On another model, the computer is a RaspPi 400 which is *offboard*. This allows Lithium-ion batteries to be on-board. That will need new code that uses the arrow keys for the same function.
 
-To start the **``buttons``** daemon, perform the following steps:
+# Reference
+The following reference sections follow:
+- Vocabulary
+- Other Documentation
 
-- Clone the messagebus repo from github which will allow buttons to *talk to* Minimy.
+### Vocabulary
 
-    **``  $ git clone https://github.com/mike99mac/mycroft-messagebus-mike99mac``**
-  
+In the samples that follow (words) in parenthesis are the actual words spoken, while {words} in curly brackets become variables populated with the actual words spoken. When (multiple|words|) are separated by vertical bars any of those can be spoken, and a trailing vertical bar means that word can be omitted.
+
+Following is a summary of Minimy's vocabulary.
+
+#### Connectivity skill
+
+``TODO``
+ 
+#### Email skill
+
+``TODO``
+ 
+#### Example1 skill
+
+``TODO``
+ 
+#### Help skill
+
+``TODO``
+ 
+#### MPC skill
+
+The MPC skill can search:
+
+- Your music library
+- Internet radio stations
+- Internet music
+- NPR news 
+
+Following are the vocabularies for the MPC skill
+
+- Music library vocabulary
     ```
-    Cloning into 'mycroft-messagebus-mike99mac'...
-    ...
-    Resolving deltas: 100% (198/198), done.
+    play (track|song|title|) {track} by (artist|band|) {artist}
+    play (album|record) {album} by (artist|band) {artist}
+    play (any|all|my|random|some|) music 
+    play (playlist) {playlist}
+    play (genre|johnra) {genre}    
+    ```
+
+- Internet radio vocabulary
+
+    ```
+    play (the|) radio
+    play music (on the|on my|) radio
+    play genre {genre} (on the|on my|) radio
+    play station {station} (on the|on my|) radio
+    play (the|) (radio|) station {station}
+    play (the|) radio (from|from country|from the country) {country}
+    play (the|) radio (spoken|) (in|in language|in the language) {language}
+    play (another|a different|next) (radio|) station
+    (different|next) (radio|) station
+    ```  
+    
+- Internet music vocabulary
+
+    ```
+    play (track|artist|album|) {music} (from|on) (the|) internet
     ```
     
-- Now what?  We need to get the code running first ... watch this space ...    
+- News vocabulary    
 
-## Use Minimy
+    ```
+    play (NPR|the|) news
+    ```
+    
+- Playlist vocabulary (NOTE: code is not complete yet)
 
-**TODO**: Add quite a number of sample utterances
+    ```
+    (create|make) playlist {playlist} from track {track}
+    (delete|remove) playlist {playlist}
+    add (track|song|title) {track} to playlist {playlist}
+    add (album|record) {album} to playlist {playlist}
+    (remove|delete) (track|song|title) {track} from playlist {playlist}
+    (remove|delete) (album|record) {album} from playlist {playlist}
+    list (my|) playlists
+    what playlists (do i have|are there)
+    what are (my|the) playlists
+    ```  
 
+#### Timedate skill
+
+What time is it?
+
+``TODO: finish``
+ 
+#### Weather skill
+
+What's the weather
+``TODO``
+ 
+#### Wiki skill
+
+``TODO``
+
+## What can I say?
+
+**TODO** Add a lot of sample utternaces here ...
+
+## More documentation
+
+There is more documentation, by the original author Ken Smith, here: https://github.com/ken-mycroft/minimy/tree/main/doc
+
+## Afterthought
+
+One of my mantras is *Less is more*. I like minimy because it is a **Mini-My**croft. Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
+```
+            Repo         Loc           files
+    mycroft-core       38074             229
+       ovos-core       18067             238
+minimy-mike99mac        9900              79
+```
+So OVOS is half the size of Mycroft, and Minimy is about half again smaller.
