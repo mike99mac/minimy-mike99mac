@@ -620,32 +620,46 @@ The following reference sections follow:
 
 In the samples that follow (words) in parenthesis are the actual words spoken, while {words} in curly brackets become variables populated with the actual words spoken. When (multiple|words|) are separated by vertical bars any of those can be spoken, and a trailing vertical bar means that word can be omitted.
 
-Following is a summary of Minimy's vocabulary.
+**``TODO``** Finish all vocabs and examples
 
 ### Connectivity skill
 
 Following is a summary of the Connectivity skill vocabulary.
-
-**``TODO``** Finish all vocabs and examples
  
 Following are examples of Connectivity skill requests:
+
+**Note:** It's not clear this skill is finished
  
 ### Email skill
 
 Following is a summary of the Email skill vocabulary.
 
+``(compose|create|new|start email)``
+
+``send email``
+
 Following are examples of Email skill requests:
+
+- start email
+- ... dialog continues ...
+- send email
  
 ### Example1 skill
 
 Following is a summary of the Example1 skill vocabulary.
+
+``(run|test|execute) example one``
  
 Following are examples of Example1 skill requests:
  
+- run exmple one
+ 
 ### Help skill
 
+**NOTE:*** Help skill is not finished!
+
 Following is a summary of the Help skill vocabulary.
- 
+
 Following are examples of Help skill requests:
  
 ### MPC skill
@@ -715,10 +729,17 @@ Following are examples of MPC skill's requests:
 
 Following is a summary of the Timedate skill vocabulary.
 
+```
+what time (is it|)
+what (is|) (today's|) date
+what day (of the week|) (is it|)
+```
+
 Following are examples of  skill's requests:
 
 - What time is it?
 - What is today's date
+- What day of the week is it
  
 ### Weather skill
 
