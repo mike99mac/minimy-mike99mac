@@ -613,32 +613,42 @@ One source of buttons is here: https://www.amazon.com/dp/B09C8C53DM
 
 # Reference
 The following reference sections follow:
-- Vocabulary
+- Vocabulary and examples
 - Other Documentation
 
-### Vocabulary
+## Vocabulary and examples
 
 In the samples that follow (words) in parenthesis are the actual words spoken, while {words} in curly brackets become variables populated with the actual words spoken. When (multiple|words|) are separated by vertical bars any of those can be spoken, and a trailing vertical bar means that word can be omitted.
 
 Following is a summary of Minimy's vocabulary.
 
-#### Connectivity skill
+### Connectivity skill
 
-``TODO``
- 
-#### Email skill
+Following is a summary of the Connectivity skill vocabulary.
 
-``TODO``
+**``TODO``** Finish all vocabs and examples
  
-#### Example1 skill
+Following are examples of Connectivity skill requests:
+ 
+### Email skill
 
-``TODO``
- 
-#### Help skill
+Following is a summary of the Email skill vocabulary.
 
-``TODO``
+Following are examples of Email skill requests:
  
-#### MPC skill
+### Example1 skill
+
+Following is a summary of the Example1 skill vocabulary.
+ 
+Following are examples of Example1 skill requests:
+ 
+### Help skill
+
+Following is a summary of the Help skill vocabulary.
+ 
+Following are examples of Help skill requests:
+ 
+### MPC skill
 
 The MPC skill can search:
 
@@ -647,7 +657,7 @@ The MPC skill can search:
 - Internet music
 - NPR news 
 
-Following are the vocabularies for the MPC skill
+Following are the vocabularies for the MPC skill:
 
 - Music library vocabulary
     ```
@@ -698,24 +708,29 @@ Following are the vocabularies for the MPC skill
     what are (my|the) playlists
     ```  
 
-#### Timedate skill
+Following are examples of MPC skill's requests:
+- Play track 
 
-What time is it?
+### Timedate skill
 
-``TODO: finish``
+Following is a summary of the Timedate skill vocabulary.
+
+Following are examples of  skill's requests:
+
+- What time is it?
+- What is today's date
  
-#### Weather skill
+### Weather skill
 
-What's the weather
-``TODO``
+Following is a summary of the Weather skill vocabulary.
  
-#### Wiki skill
+Following are examples of Weather skill requests:
 
-``TODO``
+### Wiki skill
 
-## What can I say?
+Following is a summary of the Wiki skill vocabulary.
 
-**TODO** Add a lot of sample utternaces here ...
+Following are examples of Wiki skill requests:
 
 ## More documentation
 
