@@ -3,20 +3,20 @@
 This is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
 
 ## Overview
-**From Ken Smith, who is the original author:**
+**From Ken Smith - the original author:**
 
 "The goal of this project is to provide a run-time environment which facilitates the development of 
 voice enabled applications. These voice enabled applications take the form of a 'skill' and are
 simply python programs which may do normal python things as well as call speak() and listen() and
 get called asynchronously when an utterance is matched to an intent the skill has previously registered."  
 
-**From Mike Mac, who is working on this fork of the code:**
+**From Mike Mac - author of this fork:**
 
 This is an attempt to create a music playing device that you can talk to. 
 
-I worked with Mycroft since 2019, but the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard that any Mycroft employee or contributor did to blaze this trail.
+I worked with Mycroft since 2019, but the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard work the Mycroft employees and contributors did to get us this far.
 
-OVOS is a fork of Mycroft. I tried it but was not able to get a music skill working after a couple weeks.  I still haven't given up on that platform - no doubt it will only get better and easier to install.
+OVOS is a fork of Mycroft. I tried it but was not able to get a music skill working after a couple weeks.  I still haven't given up on it - no doubt it will only get better and easier to install.
 
 Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire but wasn't well received. Thankfully, Ken Smith put it on github, I forked the code, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** 
 So I continue to try to *give back to the community* while *standing on the shoulders* of so many thousands of others.
