@@ -120,9 +120,9 @@ function startSystem
   fi
   cd ../../../../..
   source venv_ngv/bin/activate
-  export PYTHONPATH=`pwd`
-  export SVA_BASE_DIR=`pwd`
-  export GOOGLE_APPLICATION_CREDENTIALS="/home/pi/minimy/install/my-google-key.json"
+  export PYTHONPATH="$HOME/minimy:$HOME/minimy/venv_ngv/lib/python3.10/site-packages"
+  export SVA_BASE_DIR="$HOME/minimy"
+  export GOOGLE_APPLICATION_CREDENTIALS="$HOME/minimy/install/my-google-key.json"
   echo
   echo "Starting Message Bus ..."
   cd bus
