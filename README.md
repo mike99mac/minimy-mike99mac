@@ -309,42 +309,38 @@ To run **``intall1``**, perform the following steps:
     ```
     Status of minimy:
      -) WARNING: minimy is not running as a service ... checking for processes ...
-        WARNING: no processes matching minimy - does not appear to be running ...
-    ---------------------------------------------------------------------------------
-    Status of buttons:
-     -) WARNING: buttons is not running as a service ... checking for processes ...
-        WARNING: no processes matching buttons - does not appear to be running ...
+        WARNING: minimy does not appear to be running
     ---------------------------------------------------------------------------------
     Status of mpd:
      -) WARNING: mpd is not running as a service ... checking for processes ...
-        WARNING: no processes matching mpd - does not appear to be running ...
+        WARNING: mpd does not appear to be running
     ---------------------------------------------------------------------------------
     Status of pulseaudio:
      -) WARNING: pulseaudio is not running as a service ... checking for processes ...
         Found matching pulseaudio processes:
-        pi         34786   34768  0 09:00 ?        00:00:14 /usr/bin/pulseaudio --daemonize=no --log-target=journal
+        pi         34471   34454  0 09:44 ?        00:00:01 /usr/bin/pulseaudio --daemonize=no --log-target=journal
     ---------------------------------------------------------------------------------
          IP address : 192.168.1.148
-    CPU temperature : 50C / 122F
+    CPU temperature : 55C / 131F
       Root fs usage : 14%
-          CPU usage : 6%
+          CPU usage : 0%
     Memory usage    :
                      total        used        free      shared  buff/cache   available
-      Mem:           3.7Gi       1.5Gi       220Mi       156Mi       2.0Gi       1.9Gi
-      Swap:          1.0Gi       166Mi       857Mi
+      Mem:           3.7Gi       698Mi       268Mi       120Mi       2.8Gi       2.7Gi
+      Swap:          1.0Gi        11Mi       1.0Gi
     tmpfs filesystem?
                           /var/log       Linux logs : no
               /home/pi/minimy/logs      Minimy logs : no
                /home/pi/minimy/tmp  Minimy temp dir : no
     ```
+    
 The output shows that:
 
 - Processes with ``minimy`` in their name are not running.
-- The **``buttons``** daemon, which traps and sends messages when physical buttons are pushed, is not running.
 - The Music Playing Daemon, **``mpd``** is not running.
 - There is one **``pulseaudio``** process running, but it does not have **``--system``** as a parameter.
 - Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage.
-- None of three file systems frequently written to is mounted over an in-memory ``tmpfs`` file systems.
+- None of the file systems frequently written to are mounted over an in-memory ``tmpfs`` file system.
 
 ### Test changes of install1 script
 Some of the changes made by **``install1``** will not be realized until boot time. To test this, perform the following steps:
@@ -353,55 +349,52 @@ Some of the changes made by **``install1``** will not be realized until boot tim
 
     **``$ sudo reboot``**
     
-- Restart your SSH session.
-- Run the same script again.
+- Restart your SSH session when it comes back up.
+- Run the same script again to see how the environment has changed.
 
     **``$ lsenv``**
     
     ````
     Status of minimy:
      -) WARNING: minimy is not running as a service ... checking for processes ...
-        WARNING: no processes matching minimy - does not appear to be running ...
-    ---------------------------------------------------------------------------------
-    Status of buttons:
-     -) WARNING: buttons is not running as a service ... checking for processes ...
-        WARNING: no processes matching buttons - does not appear to be running ...
+        WARNING: minimy does not appear to be running
     ---------------------------------------------------------------------------------
     Status of mpd:
      -) mpd is running as a service:
-        Active: active (running) since Fri 2023-05-26 12:08:04 EDT; 1min 46s ago
+        Active: active (running) since Sat 2023-06-10 10:13:24 EDT; 56s ago
     ---------------------------------------------------------------------------------
     Status of pulseaudio:
      -) pulseaudio is running as a service:
-        Active: active (running) since Fri 2023-05-26 12:08:02 EDT; 1min 48s ago
+        Active: active (running) since Sat 2023-06-10 10:13:22 EDT; 58s ago
         pulseaudio processes:
-        pulse        842       1  0 12:08 ?        00:00:00 /usr/bin/pulseaudio --system --disallow-exit --disallow-module-loading --disable-shm --exit-idle-time=-1
+        pulse        850       1  0 10:13 ?        00:00:00 /usr/bin/pulseaudio --system --disallow-exit --disallow-module-loading --disable-shm --exit-idle-time=-1
     ---------------------------------------------------------------------------------
          IP address : 192.168.1.148
-    CPU temperature : 55C / 131F
+    CPU temperature : 63C / 145F
       Root fs usage : 14%
-          CPU usage : 0%
+          CPU usage : 91%
     Memory usage    :
                      total        used        free      shared  buff/cache   available
-      Mem:           3.7Gi       779Mi       2.2Gi        27Mi       718Mi       2.8Gi
+      Mem:           3.7Gi       707Mi       2.3Gi        13Mi       685Mi       2.8Gi
       Swap:          1.0Gi          0B       1.0Gi
     tmpfs filesystem?
                           /var/log       Linux logs : yes
               /home/pi/minimy/logs      Minimy logs : no
                /home/pi/minimy/tmp  Minimy temp dir : no
+
     ````
     
 You should see three changes:
 
 - The Music Playing Daemon, **``mpd``** is now running.
-- The one **``pulseaudio``** process has **``--system``** as a parameter which is vital to audio output working correctly.
-- The **``/var/log/``** file system is now mounted over an in-memory tmpfs.
+- The one **``pulseaudio``** process shows a **``--system``** parameter which is vital to audio output working correctly.
+- The **``/var/log/``** file system is now mounted over an in-memory ``tmpfs``.
 
 ## Test microphone and speakers
 
 It is important to know your microphone and speakers are working. 
-There are scripts in mycroft-tools named **``testrecord``** and **``testplay``**. 
-They are wrappers around the **``arecord``** and **``aplay``** commands designed to make it easier to test recording audio to a file and playing it back on the speakers.
+There are scripts in *mycroft-tools* named **``testrecord``** and **``testplay``**. 
+They are wrappers around the **``arecord``** and **``aplay``** commands designed to make it easier to test recording audio to a file and playing it back on the speaker(s).
 
 - To test your microphone and speakers, issue the following command then speak for up to five seconds. 
 
@@ -417,6 +410,8 @@ They are wrappers around the **``arecord``** and **``aplay``** commands designed
     
 You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
 
+At this point your system should have a solid sound and microphone stack running, and all software necessary for the installation of Minimy.
+
 ## Install and configure Minimy
 
 In this section you will perform the following steps:
@@ -428,7 +423,7 @@ In this section you will perform the following steps:
 ### Download and copy Minimy 
 It is recommended that you make a second copy of Minimy after you download it.  This way, if you make some changes to the running code, you'll have a reference copy. Also the copy of the code that you run should not have a ``.git/`` directory, thus removing any connection to github.
 
-The directory the copy will run in **must be named**  ``minimy``, removing the ``-mike99mac`` suffix.  Otherwise things will break.
+The new directory ***must*** be named ``minimy``, removing the ``-mike99mac`` suffix.  Otherwise things will break.
 
 To download and copy Minimy, perform the following steps:
 
@@ -458,7 +453,7 @@ To download and copy Minimy, perform the following steps:
     
 ### Install Minimy    
     
-- Run the following script to install minimy and direct stdout and stderr to a file.
+- Run the following script to install **``minimy``** and direct ``stdout`` and ``stderr`` to a file.
     
     **``$ ./install/linux_install.sh 2>&1 | tee linux_install.out``**
     
@@ -589,7 +584,45 @@ with this code:
 
     **``(venv_ngv) $ ./stopminimy``**
     
-**TODO:** Show some output of running startminimy and run lsenv again.    
+- Run **``lsenv``** again to see how your environment has changed.    
+
+    **``lsenv``**
+
+    ```
+    Status of minimy:
+     -) WARNING: minimy is not running as a service ... checking for processes ...
+        Minimy user skills: connectivity email example1 help mpc timedate weather wiki
+             System skills: buttons intent media_player mic skill_alarm skill_fallback skill_media skill_volume stt tts
+    ---------------------------------------------------------------------------------
+    Status of mpd:
+     -) mpd is running as a service:
+        Active: active (running) since Sat 2023-06-10 10:13:24 EDT; 2h 3min ago
+    ---------------------------------------------------------------------------------
+    Status of pulseaudio:
+     -) pulseaudio is running as a service:
+        Active: active (running) since Sat 2023-06-10 10:13:22 EDT; 2h 3min ago
+        pulseaudio processes:
+        pulse        850       1  2 10:13 ?        00:03:35 /usr/bin/pulseaudio --system --disallow-exit --disallow-module-loading --disable-shm --exit-idle-time=-1
+    ---------------------------------------------------------------------------------
+         IP address : 192.168.1.148
+    CPU temperature : 72C / 161F
+      Root fs usage : 18%
+          CPU usage : 58%
+    Memory usage    :
+                     total        used        free      shared  buff/cache   available
+      Mem:           3.7Gi       1.8Gi       224Mi        44Mi       1.7Gi       1.7Gi
+      Swap:          1.0Gi       4.0Mi       1.0Gi
+    tmpfs filesystem?
+                          /var/log       Linux logs : yes
+              /home/pi/minimy/logs      Minimy logs : yes
+               /home/pi/minimy/tmp  Minimy temp dir : yes
+    ```
+You should see two changes:
+
+- Minimy is now running - the output showing the user and system skill processes.
+- The two minimy file systems frequently written to are now mounted over in-memory ``tmpfs``'s.
+
+
 
 ## The buttons process
 
