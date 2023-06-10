@@ -25,7 +25,7 @@ This document focuses on how to get the solution running, and starts from the ve
 
 ## The build
 
-The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside an *enclosure* that is a retro-looking boombox. However, this code and these steps should be relatively portable to any hardware that can run any Linux. 
+The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22.04 inside an *enclosure* that is a retro-looking boombox. However, this code and these steps should be relatively portable to any hardware that can run any Linux. 
 
 The overall steps to build a *Smart Boombox* are:
 
@@ -138,13 +138,16 @@ A welcome screen should open on the monitor. Perform the following steps:
     - For the last option, **Log in automatically** is recommended.
     - Click **Continue**.
  - The install process will take a number of minutes configuring and will reboot the computer.
+
+    ``TAKE A BREAK?  In a test, this step took five minutes.``
+    
  - When the system finishes rebooting, an *Online Accounts* window should appear. Click **Skip**.
  - Click **Next** at the *Enable Ubuntu Pro* window.
  - Choose an option on the *Help Improve Ubuntu* window and click **Next**.
  - Click **Next** at the *Privacy* window.
  - Click **Done** at the *Ready to go* window.
 
-Ubuntu Desktop 22-04 should now be installed
+Ubuntu Desktop 22.04 should now be installed
  
 ### Install the SSH server
 
@@ -410,7 +413,7 @@ They are wrappers around the **``arecord``** and **``aplay``** commands designed
     
 You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
 
-At this point your system should have a solid sound and microphone stack running, especially **``mpd``** and **``pulseaudio``** and all software necessary for the installation of Minimy.
+At this point your system should have a solid sound and microphone stack running, especially **``mpd``** and **``pulseaudio``**, and all software necessary for the installation of Minimy.
 
 ## Install and configure Minimy
 
@@ -453,7 +456,7 @@ To download and copy Minimy, perform the following steps:
     
 ### Install Minimy    
     
-- Run the following script to install **``minimy``** and direct ``stdout`` and ``stderr`` to a file.
+- Run the following script to install Minimy and direct ``stdout`` and ``stderr`` to a file.
     
     **``$ ./install/linux_install.sh 2>&1 | tee linux_install.out``**
     
