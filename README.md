@@ -215,7 +215,7 @@ Update and upgrade your system which installs the latest code for all installed 
 
     **``$ sudo apt-get upgrade -y``**
     
-      ``TAKE A BREAK?  In a test, this step took 19 minutes.``
+    ``TAKE A BREAK?  In a test, this step took 19 minutes.``
     
 Your system should now be at the latest software level.
 
