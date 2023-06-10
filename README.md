@@ -687,8 +687,24 @@ One source of pushbuttons is here: https://www.amazon.com/dp/B09C8C53DM
 # Debugging
 Maybe everything will work perfectly the first time, and there will be no need to debug.  But we know how that goes.
 
-Following are some debugging resources.
+Many, many debug statements have been added to the code.  In the critical classes, almost every function has at least one log statement when in debug mode.  When Minimy is started with **``startminimy``
 
+Following are some debugging resources.
+- Log files are in ``$HOME/minimy/logs``.  
+    - Show the log files.
+   
+        **``$ cd $HOME/minimy/logs``**
+        
+        **``$ ls``**
+        
+        ``intent.log  media_player.log  skills.log  stt.log  tts.log``
+   
+    - When Minimy is running, watch all the log files get populated in real time.
+
+        **``tail -f *``**
+        
+- There is an HTML file with JavaScript code that displays the message bus in real time. If you do not have a Web server running, you must view it from the local host. Start a browser on the box you're installing on and point it to: file:///home/pi/minimy/display/sysmon.html
+- And google searches, of course ...
 
 
 # Reference
