@@ -18,10 +18,10 @@ I worked with Mycroft since 2019, but the company went bankrupt in 2023, so had 
 
 OVOS is a fork of Mycroft. I tried it but was not able to get a music skill working after a couple weeks.  I still haven't given up on it - no doubt it will only get better and easier to install.
 
-Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire but wasn't well received. Thankfully, Ken Smith put it on github, I forked the code, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** 
-So I continue to try to *give back to the community* while *standing on the shoulders* of so many thousands of others.
+Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire but wasn't well received. Thankfully, Ken Smith put it on github, it was forked, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** 
+So I continue to try to *give back to the community* while *standing on the shoulders* of so many others.
 
-This document focuses on how to get the entire *software stack* running, and starts from the very beginning.
+This document focuses on how to get the solution running, and starts from the very beginning.
 
 ## The build
 
@@ -38,7 +38,7 @@ The overall steps to build a *Smart Boombox* are:
 - Install and configure Minimy
 - Start Minimy and use it!
 
-This document  is based on *The smart boombox cookbook* which has more details on the construction of the enclosure. 
+This document  is based on *The smart boombox cookbook* which has more details on the construction of the enclosure and a parts list. 
 See: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
 
 ## Acquire the hardware
@@ -46,10 +46,9 @@ The recommended hardware is a Raspberry Pi (RasPi) 4B with 4 or 8 GB of memory. 
 
 A Rasberry Pi 400 is another option.  It allows the CPU to be *offboard* which frees up space onboard to house lithium-ion batteries.
 
-Hopefully the RasPi 5 is coming soon and will be more powerful and easier to procure.
+Hopefully the RasPi 5 will be out soon and will be more powerful and easier to procure.
 
 For a microphone, a flat, disk type with a mute/unmute switch for visible privacy is recommended.  Don't use a cheap one.
-
 It is best to move the microphone away from the speakers and closer to the center of the room.
 
 You can start with just about any speaker(s) with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
@@ -99,8 +98,9 @@ To connect all the computer hardware, perform the following steps:
 
 - Plug the micro-SD card into the back underside of the RasPi.
 - If you have wired ethernet, plug it in to the RJ-45 connector on the RasPi.
-- Connect the mouse and keyboard to the USB connections on the RasPi.
+- Connect the mouse and keyboard to the USB slots.
 - Connect the monitor to the RasPi with an appropriate micro-HDMI cable.  The RasPi 4 two micro HDMI ports - use the left one.
+- If you have a USB drive with music files on it, plug it in to a USB slot.
 - Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. An official RasPi power supply is recommended to avoid *undervoltage* warnings.  If you have an inline switch, turn it on.
 
 ## Install and configure Linux
