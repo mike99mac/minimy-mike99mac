@@ -7,20 +7,20 @@
 echo
 date
 echo "Begin Installation, MiniMy Version 1.1.0"
-sudo apt-get install python3-venv
-sudo apt-get install python3-dev
+sudo apt install python3-venv
+sudo apt install python3-dev
 python3 -m venv venv_ngv
 source venv_ngv/bin/activate
 pip install --upgrade pip
 pip install --upgrade wheel setuptools
 pip install setuptools -U
-sudo apt-get install -y python3-dev
-sudo apt-get install -y build-essential
-sudo apt-get install -y portaudio19-dev
-sudo apt-get install -y mpg123
-sudo apt-get install -y ffmpeg
-sudo apt-get install -y curl
-sudo apt-get install -y wget
+sudo apt install -y python3-dev
+sudo apt install -y build-essential
+sudo apt install -y portaudio19-dev
+sudo apt install -y mpg123
+sudo apt install -y ffmpeg
+sudo apt install -y curl
+sudo apt install -y wget
 python3 -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
 pip install -r install/requirements.txt
 pip install lingua_franca
