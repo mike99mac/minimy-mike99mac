@@ -21,4 +21,6 @@ Version 23.06.11
     - Create, manipulate, delete and play playlists (NOTE: code is not finished yet)
     - Perform basic player operations
 - Code to mount /var/log and two Minimy directories over a tmpfs so as to extend the life of the SD card
-- A *buttons* skill to enable three physical buttons, previous, pause/resume and next.
+- A *buttons* system skill enables 3 pushbuttons: 'previous', 'pause/resume' and 'next'.
+- Many debug statements were added so log files will be more helpful
+
