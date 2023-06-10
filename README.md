@@ -584,7 +584,45 @@ with this code:
 
     **``(venv_ngv) $ ./stopminimy``**
     
-**TODO:** Show some output of running startminimy and run lsenv again.    
+- Run **``lsenv``** again to see how your environment has changed.    
+
+    **``lsenv``**
+
+    ```
+    Status of minimy:
+     -) WARNING: minimy is not running as a service ... checking for processes ...
+        Minimy user skills: connectivity email example1 help mpc timedate weather wiki
+             System skills: buttons intent media_player mic skill_alarm skill_fallback skill_media skill_volume stt tts
+    ---------------------------------------------------------------------------------
+    Status of mpd:
+     -) mpd is running as a service:
+        Active: active (running) since Sat 2023-06-10 10:13:24 EDT; 2h 3min ago
+    ---------------------------------------------------------------------------------
+    Status of pulseaudio:
+     -) pulseaudio is running as a service:
+        Active: active (running) since Sat 2023-06-10 10:13:22 EDT; 2h 3min ago
+        pulseaudio processes:
+        pulse        850       1  2 10:13 ?        00:03:35 /usr/bin/pulseaudio --system --disallow-exit --disallow-module-loading --disable-shm --exit-idle-time=-1
+    ---------------------------------------------------------------------------------
+         IP address : 192.168.1.148
+    CPU temperature : 72C / 161F
+      Root fs usage : 18%
+          CPU usage : 58%
+    Memory usage    :
+                     total        used        free      shared  buff/cache   available
+      Mem:           3.7Gi       1.8Gi       224Mi        44Mi       1.7Gi       1.7Gi
+      Swap:          1.0Gi       4.0Mi       1.0Gi
+    tmpfs filesystem?
+                          /var/log       Linux logs : yes
+              /home/pi/minimy/logs      Minimy logs : yes
+               /home/pi/minimy/tmp  Minimy temp dir : yes
+    ```
+You should see two changes:
+
+- Minimy is now running - the output showing user and system skills
+- The two minimy file systems frequently written to are now mounted over an in-memory tmpfs.
+
+
 
 ## The buttons process
 
