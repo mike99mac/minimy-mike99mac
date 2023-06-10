@@ -680,14 +680,14 @@ If you want to add buttons to your enclosure, attach them to the following GPIO 
 
 The ``buttons.py`` code is here: https://github.com/mike99mac/minimy-mike99mac/blob/main/framework/services/input/buttons.py
     
-One source of pushbuttons is here: https://www.amazon.com/dp/B09C8C53DM  
+One source of purchasing pushbuttons is here: https://www.amazon.com/dp/B09C8C53DM  
 
 **TODO:** On another model, the computer is a RaspPi 400 which is *offboard*. This allows Lithium-ion batteries to be *onboard*. That will need new code that uses the arrow keys on the RasPi 400 for the same function.
 
 # Debugging
 Maybe everything will work perfectly the first time, and you won't have to debug.  But we know how that goes :))
 
-Many, many debug statements have been added to the code.  In the critical classes, almost every function has at least one log statement when in debug mode.  When Minimy is started with **``startminimy``
+Many, many debug statements have been added to the code.  In the critical classes, almost every function has at least one log statement when in debug mode. 
 
 Following are some debugging resources.
 - Log files are in ``$HOME/minimy/logs``.  
@@ -699,12 +699,12 @@ Following are some debugging resources.
         
         ``intent.log  media_player.log  skills.log  stt.log  tts.log``
    
-    - When Minimy is running, watch all the log files get populated in real time.
+    - When Minimy is running, you can watch all the log files get populated in real time.
 
         **``tail -f *``**
         
 - There is an HTML file with JavaScript code that displays the message bus in real time. If you do not have a Web server running, you must view it from the local host. Start a browser on the box you're installing on and point it to: ``file:///home/pi/minimy/display/sysmon.html``. You should see all messages written to the message bus and the associated data.
-- **TODO:** get a screen shot
+    - **TODO:** get a screen shot
 - Google searches, of course ...
 - You can email me at mike99mac at gmail.com - can't promise anything, but I will try.
 
