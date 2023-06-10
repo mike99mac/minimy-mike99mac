@@ -561,9 +561,11 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
 
 ### Get a Google API key
 
-You need a Google Speech API key in order to be able to convert speech to text.  
+You need a Google Speech API key in order to be able to convert speech to text.  A template file is in the ``install/`` directory.
 
-An alternative is to use a different STT engine.
+An alternative is to use a different STT engine, but that has not been tested.
+
+To get a Google API key file, perform the following steps:
 
 - Change to the install directory.
 
@@ -593,7 +595,7 @@ An alternative is to use a different STT engine.
     }
     ```
 
-- You will need to obtain the ``PROJECT_ID, KEY_ID, PRIVATE_KEY, SERVICE_ACCOUNT_EMAIL`` and ``CLIENT_ID``. 
+- You will need to obtain the ``PROJECT_ID``, ``KEY_ID``, ``PRIVATE_KEY``, ``SERVICE_ACCOUNT_EMAIL`` and ``CLIENT_ID``. 
 - Go to https://console.cloud.google.com/freetrial/signup/tos and obtain and populate these values.
 
 ## Run Minimy
