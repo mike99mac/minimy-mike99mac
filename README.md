@@ -14,7 +14,7 @@ get called asynchronously when an utterance is matched to an intent the skill ha
 
 **From Mike Mac, who is working on this fork of the code:**
 
-I worked with the Mycroft free and open personal voice assistant since 2019, but the company went bankrupt in 2023, so had to move on. :((
+I worked with Mycroft since 2019, but the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard work everyone did to blaze this trail.
 
 I tried OVOS but was not able to get a music skill working after a couple weeks.  I still haven't given up on that platform - no doubt it will only get better and easier to install.
 
