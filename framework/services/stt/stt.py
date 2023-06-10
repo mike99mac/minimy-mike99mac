@@ -327,7 +327,7 @@ if __name__ == '__main__':
         no_bus = sys.argv[1]
     if no_bus == 'y' or no_bus == 'Y' or no_bus == 'true' or no_bus == 'True':
         no_bus = True
-    print("STT:no_bus=%s" % (no_bus,))
+    print(f"STT: no_bus: {no_bus}")
     stt_svc = STTSvc(no_bus=no_bus)
     stt_svc.run()
     Event().wait()  # Wait forever

@@ -123,11 +123,11 @@ class SystemSkill(SimpleVoiceAssistant):
                 return skill
         return None
 
-    def input_focus_determination(self,new_skill_cat):
-        self.log.debug("SystemSkill:input_focus_determination() skill_id  = %s" % (skill_id))
+    def input_focus_determination(self, new_skill_cat):
+        self.log.debug(f"SystemSkill:input_focus_determination() new_skill_cat: {new_skill_cat}")
         return True
 
-    def output_focus_determination(self,new_skill_cat):
+    def output_focus_determination(self, new_skill_cat):
         """
         A skill is requesting focus. determine if this request should honored or denied and what 
         should happen as a result of this action.

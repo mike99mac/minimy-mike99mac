@@ -90,7 +90,7 @@ class MpcClient(SimpleVoiceAssistant):
     Start playing the type of music passed in the music_info object   
     Return: boolean
     """
-    self.log.debug(f"MpcClient.start_music(): match_type = {music_info.match_type}")
+    self.log.debug(f"MpcClient.start_music(): match_type : {music_info.match_type}")
     if music_info.match_type == "internet":
       self.stream_internet_music(music_info)
       return True
@@ -281,7 +281,7 @@ class MpcClient(SimpleVoiceAssistant):
     """
     return tracks for the requested artist  
     """
-    self.log.debug("MpcClient.get_artist() called with artist_name "+str(artist_name))
+    self.log.debug(f"MpcClient.get_artist() called with artist_name: {artist_name}")
     results = self.search_music("search", "artist", artist_name)    
     num_hits = len(results)
     self.log.debug("MpcClient.get_artist() num_hits = "+str(num_hits))
@@ -312,7 +312,7 @@ class MpcClient(SimpleVoiceAssistant):
     """
     Given the results of an mpc search. return a Music_info object 
     """
-    self.log.debug(f"MpcClient.get_artist() match_type = {match_type} mesg_file = {mesg_file} mesg_info = {mesg_info}")
+    self.log.debug(f"MpcClient.get_artist() match_type: {match_type} mesg_file: {mesg_file} mesg_info: {mesg_info}")
     tracks_or_urls = []   
     for artist_found, album_found, title, time_str, relative_path in results:
       next_track='"'+self.music_dir+relative_path+'"'  # enclose file name in double quotes 
@@ -1031,9 +1031,9 @@ class MpcClient(SimpleVoiceAssistant):
     param: text of the request
     return: Music_info object
     """
-    self.log.debug(f"MpcClient.search_news() utterance = {utterance}")
+    self.log.debug(f"MpcClient.search_news() utterance: {utterance}")
     url = "https://www.npr.org/podcasts/500005/npr-news-now"
-    self.log.debug(f"MpcClient.search_news() url = {url}") 
+    self.log.debug(f"MpcClient.search_news() url: {url}") 
     # self.speak("Getting the latest from N.P.R news")
     res = requests.get(url)
     page = res.text
@@ -1047,7 +1047,7 @@ class MpcClient(SimpleVoiceAssistant):
     if end_indx == -1:
       self.log.debug(f"MpcClient.search_news() Parse error")
       return
-    self.log.debug(f"MpcClient.search_news() start_indx = {start_indx} end_indx = {end_indx} ")       
+    self.log.debug(f"MpcClient.search_news() start_indx: {start_indx} end_indx: {end_indx} ")       
     new_url = page[:end_indx]
     new_url = new_url.replace("\\","")
     os.chdir(self.temp_dir)                # change to the logs directory which should be a tmpfs
@@ -1056,5 +1056,5 @@ class MpcClient(SimpleVoiceAssistant):
     os.system(cmd)                         # get the file with wget
     file_names = glob.glob("*.mp3")        # find the downloaded file
     file_name = f"{self.temp_dir}/{file_names[0]}" # fully qualify file name
-    self.log.debug(f"MpcSkill.search_news() news file_name = {file_name}")
+    self.log.debug(f"MpcSkill.search_news() news file_name: {file_name}")
     return Music_info("news", None, None, [file_name])
