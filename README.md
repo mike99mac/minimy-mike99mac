@@ -12,7 +12,7 @@ get called asynchronously when an utterance is matched to an intent the skill ha
 
 **From Mike Mac - author of this fork:**
 
-This is an attempt to create a music playing device that you can talk to. 
+This code enables a device to play music by voice. 
 
 I worked with Mycroft since 2019, but the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard work the Mycroft employees and contributors did to get us this far.
 
@@ -25,7 +25,7 @@ This document focuses on how to get the solution running, and starts from the ve
 
 ## The build
 
-The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside an *enclosure* that tries to emulate a retro-looking boombox. However, this code and these steps should be relatively portable to any hardware that can run any Linux. 
+The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22.04 inside an *enclosure* that is a retro-looking boombox. However, this code and these steps should be relatively portable to any hardware that can run any Linux. 
 
 The overall steps to build a *Smart Boombox* are:
 
@@ -60,7 +60,7 @@ You will need another computer running Linux or another OS to copy the Linux ima
 
 ### Prepare on Linux
 
-If you have a Linux box with an SD card reader, you can use **``rpi-imager``** to copy the Linux image. To do so, perform the following tasks.
+If you have a Linux box with an SD card port, you can use **``rpi-imager``** to copy the Linux image. To do so, perform the following tasks.
 - Put a micro-SD card into an SD adapter.
 - Plug the SD adapter into the card reader.
 - If you don't have it already, install the tool.
@@ -83,7 +83,7 @@ If you have a Linux box with an SD card reader, you can use **``rpi-imager``** t
 
     - Enter the password of the current user.
 
-You should see a progress indicator as the image is copied to the SD card. It should take around five minutes.
+You should see a progress indicator as the image is copied to the SD card. It should take around 5 minutes.
 
 ### Prepare an SD card on Windows
 If you only have access to a Windows system Install the *Win 32 disk imager* from https://sourceforge.net/projects/win32diskimager/
@@ -138,13 +138,16 @@ A welcome screen should open on the monitor. Perform the following steps:
     - For the last option, **Log in automatically** is recommended.
     - Click **Continue**.
  - The install process will take a number of minutes configuring and will reboot the computer.
+
+    ``TAKE A BREAK?  In a test, this step took 5 minutes.``
+    
  - When the system finishes rebooting, an *Online Accounts* window should appear. Click **Skip**.
  - Click **Next** at the *Enable Ubuntu Pro* window.
  - Choose an option on the *Help Improve Ubuntu* window and click **Next**.
  - Click **Next** at the *Privacy* window.
  - Click **Done** at the *Ready to go* window.
 
-Ubuntu Desktop 22-04 should now be installed
+Ubuntu Desktop 22.04 should now be installed
  
 ### Install the SSH server
 
@@ -211,6 +214,8 @@ Update and upgrade your system which installs the latest code for all installed 
 - Upgrade your system so you have all the latest code. This step could take up to 25 minutes.
 
     **``$ sudo apt-get upgrade -y``**
+    
+    ``TAKE A BREAK?  In a test, this step took 19 minutes.``
     
 Your system should now be at the latest software level.
 
@@ -300,6 +305,8 @@ To run **``intall1``**, perform the following steps:
     
     ``...``
     
+    ``TAKE A BREAK?  In a test, this step took 3 minutes.``
+    
 ### Test the changes
 
 - Test your environment with the newly installed **``lsenv``** script which reports on many aspects of your Linux system.
@@ -388,7 +395,7 @@ You should see three changes:
 
 - The Music Playing Daemon, **``mpd``** is now running.
 - The one **``pulseaudio``** process shows a **``--system``** parameter which is vital to audio output working correctly.
-- The **``/var/log/``** file system is now mounted over an in-memory ``tmpfs``.
+- An in-memory ``tmpfs`` file system is now mounted over the **``/var/log/``** directory.
 
 ## Test microphone and speakers
 
@@ -410,7 +417,7 @@ They are wrappers around the **``arecord``** and **``aplay``** commands designed
     
 You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
 
-At this point your system should have a solid sound and microphone stack running, and all software necessary for the installation of Minimy.
+At this point your system should have a solid sound and microphone stack running, especially **``mpd``** and **``pulseaudio``**, and all software necessary for the installation of Minimy.
 
 ## Install and configure Minimy
 
@@ -453,7 +460,7 @@ To download and copy Minimy, perform the following steps:
     
 ### Install Minimy    
     
-- Run the following script to install **``minimy``** and direct ``stdout`` and ``stderr`` to a file.
+- Run the following script to install Minimy and direct ``stdout`` and ``stderr`` to a file.
     
     **``$ ./install/linux_install.sh 2>&1 | tee linux_install.out``**
     
@@ -462,7 +469,9 @@ To download and copy Minimy, perform the following steps:
     Install Complete
     ```
     
-    This step can take up to ten minutes. It is recommended that you review the output file, checking for warnings or errors.
+    ``TAKE A BREAK?  In a test, this step took 13 minutes.``
+    
+    It is recommended that you review the output file, checking for warnings or errors.
     
 - Confirm that **``venv``** is an alias which should have been set in your ``.bash_profile`` after the reboot.
 
@@ -628,7 +637,7 @@ You should see two changes:
 
 The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick access to *previous track*, *pause/resume*, and *next track* operations.  A new **``buttons``** system skill traps button presses and sends corresponding messages to the bus.
 
-If you want to add buttons, attach them to the following GPIO pins:
+If you want to add buttons to your enclosure, attach them to the following GPIO pins:
 
     +-----+--------+-------------------------------+
     | Pin | Label  | Description                   |
@@ -641,9 +650,16 @@ If you want to add buttons, attach them to the following GPIO pins:
 
 The ``buttons.py`` code is here: https://github.com/mike99mac/minimy-mike99mac/blob/main/framework/services/input/buttons.py
     
-One source of buttons is here: https://www.amazon.com/dp/B09C8C53DM  
+One source of pushbuttons is here: https://www.amazon.com/dp/B09C8C53DM  
 
 **TODO:** On another model, the computer is a RaspPi 400 which is *offboard*. This allows Lithium-ion batteries to be *onboard*. That will need new code that uses the arrow keys for the same function.
+
+# Debugging
+Maybe everything will work perfectly the first time, and there will be no need to debug.  But we know how that goes.
+
+Following are some debugging resources.
+
+
 
 # Reference
 These reference sections follow:
