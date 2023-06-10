@@ -38,11 +38,11 @@ The overall steps to build a *Smart Boombox* are:
 - Install and configure Minimy
 - Start Minimy and use it!
 
-This document  is based on *The smart boombox cookbook* which has more details on the construction of the *boombox*. 
+This document  is based on *The smart boombox cookbook* which has more details on the construction of the enclosure. 
 See: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
 
 ## Acquire the hardware
-The minimum recommended hardware is a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. 
+The minimum recommended hardware is a Raspberry Pi (RasPi) 4B with 4 or 8 GB of memory.  Yes, they're still hard to get, but not impossible. 
 
 A Rasberry Pi 400, also with at least 4GB, is another option.  On the boombox enclousres, having the CPU offboard frees up space to house lithium-ion batteries.
 
