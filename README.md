@@ -46,9 +46,10 @@ The recommended hardware is a Raspberry Pi (RasPi) 4B with 4 or 8 GB of memory. 
 
 A Rasberry Pi 400 is another option.  It allows the CPU to be *offboard* which frees up space onboard to house lithium-ion batteries.
 
-Hopefully the RasPi 5 is coming soon and will be more powerful and easy to procure.
+Hopefully the RasPi 5 is coming soon and will be more powerful and easier to procure.
 
-Don't buy a cheap USB microphone. The sweet spot might be around $25 for flat disk type with a mute/unmute switch for visible privacy. 
+For a microphone, a flat, disk type with a mute/unmute switch for visible privacy is recommended.  Don't use a cheap one.
+
 It is best to move the microphone away from the speakers and closer to the center of the room.
 
 You can start with just about any speaker(s) with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
