@@ -1,6 +1,6 @@
 # Minimy
 
-This software is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
+This is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
 
 ## Overview
 **From Ken Smith, who is the original author:**
@@ -14,7 +14,7 @@ get called asynchronously when an utterance is matched to an intent the skill ha
 
 This is an attempt to create a music playing device that you can talk to. 
 
-I worked with Mycroft since 2019, but the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard work everyone who ever worked for Mycroft did to blaze this trail.
+I worked with Mycroft since 2019, but the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard that any Mycroft employee or contributor did to blaze this trail.
 
 OVOS is a fork of Mycroft. I tried it but was not able to get a music skill working after a couple weeks.  I still haven't given up on that platform - no doubt it will only get better and easier to install.
 
