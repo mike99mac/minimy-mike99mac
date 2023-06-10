@@ -38,8 +38,6 @@ The overall steps to build a *Smart Boombox* are:
 - Install and configure Minimy
 - Start Minimy and use it!
 
-Ideally Minimy would run on a Mycroft Mark II, however there is no code supporting the monitor, SJ-201 and associated hardware.
-
 This document  is based on *The smart boombox cookbook* which also has some details on the construction of an enclosure that looks like a *boombox*. 
 
 It is here: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
