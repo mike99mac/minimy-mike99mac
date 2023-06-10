@@ -423,7 +423,7 @@ In this section you will perform the following steps:
 ### Download and copy Minimy 
 It is recommended that you make a second copy of Minimy after you download it.  This way, if you make some changes to the running code, you'll have a reference copy. Also the copy of the code that you run should not have a ``.git/`` directory, thus removing any connection to github.
 
-The directory the copy will run in ** *must* ** be named**  ``minimy``, removing the ``-mike99mac`` suffix.  Otherwise things will break.
+The new directory ***must*** be named ``minimy``, removing the ``-mike99mac`` suffix.  Otherwise things will break.
 
 To download and copy Minimy, perform the following steps:
 
@@ -453,7 +453,7 @@ To download and copy Minimy, perform the following steps:
     
 ### Install Minimy    
     
-- Run the following script to install minimy and direct stdout and stderr to a file.
+- Run the following script to install **``minimy``** and direct ``stdout`` and ``stderr`` to a file.
     
     **``$ ./install/linux_install.sh 2>&1 | tee linux_install.out``**
     
