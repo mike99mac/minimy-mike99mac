@@ -573,12 +573,10 @@ Their output is written to the ``logs/`` directory under the main install direct
 The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS`` which are set in **``startminimy``** 
 with this code:
 
-**TODO:** the first two varaibles should be ``$HOME/minimy``. The third should use $HOME.
-
     ...
-    export PYTHONPATH=`pwd`
-    export SVA_BASE_DIR=`pwd`
-    export GOOGLE_APPLICATION_CREDENTIALS="/home/pi/minimy/install/my-google-key.json"
+    export PYTHONPATH="$HOME/minimy:$HOME/minimy/venv_ngv/lib/python3.10/site-packages"
+    export SVA_BASE_DIR="$HOME/minimy"
+    export GOOGLE_APPLICATION_CREDENTIALS="$HOME/minimy/install/my-google-key.json"
     ...
 
 - Start Minimy, ensuring it is run from the base directory, as follows.
@@ -595,9 +593,9 @@ with this code:
 
 ## The buttons process
 
-The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick access to *previous track*, *pause/resume*, and *next track* operations.  A new **``buttons``** system skill traps button presses and sends corresponding messages to to the bus.
+The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick access to *previous track*, *pause/resume*, and *next track* operations.  A new **``buttons``** system skill traps button presses and sends corresponding messages to the bus.
 
-If your enclosure does not have them, you can skip this step.  Or, if you want to add buttons, attach them to the following GPIO pins:
+If you want to add buttons, attach them to the following GPIO pins:
 
     +-----+--------+-------------------------------+
     | Pin | Label  | Description                   |
@@ -610,13 +608,12 @@ If your enclosure does not have them, you can skip this step.  Or, if you want t
 
 The ``buttons.py`` code is here: https://github.com/mike99mac/minimy-mike99mac/blob/main/framework/services/input/buttons.py
     
-One source of buttons is here: https://www.amazon.com/dp/B09C8C53DM
-    
+One source of buttons is here: https://www.amazon.com/dp/B09C8C53DM  
 
-**TODO:** On another model, the computer is a RaspPi 400 which is *offboard*. This allows Lithium-ion batteries to be on-board. That will need new code that uses the arrow keys for the same function.
+**TODO:** On another model, the computer is a RaspPi 400 which is *offboard*. This allows Lithium-ion batteries to be *onboard*. That will need new code that uses the arrow keys for the same function.
 
 # Reference
-The following reference sections follow:
+These reference sections follow:
 - Vocabulary and examples
 - Other Documentation
 
@@ -628,18 +625,19 @@ In the samples that follow (words) in parenthesis are the actual words spoken, w
 
 ### Connectivity skill
 
-Following is a summary of the Connectivity skill vocabulary.
+**TODO:** Finish writing this skill.
+
+Following is the Connectivity skill vocabulary.
  
 Following are examples of Connectivity skill requests:
 
-**Note:** It's not clear this skill is finished
  
 ### Email skill
 
-Following is a summary of the Email skill vocabulary.
+Following is the Email skill vocabulary.
 
 ```
-(compose|create|new|start email)
+(compose|create|new|start) email
 send email
 ```
 
@@ -651,7 +649,7 @@ Following are examples of Email skill requests:
  
 ### Example1 skill
 
-Following is a summary of the Example1 skill vocabulary.
+Following is the Example1 skill vocabulary.
 
 ``(run|test|execute) example one``
  
@@ -661,9 +659,9 @@ Following are examples of Example1 skill requests:
  
 ### Help skill
 
-**TODO:*** Code is not finished for the Help skill!
+**TODO:** Finish the code for this skill!
 
-Following is a summary of the Help skill vocabulary.
+Following is the Help skill vocabulary.
 
 Following are examples of Help skill requests:
  
@@ -675,7 +673,7 @@ The MPC skill can:
 - Play Internet radio stations
 - Play Internet music
 - Play NPR news
-- Create, manipulate, delete and play playlists (**NOTE:** code is not finished yet)
+- Create, delete, manage and play playlists (**TODO:** finish this code)
 - Perform basic player operations 
 
 Following are the vocabularies for the MPC skill:
@@ -747,7 +745,7 @@ Following are examples of MPC skill's requests:
 
 ### Timedate skill
 
-Following is a summary of the Timedate skill vocabulary.
+Following is the Timedate skill vocabulary.
 
 ```
 what time (is it|)
@@ -763,15 +761,15 @@ Following are examples of  skill's requests:
  
 ### Weather skill
 
-Following is a summary of the Weather skill vocabulary.
+Following is the Weather skill vocabulary.
  
 Following are examples of Weather skill requests:
 
 ### Wiki skill
 
-Following is a summary of the Wiki skill vocabulary.
+The Wiki skill is a fallback skill. As such it does not have a vocabulary
 
-Following are examples of Wiki skill requests:
+**TODO:** Add ``Ask wikipedia {question}``
 
 ## More documentation
 
