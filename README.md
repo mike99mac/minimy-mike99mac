@@ -12,7 +12,7 @@ get called asynchronously when an utterance is matched to an intent the skill ha
 
 **From Mike Mac - author of this fork:**
 
-This is an attempt to create a music playing device that you can talk to. 
+This code enables a device to play music by voice. 
 
 I worked with Mycroft since 2019, but the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard work the Mycroft employees and contributors did to get us this far.
 
@@ -25,7 +25,7 @@ This document focuses on how to get the solution running, and starts from the ve
 
 ## The build
 
-The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside an *enclosure* that tries to emulate a retro-looking boombox. However, this code and these steps should be relatively portable to any hardware that can run any Linux. 
+The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside an *enclosure* that is a retro-looking boombox. However, this code and these steps should be relatively portable to any hardware that can run any Linux. 
 
 The overall steps to build a *Smart Boombox* are:
 
@@ -60,7 +60,7 @@ You will need another computer running Linux or another OS to copy the Linux ima
 
 ### Prepare on Linux
 
-If you have a Linux box with an SD card reader, you can use **``rpi-imager``** to copy the Linux image. To do so, perform the following tasks.
+If you have a Linux box with an SD card port, you can use **``rpi-imager``** to copy the Linux image. To do so, perform the following tasks.
 - Put a micro-SD card into an SD adapter.
 - Plug the SD adapter into the card reader.
 - If you don't have it already, install the tool.
@@ -388,7 +388,7 @@ You should see three changes:
 
 - The Music Playing Daemon, **``mpd``** is now running.
 - The one **``pulseaudio``** process shows a **``--system``** parameter which is vital to audio output working correctly.
-- The **``/var/log/``** file system is now mounted over an in-memory ``tmpfs``.
+- An in-memory ``tmpfs`` file system is now mounted over the **``/var/log/``** directory.
 
 ## Test microphone and speakers
 
@@ -410,7 +410,7 @@ They are wrappers around the **``arecord``** and **``aplay``** commands designed
     
 You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
 
-At this point your system should have a solid sound and microphone stack running, and all software necessary for the installation of Minimy.
+At this point your system should have a solid sound and microphone stack running, especially **``mpd``** and **``pulseaudio``** and all software necessary for the installation of Minimy.
 
 ## Install and configure Minimy
 
