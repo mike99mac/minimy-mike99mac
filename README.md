@@ -628,7 +628,7 @@ You should see two changes:
 
 The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick access to *previous track*, *pause/resume*, and *next track* operations.  A new **``buttons``** system skill traps button presses and sends corresponding messages to the bus.
 
-If you want to add buttons, attach them to the following GPIO pins:
+If you want to add buttons to your enclosure, attach them to the following GPIO pins:
 
     +-----+--------+-------------------------------+
     | Pin | Label  | Description                   |
@@ -641,9 +641,16 @@ If you want to add buttons, attach them to the following GPIO pins:
 
 The ``buttons.py`` code is here: https://github.com/mike99mac/minimy-mike99mac/blob/main/framework/services/input/buttons.py
     
-One source of buttons is here: https://www.amazon.com/dp/B09C8C53DM  
+One source of pushbuttons is here: https://www.amazon.com/dp/B09C8C53DM  
 
 **TODO:** On another model, the computer is a RaspPi 400 which is *offboard*. This allows Lithium-ion batteries to be *onboard*. That will need new code that uses the arrow keys for the same function.
+
+# Debugging
+Maybe everything will work perfectly the first time, and there will be no need to debug.  But we know how that goes.
+
+Following are some debugging resources.
+
+
 
 # Reference
 These reference sections follow:
