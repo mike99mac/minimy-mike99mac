@@ -1,8 +1,6 @@
 # Minimy
 
-Minimy is a simple NLU-based voice assistant framework.
-
-It is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
+This software is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
 
 ## Overview
 **From Ken Smith, who is the original author:**
@@ -13,6 +11,8 @@ simply python programs which may do normal python things as well as call speak()
 get called asynchronously when an utterance is matched to an intent the skill has previously registered."  
 
 **From Mike Mac, who is working on this fork of the code:**
+
+My goal is to create a music playing device that you can talk to. 
 
 I worked with Mycroft since 2019, but the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard work everyone who ever worked for Mycroft did to blaze this trail.
 
@@ -57,7 +57,7 @@ You can start with just about any speaker(s) with a 3.5mm jack that will plug in
 ## Flash Linux to a memory device
 The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and copy a Linux distribution to it. 
 
-Hopefully you have another computer running Linux, but other OS's will work. It must have a hardware port to write to the card.
+You will need another computer running Linux or another OS to copy the Linux image to the memory card.
 
 ### Prepare on Linux
 
