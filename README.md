@@ -659,7 +659,7 @@ Following are examples of Example1 skill requests:
  
 ### Help skill
 
-**TODO:*** Finish the code for this skill!
+**TODO:** Finish the code for this skill!
 
 Following is the Help skill vocabulary.
 
@@ -673,7 +673,7 @@ The MPC skill can:
 - Play Internet radio stations
 - Play Internet music
 - Play NPR news
-- Create, manipulate, delete and play playlists (**NOTE:** code is not finished yet)
+- Create, delete, manage and play playlists (**TODO:** finish this code)
 - Perform basic player operations 
 
 Following are the vocabularies for the MPC skill:
