@@ -561,13 +561,43 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
 
 ### Get a Google API key
 
-You need a Google Speech API key in order to be able to convert speech to text.  
+You need a Google Speech API key in order to be able to convert speech to text.  A template file is in the ``install/`` directory.
 
-Get one from: https://console.cloud.google.com/freetrial/signup/tos
+An alternative is to use a different STT engine, but that has not been tested.
 
-Once you get your key, copy it to ``/home/pi/minimy/install/my-google-key.json``.
+To get a Google API key file, perform the following steps:
 
-An alternative is to use a different STT engine.
+- Change to the install directory.
+
+    **``cd /home/pi/minimy/install``**
+    
+- Copy the GPG key template file to the file that will be populated.
+
+    **``cp my-google-key.json.template my-google-key.json``**
+
+- Show the file.
+
+    **``# cat my-google-key.json``**
+    
+    ```
+    (venv_ngv) pi@johnsbox:~/minimy-mike99mac$ cat my-google-key.json.template
+    {
+      "type": "service_account",
+      "project_id": "PROJECT_ID",
+      "private_key_id": "KEY_ID",
+      "private_key": "-----BEGIN PRIVATE KEY-----\nPRIVATE_KEY\n-----END PRIVATE KEY-----\n",
+      "client_email": "SERVICE_ACCOUNT_EMAIL",
+      "client_id": "CLIENT_ID",
+      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+      "token_uri": "https://accounts.google.com/o/oauth2/token",
+      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+      "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/SERVICE_ACCOUNT_EMAIL"
+    }
+    ```
+
+- You will need to obtain your own ``PROJECT_ID``, ``KEY_ID``, ``PRIVATE_KEY``, ``SERVICE_ACCOUNT_EMAIL`` and ``CLIENT_ID``. 
+- Go to https://console.cloud.google.com/freetrial/signup/tos and obtain these values.
+- Populate them in the file.
 
 ## Run Minimy
 The scripts **``startminimy``** and **``stopminimy``** are used to start and stop processes. 
@@ -650,15 +680,33 @@ If you want to add buttons to your enclosure, attach them to the following GPIO 
 
 The ``buttons.py`` code is here: https://github.com/mike99mac/minimy-mike99mac/blob/main/framework/services/input/buttons.py
     
-One source of pushbuttons is here: https://www.amazon.com/dp/B09C8C53DM  
+One source of purchasing pushbuttons is here: https://www.amazon.com/dp/B09C8C53DM  
 
-**TODO:** On another model, the computer is a RaspPi 400 which is *offboard*. This allows Lithium-ion batteries to be *onboard*. That will need new code that uses the arrow keys for the same function.
+**TODO:** On another model, the computer is a RaspPi 400 which is *offboard*. This allows Lithium-ion batteries to be *onboard*. That will need new code that uses the arrow keys on the RasPi 400 for the same function.
 
 # Debugging
-Maybe everything will work perfectly the first time, and there will be no need to debug.  But we know how that goes.
+Maybe everything will work perfectly the first time, and you won't have to debug.  But we know how that goes :))
+
+Many, many debug statements have been added to the code.  In the critical classes, almost every function has at least one log statement when in debug mode. 
 
 Following are some debugging resources.
+- Log files are in ``$HOME/minimy/logs``.  
+    - Show the log files.
+   
+        **``$ cd $HOME/minimy/logs``**
+        
+        **``$ ls``**
+        
+        ``intent.log  media_player.log  skills.log  stt.log  tts.log``
+   
+    - When Minimy is running, you can watch all the log files get populated in real time.
 
+        **``tail -f *``**
+        
+- There is an HTML file with JavaScript code that displays the message bus in real time. If you do not have a Web server running, you must view it from the local host. Start a browser on the box you're installing on and point it to: ``file:///home/pi/minimy/display/sysmon.html``. You should see all messages written to the message bus and the associated data.
+    - **TODO:** get a screen shot
+- Google searches, of course ...
+- You can email me at mike99mac at gmail.com - can't promise anything, but I will try.
 
 
 # Reference
