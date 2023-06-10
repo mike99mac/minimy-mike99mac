@@ -83,7 +83,7 @@ If you have a Linux box with an SD card port, you can use **``rpi-imager``** to 
 
     - Enter the password of the current user.
 
-You should see a progress indicator as the image is copied to the SD card. It should take around five minutes.
+You should see a progress indicator as the image is copied to the SD card. It should take around 5 minutes.
 
 ### Prepare an SD card on Windows
 If you only have access to a Windows system Install the *Win 32 disk imager* from https://sourceforge.net/projects/win32diskimager/
@@ -139,7 +139,7 @@ A welcome screen should open on the monitor. Perform the following steps:
     - Click **Continue**.
  - The install process will take a number of minutes configuring and will reboot the computer.
 
-    ``TAKE A BREAK?  In a test, this step took five minutes.``
+    ``TAKE A BREAK?  In a test, this step took 5 minutes.``
     
  - When the system finishes rebooting, an *Online Accounts* window should appear. Click **Skip**.
  - Click **Next** at the *Enable Ubuntu Pro* window.
@@ -305,7 +305,7 @@ To run **``intall1``**, perform the following steps:
     
     ``...``
     
-        ``TAKE A BREAK?  In a test, this step took 3 minutes.``
+    ``TAKE A BREAK?  In a test, this step took 3 minutes.``
     
 ### Test the changes
 
@@ -471,7 +471,7 @@ To download and copy Minimy, perform the following steps:
     
     ``TAKE A BREAK?  In a test, this step took 13 minutes.``
     
-    This step can take up to ten minutes. It is recommended that you review the output file, checking for warnings or errors.
+    It is recommended that you review the output file, checking for warnings or errors.
     
 - Confirm that **``venv``** is an alias which should have been set in your ``.bash_profile`` after the reboot.
 
