@@ -42,9 +42,9 @@ This document  is based on *The smart boombox cookbook* which has more details o
 See: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
 
 ## Acquire the hardware
-The minimum recommended hardware is a Raspberry Pi (RasPi) 4B with 4 or 8 GB of memory.  Yes, they're still hard to get, but not impossible. 
+The recommended hardware is a Raspberry Pi (RasPi) 4B with 4 or 8 GB of memory.  Yes, they're still hard to get, but not impossible. 
 
-A Rasberry Pi 400, also with at least 4GB, is another option.  On the boombox enclousres, having the CPU offboard frees up space to house lithium-ion batteries.
+A Rasberry Pi 400 is another option.  It allows the CPU to be *offboard* which frees up space onboard to house lithium-ion batteries.
 
 Hopefully the RasPi 5 is coming soon and will be more powerful and easy to procure.
 
