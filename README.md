@@ -215,6 +215,8 @@ Update and upgrade your system which installs the latest code for all installed 
 
     **``$ sudo apt-get upgrade -y``**
     
+      ``TAKE A BREAK?  In a test, this step took 19 minutes.``
+    
 Your system should now be at the latest software level.
 
 ## Install and use mycroft-tools
@@ -302,6 +304,8 @@ To run **``intall1``**, perform the following steps:
     **``$ install1 2>&1 | tee install1.out``**
     
     ``...``
+    
+        ``TAKE A BREAK?  In a test, this step took 3 minutes.``
     
 ### Test the changes
 
@@ -464,6 +468,8 @@ To download and copy Minimy, perform the following steps:
     ...
     Install Complete
     ```
+    
+    ``TAKE A BREAK?  In a test, this step took 13 minutes.``
     
     This step can take up to ten minutes. It is recommended that you review the output file, checking for warnings or errors.
     
