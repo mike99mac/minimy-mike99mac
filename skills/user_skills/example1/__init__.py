@@ -26,7 +26,7 @@ class Example1Skill(SimpleVoiceAssistant):
     def handle_user_location_input(self, user_input):
         self.state = 'get_confirmation'
         self.get_user_confirmation(self.handle_user_confirmation_input, 
-                                   "You said %s, is that correct?" % (user_input,), 
+                                   f"You said {user_input}, is that correct?", 
                                    self.handle_timeout)
 
     def start(self, message):

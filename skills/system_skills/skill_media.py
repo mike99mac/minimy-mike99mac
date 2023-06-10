@@ -124,10 +124,9 @@ class SVAMediaSkill(SimpleVoiceAssistant):
             return self.handle_query(msg)
         elif msg.data['subtype'] == 'media_command':
             return self.handle_command(msg)
-      # why is 'stop' coming in as the subtype??  -MM
-      # elif msg.data['subtype'] == 'oob_detect':
-        elif msg.data['subtype'] == 'oob_detect' or msg.data['subtype'] == 'stop':
-
+      # 'stop' coming in as a subtype - but changing to the next line caused a traceback  -MM
+      # elif msg.data['subtype'] == 'oob_detect' or msg.data['subtype'] == 'stop':
+        elif msg.data['subtype'] == 'oob_detect':
             return self.handle_oob_detected(msg)
         elif msg.data['from_skill_id'] == 'media_player_service' and msg.data['subtype'] == 'media_player_command_response' and msg.data['response'] == 'session_ended' and self.active_media_skill == msg.data['skill_id']:
             self.log.debug(f"SVAMediaSkill.handle_message() media session ended for {self.active_media_skill}")
