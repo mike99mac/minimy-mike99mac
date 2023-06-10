@@ -491,7 +491,7 @@ As a result you will be asked during configuration if you would like to use remo
 and NLP. Unless you have a good reason, for now you should always select local mode (``remote=n``) for NLP.
 
 Remote TTS using polly requires an Amazon ID and key.  If you prefer to not use polly for remote TTS you may 
-choose mimi2 from Mycroft which is a free remote TTS alternative. You could also select local only TTS in 
+choose mimic2 from Mycroft which is a free remote TTS alternative. You could also select local only TTS in 
 which case mimic3 should work fine.
 
 By deault the system will fallback to local mode if a remote service fails. This will happen
