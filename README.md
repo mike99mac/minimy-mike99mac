@@ -1,31 +1,31 @@
 # Minimy
 
-Minimy is a simple NLU-based voice assistant framework.
-
-It is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
+This is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
 
 ## Overview
-**From Ken Smith, who is the original author:**
+**From Ken Smith - the original author:**
 
 "The goal of this project is to provide a run-time environment which facilitates the development of 
 voice enabled applications. These voice enabled applications take the form of a 'skill' and are
 simply python programs which may do normal python things as well as call speak() and listen() and
 get called asynchronously when an utterance is matched to an intent the skill has previously registered."  
 
-**From Mike Mac, who is working on this fork of the code:**
+**From Mike Mac - author of this fork:**
 
-I worked with the Mycroft free and open personal voice assistant since 2019, but the company went bankrupt in 2023, so had to move on. :((
+This is an attempt to create a music playing device that you can talk to. 
 
-I tried OVOS but was not able to get a music skill working after a couple weeks.  I still haven't given up on that platform - no doubt it will only get better and easier to install.
+I worked with Mycroft since 2019, but the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard work the Mycroft employees and contributors did to get us this far.
 
-Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire but wasn't well received. Thankfully, Ken Smith put it on github, I forked the code, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** 
-So I continue to try to *give back to the community* while *standing on the shoulders* of so many thousands of others.
+OVOS is a fork of Mycroft. I tried it but was not able to get a music skill working after a couple weeks.  I still haven't given up on it - no doubt it will only get better and easier to install.
 
-This document focuses on how to get the entire *software stack* running, and starts from the very beginning.
+Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire but wasn't well received. Thankfully, Ken Smith put it on github, it was forked, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** 
+So I continue to try to *give back to the community* while *standing on the shoulders* of so many others.
 
-## Overview of the build
+This document focuses on how to get the solution running, and starts from the very beginning.
 
-The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be portable to any hardware that can run Linux, and probably just about any distro, in any type of *enclosure* you fancy.  But if you try it on different hardware, or a different distro, expect the unexpected :))
+## The build
+
+The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside an *enclosure* that tries to emulate a retro-looking boombox. However, this code and these steps should be relatively portable to any hardware that can run any Linux. 
 
 The overall steps to build a *Smart Boombox* are:
 
@@ -38,20 +38,17 @@ The overall steps to build a *Smart Boombox* are:
 - Install and configure Minimy
 - Start Minimy and use it!
 
-Ideally Minimy would run on a Mycroft Mark II, however there is no code supporting the monitor, SJ-201 and associated hardware.
-
-This document  is based on *The smart boombox cookbook* which also has some details on the construction of an enclosure that looks like a *boombox*. 
-
-It is here: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
+This document  is based on *The smart boombox cookbook* which has more details on the construction of the enclosure and a parts list. 
+See: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
 
 ## Acquire the hardware
-The minimum recommended hardware is a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. 
+The recommended hardware is a Raspberry Pi (RasPi) 4B with 4 or 8 GB of memory.  Yes, they're still hard to get, but not impossible. 
 
-A Rasberry Pi 400, also with at least 4GB, is another option.  On the boombox enclousres, having the CPU offboard frees up space to house lithium-ion batteries.
+A Rasberry Pi 400 is another option.  It allows the CPU to be *offboard* which frees up space onboard to house lithium-ion batteries.
 
-Hopefully the RasPi 5 is coming soon and will be more powerful and easy to procure.
+Hopefully the RasPi 5 will be out soon and will be more powerful and easier to procure.
 
-Don't buy a cheap USB microphone. The sweet spot might be around $25 for flat disk type with a mute/unmute switch for visible privacy. 
+For a microphone, a flat, disk type with a mute/unmute switch for visible privacy is recommended.  Don't use a cheap one.
 It is best to move the microphone away from the speakers and closer to the center of the room.
 
 You can start with just about any speaker(s) with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
@@ -59,7 +56,7 @@ You can start with just about any speaker(s) with a 3.5mm jack that will plug in
 ## Flash Linux to a memory device
 The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and copy a Linux distribution to it. 
 
-Hopefully you have another computer running Linux, but other OS's will work. It must have a hardware port to write to the card.
+You will need another computer running Linux or another OS to copy the Linux image to the memory card.
 
 ### Prepare on Linux
 
@@ -101,13 +98,20 @@ To connect all the computer hardware, perform the following steps:
 
 - Plug the micro-SD card into the back underside of the RasPi.
 - If you have wired ethernet, plug it in to the RJ-45 connector on the RasPi.
-- Connect the mouse and keyboard to the USB connections on the RasPi.
+- Connect the mouse and keyboard to the USB slots.
 - Connect the monitor to the RasPi with an appropriate micro-HDMI cable.  The RasPi 4 two micro HDMI ports - use the left one.
+- If you have a USB drive with music files on it, plug it in to a USB slot.
 - Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. An official RasPi power supply is recommended to avoid *undervoltage* warnings.  If you have an inline switch, turn it on.
 
 ## Install and configure Linux
 
-To configure Ubuntu Desktop, perform the following sections.
+To install and configure Ubuntu Desktop Linux, perform the following sections.
+
+- Boot the RasPi
+- Initial Ubuntu Desktop configuration
+- Install the SSH server
+- Start a terminal or SSH session
+- Update and upgrade your system
 
 ### Boot the RasPi
 
@@ -419,7 +423,7 @@ In this section you will perform the following steps:
 - Download and copy Minimy
 - Install Minimy
 - Configure Minimy
-- Run Minimy
+- Get a Google API key
 
 ### Download and copy Minimy 
 It is recommended that you make a second copy of Minimy after you download it.  This way, if you make some changes to the running code, you'll have a reference copy. Also the copy of the code that you run should not have a ``.git/`` directory, thus removing any connection to github.
@@ -487,7 +491,7 @@ As a result you will be asked during configuration if you would like to use remo
 and NLP. Unless you have a good reason, for now you should always select local mode (``remote=n``) for NLP.
 
 Remote TTS using polly requires an Amazon ID and key.  If you prefer to not use polly for remote TTS you may 
-choose mimi2 from Mycroft which is a free remote TTS alternative. You could also select local only TTS in 
+choose mimic2 from Mycroft which is a free remote TTS alternative. You could also select local only TTS in 
 which case mimic3 should work fine.
 
 By deault the system will fallback to local mode if a remote service fails. This will happen
@@ -613,41 +617,68 @@ One source of buttons is here: https://www.amazon.com/dp/B09C8C53DM
 
 # Reference
 The following reference sections follow:
-- Vocabulary
+- Vocabulary and examples
 - Other Documentation
 
-### Vocabulary
+## Vocabulary and examples
 
 In the samples that follow (words) in parenthesis are the actual words spoken, while {words} in curly brackets become variables populated with the actual words spoken. When (multiple|words|) are separated by vertical bars any of those can be spoken, and a trailing vertical bar means that word can be omitted.
 
-Following is a summary of Minimy's vocabulary.
+**``TODO``** Finish all vocabs and examples
 
-#### Connectivity skill
+### Connectivity skill
 
-``TODO``
+Following is a summary of the Connectivity skill vocabulary.
  
-#### Email skill
+Following are examples of Connectivity skill requests:
 
-``TODO``
+**Note:** It's not clear this skill is finished
  
-#### Example1 skill
+### Email skill
 
-``TODO``
+Following is a summary of the Email skill vocabulary.
+
+```
+(compose|create|new|start email)
+send email
+```
+
+Following are examples of Email skill requests:
+
+- **``start email``**
+- ... dialog continues ...
+- **``send email``**
  
-#### Help skill
+### Example1 skill
 
-``TODO``
+Following is a summary of the Example1 skill vocabulary.
+
+``(run|test|execute) example one``
  
-#### MPC skill
+Following are examples of Example1 skill requests:
+ 
+- **``run exmple one``**
+ 
+### Help skill
 
-The MPC skill can search:
+**TODO:*** Code is not finished for the Help skill!
 
-- Your music library
-- Internet radio stations
-- Internet music
-- NPR news 
+Following is a summary of the Help skill vocabulary.
 
-Following are the vocabularies for the MPC skill
+Following are examples of Help skill requests:
+ 
+### MPC skill
+
+The MPC skill can:
+
+- Play from your music library
+- Play Internet radio stations
+- Play Internet music
+- Play NPR news
+- Create, manipulate, delete and play playlists (**NOTE:** code is not finished yet)
+- Perform basic player operations 
+
+Following are the vocabularies for the MPC skill:
 
 - Music library vocabulary
     ```
@@ -684,7 +715,7 @@ Following are the vocabularies for the MPC skill
     play (NPR|the|) news
     ```
     
-- Playlist vocabulary (NOTE: code is not complete yet)
+- Playlist vocabulary (**NOTE:** code is not complete yet)
 
     ```
     (create|make) playlist {playlist} from track {track}
@@ -697,25 +728,50 @@ Following are the vocabularies for the MPC skill
     what playlists (do i have|are there)
     what are (my|the) playlists
     ```  
+    
+- Basic player commands vocabulary (**NOTE:** code is not complete yet)
 
-#### Timedate skill
+    ```
+    previous (song|station|title|track|)
+    next (song|station|title|track|)
+    pause                               # stop music but maintain queue
+    resume
+    stop                                # stop music and clear queue
+    
+    increase volume
+    decrease volume
+    ```
 
-What time is it?
+Following are examples of MPC skill's requests:
+- Play track 
 
-``TODO: finish``
+### Timedate skill
+
+Following is a summary of the Timedate skill vocabulary.
+
+```
+what time (is it|)
+what (is|) (today's|) date
+what day (of the week|) (is it|)
+```
+
+Following are examples of  skill's requests:
+
+- What time is it?
+- What is today's date
+- What day of the week is it
  
-#### Weather skill
+### Weather skill
 
-What's the weather
-``TODO``
+Following is a summary of the Weather skill vocabulary.
  
-#### Wiki skill
+Following are examples of Weather skill requests:
 
-``TODO``
+### Wiki skill
 
-## What can I say?
+Following is a summary of the Wiki skill vocabulary.
 
-**TODO** Add a lot of sample utternaces here ...
+Following are examples of Wiki skill requests:
 
 ## More documentation
 
