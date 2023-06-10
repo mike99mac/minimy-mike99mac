@@ -2,9 +2,12 @@
 
 This repo, minimy-mike99mac is a fork of Ken Smith's Minimy at https://github.com/ken-mycroft/minimy
 
-There is almost no internationalization code - it only knows English.
+It will be used to drive a *Smart Boombox*, powered by a Raspberry Pi. 
+It can be described as a personal voice assistant and general purpose computer with really great sound.
 
-The version numbers are simply yy.mm.dd
+It only knows Englisth - there is little internationalization code.
+
+The version numbers are simply *yy.mm.dd*.
 
 Version 23.06.11
 ----------------
@@ -19,4 +22,4 @@ Version 23.06.11
     - Create, manipulate, delete and play playlists (NOTE: code is not finished yet)
     - Perform basic player operations
 - Code to mount /var/log and two Minimy directories over a tmpfs so as to extend the life of the SD card
-- 
+- A *buttons* skill to enable three physical buttons, previous, pause/resume and next.
