@@ -14,7 +14,7 @@ get called asynchronously when an utterance is matched to an intent the skill ha
 
 **From Mike Mac, who is working on this fork of the code:**
 
-I worked with Mycroft since 2019, but the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard work everyone did to blaze this trail.
+I worked with Mycroft since 2019, but the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard work everyone who ever worked for Mycroft did to blaze this trail.
 
 I tried OVOS but was not able to get a music skill working after a couple weeks.  I still haven't given up on that platform - no doubt it will only get better and easier to install.
 
@@ -25,7 +25,7 @@ This document focuses on how to get the entire *software stack* running, and sta
 
 ## The build
 
-The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside a *boombox*. However, this code and these steps should be relatively portable to any hardware that can run any Linux. 
+The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside an *enclosure* that tries to emulate a retro looking boombox. However, this code and these steps should be relatively portable to any hardware that can run any Linux. 
 
 The overall steps to build a *Smart Boombox* are:
 
