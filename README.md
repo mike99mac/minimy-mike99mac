@@ -25,7 +25,7 @@ This document focuses on how to get the entire *software stack* running, and sta
 
 ## The build
 
-The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside an *enclosure* that tries to emulate a retro looking boombox. However, this code and these steps should be relatively portable to any hardware that can run any Linux. 
+The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22-04 inside an *enclosure* that tries to emulate a retro-looking boombox. However, this code and these steps should be relatively portable to any hardware that can run any Linux. 
 
 The overall steps to build a *Smart Boombox* are:
 
@@ -38,9 +38,8 @@ The overall steps to build a *Smart Boombox* are:
 - Install and configure Minimy
 - Start Minimy and use it!
 
-This document  is based on *The smart boombox cookbook* which also has some details on the construction of an enclosure that looks like a *boombox*. 
-
-It is here: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
+This document  is based on *The smart boombox cookbook* which has more details on the construction of the *boombox*. 
+See: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
 
 ## Acquire the hardware
 The minimum recommended hardware is a Raspberry Pi (RasPi) 4B with at least 4 GB of memory.  Yes, they're still hard to get, but not impossible. 
