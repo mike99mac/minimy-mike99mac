@@ -340,7 +340,7 @@ The output shows that:
 - The Music Playing Daemon, **``mpd``** is not running.
 - There is one **``pulseaudio``** process running, but it does not have **``--system``** as a parameter.
 - Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage.
-- None of three file systems frequently written to is mounted over an in-memory ``tmpfs`` file systems.
+- None of the file systems frequently written to are mounted over an in-memory ``tmpfs`` file system.
 
 ### Test changes of install1 script
 Some of the changes made by **``install1``** will not be realized until boot time. To test this, perform the following steps:
@@ -349,8 +349,8 @@ Some of the changes made by **``install1``** will not be realized until boot tim
 
     **``$ sudo reboot``**
     
-- Restart your SSH session.
-- Run the same script again to see how the environment has changed
+- Restart your SSH session when it comes back up.
+- Run the same script again to see how the environment has changed.
 
     **``$ lsenv``**
     
@@ -388,13 +388,13 @@ You should see three changes:
 
 - The Music Playing Daemon, **``mpd``** is now running.
 - The one **``pulseaudio``** process shows a **``--system``** parameter which is vital to audio output working correctly.
-- The **``/var/log/``** file system is now mounted over an in-memory tmpfs.
+- The **``/var/log/``** file system is now mounted over an in-memory ``tmpfs``.
 
 ## Test microphone and speakers
 
 It is important to know your microphone and speakers are working. 
-There are scripts in mycroft-tools named **``testrecord``** and **``testplay``**. 
-They are wrappers around the **``arecord``** and **``aplay``** commands designed to make it easier to test recording audio to a file and playing it back on the speakers.
+There are scripts in *mycroft-tools* named **``testrecord``** and **``testplay``**. 
+They are wrappers around the **``arecord``** and **``aplay``** commands designed to make it easier to test recording audio to a file and playing it back on the speaker(s).
 
 - To test your microphone and speakers, issue the following command then speak for up to five seconds. 
 
@@ -619,8 +619,8 @@ with this code:
     ```
 You should see two changes:
 
-- Minimy is now running - the output showing user and system skills
-- The two minimy file systems frequently written to are now mounted over an in-memory tmpfs.
+- Minimy is now running - the output showing the user and system skill processes.
+- The two minimy file systems frequently written to are now mounted over in-memory ``tmpfs``'s.
 
 
 
