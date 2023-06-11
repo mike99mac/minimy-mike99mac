@@ -139,7 +139,7 @@ A welcome screen should open on the monitor. Perform the following steps:
     - Click **Continue**.
  - The install process will take a number of minutes configuring and will reboot the computer.
 
-    ``TAKE A BREAK?  In a test, this step took 5 minutes.``
+    **``TAKE A BREAK?  In a test, this step took 5 minutes.``**
     
  - When the system finishes rebooting, an *Online Accounts* window should appear. Click **Skip**.
  - Click **Next** at the *Enable Ubuntu Pro* window.
@@ -215,7 +215,7 @@ Update and upgrade your system which installs the latest code for all installed 
 
     **``$ sudo apt-get upgrade -y``**
     
-    ``TAKE A BREAK?  In a test, this step took 19 minutes.``
+    **``TAKE A BREAK?  In a test, this step took 19 minutes.``**
     
 Your system should now be at the latest software level.
 
@@ -305,7 +305,7 @@ To run **``intall1``**, perform the following steps:
     
     ``...``
     
-    ``TAKE A BREAK?  In a test, this step took 3 minutes.``
+    **``TAKE A BREAK?  In a test, this step took 3 minutes.``**
     
 ### Test the changes
 
@@ -469,7 +469,7 @@ To download and copy Minimy, perform the following steps:
     Install Complete
     ```
     
-    ``TAKE A BREAK?  In a test, this step took 13 minutes.``
+    **``TAKE A BREAK?  In a test, this step took 13 minutes.``**
     
     It is recommended that you review the output file, checking for warnings or errors.
     
