@@ -347,7 +347,7 @@ The output shows that:
 - The Music Playing Daemon, **``mpd``** is not running.
 - There is one **``pulseaudio``** process running, but it does not have **``--system``** as a parameter.
 - Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage.
-- None of the file systems frequently written to are mounted over an in-memory ``tmpfs`` file system.
+- None of the file systems frequently written to are mounted as in-memory ``tmpfs`` file systems.
 
 ### Test changes of install1 script
 Some of the changes made by **``install1``** will not be realized until boot time. To test this, perform the following steps:
@@ -395,7 +395,7 @@ You should see three changes:
 
 - The Music Playing Daemon, **``mpd``** is now running.
 - The one **``pulseaudio``** process shows a **``--system``** parameter which is vital to audio output working correctly.
-- An in-memory ``tmpfs`` file system is now mounted over the **``/var/log/``** directory.
+- The **``/var/log/``** directory is now an in-memory ``tmpfs`` file system.
 
 ## Test microphone and speakers
 
