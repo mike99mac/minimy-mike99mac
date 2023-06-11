@@ -680,7 +680,7 @@ The ``buttons.py`` code is here: https://github.com/mike99mac/minimy-mike99mac/b
     
 One source of purchasing pushbuttons is here: https://www.amazon.com/dp/B09C8C53DM  
 
-**TODO:** On another model, the computer is a RaspPi 400 which is *offboard*. This allows Lithium-ion batteries to be *onboard*. That will need new code that uses the arrow keys on the RasPi 400 for the same function.
+**TODO:** On the other boombox model, the computer is a RasPi 400 which is *offboard*, and the GPIO pins are not easily accessible. That will need new code to use the arrow keys on the RasPi 400 for the same function.
 
 # Debugging
 Maybe everything will work perfectly the first time, and you won't have to debug.  But we know how that goes :))
