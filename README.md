@@ -430,7 +430,7 @@ In this section you will perform the following steps:
 ### Download and copy Minimy 
 It is recommended that you make a second copy of Minimy after you download it.  This way, if you make some changes to the running code, you'll have a reference copy. Also the copy of the code that you run should not have a ``.git/`` directory, thus removing any connection to github.
 
-The new directory ***must*** be named ``minimy``, removing the ``-mike99mac`` suffix.  Otherwise things will break.
+The new directory ***must*** be named ``minimy``, removing the ``-mike99mac`` suffix, as scripts are coded that way.
 
 To download and copy Minimy, perform the following steps:
 
@@ -604,7 +604,7 @@ The scripts **``startminimy``** and **``stopminimy``** are used to start and sto
 Each skill and service run as process and use the message bus or file system to synchronize. 
 Their output is written to the ``logs/`` directory under the main install directory. 
 
-The system relies on the environment variables ``PYTHONPATH, SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS`` which are set in **``startminimy``** 
+The system relies on the environment variables ``PYTHONPATH``, ``SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS`` which are set in **``startminimy``** 
 with this code:
 
     ...
@@ -618,10 +618,8 @@ with this code:
     **``(venv_ngv) $ cd $HOME/minimy``**
     
     **``(venv_ngv) $ ./startminimy``**
-
-- Stop Minimy with:
-
-    **``(venv_ngv) $ ./stopminimy``**
+    
+    ``...``
     
 - Run **``lsenv``** again to see how your environment has changed.    
 
