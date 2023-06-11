@@ -139,7 +139,7 @@ A welcome screen should open on the monitor. Perform the following steps:
     - Click **Continue**.
  - The install process will take a number of minutes configuring and will reboot the computer.
 
-    ``TAKE A BREAK?  In a test, this step took 5 minutes.``
+    **``TAKE A BREAK?  In a test, this step took 5 minutes.``**
     
  - When the system finishes rebooting, an *Online Accounts* window should appear. Click **Skip**.
  - Click **Next** at the *Enable Ubuntu Pro* window.
@@ -215,7 +215,7 @@ Update and upgrade your system which installs the latest code for all installed 
 
     **``$ sudo apt-get upgrade -y``**
     
-    ``TAKE A BREAK?  In a test, this step took 19 minutes.``
+    **``TAKE A BREAK?  In a test, this step took 19 minutes.``**
     
 Your system should now be at the latest software level.
 
@@ -305,7 +305,7 @@ To run **``intall1``**, perform the following steps:
     
     ``...``
     
-    ``TAKE A BREAK?  In a test, this step took 3 minutes.``
+    **``TAKE A BREAK?  In a test, this step took 3 minutes.``**
     
 ### Test the changes
 
@@ -469,7 +469,7 @@ To download and copy Minimy, perform the following steps:
     Install Complete
     ```
     
-    ``TAKE A BREAK?  In a test, this step took 13 minutes.``
+    **``TAKE A BREAK?  In a test, this step took 13 minutes.``**
     
     It is recommended that you review the output file, checking for warnings or errors.
     
@@ -680,7 +680,7 @@ The ``buttons.py`` code is here: https://github.com/mike99mac/minimy-mike99mac/b
     
 One source of purchasing pushbuttons is here: https://www.amazon.com/dp/B09C8C53DM  
 
-**TODO:** On another model, the computer is a RaspPi 400 which is *offboard*. This allows Lithium-ion batteries to be *onboard*. That will need new code that uses the arrow keys on the RasPi 400 for the same function.
+**TODO:** On the other boombox model, the computer is a RasPi 400 which is *offboard*, and the GPIO pins are not easily accessible. That will need new code to use the arrow keys on the RasPi 400 for the same function.
 
 # Debugging
 Maybe everything will work perfectly the first time, and you won't have to debug.  But we know how that goes :))
