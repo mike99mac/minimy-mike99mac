@@ -2,9 +2,9 @@
 
 This repo, minimy-mike99mac is a fork of Ken Smith's Minimy at https://github.com/ken-mycroft/minimy
 
-It will be used to drive a *Smart Boombox*, powered by a Raspberry Pi which can be described as a personal voice assistant and general purpose computer with really great sound.
+It will be used to drive a *Smart Boombox*, powered by a Raspberry Pi which can be described as a *personal voice assistant and general purpose computer with really great sound*.
 
-It only knows Englisth - there is little internationalization code.
+It only knows English - there is little internationalization code.
 
 The version numbers are simply *yy.mm.dd*.
 

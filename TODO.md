@@ -14,5 +14,9 @@
 Usually that is not what the user wants. Add a converse: "Do you want me to search Wikipedia for that?"
 1. Add vocabulary: "Ask wikipedia {question}"
 1. Write a .service file so Minimy is started by systemd.
+1. Add a global setting to mmconfig.py - buttons can be:
+    - (3) buttons, 
+    - (k)eyboard, or
+    - (n)one
 1. Write a regression test.
 
