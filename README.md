@@ -57,10 +57,10 @@ You can start with just about any speaker(s) with a 3.5mm jack that will plug in
 The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and copy a Linux distribution to it. 
 
 The following three flavors of two Linux distributions are supported. Note that *Raspbian* has been renamed to *Raspberry Pi OS* but in many places the original name is still used.
-- Ubuntu 22.04.2 LTS
-    - *Long Term Support* - Canonical promises to support it for at least five years.
-- Raspbian GNU/Linux 10 (buster)
-- Raspbian GNU/Linux 11 (bullseye)
+- ``Ubuntu 22.04.2 LTS``
+    - LTS stands for *Long Term Support* - Canonical promises to support it for at least five years.
+- ``Raspbian GNU/Linux 10 (buster)``
+- ``Raspbian GNU/Linux 11 (bullseye)``
 
 **NOTE:** The text above is obtained in the first line of the file ``/etc/os-release``. For example:
 
