@@ -226,6 +226,10 @@ The secure shell (SSH) server is installed by default on Raspbian, but not runni
 
     ##``systemctl enable ssh``**
     
+### Start a terminal or SSH session
+
+You can continue to work from a *terminal session*. 
+
 - You should have either a Wi-Fi (``wlan0``) or a hard-wired (``eth0``) connection. To verify, enter the following command. Note your IP address.
 
     **``ip a``**
@@ -238,11 +242,7 @@ The secure shell (SSH) server is installed by default on Raspbian, but not runni
     ...
     inet 192.168.1.229
     ```
-    
-### Start a terminal or SSH session
-
-You can continue to work from a *terminal session*. 
-
+  
 On Ubuntu, *right click* anywhere on the desktop wallpaper and choose **Open in Terminal**.  A console window should appear.
 
 On Raspbian, click the Raspberry icon in the upper left corner, then in the drop-down menu choose **Accessories** then **Terminal**. 
