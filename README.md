@@ -169,7 +169,7 @@ If you are installing Ubuntu, skip this section.
 
 To install and configure Raspbian, perform the following steps:
 
-- *Welcome to the Raspberry Pi Desktop!* window => click **Next**
+- *Welcome to the Raspberry Pi Desktop!* window => click **Next**.
 - *Set Country* window - choose your country, language and time zone and click **Next**.
 - *Create User* window - The user name must be ``pi``.
 - *Set up screen* window - Check the box if you see a black box around the monitor and click **Next**.
@@ -177,12 +177,6 @@ To install and configure Raspbian, perform the following steps:
     - At the *Enter WiFi Password* window, enter the password and click **Next**.
 - *Update Software* window - click **Skip** - the upgrade will be done from a terminal session.
 - *Setup complete* window - click **Done** or **Restart**.
-
-Click the Raspberry icon in the upper right corner => Accessories => Terminal
-
-
-$ sudo systemctl enable ssh
-$ sudo systemctl start ssh
 
 ### Setting up the SSH server on Ubuntu
 
