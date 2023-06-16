@@ -92,11 +92,11 @@ If you have a Linux box with an SD card port, you can use **``rpi-imager``** to 
         - Raspberry Pi OS (legacy) => Debian Buster with Desktop
         - Other General Purpose OS => Ubuntu => Desktop 22.04.2 LTS (64-bit)
 
-    - Select the *Storage* device. You should see just one micro-SD card in the dropdown menu.
+    - Select the *Storage* device. You should see just one micro-SD card in the dropdown menu. If you don't see any entry, your SD card has not been recognized.
 
     - Click **Write**.
 
-    - Enter the password of the current user.
+    - If you are challenged for credentials, enter the password of the current user.
 
 You should see a progress indicator as the image is copied to the SD card. It should take around 5 minutes.
 
@@ -216,15 +216,17 @@ The secure shell (SSH) server is not installed by default on Ubuntu desktop. Ins
 
 If you are installing Ubuntu, skip this section.
 
-The secure shell (SSH) server is installed by default on Raspbian, but not running To enable it, perform the following steps:
+The secure shell (SSH) server is installed by default on Raspbian, but not running. 
+
+To start it now, and enable it at boot time, perform the following steps:
 
 - Start the SSH server for the current session.
 
-    ##``systemctl start ssh``**
+    **``systemctl start ssh``**
 
-  - Set the SSH server to start at boot time.
+- Set the SSH server to start at boot time.
 
-    ##``systemctl enable ssh``**
+    **``systemctl enable ssh``**
     
 ### Start a terminal or SSH session
 
