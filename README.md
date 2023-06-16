@@ -220,6 +220,8 @@ The secure shell (SSH) server is installed by default on Raspbian, but not runni
 
 To start it now, and enable it at boot time, perform the following steps:
 
+- Click the Raspberry icon in the upper left corner, then in the drop-down menu choose **Accessories** then **Terminal**. 
+
 - Start the SSH server for the current session.
 
     **``systemctl start ssh``**
@@ -230,7 +232,7 @@ To start it now, and enable it at boot time, perform the following steps:
     
 ### Start a terminal or SSH session
 
-You can continue to work from a *terminal session*. 
+You can continue to work from a *terminal session* or you can *SSH in* to your new Linux system.
 
 - You should have either a Wi-Fi (``wlan0``) or a hard-wired (``eth0``) connection. To verify, enter the following command. Note your IP address.
 
@@ -247,7 +249,7 @@ You can continue to work from a *terminal session*.
   
 On Ubuntu, *right click* anywhere on the desktop wallpaper and choose **Open in Terminal**.  A console window should appear.
 
-On Raspbian, click the Raspberry icon in the upper left corner, then in the drop-down menu choose **Accessories** then **Terminal**. 
+On Raspbian, 
 
 You can also start an SSH session as the user ``pi``, if you want to continue from another system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS console.
 
