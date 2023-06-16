@@ -232,9 +232,9 @@ To start it now, and enable it at boot time, perform the following steps:
     
 ### Start a terminal or SSH session
 
-You can continue to work from a *terminal session* or you can *SSH in* to your new Linux system.
+You can continue to work from a *terminal session* or you can *SSH in* to your new Linux system.  To SSH in, perform the following steps.
 
-- You should have either a Wi-Fi (``wlan0``) or a hard-wired (``eth0``) connection. To verify, enter the following command. Note your IP address.
+- Get your IP address. You should have either a Wi-Fi (``wlan0``) or a hard-wired (``eth0``) connection. To verify, enter the following command. 
 
     **``ip a``**
     ```
@@ -246,14 +246,11 @@ You can continue to work from a *terminal session* or you can *SSH in* to your n
     ...
     inet 192.168.1.229
     ```
-  
-On Ubuntu, *right click* anywhere on the desktop wallpaper and choose **Open in Terminal**.  A console window should appear.
 
-On Raspbian, 
+SSH as the user ``pi``, if you want to continue from another system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS console.
 
-You can also start an SSH session as the user ``pi``, if you want to continue from another system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS console.
-
-**IMPORTANT**: Do not run as ``root``. Doing so will almost certainly screw up your system.  It is recommended that you run as the user ``pi``.  Ideally, other user names should work, as the environment variable ``$HOME`` is used in scripts, but this has never been tested.
+**IMPORTANT**: Do not run as ``root``. Doing so will almost certainly screw up your system. 
+Users other than ``pi`` ideally will work as the environment variable ``$HOME`` is used in scripts, but this has never been tested.
 
 ### Update and upgrade your system
 
@@ -263,7 +260,7 @@ Update and upgrade your system which installs the latest code for all installed 
 
     **``$ sudo apt-get update``**
     
-- Upgrade your system so you have all the latest code. This step could take up to 20 minutes.
+- Upgrade your system so you have all the latest code. **TAKE A BREAK?** This step could take up to 20 minutes.
 
     **``$ sudo apt-get upgrade -y``**
     
@@ -299,8 +296,6 @@ To install **``mycroft-tools``** perform the following steps:
 
 - Clone the **``mycroft-tools``** package in the ``pi`` home directory with the following commands:
 
-    **``$ cd``**
-    
     **``$ git clone https://github.com/mike99mac/mycroft-tools.git``**
     
     ```
