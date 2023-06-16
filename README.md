@@ -64,10 +64,9 @@ The following three flavors of two Linux distributions are supported. Note that 
 
 **NOTE:** The text above is obtained in the first line of the file ``/etc/os-release``. For example:
 
-```
-$ head -1 /etc/os-release
-PRETTY_NAME="Ubuntu 22.04.2 LTS"
-```
+    **``$ head -1 /etc/os-release``**
+
+    ``PRETTY_NAME="Ubuntu 22.04.2 LTS"``
 
 You will need another computer running Linux or another OS to copy the Linux image to the memory card.
 
