@@ -140,7 +140,7 @@ When you supply power to the RasPi, it should start booting.  On the top, back, 
 
 ### Initial Ubuntu Desktop configuration
 
-If you are installing Raspbian, move to the next section.
+If you are installing Raspbian, skip to the next section.
 
 A welcome screen should open on the monitor. Perform the following steps:
 
@@ -180,6 +180,8 @@ To install and configure Raspbian, perform the following steps:
 
 ### Setting up the SSH server on Ubuntu
 
+If you are installing Raspbian, skip to the next section.
+
 The secure shell (SSH) server is not installed by default on Ubuntu desktop. Install it so you can access your system remotely. To do so, perform the following steps:
 
 - Open a terminal session by right-clicking the mouse anywhere on the desktop and choosing **Open in Terminal**. You should see a console window open.
@@ -211,6 +213,8 @@ The secure shell (SSH) server is not installed by default on Ubuntu desktop. Ins
     ...
     ```
 ### Setting up the SSH server on Raspbian
+
+If you are installing Ubuntu, skip this section.
 
 The secure shell (SSH) server is installed by default on Raspbian, but not running To enable it, perform the following steps:
 
