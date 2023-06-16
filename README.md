@@ -64,9 +64,9 @@ The following three flavors of two Linux distributions are supported. Note that 
 
 **NOTE:** The text above is obtained in the first line of the file ``/etc/os-release``. For example:
 
-    **``$ head -1 /etc/os-release``**
+**``$ head -1 /etc/os-release``**
 
-    ``PRETTY_NAME="Ubuntu 22.04.2 LTS"``
+``PRETTY_NAME="Ubuntu 22.04.2 LTS"``
 
 You will need another computer running Linux or another OS to copy the Linux image to the memory card.
 
@@ -91,8 +91,6 @@ If you have a Linux box with an SD card port, you can use **``rpi-imager``** to 
         - Raspberry Pi OS (32-bit) Debian Bullseye with Desktop
         - Raspberry Pi OS (legacy) => Debian Buster with Desktop
         - Other General Purpose OS => Ubuntu => Desktop 22.04.2 LTS (64-bit)
-  
-    
 
     - Select the *Storage* device. You should see just one micro-SD card in the dropdown menu.
 
@@ -173,22 +171,19 @@ To install and configure Raspbian, perform the following steps:
 
 - *Welcome to the Raspberry Pi Desktop!* window => click **Next**
 - *Set Country* window - choose your country, language and time zone and click **Next**.
-Create User window - The user name must be ``pi``.
-Set up screen window - Check the box if you see a black box around the monitor and click **Next**.
-Select WiFi Network  window - choose your network and click Next
-At the Enter WiFi Password window, enter Password and click Next
-Update Software window - click Skip
-Setup complete - click Done or Restart
+- *Create User* window - The user name must be ``pi``.
+- *Set up screen* window - Check the box if you see a black box around the monitor and click **Next**.
+- *Select WiFi Network* window - choose your network and click **Next**.
+    - At the *Enter WiFi Password* window, enter the password and click **Next**.
+- *Update Software* window - click **Skip** - the upgrade will be done from a terminal session.
+- *Setup complete* window - click **Done** or **Restart**.
 
 Click the Raspberry icon in the upper right corner => Accessories => Terminal
+
+
 $ sudo systemctl enable ssh
 $ sudo systemctl start ssh
 
-A welcome screen should open on the monitor. Perform the following steps:
-
-- On the *Welcome* window, choose your language and click **Continue**.
-- On the *Keyboard layout* window, choose your layout and click **Continue**.
-- 
 ### Setting up the SSH server on Ubuntu
 
 The secure shell (SSH) server is not installed by default on Ubuntu desktop. Install it so you can access your system remotely. To do so, perform the following steps:
@@ -232,7 +227,6 @@ The secure shell (SSH) server is installed by default on Raspbian, but not runni
   - Set the SSH server to start at boot time.
 
     ##``systemctl enable ssh``**
-    
     
 - You should have either a Wi-Fi (``wlan0``) or a hard-wired (``eth0``) connection. To verify, enter the following command. Note your IP address.
 
