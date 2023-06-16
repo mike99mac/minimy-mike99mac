@@ -57,7 +57,8 @@ You can start with just about any speaker(s) with a 3.5mm jack that will plug in
 The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and copy a Linux distribution to it. 
 
 The following three flavors of two Linux distributions are supported. Note that *Raspbian* has been renamed to *Raspberry Pi OS* but in many places the original name is still used.
-- Ubuntu 22.04.2 LTS  *Long Term Support* - Canonical promises to support it for at least five years.
+- Ubuntu 22.04.2 LTS
+    - *Long Term Support* - Canonical promises to support it for at least five years.
 - Raspbian GNU/Linux 10 (buster)
 - Raspbian GNU/Linux 11 (bullseye)
 
@@ -125,7 +126,7 @@ To connect all the computer hardware, perform the following steps:
 To install and configure Ubuntu Desktop Linux, perform the following sections.
 
 - Boot the RasPi
-- Initial Ubuntu Desktop configuration
+- Initial Ubuntu Desktop configuration -or- Initial Raspbian Desktop configuration
 - Install the SSH server
 - Start a terminal or SSH session
 - Update and upgrade your system
@@ -142,6 +143,8 @@ When you supply power to the RasPi, it should start booting.  On the top, back, 
 
 ### Initial Ubuntu Desktop configuration
 
+If you are installing Raspbian, move to the next section.
+
 A welcome screen should open on the monitor. Perform the following steps:
 
 - On the *Welcome* window, choose your language and click **Continue**.
@@ -155,9 +158,6 @@ A welcome screen should open on the monitor. Perform the following steps:
     - For the last option, **Log in automatically** is recommended.
     - Click **Continue**.
  - The install process will take a number of minutes configuring and will reboot the computer.
-
-    **``TAKE A BREAK?  In a test, this step took 5 minutes.``**
-    
  - When the system finishes rebooting, an *Online Accounts* window should appear. Click **Skip**.
  - Click **Next** at the *Enable Ubuntu Pro* window.
  - Choose an option on the *Help Improve Ubuntu* window and click **Next**.
@@ -166,7 +166,31 @@ A welcome screen should open on the monitor. Perform the following steps:
 
 Ubuntu Desktop 22.04 should now be installed
  
-### Install the SSH server
+### Initial Raspbian Desktop configuration
+
+If you are installing Ubuntu, skip this section.
+
+To install and configure Raspbian, perform the following steps:
+
+- *Welcome to the Raspberry Pi Desktop!* window => click **Next**
+- *Set Country* window - choose your country, language and time zone and click **Next**.
+Create User window - The user name must be ``pi``.
+Set up screen window - Check the box if you see a black box around the monitor and click **Next**.
+Select WiFi Network  window - choose your network and click Next
+At the Enter WiFi Password window, enter Password and click Next
+Update Software window - click Skip
+Setup complete - click Done or Restart
+
+Click the Raspberry icon in the upper right corner => Accessories => Terminal
+$ sudo systemctl enable ssh
+$ sudo systemctl start ssh
+
+A welcome screen should open on the monitor. Perform the following steps:
+
+- On the *Welcome* window, choose your language and click **Continue**.
+- On the *Keyboard layout* window, choose your layout and click **Continue**.
+- 
+### Setting up the SSH server on Ubuntu
 
 The secure shell (SSH) server is not installed by default on Ubuntu desktop. Install it so you can access your system remotely. To do so, perform the following steps:
 
@@ -198,6 +222,18 @@ The secure shell (SSH) server is not installed by default on Ubuntu desktop. Ins
     Active: active (running) 
     ...
     ```
+### Setting up the SSH server on Raspbian
+
+The secure shell (SSH) server is installed by default on Raspbian, but not running To enable it, perform the following steps:
+
+- Start the SSH server for the current session.
+
+    ##``systemctl start ssh``**
+
+  - Set the SSH server to start at boot time.
+
+    ##``systemctl enable ssh``**
+    
     
 - You should have either a Wi-Fi (``wlan0``) or a hard-wired (``eth0``) connection. To verify, enter the following command. Note your IP address.
 
@@ -214,7 +250,11 @@ The secure shell (SSH) server is not installed by default on Ubuntu desktop. Ins
     
 ### Start a terminal or SSH session
 
-You can continue to work from a *terminal session*.  Right click anywhere on the desktop wallpaper and choose **Open in Terminal**.  A console window should appear.
+You can continue to work from a *terminal session*. 
+
+On Ubuntu, *right click* anywhere on the desktop wallpaper and choose **Open in Terminal**.  A console window should appear.
+
+On Raspbian, click the Raspberry icon in the upper left corner, then in the drop-down menu choose **Accessories** then **Terminal**. 
 
 You can also start an SSH session as the user ``pi``, if you want to continue from another system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS console.
 
@@ -228,11 +268,9 @@ Update and upgrade your system which installs the latest code for all installed 
 
     **``$ sudo apt-get update``**
     
-- Upgrade your system so you have all the latest code. This step could take up to 25 minutes.
+- Upgrade your system so you have all the latest code. This step could take up to 20 minutes.
 
     **``$ sudo apt-get upgrade -y``**
-    
-    **``TAKE A BREAK?  In a test, this step took 19 minutes.``**
     
 Your system should now be at the latest software level.
 
@@ -314,15 +352,13 @@ To run **``intall1``**, perform the following steps:
     
     ``/usr/local/sbin/install1``
 
-- Run the **``install1``** script in the home directory and send ``stdout`` and ``stderr`` to a file.  You may want to reference that file in case of errors.
+- Run the **``install1``** script in the home directory and send ``stdout`` and ``stderr`` to a file.  You may want to reference that file in case of errors. This step will take a couple of minutes.
 
     **``$ cd``**
     
     **``$ install1 2>&1 | tee install1.out``**
     
     ``...``
-    
-    **``TAKE A BREAK?  In a test, this step took 3 minutes.``**
     
 ### Test the changes
 
@@ -477,7 +513,7 @@ To download and copy Minimy, perform the following steps:
     
 ### Install Minimy    
     
-- Run the following script to install Minimy and direct ``stdout`` and ``stderr`` to a file.
+- Run the following script to install Minimy and direct ``stdout`` and ``stderr`` to a file. This step can take up to 15 minutes.
     
     **``$ ./install/linux_install.sh 2>&1 | tee linux_install.out``**
     
@@ -485,8 +521,6 @@ To download and copy Minimy, perform the following steps:
     ...
     Install Complete
     ```
-    
-    **``TAKE A BREAK?  In a test, this step took 13 minutes.``**
     
     It is recommended that you review the output file, checking for warnings or errors.
     
