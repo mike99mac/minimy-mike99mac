@@ -56,6 +56,18 @@ You can start with just about any speaker(s) with a 3.5mm jack that will plug in
 ## Flash Linux to a memory device
 The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and copy a Linux distribution to it. 
 
+The following three flavors of two Linux distributions are supported. Note that *Raspbian* has been renamed to *Raspberry Pi OS* but in many places the original name is still used.
+- ``Ubuntu 22.04.2 LTS``
+    - LTS stands for *Long Term Support* - Canonical promises to support it for at least five years.
+- ``Raspbian GNU/Linux 10 (buster)``
+- ``Raspbian GNU/Linux 11 (bullseye)``
+
+**NOTE:** The text above is obtained in the first line of the file ``/etc/os-release``. For example:
+
+**``$ head -1 /etc/os-release``**
+
+``PRETTY_NAME="Ubuntu 22.04.2 LTS"``
+
 You will need another computer running Linux or another OS to copy the Linux image to the memory card.
 
 ### Prepare on Linux
@@ -75,13 +87,16 @@ If you have a Linux box with an SD card port, you can use **``rpi-imager``** to 
 
 - To flash a Linux image to the card, perform the following steps:
 
-    - Select your preferred *Operating System*. **Ubuntu Desktop 22.04 LTS** is recommended. It's a solid operating system, that combined with the RasPi, is capable of being a general purpose computer. LTS stands for *Long Term Support* - Canonical promises to support it for at least five years. 
+    - Select one of three choices from *Operating System*.
+        - Raspberry Pi OS (32-bit) Debian Bullseye with Desktop
+        - Raspberry Pi OS (legacy) => Debian Buster with Desktop
+        - Other General Purpose OS => Ubuntu => Desktop 22.04.2 LTS (64-bit)
 
-    - Select the *Storage* device. You should see just one micro-SD card in the dropdown menu.
+    - Select the *Storage* device. You should see just one micro-SD card in the dropdown menu. If you don't see any entry, your SD card has not been recognized.
 
     - Click **Write**.
 
-    - Enter the password of the current user.
+    - If you are challenged for credentials, enter the password of the current user.
 
 You should see a progress indicator as the image is copied to the SD card. It should take around 5 minutes.
 
@@ -108,7 +123,7 @@ To connect all the computer hardware, perform the following steps:
 To install and configure Ubuntu Desktop Linux, perform the following sections.
 
 - Boot the RasPi
-- Initial Ubuntu Desktop configuration
+- Initial Ubuntu Desktop configuration -or- Initial Raspbian Desktop configuration
 - Install the SSH server
 - Start a terminal or SSH session
 - Update and upgrade your system
@@ -125,6 +140,8 @@ When you supply power to the RasPi, it should start booting.  On the top, back, 
 
 ### Initial Ubuntu Desktop configuration
 
+If you are installing Raspbian, skip to the next section.
+
 A welcome screen should open on the monitor. Perform the following steps:
 
 - On the *Welcome* window, choose your language and click **Continue**.
@@ -138,9 +155,6 @@ A welcome screen should open on the monitor. Perform the following steps:
     - For the last option, **Log in automatically** is recommended.
     - Click **Continue**.
  - The install process will take a number of minutes configuring and will reboot the computer.
-
-    **``TAKE A BREAK?  In a test, this step took 5 minutes.``**
-    
  - When the system finishes rebooting, an *Online Accounts* window should appear. Click **Skip**.
  - Click **Next** at the *Enable Ubuntu Pro* window.
  - Choose an option on the *Help Improve Ubuntu* window and click **Next**.
@@ -149,7 +163,24 @@ A welcome screen should open on the monitor. Perform the following steps:
 
 Ubuntu Desktop 22.04 should now be installed
  
-### Install the SSH server
+### Initial Raspbian Desktop configuration
+
+If you are installing Ubuntu, skip this section.
+
+To install and configure Raspbian, perform the following steps:
+
+- *Welcome to the Raspberry Pi Desktop!* window => click **Next**.
+- *Set Country* window - choose your country, language and time zone and click **Next**.
+- *Create User* window - The user name must be ``pi``.
+- *Set up screen* window - Check the box if you see a black box around the monitor and click **Next**.
+- *Select WiFi Network* window - choose your network and click **Next**.
+    - At the *Enter WiFi Password* window, enter the password and click **Next**.
+- *Update Software* window - click **Skip** - the upgrade will be done from a terminal session.
+- *Setup complete* window - click **Done** or **Restart**.
+
+### Setting up the SSH server on Ubuntu
+
+If you are installing Raspbian, skip to the next section.
 
 The secure shell (SSH) server is not installed by default on Ubuntu desktop. Install it so you can access your system remotely. To do so, perform the following steps:
 
@@ -181,8 +212,29 @@ The secure shell (SSH) server is not installed by default on Ubuntu desktop. Ins
     Active: active (running) 
     ...
     ```
+### Setting up the SSH server on Raspbian
+
+If you are installing Ubuntu, skip this section.
+
+The secure shell (SSH) server is installed by default on Raspbian, but not running. 
+
+To start it now, and enable it at boot time, perform the following steps:
+
+- Click the Raspberry icon in the upper left corner, then in the drop-down menu choose **Accessories** then **Terminal**. 
+
+- Start the SSH server for the current session.
+
+    **``systemctl start ssh``**
+
+- Set the SSH server to start at boot time.
+
+    **``systemctl enable ssh``**
     
-- You should have either a Wi-Fi (``wlan0``) or a hard-wired (``eth0``) connection. To verify, enter the following command. Note your IP address.
+### Start a terminal or SSH session
+
+You can continue to work from a *terminal session* or you can *SSH in* to your new Linux system.  To SSH in, perform the following steps.
+
+- Get your IP address. You should have either a Wi-Fi (``wlan0``) or a hard-wired (``eth0``) connection. To verify, enter the following command. 
 
     **``ip a``**
     ```
@@ -194,14 +246,11 @@ The secure shell (SSH) server is not installed by default on Ubuntu desktop. Ins
     ...
     inet 192.168.1.229
     ```
-    
-### Start a terminal or SSH session
 
-You can continue to work from a *terminal session*.  Right click anywhere on the desktop wallpaper and choose **Open in Terminal**.  A console window should appear.
+SSH as the user ``pi``, if you want to continue from another system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS console.
 
-You can also start an SSH session as the user ``pi``, if you want to continue from another system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS console.
-
-**IMPORTANT**: Do not run as ``root``. Doing so will almost certainly screw up your system.  It is recommended that you run as the user ``pi``.  Ideally, other user names should work, as the environment variable ``$HOME`` is used in scripts, but this has never been tested.
+**IMPORTANT**: Do not run as ``root``. Doing so will almost certainly screw up your system. 
+Users other than ``pi`` ideally will work as the environment variable ``$HOME`` is used in scripts, but this has never been tested.
 
 ### Update and upgrade your system
 
@@ -211,11 +260,9 @@ Update and upgrade your system which installs the latest code for all installed 
 
     **``$ sudo apt-get update``**
     
-- Upgrade your system so you have all the latest code. This step could take up to 25 minutes.
+- Upgrade your system so you have all the latest code. **TAKE A BREAK?** This step could take up to 20 minutes.
 
     **``$ sudo apt-get upgrade -y``**
-    
-    **``TAKE A BREAK?  In a test, this step took 19 minutes.``**
     
 Your system should now be at the latest software level.
 
@@ -249,8 +296,6 @@ To install **``mycroft-tools``** perform the following steps:
 
 - Clone the **``mycroft-tools``** package in the ``pi`` home directory with the following commands:
 
-    **``$ cd``**
-    
     **``$ git clone https://github.com/mike99mac/mycroft-tools.git``**
     
     ```
@@ -297,15 +342,13 @@ To run **``intall1``**, perform the following steps:
     
     ``/usr/local/sbin/install1``
 
-- Run the **``install1``** script in the home directory and send ``stdout`` and ``stderr`` to a file.  You may want to reference that file in case of errors.
+- Run the **``install1``** script in the home directory and send ``stdout`` and ``stderr`` to a file.  You may want to reference that file in case of errors. This step will take a couple of minutes.
 
     **``$ cd``**
     
     **``$ install1 2>&1 | tee install1.out``**
     
     ``...``
-    
-    **``TAKE A BREAK?  In a test, this step took 3 minutes.``**
     
 ### Test the changes
 
@@ -460,7 +503,7 @@ To download and copy Minimy, perform the following steps:
     
 ### Install Minimy    
     
-- Run the following script to install Minimy and direct ``stdout`` and ``stderr`` to a file.
+- Run the following script to install Minimy and direct ``stdout`` and ``stderr`` to a file. This step can take up to 15 minutes.
     
     **``$ ./install/linux_install.sh 2>&1 | tee linux_install.out``**
     
@@ -468,8 +511,6 @@ To download and copy Minimy, perform the following steps:
     ...
     Install Complete
     ```
-    
-    **``TAKE A BREAK?  In a test, this step took 13 minutes.``**
     
     It is recommended that you review the output file, checking for warnings or errors.
     
