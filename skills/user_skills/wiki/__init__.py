@@ -37,7 +37,7 @@ class WikiSkill(QuestionAnswerSkill):
         extract = r['query']['pages'][page_id]['extract']
         sa = extract.split("\n")
         answer = sa[0]
-        print(f"wiki, calling speak(answer={answer}}")
+        print(f"wiki, calling speak(answer={answer}")
         self.speak(answer)
 
     def stop(self,msg):

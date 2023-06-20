@@ -256,7 +256,7 @@ class MpcClient(SimpleVoiceAssistant):
     self.log.debug("MpcClient.get_album() num_hits = " + str(num_hits))
     if num_hits == 0: 
       self.log.debug("MpcClient.get_album() _get() did not find an album matching: "+str(album_name))
-      mesg_info = {"album_name": album, "artist_name": artist}
+      mesg_info = {"album_name": album_name, "artist_name": artist_name}
       return Music_info("none", "music_not_found", mesg_info, [])
     tracks_or_urls = []                    # at least one hit
     correct_artist = True
