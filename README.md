@@ -25,7 +25,7 @@ This document focuses on how to get the solution running, and starts from the ve
 
 ## The build
 
-The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22.04 inside an *enclosure* that is a retro-looking boombox. However, this code and these steps should be relatively portable to any hardware that can run any Linux. 
+The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22.04 inside an *enclosure* that is a retro-looking boombox. Later Raspberry Pi OS (aka Raspbian) versions 10 (buster) and 11 (bullseye) were tested. However, this code and these steps should be relatively portable to any hardware that can run any Linux. 
 
 The overall steps to build a *Smart Boombox* are:
 
