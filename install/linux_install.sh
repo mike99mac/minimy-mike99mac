@@ -6,7 +6,8 @@
 #
 echo
 date
-echo "Begin Installation, MiniMy Version 1.1.0"
+version=`cat ../version`
+echo "Begin Installation, MiniMy Version $version"
 sudo apt install python3-venv
 sudo apt install python3-dev
 python3 -m venv venv_ngv
@@ -27,6 +28,7 @@ pip install lingua_franca
 pip install youtube-search 
 pip install pyee 
 pip install RPi.GPIO
+pip install keyboard 
 deactivate
 
 echo
@@ -65,8 +67,8 @@ cd mimic3
 make install
 cd ../../../../..
 
-# fix bug in mimic3 install mia dependency
-deactivate
+# deactivate was not found in the PATH
+# deactivate
 source framework/services/tts/local/mimic3/.venv/bin/activate
 pip install importlib-resources
 deactivate

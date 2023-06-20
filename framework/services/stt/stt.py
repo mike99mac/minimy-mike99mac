@@ -9,7 +9,8 @@ from subprocess import Popen, PIPE, STDOUT
 from framework.util.utils import LOG, Config, aplay, get_wake_words
 
 REMOTE_TIMEOUT = 3
-LOCAL_TIMEOUT = 5
+# LOCAL_TIMEOUT = 5
+LOCAL_TIMEOUT = 10
 
 def execute_command(command):
     p = Popen(command, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)

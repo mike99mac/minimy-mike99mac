@@ -565,8 +565,6 @@ class SimpleVoiceAssistant:
                     self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() stop detected - calling 'mpc clear'")
                     self.mpc_cmd("clear")  # clear the MPC queue
                     self.i_am_paused = False
-                case "request_input_focus_response":
-                    self.log.info("[%s] acquired input focus!" % (self.skill_control.skill_id,))
                     # TODO error check and timeout check
                     self.waiting_for_input_focus = False
                     self.i_am_conversed = True
@@ -577,12 +575,12 @@ class SimpleVoiceAssistant:
                         if self.focus_mode == 'speech':
                             self.tts_session_response = ''
                             info = {
-                                'error':'',
-                                'subtype':'tts_service_command',
-                                'command':'start_session',
-                                'skill_id':'tts_service',
-                                'from_skill_id':self.skill_control.skill_id
-                                }
+                                    'error':'',
+                                    'subtype':'tts_service_command',
+                                    'command':'start_session',
+                                    'skill_id':'tts_service',
+                                    'from_skill_id':self.skill_control.skill_id
+                                   }
                             self.send_message('tts_service', info)
                         else:
                             info = {
