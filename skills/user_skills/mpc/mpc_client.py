@@ -567,7 +567,7 @@ class MpcClient(SimpleVoiceAssistant):
     Add a track or all the songs on an album to a playlist 
     :type music_type: str "track" or "album"
     :type x: numbers.Real
-    :return: True or false
+    :return: True or false 
     """
     self.log.debug("MpcClient.add_music_to_playlist(): called with music_type: "+music_type+" playlist_name: "+playlist_name+" music_name: "+music_name)
     match music_type:

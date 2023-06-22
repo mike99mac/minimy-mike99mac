@@ -8,6 +8,10 @@ It only knows English - there is little internationalization code.
 
 The version numbers are simply *yy.mm.dd*.
 
+Version 23.06.22
+----------------
+- Fixed bug with stop button "stop" vs. "toggle" behavior
+ 
 Version 23.06.20
 ----------------
 - Pressing stop button for more than 2 seconds now does "mpc stop" which clears the queue

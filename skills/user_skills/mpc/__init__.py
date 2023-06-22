@@ -12,7 +12,7 @@ import subprocess
 class MpcSkill(MediaSkill):  
   """
   Play music skill for minimy.  It uses mpc and mpd to play music from:
-  - A music library such as mp3 files
+  - A music library such as mp3 files 
   - Internet radio stations stored in the file radio.stations.csv
   - Internet music searches 
   """
