@@ -15,4 +15,5 @@
 1. Add vocabulary: "Ask wikipedia {question}"
 1. Add a minimy.service file so it can be started by systemd.
 1. Write a regression test.
+1. Write a dictionary skill using https://pypi.org/project/PyDictionary/
 
