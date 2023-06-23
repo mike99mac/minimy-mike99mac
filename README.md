@@ -14,14 +14,14 @@ get called asynchronously when an utterance is matched to an intent the skill ha
 
 This code enables a device to play music by voice. 
 
-I worked with Mycroft since 2019, but the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard work the Mycroft employees and contributors did to get us this far.
+I worked with Mycroft since 2019, and was able to get a prototype music skill, based on mpc/mpd, working. But the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard work the Mycroft employees and contributors did to get us this far.
 
-OVOS is a fork of Mycroft and Neon is another layer on top. I tried OVOS but was not able to get a music skill working after a couple weeks.  I still haven't given up on it - no doubt it will only get better and easier to install.
+OVOS is a fork of Mycroft and Neon is another layer on top. I tried OVOS but was not able to get my music skill working after a couple weeks.  I still haven't given up on it - no doubt it will only get better and easier to install.
 
 Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire but wasn't well received. Thankfully, Ken Smith put it on github, it was forked, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** 
 So I continue to try to *give back to the community* while *standing on the shoulders* of so many others.
 
-This document focuses on how to get the solution running, and starts from the very beginning.
+This document describes how to get the solution running, and starts from the very beginning.
 
 ## The build
 
@@ -44,14 +44,14 @@ See: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf
 ## Acquire the hardware
 The recommended hardware is a Raspberry Pi (RasPi) 4B with 4 or 8 GB of memory.  Yes, they're still hard to get, but not impossible. 
 
-A Rasberry Pi 400 is another option.  It allows the CPU to be *offboard* which frees up space onboard to house lithium-ion batteries.
+A Rasberry Pi 400 is another option.  It allows the CPU to be *offboard* which frees up space onboard to house lithium-ion batteries. It also runs a lot cooler due to the massive heat sink.
 
-Hopefully the RasPi 5 will be out soon and will be more powerful and easier to procure.
+Hopefully the RasPi 5 will be out soon and will be more powerful, run cooler, and be easier to procure.
 
 For a microphone, a flat, disk type with a mute/unmute switch for visible privacy is recommended.  Don't use a cheap one.
 It is best to move the microphone away from the speakers and closer to the center of the room.
 
-You can start with just about any speaker(s) with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
+You can start with just about any speaker(s) with a 3.5mm jack that will plug into the RasPi.  I could start writing about DAC HATs and audio quality, but that's outside the scope of this document.
 
 ## Flash Linux to a memory device
 The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and copy a Linux distribution to it. 
