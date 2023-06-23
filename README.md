@@ -16,7 +16,7 @@ This code enables a device to play music by voice.
 
 I worked with Mycroft since 2019, but the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard work the Mycroft employees and contributors did to get us this far.
 
-OVOS is a fork of Mycroft. I tried it but was not able to get a music skill working after a couple weeks.  I still haven't given up on it - no doubt it will only get better and easier to install.
+OVOS is a fork of Mycroft and Neon is another layer on top. I tried OVOS but was not able to get a music skill working after a couple weeks.  I still haven't given up on it - no doubt it will only get better and easier to install.
 
 Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire but wasn't well received. Thankfully, Ken Smith put it on github, it was forked, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** 
 So I continue to try to *give back to the community* while *standing on the shoulders* of so many others.
