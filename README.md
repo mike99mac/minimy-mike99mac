@@ -722,7 +722,7 @@ Here is a source of purchasing pushbuttons: https://www.amazon.com/dp/B09C8C53DM
 # Debugging
 Maybe everything will work perfectly the first time, and you won't have to debug.  But we know how that goes :))
 
-Many, many debug statements have been added to the code.  In the critical classes, almost every function has at least one log statement when in debug mode. 
+Many, many debug statements have been added to the code.  In the important classes, almost every function has at least one log statement when in debug mode. 
 
 Following are some debugging resources.
 - Log files are in ``$HOME/minimy/logs``.  
@@ -740,9 +740,10 @@ Following are some debugging resources.
         
 - There is an HTML file with JavaScript code that displays the message bus in real time. If you do not have a Web server running, you must view it from the local host. Start a browser on the box you're installing on and point it to: ``file:///home/pi/minimy/display/sysmon.html``. You should see all messages written to the message bus and the associated data.
     - **TODO:** get a screen shot
+
+- There's a RELEASE-NOTES.md and TODO.md that show a history of the project and a wish list of things to do.
 - Google searches, of course ...
 - You can email me at mike99mac at gmail.com - can't promise anything, but I will try.
-
 
 # Reference
 These reference sections follow:
@@ -751,7 +752,7 @@ These reference sections follow:
 
 ## Vocabulary and examples
 
-In the samples that follow (words) in parenthesis are the actual words spoken, while {words} in curly brackets become variables populated with the actual words spoken. When (multiple|words|) are separated by vertical bars any of those can be spoken, and a trailing vertical bar means that word can be omitted.
+In the samples that follow, (words) in parenthesis are the actual words spoken, while {words} in curly brackets become variables populated with the actual words spoken. When (multiple|words|) are separated by vertical bars, any of those can be spoken, and a trailing vertical bar means that word can be omitted.
 
 **``TODO``** Finish all vocabs and examples
 
@@ -839,13 +840,13 @@ Following are the vocabularies for the MPC skill:
     play (track|artist|album|) {music} (from|on) (the|) internet
     ```
     
-- News vocabulary    
+- NPR News vocabulary    
 
     ```
     play (NPR|the|) news
     ```
     
-- Playlist vocabulary (**NOTE:** code is not complete yet)
+- Playlist vocabulary
 
     ```
     (create|make) playlist {playlist} from track {track}
@@ -894,8 +895,13 @@ Following are examples of  skill's requests:
 ### Weather skill
 
 Following is the Weather skill vocabulary.
+
+```
+(what's|what is) (the|) weather (forecast|)
+```
  
 Following are examples of Weather skill requests:
+- What's the weather?
 
 ### Wiki skill
 
