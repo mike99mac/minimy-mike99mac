@@ -18,6 +18,7 @@ def handle_super_advanced(cfg):
     update_value(cfg, 'Advanced.OutputDeviceName', "Output Device Name (empty string means use default)")
     update_value(cfg, 'Advanced.InputLevelControlName', "Input Level Control Name (typically Record or Mic)")
     update_value(cfg, 'Advanced.OutputLevelControlName', "Output Level Control Name (typically Playback or Speaker)")
+    update_value(cfg, 'Advanced.ButtonsType', "Buttons type (3) buttons on enclosure, (k)eyboard or (n)none")
 
 def handle_advanced(cfg):
     print("Advanced Settings\n-----------------")
@@ -64,7 +65,7 @@ if __name__ == "__main__":
             handle_super_advanced(cfg)
 
     print()
-    res = input("Save Changes?")
+    res = input("Save Changes? ")
     if res and res.lower() == 'y':
         cfg.save_cfg()
         print("Configuration Updated")
