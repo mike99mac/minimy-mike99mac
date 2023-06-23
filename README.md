@@ -169,14 +169,14 @@ If you are installing Ubuntu, skip this section.
 
 To install and configure Raspbian, perform the following steps:
 
-- *Welcome to the Raspberry Pi Desktop!* window => click **Next**.
-- *Set Country* window - choose your country, language and time zone and click **Next**.
-- *Create User* window - The user name must be ``pi``.
-- *Set up screen* window - Check the box if you see a black box around the monitor and click **Next**.
-- *Select WiFi Network* window - choose your network and click **Next**.
+- At the *Welcome to the Raspberry Pi Desktop!* window => click **Next**.
+- At the *Set Country* window - choose your country, language and time zone and click **Next**.
+- At the *Create User* window - The user name must be ``pi``.
+- At the *Set up screen* window - Check the box if you see a black box around the monitor and click **Next**.
+- At the *Select WiFi Network* window - choose your network and click **Next**.
     - At the *Enter WiFi Password* window, enter the password and click **Next**.
-- *Update Software* window - click **Skip** - the upgrade will be done from a terminal session.
-- *Setup complete* window - click **Done** or **Restart**.
+- At the *Update Software* window - click **Skip** - the upgrade will be done from a terminal session.
+- At the *Setup complete* window - click **Done** or **Restart**.
 
 ### Setting up the SSH server on Ubuntu
 
@@ -220,15 +220,15 @@ The secure shell (SSH) server is installed by default on Raspbian, but not runni
 
 To start it now, and enable it at boot time, perform the following steps:
 
-- Click the Raspberry icon in the upper left corner, then in the drop-down menu choose **Accessories** then **Terminal**. 
+- Click the red Raspberry icon in the upper left corner, then in the drop-down menu choose **Accessories** then **Terminal**. 
 
-- Start the SSH server for the current session.
+- From the terminal session, start the SSH server for the current session.
 
-    **``systemctl start ssh``**
+    **``$ systemctl start ssh``**
 
 - Set the SSH server to start at boot time.
 
-    **``systemctl enable ssh``**
+    **``$ systemctl enable ssh``**
     
 ### Start a terminal or SSH session
 
@@ -236,7 +236,7 @@ You can continue to work from a *terminal session* or you can *SSH in* to your n
 
 - Get your IP address. You should have either a Wi-Fi (``wlan0``) or a hard-wired (``eth0``) connection. To verify, enter the following command. 
 
-    **``ip a``**
+    **``$ ip a``**
     ```
     1: lo:
     ...
@@ -458,7 +458,7 @@ They are wrappers around the **``arecord``** and **``aplay``** commands designed
     Playing WAVE '/tmp/test-mic.wav' : Signed 24 bit Little Endian, Rate 44100 Hz, Mono
     ```
     
-You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
+You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speaker(s).
 
 At this point your system should have a solid sound and microphone stack running, especially **``mpd``** and **``pulseaudio``**, and all software necessary for the installation of Minimy.
 
@@ -610,15 +610,15 @@ To get a Google API key file, perform the following steps:
 
 - Change to the install directory.
 
-    **``cd /home/pi/minimy/install``**
+    **``$ cd /home/pi/minimy/install``**
     
 - Copy the GPG key template file to the file that will be populated.
 
-    **``cp my-google-key.json.template my-google-key.json``**
+    **``$ cp my-google-key.json.template my-google-key.json``**
 
 - Show the file.
 
-    **``# cat my-google-key.json``**
+    **``$ cat my-google-key.json``**
     
     ```
     (venv_ngv) pi@johnsbox:~/minimy-mike99mac$ cat my-google-key.json.template
@@ -664,7 +664,7 @@ with this code:
     
 - Run **``lsenv``** again to see how your environment has changed.    
 
-    **``lsenv``**
+    **``$ lsenv``**
 
     ```
     Status of minimy:
@@ -700,11 +700,9 @@ You should see two changes:
 - Minimy is now running - the output showing the user and system skill processes.
 - The two minimy file systems frequently written to are now mounted over in-memory ``tmpfs``'s.
 
-
-
 ## The buttons process
 
-The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick access to *previous track*, *pause/resume*, and *next track* operations.  A new **``buttons``** system skill traps button presses and sends corresponding messages to the bus.
+The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick access to *previous track*, *pause/resume*, and *next track* operations. If you hold the middle button for more that two seconds, it does a *stop* function, which also clears the music queue.  A new **``buttons``** system skill traps button presses and sends corresponding messages to the bus.
 
 If you want to add buttons to your enclosure, attach them to the following GPIO pins:
 
@@ -716,10 +714,8 @@ If you want to add buttons to your enclosure, attach them to the following GPIO 
     | 13  | GPIO27 | Pause/resume                  |
     | 15  | GPIO22 | Next track                    |
     +-----+--------+-------------------------------+
-
-The ``buttons.py`` code is here: https://github.com/mike99mac/minimy-mike99mac/blob/main/framework/services/input/buttons.py
     
-One source of purchasing pushbuttons is here: https://www.amazon.com/dp/B09C8C53DM  
+Here is a source of purchasing pushbuttons: https://www.amazon.com/dp/B09C8C53DM  
 
 **TODO:** On the other boombox model, the computer is a RasPi 400 which is *offboard*, and the GPIO pins are not easily accessible. That will need new code to use the arrow keys on the RasPi 400 for the same function.
 
