@@ -874,7 +874,13 @@ Following are the vocabularies for the MPC skill:
     ```
 
 Following are examples of MPC skill's requests:
-- Play track 
+- Play track one and only by artist Adele.
+- Play album Abbey Road
+- Play genre blues on the radio
+- Play artist Billy Joel from the internet
+- Play track Stressed Out by artist Twenty One Pilots
+- Play NPR news
+- Play artist The Chainsmokers from the Internet
 
 ### Timedate skill
 
