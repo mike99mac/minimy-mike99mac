@@ -143,23 +143,23 @@ class Buttons(SimpleVoiceAssistant):
   def read_stop_pin(self, *args):
     """
     Save when stop button was pressed, then when released if more than 2 seconds do a stop, otherwise pause/resume 
-    If it's pressed very briefly (shorter than bouncetime?), this is only called once, otherwise it's called twice
+    If it's pressed briefly (shorter than bouncetime?), this is only called once, otherwise it's called twice
     """
     pinval = GPIO.input(self.stop_button)
     print(f"read_stop_pin() pinval: {pinval} lastpinval: {self.last_pinval}")
-    if (pinval == 0 and self.last_pinval == 0): # button was pushed and held
+    if ((pinval == 0 and self.last_pinval == 0) or (pinval == 1 and self.last_pinval == 1)): # button was pushed and held
       print("read_stop_pin() stop button was pushed")
-      self.button_start_time = time.time()
+      self.button_start_time = time.time() # save time it was pushed
     elif ((pinval == 0 and self.last_pinval == 1) or (pinval == 1 and self.last_pinval == 0)): # button was released
       if self.button_start_time == None:   # button was pushed briefly
-        print("read_stop_pin() stop button was pushed briefly")
+        print("read_stop_pin() stop button was pushed briefly - sending 'pause'")
         self.send_message("pause")
       else:  
         self.press_duration = time.time() - self.button_start_time
         print(f"read_stop_pin() pinval has changed from {self.last_pinval} to {pinval} duration = {self.press_duration}")
-        if self.press_duration > 2.0:
+        if self.press_duration > 2.0:      # more than 2 seconds => stop
           self.send_message("stop")
-        else:
+        else:                              # pause toggles between pause and resume
           self.send_message("pause")  
       self.button_start_time = None  
       self.lastpinval = pinval

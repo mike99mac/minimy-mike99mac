@@ -1,9 +1,8 @@
-# how long we wait for a remote 
-# response before we timeout
+# how long we wait for a responses before we timeout
 REMOTE_TIMEOUT = 7
+LOCAL_TIMEOUT = 7
 
-# these are communicated from the session to 
-# the engine via the internal_event_callback
+# these are communicated from the session to the engine via the internal_event_callback
 INTERNAL_EVENT_PAUSED = 'ie_paused'
 INTERNAL_EVENT_ACTIVATED = 'ie_activated'
 INTERNAL_EVENT_REJECTED = 'ie_rejected'
@@ -12,27 +11,22 @@ INTERNAL_EVENT_ENDED = 'ie_ended'
 
 # session states
 STATE_IDLE = 'idle'
-
 STATE_ACTIVE = 'active'
 STATE_ACTIVE_WAIT_PAUSED = 'active_wait_paused'
 STATE_ACTIVE_WAIT_INTERNAL = 'active_wait_internal'
 STATE_ACTIVE_WAIT_EXTERNAL = 'active_wait_external'
 STATE_ACTIVE_PAUSED = 'active_paused'
-
 STATE_WAIT_MEDIA_END = 'wait_media_end'
 STATE_WAIT_MEDIA_END_WAIT_PAUSED = 'wait_media_end_wait_paused'
 STATE_WAIT_MEDIA_END_WAIT_INTERNAL = 'wait_media_end_wait_internal'
 STATE_WAIT_MEDIA_END_WAIT_EXTERNAL = 'wait_media_end_wait_external'
 STATE_WAIT_MEDIA_END_PAUSED = 'wait_media_end_paused'
-
 STATE_WAIT_MEDIA_START = 'wait_media_start'
-
 STATE_WAIT_MEDIA_ACTIVE = 'wait_media_active'
 STATE_WAIT_MEDIA_ACTIVE_WAIT_PAUSED = 'wait_media_active_wait_paused'
 STATE_WAIT_MEDIA_ACTIVE_WAIT_INTERNAL = 'wait_media_active_wait_internal'
 STATE_WAIT_MEDIA_ACTIVE_WAIT_EXTERNAL = 'wait_media_active_wait_external'
 STATE_WAIT_MEDIA_ACTIVE_PAUSED = 'wait_media_active_paused'
-
 STATE_WAIT_MEDIA_CANCELLED = 'wait_media_cancelled'
 STATE_WAIT_MEDIA_CANCELLED_PAUSED = 'wait_media_cancelled_paused'
 
@@ -69,7 +63,7 @@ valid_states = (
                 STATE_WAIT_MEDIA_ACTIVE_PAUSED,
                 STATE_WAIT_MEDIA_CANCELLED,
                 STATE_WAIT_MEDIA_CANCELLED_PAUSED
-                )
+               )
 valid_events = (
                 INTERNAL_EVENT_ENDED,
                 EVENT_SPEAK,
@@ -83,5 +77,5 @@ valid_events = (
                 EVENT_MEDIA_DECLINED,
                 EVENT_MEDIA_CANCELLED,
                 EVENT_INTERNAL_PAUSE
-                )
+               )
 

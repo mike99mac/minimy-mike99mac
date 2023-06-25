@@ -24,6 +24,14 @@ class MpcSkill(MediaSkill):
     self.mpc_client = MpcClient("/media/") # search for music under /media
     self.log.debug(f"MpcSkill.__init__(): skill_base_dir: {self.skill_base_dir}")
 
+    # register intents for playlists
+    self.register_intent('M', 'create', 'playlist', self.media_play)
+    self.register_intent('M', 'make', 'playlist', self.media_play)
+    self.register_intent('M', 'add', 'playlist', self.media_play)
+    self.register_intent('M', 'delete', 'playlist', self.media_play)
+    self.register_intent('M', 'remove', 'playlist', self.media_play)
+    self.register_intent('M', 'list', 'playlist', self.media_play)
+
   def initialize(self):
     self.log.debug("MpcSkill.initialize(): setting vars") 
     self.music_info = Music_info("none", "", {}, []) # music to play

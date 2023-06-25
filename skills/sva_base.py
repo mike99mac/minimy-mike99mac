@@ -390,13 +390,12 @@ class SimpleVoiceAssistant:
         data = message.data
         data = data['utt']
         if self.skill_control.category == 'fallback':
-            if data.get('skill_id','') == '':
-                # special handling for fallback/Q&A skills
+            if data.get('skill_id','') == '': # special handling for fallback/Q&A skills
                 if self.handle_fallback:
-                    self.log.info(f"SimpleVoiceAssistant.handle_utterance()** {self.skill_control.skill_id} ** handle_fallback() method!")
+                    self.log.info(f"SimpleVoiceAssistant.handle_utterance() skill_id: {self.skill_control.skill_id} has a handle_fallback() method!")
                     self.handle_fallback(message)
                 else:
-                    self.log.error(f"SimpleVoiceAssistant.handle_utterance()** {self.skill_control.skill_id} ** Exception - fallback skill has no handle_fallback() method!")
+                    self.log.error(f"SimpleVoiceAssistant.handle_utterance() skill_id: {self.skill_control.skill_id} has no handle_fallback() method!")
         else:
             self.log.debug(f"SimpleVoiceAssistant.handle_utterance() skill_id = {self.skill_control.skill_id} data = {data}")
             if data.get('skill_id', '') == self.skill_control.skill_id:

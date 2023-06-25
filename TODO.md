@@ -1,6 +1,6 @@
 # Things TO DO:
 
-1. Finish playlists in the mpc skill:
+1. Finish playlists code in the mpc skill:
 1. Fix *fallback* in mpc and speak "searching the internet for music".
 1. ~~Add a global setting to mmconfig.py - buttons can be (3) buttons, (k)eyboard, or (n)one~~
 1. Enable arrow keys on a RasPi 400 to replace the 3 pushbuttons (for (k)eyboard choice above)
@@ -15,4 +15,5 @@
 1. Add vocabulary: "Ask wikipedia {question}"
 1. Add a minimy.service file so it can be started by systemd.
 1. Write a regression test.
+1.
 
