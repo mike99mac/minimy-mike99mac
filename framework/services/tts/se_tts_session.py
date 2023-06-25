@@ -11,8 +11,12 @@ from se_tts_session_methods import TTSSessionMethods
 
 class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
     def __init__(self, owner, tts_sid, msid, session_data, internal_event_callback, log):
+        """
+        Run remote and local tts in parallel. this will hold maybe
+        both responses, maybe one or maybe none. None would be a time out
+        """
         self.log = log
-        self.log.debug("TTSSession.__init__() owner = %s tts_sid = %s msid = %s" % (owner, tts_sid, msid))
+        self.log.debug(f"TTSSession.__init__() owner: {owner} tts_sid: {tts_sid} msid: {msid}")
         super(TTSSession, self).__init__()
         threading.Thread.__init__(self)
         self.skill_id = "tts_session"
@@ -29,80 +33,69 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
         self.internal_event_callback = internal_event_callback
         self.paused_requestor = None
         self.lock = threading.RLock()
-
-        # we run remote and local tts in parallel. this will hold maybe
-        # both responses, maybe one or maybe none. None would be a time out
         self.tts_wait_q_local = Queue()
         self.tts_wait_q_remote = Queue()
-
         self.state = se_tts_constants.STATE_IDLE
         self.valid_states = se_tts_constants.valid_states
         self.valid_events = se_tts_constants.valid_events
-
         cfg = Config()
-        # we always fall back if remote fails but local only means 
-        # don't even try remote which will be faster than a local
-        # fall back which is effectively a remote time out.
+
+        # always fall back if remote fails but local only means don't even try remote which will be faster 
+        # than a local fall back which is effectively a remote time out.
         self.remote_tts = None
         self.use_remote_tts = False
-        #remote_tts_flag = get_cfg_val('remote_tts')
         remote_tts_flag = cfg.get_cfg_val('Advanced.TTS.UseRemote')
+        self.log.debug(f"TTSSession.__init__() remote_tts_flag: {remote_tts_flag}")
         if remote_tts_flag and remote_tts_flag == 'y':
             self.use_remote_tts = True
-            # we don't bother with fancy configs or modules - this is your modular architecture right here
+            # no fancy configs or modules - this is your modular architecture right here
             which_remote_tts = cfg.get_cfg_val('Advanced.TTS.Remote')
-            #which_remote_tts = get_cfg_val('remote_tts_type')
-            if which_remote_tts == 'm':
-                # mimic2
+            if which_remote_tts == 'm':    # mimic2
                 from framework.services.tts.remote.mimic2 import remote_tts
-            else:
-                # remote default is polly
+            else:                          # remote default is polly
                 from framework.services.tts.remote.polly import remote_tts
             self.remote_tts = remote_tts()
-        self.log.info("Using remote TTS=%s, tts_obj=%s" % (self.use_remote_tts,self.remote_tts))
+        self.log.info(f"TTSsession.__init__() use_remote_tts: {self.use_remote_tts} remote_tts: {self.remote_tts}")
 
         # which local tts engine to use. 
         self.which_local_tts = 'e'
-        #if get_cfg_val('local_tts') == 'c':
-        if cfg.get_cfg_val('Advanced.TTS.Local') == 'c':
+        if cfg.get_cfg_val('Advanced.TTS.Local') == 'c': # coqui
             from framework.services.tts.local.coqui_tts import local_speak_dialog
             self.which_local_tts = 'c'
-        elif cfg.get_cfg_val('Advanced.TTS.Local') == 'm':
+        elif cfg.get_cfg_val('Advanced.TTS.Local') == 'm': # mimic3
             from framework.services.tts.local.mimic3 import local_speak_dialog
             self.which_local_tts = 'm'
         else:
             from framework.services.tts.local.espeak import local_speak_dialog
         self.local_speak = local_speak_dialog
-
         self.tmp_file_path = os.getenv('SVA_BASE_DIR') + '/tmp'
-        self.remote_filename = ''
-        self.local_filename = ''
-
+        self.remote_file_name = ''
+        self.local_file_name = ''
         self.bus.on(MSG_SKILL, self.handle_skill_msg)
 
     def wait_paused(self, requestor):
-        self.log.debug("TTSSession.wait_paused() requestor = %s" % requestor) 
-        # set up to handle pause responses from both local and remote processes
+        """
+        set up to handle pause responses from both local and remote processes
+        """
+        self.log.debug(f"TTSSession.wait_paused() requestor: {requestor}")  
         self.internal_pause = False
         self.external_pause = False
         self.paused = True
         self.paused_requestor = requestor
-        # tell media player too
-        self.send_session_pause()
-        # this will cause an internal event to fire once
-        self.pause_ack = True
+        self.send_session_pause()          #  tell media player too
+        self.pause_ack = True              # this will cause an internal event to fire once
 
-    def play_file(self, filename):
-        self.log.debug(f"TTSSession.play_file() state: {self.state} self.msid: {self.msid} filename: {filename}")
+    def play_file(self, file_name):
+        self.log.debug(f"TTSSession.play_file() state: {self.state} self.msid: {self.msid} file_name: {file_name}")
         if self.state == se_tts_constants.STATE_ACTIVE:
             if self.msid == 0:
                 self.log.info("TTSSession Warning, invalid session ID (0). Must reestablish media session!")
-                self.paused_filename = filename
+                self.paused_file_name = file_name
                 self.__change_state(se_tts_constants.STATE_WAIT_MEDIA_START)
                 self.send_media_session_request()
             else:
                 info = {
-                        'file_uri':filename,
+                        'file_uri':file_name,
                         'subtype':'media_player_command',
                         'command':'play_media',
                         'correlator':self.correlator,
@@ -112,49 +105,55 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
                         'delete_on_complete':'true'
                        }
                 self.bus.send(MSG_MEDIA, 'media_player_service', info)
-                self.log.debug(f"TTSSession play_file() exit - play state: {self.state} filename: {filename}")
+                self.log.debug(f"TTSSession play_file() exit - play state: {self.state} file_name: {file_name}")
         else:
-            self.log.warning(f"Play file refusing to play because state is not active: {self.state}")
+            self.log.warning(f"TTSSession play_file() cannot play file because state is not active: {self.state}")
 
     def get_remote_tts(self, chunk):
-        self.remote_filename = datetime.now().strftime("save_tts/remote_outfile_%Y-%m-%d_%H-%M-%S_%f.wav")
-        self.remote_filename = f"{self.tmp_file_path}/{self.remote_filename}"
-        self.local_filename = datetime.now().strftime("save_tts/local_outfile_%Y-%m-%d_%H-%M-%S_%f.wav")
-        self.local_filename = f"{self.tmp_file_path}/{self.local_filename}"
-        self.log.debug(f"TTSSession.get_remote_tts() chunk: {chunk} local_filename: {self.local_filename} remote_filename: {self.remote_filename}")
-
-        # start 2 threads and return result = remote if possible, else local
-        if self.use_remote_tts:
-            th1 = Thread(target=self.remote_tts.remote_speak, args=(chunk, self.remote_filename, self.tts_wait_q_remote))
+        """
+        start 1 or 2 threads and return result = remote if possible, else local
+        """
+        self.log.debug(f"TTSSession.get_remote_tts() chunk: {chunk}")
+        self.local_file_name = datetime.now().strftime("save_tts/local_outfile_%Y-%m-%d_%H-%M-%S_%f.wav")
+        self.local_file_name = f"{self.tmp_file_path}/{self.local_file_name}"
+        self.log.debug(f"TTSSession.get_remote_tts() local_file_name: {self.local_file_name}")
+        if self.use_remote_tts:            # start thread for remote speak
+            self.remote_file_name = datetime.now().strftime("save_tts/remote_outfile_%Y-%m-%d_%H-%M-%S_%f.wav")
+            self.remote_file_name = f"{self.tmp_file_path}/{self.remote_file_name}"
+            self.log.debug(f"TTSSession.get_remote_tts() remote_file_name: {self.remote_file_name}")
+            th1 = Thread(target=self.remote_tts.remote_speak, args=(chunk, self.remote_file_name, self.tts_wait_q_remote))
             th1.daemon = True
             th1.start()
-        th2 = None
-        th2 = Thread(target=self.local_speak, args=(chunk, self.local_filename, self.tts_wait_q_local))
+        th2 = None                         # always start thread for local speak
+        th2 = Thread(target=self.local_speak, args=(chunk, self.local_file_name, self.tts_wait_q_local))
         th2.daemon = True
         th2.start()
         result = ""
-        if self.use_remote_tts:
+        if self.use_remote_tts:            # get remote speech file
             try:
                 result = self.tts_wait_q_remote.get(block=True, timeout=se_tts_constants.REMOTE_TIMEOUT)
             except:
-                self.log.debug("TTSSession.get_remote_tts() remote timed out!")
+                self.log.debug(f"TTSSession.get_remote_tts() remote timed out - timeout: {se_tts_constants.REMOTE_TIMEOUT}")
+        self.log.debug(f"TTSSession.get_remote_tts() result: {result}")        
         if result and result != '' and result['status'] == 'success' and result['service'] == 'remote':
             self.log.debug(f"TTSSession.get_remote_tts() got remote response {result}")
         else:
-            self.log.debug("TTSSession.get_remote_tts() did not get remote response, trying get local ...")
+            self.log.debug(f"TTSSession.get_remote_tts() trying get local - LOCAL_TIMEOUT: {se_tts_constants.LOCAL_TIMEOUT}")
             try:
-                result = self.tts_wait_q_local.get(block=True, timeout=se_tts_constants.REMOTE_TIMEOUT)
-            except:
-                self.log.warning("TTSSession.get_remote_tts() Creepy Internal Error 101 - TTSSession local timed out too!")
+                # result = self.tts_wait_q_local.get(block=True, timeout=se_tts_constants.REMOTE_TIMEOUT)
+                result = self.tts_wait_q_local.get(block=True, timeout=se_tts_constants.LOCAL_TIMEOUT)
+            except Exception as e:
+                self.log.warning(f"TTSSession.get_remote_tts() Internal Error 101 - local timed out - e:{e}")
+                # TODO: cannot return False => causes traceback - but what to return?
                 return False
         if result['service'] == 'remote':
-            filename = self.remote_filename
-            os.system(f"rm {self.local_filename}")
+            file_name = self.remote_file_name
+            os.system(f"rm {self.local_file_name}")
         else:
-            filename = self.local_filename
-            os.system(f"rm {self.remote_filename}")
-        self.log.debug("TTSSession.get_remote_tts() create wav file, Final result: {}, text:{}, filename:{}".format(result,chunk,filename))
-        return filename
+            file_name = self.local_file_name
+            os.system(f"rm {self.remote_file_name}")
+        self.log.debug(f"TTSSession.get_remote_tts() result: {result}, chunk: {chunk} file_name: {file_name}")
+        return file_name
 
     def send_media_session_request(self):
         self.log.debug("TTSSession.send_media_session_request()") 
@@ -169,7 +168,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
         self.bus.send(MSG_MEDIA, 'media_player_service', info)
 
     def stop_media_session(self):
-        self.log.debug("TTSSession.stop_media_session() stopping media session!, state=%s, mpsid:%s" % (self.state, self.msid))
+        self.log.debug(f"TTSSession.stop_media_session() state: {self.state} msid: {self.msid}")
         self.paused = True
         if self.msid != 0:
             info = {
@@ -183,10 +182,8 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
                    }
             self.bus.send(MSG_MEDIA, 'media_player_service', info)
             self.msid = 0
-        else:
-            # else no active media session to stop
-            self.log.warning("TTSSession no media player session to stop (id=%s)" % (self.msid,))
-
+        else:                              # else no active media session to stop
+            self.log.warning(f"TTSSession no media player session to stop msid: {self.msid}")
         self.session_data = []
         self.index = 0
 
@@ -240,8 +237,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
 
     def run(self):
         self.log.debug("TTSSession.run()") 
-        while not self.exit_flag:
-            # self.log.debug("TTSSession.run() TIC paused=%s, index=%s, data=%s" % (self.paused,self.index, self.session_data))
+        while not self.exit_flag:          # loop forever waiting till it out turn to speak
             if self.pause_ack:
                 self.pause_ack = False
                 self.handle_event(se_tts_constants.EVENT_INTERNAL_PAUSE, {'tsid':self.tts_sid, 'msid':self.msid})
@@ -255,22 +251,23 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
                         sentence = self.session_data[self.index]
                         # TODO handle local only config 
                         tmp_file = self.get_remote_tts(sentence)
+                        self.log.debug(f"TTSSession.run() tmp_file: {tmp_file} sentence: {sentence}") 
                         if not self.paused:
                             self.play_file(tmp_file)
                             self.index += 1
             time.sleep(0.01)
 
     def handle_skill_msg(self, msg):
-        self.log.debug("TTSSession.handle_skill_msg()") 
+        self.log.debug(f"TTSSession.handle_skill_msg() msg: {msg}") 
         data = msg.data
         msg_correlator = data.get("correlator","")
         if data['skill_id'] == self.skill_id:
             if data['subtype'] == 'media_player_command_response':
                 # these come to us from the media service
                 if self.correlator != self.tts_sid:
-                    self.log.debug("TTSSession.handle_skill_msg() Internal issue. self.cor [%s] <> self.curr_sess.tts_sid [%s]" % (self.correlator, self.tts_sid))
+                    self.log.debug(f"TTSSession.handle_skill_msg() Internal issue. correlator: {self.correlator}  <> tts_sid: {self.tts_sid}")
                 if self.correlator != msg_correlator:
-                    self.log.error("TTSSession.handle_skill_msg() correlators dont match! Ignoring message. self.cor[%s] <> msg.cor[%s]" % (self.correlator, msg_correlator))
+                    self.log.error(f"TTSSession.handle_skill_msg() correlators dont match! correlator: {self.correlator} msg_correlator: {self.msg_correlator}")
                     return False
                 if msg.data['response'] == 'session_confirm':
                     self.handle_event(se_tts_constants.EVENT_MEDIA_CONFIRMED, data)
@@ -284,7 +281,6 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
                     else:
                         self.handle_event(se_tts_constants.EVENT_MEDIA_CANCELLED, data)
                 elif msg.data['response'] == 'stop_session':
-                    self.log.warning("TTSSession Creepy Internal Error 102 - the media player reported stop_session for no reason.")
-                else:
-                    self.log.warning("TTSSession Creepy Internal Error 103 - unknown media response = %s" % (msg.data['response'],))
-
+                    self.log.warning("TTSSession.handle_skill_msg() Internal Error 102 - the media player reported stop_session for no reason.")
+                else:                      # not expected
+                    self.log.warning(f"TTSSession.handle_skill_msg() Internal Error 103 - unknown media response: {msg.data['response']}")

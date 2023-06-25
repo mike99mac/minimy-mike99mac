@@ -45,6 +45,7 @@ class Config:
             'OutputDeviceName': '',
             'InputLevelControlName': '',
             'OutputLevelControlName': '',
+            'ButtonsType': '3',
             'STT' : {
                      'UseRemote': 'y'
                     },
@@ -258,10 +259,11 @@ def get_hour_min(qual):
     else:
         #print("No time at all")
         pass
+    print(f"get_hour_min() sentence: {sentence} hour: {hour} minute: {minute}")    
     return int(hour), int(minute)
 
-
 def get_raw(sentence):
+    print(f"get_raw() sentence: {sentence}")
     sentence = sentence.replace("a m", "")
     sentence = sentence.replace("p m", "")
     sentence = sentence.replace("am", "")
@@ -278,6 +280,7 @@ def get_raw(sentence):
     return None, int(hour), int(minute)
 
 def get_time_from_utterance(sentence):
+    print(f"get_time_from_utt() sentence: {sentence}")
     lingua_franca.load_language('en')
     ampm = get_ampm(sentence)
     hour = 0

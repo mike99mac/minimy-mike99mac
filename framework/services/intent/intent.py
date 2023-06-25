@@ -178,9 +178,8 @@ class UttProc:
         intent_type = 'C'
         if info['sentence_type'] == 'I':
             self.log.warning(f"Intent trying to match an informational statement which it is not designed to do! {info}")
-            info['sentence_type'] == 'C'  
-          # should the previous line be:  
-          # info['sentence_type'] = 'C'
+          # info['sentence_type'] == 'C'  -MM
+            info['sentence_type'] = 'C'
 
         subject = remove_articles(info['subject'])
         if subject:
@@ -193,7 +192,7 @@ class UttProc:
         if key in self.intents:
             skill_id = self.intents[key]['skill_id']
             intent_state = self.intents[key]['state']
-            self.log.debug("UttProc:get_intent_match(): Intent matched[%s] skill=%s, intent_state=%s" % (key, skill_id, intent_state))
+            self.log.debug(f"UttProc:get_intent_match(): key: {key} skill_id: {skill_id} intent_state: {intent_state}")
             return skill_id, key
         return skill_id, ''                # no match will return ('','')
 
@@ -234,7 +233,7 @@ class UttProc:
 
                 # we special case OOBs here
                 oob_type = self.is_oob(utt)
-                self.log.debug(f"UttProc.run() oob_type = {oob_type} utt_type = {utt_type} utt = {utt}")
+                self.log.debug(f"UttProc.run() oob_type: {oob_type} utt_type: {utt_type} utt: {utt}")
                 if oob_type == 't':
                     res = self.send_oob_to_system(utt, contents) 
                 elif oob_type == 'o':
