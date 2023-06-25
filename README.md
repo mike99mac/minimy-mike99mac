@@ -14,14 +14,14 @@ get called asynchronously when an utterance is matched to an intent the skill ha
 
 This code enables a device to play music by voice. 
 
-I worked with Mycroft since 2019, but the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard work the Mycroft employees and contributors did to get us this far.
+I worked with Mycroft since 2019, and was able to get a prototype music skill, based on mpc/mpd, working. But the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard work the Mycroft employees and contributors did to get us this far.
 
-OVOS is a fork of Mycroft. I tried it but was not able to get a music skill working after a couple weeks.  I still haven't given up on it - no doubt it will only get better and easier to install.
+OVOS is a fork of Mycroft and Neon is another layer on top. I tried OVOS but was not able to get my music skill working after a couple weeks.  I still haven't given up on it - no doubt it will only get better and easier to install.
 
 Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire but wasn't well received. Thankfully, Ken Smith put it on github, it was forked, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** 
 So I continue to try to *give back to the community* while *standing on the shoulders* of so many others.
 
-This document focuses on how to get the solution running, and starts from the very beginning.
+This document describes how to get the solution running, and starts from the very beginning.
 
 ## The build
 
@@ -44,14 +44,14 @@ See: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf
 ## Acquire the hardware
 The recommended hardware is a Raspberry Pi (RasPi) 4B with 4 or 8 GB of memory.  Yes, they're still hard to get, but not impossible. 
 
-A Rasberry Pi 400 is another option.  It allows the CPU to be *offboard* which frees up space onboard to house lithium-ion batteries.
+A Rasberry Pi 400 is another option.  It allows the CPU to be *offboard* which frees up space onboard to house lithium-ion batteries. It also runs a lot cooler due to the massive heat sink.
 
-Hopefully the RasPi 5 will be out soon and will be more powerful and easier to procure.
+Hopefully the RasPi 5 will be out soon and will be more powerful, run cooler, and be easier to procure.
 
 For a microphone, a flat, disk type with a mute/unmute switch for visible privacy is recommended.  Don't use a cheap one.
 It is best to move the microphone away from the speakers and closer to the center of the room.
 
-You can start with just about any speaker(s) with a 3.5mm jack that will plug into the RasPi.  We could talk about DAC HATs and audio quality, but that's outside the scope of this document.
+You can start with just about any speaker(s) with a 3.5mm jack that will plug into the RasPi.  I could start writing about DAC HATs and audio quality, but that's outside the scope of this document.
 
 ## Flash Linux to a memory device
 The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and copy a Linux distribution to it. 
@@ -169,14 +169,14 @@ If you are installing Ubuntu, skip this section.
 
 To install and configure Raspbian, perform the following steps:
 
-- *Welcome to the Raspberry Pi Desktop!* window => click **Next**.
-- *Set Country* window - choose your country, language and time zone and click **Next**.
-- *Create User* window - The user name must be ``pi``.
-- *Set up screen* window - Check the box if you see a black box around the monitor and click **Next**.
-- *Select WiFi Network* window - choose your network and click **Next**.
+- At the *Welcome to the Raspberry Pi Desktop!* window => click **Next**.
+- At the *Set Country* window - choose your country, language and time zone and click **Next**.
+- At the *Create User* window - The user name must be ``pi``.
+- At the *Set up screen* window - Check the box if you see a black box around the monitor and click **Next**.
+- At the *Select WiFi Network* window - choose your network and click **Next**.
     - At the *Enter WiFi Password* window, enter the password and click **Next**.
-- *Update Software* window - click **Skip** - the upgrade will be done from a terminal session.
-- *Setup complete* window - click **Done** or **Restart**.
+- At the *Update Software* window - click **Skip** - the upgrade will be done from a terminal session.
+- At the *Setup complete* window - click **Done** or **Restart**.
 
 ### Setting up the SSH server on Ubuntu
 
@@ -220,15 +220,15 @@ The secure shell (SSH) server is installed by default on Raspbian, but not runni
 
 To start it now, and enable it at boot time, perform the following steps:
 
-- Click the Raspberry icon in the upper left corner, then in the drop-down menu choose **Accessories** then **Terminal**. 
+- Click the red Raspberry icon in the upper left corner, then in the drop-down menu choose **Accessories** then **Terminal**. 
 
-- Start the SSH server for the current session.
+- From the terminal session, start the SSH server for the current session.
 
-    **``systemctl start ssh``**
+    **``$ systemctl start ssh``**
 
 - Set the SSH server to start at boot time.
 
-    **``systemctl enable ssh``**
+    **``$ systemctl enable ssh``**
     
 ### Start a terminal or SSH session
 
@@ -236,7 +236,7 @@ You can continue to work from a *terminal session* or you can *SSH in* to your n
 
 - Get your IP address. You should have either a Wi-Fi (``wlan0``) or a hard-wired (``eth0``) connection. To verify, enter the following command. 
 
-    **``ip a``**
+    **``$ ip a``**
     ```
     1: lo:
     ...
@@ -458,7 +458,7 @@ They are wrappers around the **``arecord``** and **``aplay``** commands designed
     Playing WAVE '/tmp/test-mic.wav' : Signed 24 bit Little Endian, Rate 44100 Hz, Mono
     ```
     
-You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speakers.
+You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speaker(s).
 
 At this point your system should have a solid sound and microphone stack running, especially **``mpd``** and **``pulseaudio``**, and all software necessary for the installation of Minimy.
 
@@ -610,15 +610,15 @@ To get a Google API key file, perform the following steps:
 
 - Change to the install directory.
 
-    **``cd /home/pi/minimy/install``**
+    **``$ cd /home/pi/minimy/install``**
     
 - Copy the GPG key template file to the file that will be populated.
 
-    **``cp my-google-key.json.template my-google-key.json``**
+    **``$ cp my-google-key.json.template my-google-key.json``**
 
 - Show the file.
 
-    **``# cat my-google-key.json``**
+    **``$ cat my-google-key.json``**
     
     ```
     (venv_ngv) pi@johnsbox:~/minimy-mike99mac$ cat my-google-key.json.template
@@ -664,7 +664,7 @@ with this code:
     
 - Run **``lsenv``** again to see how your environment has changed.    
 
-    **``lsenv``**
+    **``$ lsenv``**
 
     ```
     Status of minimy:
@@ -700,11 +700,9 @@ You should see two changes:
 - Minimy is now running - the output showing the user and system skill processes.
 - The two minimy file systems frequently written to are now mounted over in-memory ``tmpfs``'s.
 
-
-
 ## The buttons process
 
-The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick access to *previous track*, *pause/resume*, and *next track* operations.  A new **``buttons``** system skill traps button presses and sends corresponding messages to the bus.
+The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick access to *previous track*, *pause/resume*, and *next track* operations. If you hold the middle button for more that two seconds, it does a *stop* function, which also clears the music queue.  A new **``buttons``** system skill traps button presses and sends corresponding messages to the bus.
 
 If you want to add buttons to your enclosure, attach them to the following GPIO pins:
 
@@ -716,17 +714,15 @@ If you want to add buttons to your enclosure, attach them to the following GPIO 
     | 13  | GPIO27 | Pause/resume                  |
     | 15  | GPIO22 | Next track                    |
     +-----+--------+-------------------------------+
-
-The ``buttons.py`` code is here: https://github.com/mike99mac/minimy-mike99mac/blob/main/framework/services/input/buttons.py
     
-One source of purchasing pushbuttons is here: https://www.amazon.com/dp/B09C8C53DM  
+Here is a source of purchasing pushbuttons: https://www.amazon.com/dp/B09C8C53DM  
 
 **TODO:** On the other boombox model, the computer is a RasPi 400 which is *offboard*, and the GPIO pins are not easily accessible. That will need new code to use the arrow keys on the RasPi 400 for the same function.
 
 # Debugging
 Maybe everything will work perfectly the first time, and you won't have to debug.  But we know how that goes :))
 
-Many, many debug statements have been added to the code.  In the critical classes, almost every function has at least one log statement when in debug mode. 
+Many, many debug statements have been added to the code.  In the important classes, almost every function has at least one log statement when in debug mode. 
 
 Following are some debugging resources.
 - Log files are in ``$HOME/minimy/logs``.  
@@ -744,9 +740,10 @@ Following are some debugging resources.
         
 - There is an HTML file with JavaScript code that displays the message bus in real time. If you do not have a Web server running, you must view it from the local host. Start a browser on the box you're installing on and point it to: ``file:///home/pi/minimy/display/sysmon.html``. You should see all messages written to the message bus and the associated data.
     - **TODO:** get a screen shot
+
+- There's a RELEASE-NOTES.md and TODO.md that show a history of the project and a wish list of things to do.
 - Google searches, of course ...
 - You can email me at mike99mac at gmail.com - can't promise anything, but I will try.
-
 
 # Reference
 These reference sections follow:
@@ -755,7 +752,7 @@ These reference sections follow:
 
 ## Vocabulary and examples
 
-In the samples that follow (words) in parenthesis are the actual words spoken, while {words} in curly brackets become variables populated with the actual words spoken. When (multiple|words|) are separated by vertical bars any of those can be spoken, and a trailing vertical bar means that word can be omitted.
+In the samples that follow, (words) in parenthesis are the actual words spoken, while {words} in curly brackets become variables populated with the actual words spoken. When (multiple|words|) are separated by vertical bars, any of those can be spoken, and a trailing vertical bar means that word can be omitted.
 
 **``TODO``** Finish all vocabs and examples
 
@@ -843,13 +840,13 @@ Following are the vocabularies for the MPC skill:
     play (track|artist|album|) {music} (from|on) (the|) internet
     ```
     
-- News vocabulary    
+- NPR News vocabulary    
 
     ```
     play (NPR|the|) news
     ```
     
-- Playlist vocabulary (**NOTE:** code is not complete yet)
+- Playlist vocabulary
 
     ```
     (create|make) playlist {playlist} from track {track}
@@ -877,7 +874,13 @@ Following are the vocabularies for the MPC skill:
     ```
 
 Following are examples of MPC skill's requests:
-- Play track 
+- Play track one and only by artist Adele.
+- Play album Abbey Road
+- Play genre blues on the radio
+- Play artist Billy Joel from the internet
+- Play track Stressed Out by artist Twenty One Pilots
+- Play NPR news
+- Play artist The Chainsmokers from the Internet
 
 ### Timedate skill
 
@@ -898,8 +901,13 @@ Following are examples of  skill's requests:
 ### Weather skill
 
 Following is the Weather skill vocabulary.
+
+```
+(what's|what is) (the|) weather (forecast|)
+```
  
 Following are examples of Weather skill requests:
+- What's the weather?
 
 ### Wiki skill
 
