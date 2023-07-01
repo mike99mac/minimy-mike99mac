@@ -8,6 +8,12 @@ It only knows English - there is little internationalization code.
 
 The version numbers are simply *yy.mm.dd*.
 
+Version 23.07.01
+----------------
+- Playlists are almost working - see skills/user_skills/mpc/mpc_client.py line 490                             
+- Holding stop button for more than 2 secs still not working - shorted to just "pause"/"resume" for now
+- Strange bug with local TTS timing out - possible fix? see framework/services/tts/se_tts_session.py line 144
+ 
 Version 23.06.22
 ----------------
 - Fixed bug with stop button "stop" vs. "toggle" behavior
