@@ -143,9 +143,10 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
                 # result = self.tts_wait_q_local.get(block=True, timeout=se_tts_constants.REMOTE_TIMEOUT)
                 result = self.tts_wait_q_local.get(block=True, timeout=se_tts_constants.LOCAL_TIMEOUT)
             except Exception as e:
-                self.log.warning(f"TTSSession.get_remote_tts() Internal Error 101 - local timed out - e:{e}")
+                self.log.warning(f"TTSSession.get_remote_tts() Creepy internal Error 101 - local timed out - e:{e}")
                 # TODO: cannot return False => causes traceback - but what to return?
-                return False
+                # return False
+                return self.local_file_name  # maybe this will work?
         if result['service'] == 'remote':
             file_name = self.remote_file_name
             os.system(f"rm {self.local_file_name}")

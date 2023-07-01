@@ -49,8 +49,8 @@ class SimpleVoiceAssistant:
         if bus is None:
             bus = MsgBusClient(self.skill_control.skill_id)
         self.bus = bus
-        base_dir = str(os.getenv('SVA_BASE_DIR'))
-        log_filename = base_dir + '/logs/skills.log'
+        self.base_dir = str(os.getenv('SVA_BASE_DIR'))
+        log_filename = self.base_dir + '/logs/skills.log'
         self.log = LOG(log_filename).log
         self.skill_base_dir = os.getcwd()
         self.handle_message = msg_handler
@@ -77,35 +77,32 @@ class SimpleVoiceAssistant:
         self.stt_is_active = False
         self.waiting_for_input_focus = False
         self.intents = {}
-
         self.bus.on(MSG_UTTERANCE, self.handle_utterance)
         self.bus.on(MSG_SKILL, self.handle_skill_msg)
         self.bus.on(MSG_SYSTEM, self.handle_system_msg)
         self.bus.on(MSG_RAW, self.handle_raw_msg)
 
-        # note we need a special handler for media but not Q&A because media handles system level
-        # single verb utterances but Q&A does not.
+        # need a special handler for media but not Q&A because media handles system level single verb utterances but Q&A does not.
         self.bus.on(MSG_MEDIA, self.handle_media_msg)
         self.lang = "en-us"
 
-    def mpc_cmd(self, arg1, arg2 = None):
-        """ 
-        Run any mpc command that takes one or two arguments
-        Param: arg 1 - such as "clear" or "play"
-            arg 2 - args to commands such as "add" or "load" 
-        Return: True or False 
-        """
-        cmd = "/usr/bin/mpc "+arg1
-        if arg2 != None:     
-            cmd = cmd+" "+arg2
-        try:
-            self.log.debug(f"SimpleVoiceAssistant.mpc_cmd(): running command: {cmd}")
-            result = subprocess.check_output(cmd, shell=True) 
-            return True
-        except subprocess.CalledProcessError as e:    
-            self.mpc_rc = str(e.returncode)    
-            self.log.error(f"SimpleVoiceAssistant.mpc_cmd(): mpc_rc = {self.mpc_rc}")
-            return False
+    def mpc_cmd(self, arg1, arg2=None):
+      """ 
+      Run any mpc command that takes one or two arguments
+      Param: arg 1 - such as "clear" or "play"
+             arg 2 - args to commands such as "add" or "load" 
+      Return: mpc return code
+      """
+      cmd = "/usr/bin/mpc "+arg1
+      if arg2 != None:     
+          cmd = cmd+" "+arg2
+      try:
+          self.log.debug(f"SimpleVoiceAssistant.mpc_cmd(): running command: {cmd}")
+          result = subprocess.check_output(cmd, shell=True) 
+          return 0                         # success
+      except subprocess.CalledProcessError as e:    
+          self.log.error(f"SimpleVoiceAssistant.mpc_cmd(): cmd: {cmd} returned e.returncode: {e.returncode}")
+          return e.returncode
 
     # watchdog timer
     def start_watchdog(self, timeout, callback):
@@ -357,9 +354,10 @@ class SimpleVoiceAssistant:
         self.speak(text, wait_callback)    # speak the message 
 
     def register_intent(self, intent_type, verb, subject, callback):
+        """
+        bind a sentence type, subject and verb to a callback and send on message bus to intent service.
+        """ 
         self.log.debug(f"SimpleVoiceAssistant.register_intent() intent_type = {intent_type} verb = {verb} subject = {subject}")
-
-        # bind a sentence type, subject and verb to a callback and send on message bus to intent service.
         subjects = subject
         verbs = verb
         if type(subject) is not list:
@@ -372,9 +370,7 @@ class SimpleVoiceAssistant:
                 if key in self.intents:
                     self.log.warning(f"impleVoiceAssistant.register_intent() **{self.skill_control.skill_id}** error - duplicate key {self.skill_control.skill_id, key}")
                 else:
-                    self.intents[key] = callback
-
-                    # for now assumes success but TODO needs time out and parsing of response message because could be an intent clash 
+                    self.intents[key] = callback 
                     info = {
                             'intent_type': intent_type,
                             'subject': subject,

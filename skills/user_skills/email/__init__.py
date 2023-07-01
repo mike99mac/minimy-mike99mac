@@ -17,15 +17,12 @@ class EmailSkill(SimpleVoiceAssistant):
         self.register_intent('C', 'send', 'email', self.start)
         self.register_intent('C', 'new', 'email', self.start)
         self.register_intent('C', 'compose', 'email', self.start)
-        self.log.error("Email intents registered")
-
+        self.log.debug("EmailSkill.__init__() intents registered")
 
     def handle_timeout(self):
         print("State=%s, timed out !" % (self.state,))
         self.state = 'idle'
         self.play_media(self.skill_base_dir + '/assets/fail.mp3')
-
-
 
     def handle_review_confirmation_input(self, user_confirmation):
         if user_confirmation == 'yes':
@@ -34,7 +31,6 @@ class EmailSkill(SimpleVoiceAssistant):
         else:
             self.speak("Send email here.")
             self.state = 'idle'
-
 
     def handle_body_input(self, user_input):
         if user_input.find("stop") > -1:
@@ -61,7 +57,6 @@ class EmailSkill(SimpleVoiceAssistant):
             prompt = "Ready for message body. I will echo each sentence. To disregard a sentence say no. When finished say stop."
             self.get_user_input(self.handle_body_input, prompt, self.handle_timeout)
             return
-
         if user_input.find("no") > -1:
             prompt = "%s not saved." % (user_input,)
             self.get_user_input(self.handle_spell_input, prompt, self.handle_timeout)
@@ -81,7 +76,6 @@ class EmailSkill(SimpleVoiceAssistant):
             self.play_media(self.skill_base_dir + '/assets/fail.mp3')
         self.state = 'idle'
 
-
     def handle_recipient_confirmation(self, user_confirmation):
         if user_confirmation == 'yes':
             self.log.error("BUG! email skill play media %s" % (self.skill_base_dir + '/assets/confirm.wav',))
@@ -92,7 +86,6 @@ class EmailSkill(SimpleVoiceAssistant):
         else:
             prompt = "Would you prefer to spell it?"
             self.get_user_confirmation(self.handle_user_spell_confirmation_input, prompt, self.handle_timeout)
-
 
     def handle_recipient_input(self, user_input):
         if user_input.find("never") > -1 or user_input.find("spell") > -1:
