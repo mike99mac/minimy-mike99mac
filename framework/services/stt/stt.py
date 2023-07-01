@@ -136,8 +136,7 @@ class STTSvc:
                 if utt.lower().find(ww.lower()) > -1:
                     wake_word = ww
                     break
-            if wake_word == '':
-                # ww not found in utt
+            if wake_word == '':            # ww not found in utt
                 if self.muted:
                     self.muted = False
                     self.send_unmute()
@@ -151,10 +150,8 @@ class STTSvc:
                         if self.bark:
                             self.log.info("Too short --->%s" % (cmd,))
                             print("Too short --->%s" % (cmd,))
-                else:
-                    # ww not found and previous utt not ww this is a raw statement
+                else:                      # ww not found and previous utt not ww => raw statement
                     handle_utt('', utt, self.tmp_file_path)
-
                 self.previous_utt_was_ww = False
             else:                          # otherwise utt contains ww
                 if len(utt) == len(wake_word): # it is just the wake word

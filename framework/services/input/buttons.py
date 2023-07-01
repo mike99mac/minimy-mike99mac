@@ -96,7 +96,6 @@ class Buttons(SimpleVoiceAssistant):
     self.next_button = 22
     self.last_pinval = 0
     self.locked = False
-    self.stop_bouncetime = 100
     self.button_start_time = None
     self.press_duration = 0
 
@@ -104,6 +103,9 @@ class Buttons(SimpleVoiceAssistant):
     """
     For the "next" and "previous" buttons, it doesn't matter how long they are pushed
     so a button release can be detected.
+    -----
+    NOTE: cannot get the middle button to work as such:
+    -----
     For the middle button, if it's pushed for more than 2 seconds, it's a "stop"
     which clear's the music queue, otherwise it's a toggle between pause and resume.
     """
@@ -112,9 +114,9 @@ class Buttons(SimpleVoiceAssistant):
     GPIO.setup(self.prev_button, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(self.stop_button, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(self.next_button, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.add_event_detect(self.prev_button, GPIO.FALLING, callback=self.next_or_prev_button, bouncetime=300)
-    GPIO.add_event_detect(self.stop_button, GPIO.BOTH, callback=self.read_stop_pin, bouncetime=self.stop_bouncetime)
-    GPIO.add_event_detect(self.next_button, GPIO.FALLING, callback=self.next_or_prev_button, bouncetime=300)
+    GPIO.add_event_detect(self.prev_button, GPIO.FALLING, callback=self.next_or_prev_pin, bouncetime=300)
+    GPIO.add_event_detect(self.stop_button, GPIO.FALLING, callback=self.read_stop_pin, bouncetime=300)
+    GPIO.add_event_detect(self.next_button, GPIO.FALLING, callback=self.next_or_prev_pin, bouncetime=300)
     signal.signal(signal.SIGINT, self.signal_handler)
     signal.pause()
 
@@ -147,6 +149,10 @@ class Buttons(SimpleVoiceAssistant):
     """
     pinval = GPIO.input(self.stop_button)
     print(f"read_stop_pin() pinval: {pinval} lastpinval: {self.last_pinval}")
+    self.send_message("pause")
+    self.lastpinval = pinval
+    return                                 # short circuit rest of the code
+
     if ((pinval == 0 and self.last_pinval == 0) or (pinval == 1 and self.last_pinval == 1)): # button was pushed and held
       print("read_stop_pin() stop button was pushed")
       self.button_start_time = time.time() # save time it was pushed
@@ -161,24 +167,22 @@ class Buttons(SimpleVoiceAssistant):
           self.send_message("stop")
         else:                              # pause toggles between pause and resume
           self.send_message("pause")  
-      self.button_start_time = None  
-      self.lastpinval = pinval
+      self.button_start_time = None
 
-  def next_or_prev_button(self, channel):
+  def next_or_prev_pin(self, channel):
     """
     Perform action when either "previous" or "next" buttons is released
     """
-    self.log.debug(f"Buttons.next_or_prev_button() channel: {channel}") 
+    self.log.debug(f"Buttons.next_or_prev_pin() channel: {channel}") 
     match channel:
       case self.prev_button:
-        self.log.debug(f"Buttons.next_or_prev_button() previous")
+        self.log.debug(f"Buttons.next_or_prev_pin() previous")
         self.send_message("previous")
       case self.next_button:
-        self.log.debug(f"Buttons.next_or_prev_button() next")
+        self.log.debug(f"Buttons.next_or_prev_pin() next")
         self.send_message("next")
       case _:                              # not expected
-        self.log.error(f"Buttons.next_or_prev_button() UNEXPECTED channel: {channel}")
-        self.log.debug(f"Did not expect channel: {channel}")
+        self.log.error(f"Buttons.next_or_prev_pin() UNEXPECTED channel: {channel}")
 
 # main()
 if __name__ == '__main__':

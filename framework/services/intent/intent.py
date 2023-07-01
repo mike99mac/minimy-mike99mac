@@ -224,9 +224,7 @@ class UttProc:
                 fh = open(txt_file)        # grab contents
                 contents = fh.read()
                 fh.close()
-
-                # clean up input
-                start = contents.find("]")
+                start = contents.find("]") # clean up input
                 utt_type = contents[1:start]
                 utt = contents[start+1:]
                 utt = scrub_sentence(utt)

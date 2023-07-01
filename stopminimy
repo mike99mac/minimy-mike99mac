@@ -13,5 +13,6 @@ else
     echo "killing process: $nextProc ..."
     sudo kill $pid
   done 
+  sortlogs                                 # create a time sorted file of all logs
+  rm -fr /tmp/pymp*                        # clean up socket temp directories
 fi
-

@@ -3,7 +3,7 @@ from threading import Event
 from skills.sva_base import SimpleVoiceAssistant
 from bus.Message import Message
 from framework.message_types import MSG_SKILL, MSG_SYSTEM
-# import subprocess
+from framework.util.utils import aplay
 
 class SVAMediaSkill(SimpleVoiceAssistant):
     """
@@ -15,9 +15,8 @@ class SVAMediaSkill(SimpleVoiceAssistant):
         self.log.debug(f"SVAMediaSkill.__init__() skill_id = {self.skill_id} skill_base_dir = {self.skill_base_dir}") 
         self.media_skills = []             # array of registered media skill handlers
         self.active_media_skill = None
-
-        # register OOBs
-        info = {
+        self.tick_file_name = self.base_dir + "/framework/assets/tick.wav"
+        info = {                           # register OOBs
                 'subtype':'reserve_oob', 
                 'skill_id':'system_skill', 
                 'from_skill_id':self.skill_id, 
@@ -48,7 +47,7 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     def handle_oob_detected(self, msg):
         self.log.debug(f"SVAMediaSkill.handle_oob_detected() OOB detected - msg: {msg}")
         if self.active_media_skill == None: # no music playing
-            self.speak_lang(f"{self.skill_base_dir}/skills/user_skills/mpc", "no_music_playing", None) # tell user  
+            aplay(self.tick_file_name)      # just play a short tick sound
         else:
             oob_type = msg.data['verb']
             self.log.debug(f"SVAMediaSkill.handle_oob_detected(): oob_type = {oob_type}")
@@ -97,7 +96,7 @@ class SVAMediaSkill(SimpleVoiceAssistant):
         # your confidence level. all media skills need to respond to the 'get_confidence'
         # message and the 'media_play' message
         for skill_id in self.media_skills:
-            self.log.debug("SVAMediaSkill.handle_query(): sending media_get_confidence to %s" % (skill_id))
+            self.log.debug(f"SVAMediaSkill.handle_query(): sent media_get_confidence to {skill_id}")
             info = {
                 'subtype': 'media_get_confidence',
                 'skill_id': skill_id,
