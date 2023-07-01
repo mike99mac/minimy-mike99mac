@@ -58,10 +58,13 @@ function mountUmountDirs
   : SOURCE: ${BASH_SOURCE}
   : STACK:  ${FUNCNAME[@]}
 
+  # unmount and remount a tmpfs over /var/log and $HOME/minimy/logs
+  umountTmpfs /var/log 
+  mountTmpfs var-log.mount Linux log directory
   umountTmpfs $HOME/minimy/logs
   mountTmpfs home-$USER-minimy-logs.mount Minimy log directory
 
-  # mount a tmpfs over minimy/tmp and create three subdirectories
+  # mount a tmpfs over $HOME/minimy/tmp and create three subdirectories
   echo
   umountTmpfs $HOME/minimy/tmp
   mountTmpfs home-$USER-minimy-tmp.mount Minimy temp directory
@@ -120,9 +123,9 @@ function startSystem
   fi
   cd ../../../../..
   source venv_ngv/bin/activate
-  export PYTHONPATH="$HOME/minimy:$HOME/minimy/venv_ngv/lib/python3.10/site-packages"
-  export SVA_BASE_DIR="$HOME/minimy"
-  export GOOGLE_APPLICATION_CREDENTIALS="$HOME/minimy/install/my-google-key.json"
+  export PYTHONPATH=`pwd`
+  export SVA_BASE_DIR=`pwd`
+  export GOOGLE_APPLICATION_CREDENTIALS="/home/pi/minimy/install/my-google-key.json"
   echo
   echo "Starting Message Bus ..."
   cd bus
@@ -216,37 +219,6 @@ function loadUserSkills
   sleep 3
  }                                         # loadUserSkills()
 
-#+--------------------------------------------------------------------------+
-function loadButtons
-# load the buttons daemon 
-#+--------------------------------------------------------------------------+
- {
-  : SOURCE: ${BASH_SOURCE}
-  : STACK:  ${FUNCNAME[@]}
-
-  echo
-  echo "Starting buttons ..."
-  cd $baseDir
-  source venv_ngv/bin/activate
-  python3 framework/services/input/buttons.py &
-  echo
- }                                         # loadButtons()
-
-#+--------------------------------------------------------------------------+
-function loadMic
-# load the microphone 
-#+--------------------------------------------------------------------------+
- {
-  : SOURCE: ${BASH_SOURCE}
-  : STACK:  ${FUNCNAME[@]}
-
-  echo "Finally, starting the mic ..."
-  cd $baseDir
-  source venv_ngv/bin/activate
-  python3 framework/services/input/mic.py &
-  echo 
- }                                         # loadMic()
-
 # main()
 baseDir="$HOME/minimy"
 if [ ! -d $baseDir ]; then                 # base dir not found
@@ -256,11 +228,20 @@ fi
 export PYTHONPATH="$baseDir:$baseDir/venv_ngv/lib/python3.10/site-packages"
 export SVA_BASE_DIR="$baseDir"
 
+echo "Starting Minimy..."
 mountUmountDirs                            # unmount then remount logs and tmp dirs as tmpfs's
 startSystem
 loadSystemSkills 
 loadUserSkills 
-loadButtons
-loadMic 
-echo "** System Started **"
+
+cd $baseDir
+source venv_ngv/bin/activate
+echo "Starting buttons ..."
+python3 framework/services/input/buttons.py &
+
+echo 
+echo "Finally, starting the mic ..."
+python3 framework/services/input/mic.py &
+
+echo "Started Minimy ..."
 
