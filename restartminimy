@@ -1,12 +1,9 @@
 #!/bin/bash
 #
-# restart - restart minimy 
+# restartminimy - stop and start minimy 
 #
 # main() 
-echo "Stopping Minimy..."
 echo
 stopminimy
-echo
-echo "Starting Minimy..."
 echo
 startminimy
