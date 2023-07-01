@@ -849,12 +849,11 @@ Following are the vocabularies for the MPC skill:
 - Playlist vocabulary
 
     ```
-    (create|make) playlist {playlist} from track {track}
+    (create|make) playlist {playlist}
     (delete|remove) playlist {playlist}
     add (track|song|title) {track} to playlist {playlist}
     add (album|record) {album} to playlist {playlist}
     (remove|delete) (track|song|title) {track} from playlist {playlist}
-    (remove|delete) (album|record) {album} from playlist {playlist}
     list (my|) playlists
     what playlists (do i have|are there)
     what are (my|the) playlists
