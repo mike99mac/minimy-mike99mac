@@ -742,8 +742,9 @@ Following are some debugging resources.
         **``tail -f *``**
         
 - There is an HTML file with JavaScript code that displays the message bus in real time. If you do not have a Web server running, you must view it from the local host.
-- Start a browser on the box you're installing on and point it to file:///home/pi/minimy/display/sysmon.html
-- You should see all messages written to the message bus and the associated data.
+    - Start a browser on the box you're installing on and point it to file:///home/pi/minimy/display/sysmon.html
+    - You should see all messages written to the message bus and the associated data.
+      
 - The **``sortlogs``** script - it merges and sorts all the log files by timestamp and saves them to ``/tmp``. The merged output is often easier to peruse than the individual files.
 
     ```
