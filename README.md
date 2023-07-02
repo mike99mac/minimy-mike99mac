@@ -722,11 +722,12 @@ Here is a source of purchasing pushbuttons: https://www.amazon.com/dp/B09C8C53DM
 **TODO:** On the other boombox model, the computer is a RasPi 400 which is *offboard*, and the GPIO pins are not easily accessible. That will need new code to use the arrow keys on the RasPi 400 for the same function.
 
 # Debugging
-Maybe everything will work perfectly the first time, and you won't have to debug.  But we know how that goes :))
-
-Many, many debug statements have been added to the code.  In the important classes, almost every function has at least one log statement when in debug mode. 
+Maybe everything will work perfectly the first time, and you won't have to debug (but we know how that goes :))
 
 Following are some debugging resources.
+
+-Many, many debug statements have been added.  In most classes, every function has at least one log statement when in debug mode with the class, the function, and the parameters passed. 
+
 - Log files are in ``$HOME/minimy/logs``.  
     - Show the log files.
    
