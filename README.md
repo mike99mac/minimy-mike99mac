@@ -742,10 +742,10 @@ Following are some debugging resources.
         **``tail -f *``**
         
 - There is an HTML file with JavaScript code that displays the message bus in real time. If you do not have a Web server running, you must view it from the local host.
-    - Start a browser on the box you're installing on and point it to file:///home/pi/minimy/display/sysmon.html
+    - Start a browser on the box you're installing on and point it to ``file:///home/pi/minimy/display/sysmon.html``
     - You should see all messages written to the message bus and the associated data.
       
-- The **``sortlogs``** script - it merges and sorts all the log files by timestamp and saves them to ``/tmp``. The merged output is often easier to peruse than the individual files.
+- The **``sortlogs``** script - merges and sorts all the log files by timestamp and saves them to ``/tmp``. The merged output is often easier to peruse than the individual files.
 
     ```
     $ cat sortlogs
@@ -775,7 +775,7 @@ Following are some debugging resources.
     killing process: pi        952425       1  7 16:25 pts/3    00:00:08 python3 framework/services/input/mic.py ...
     sorted logs saved to: /tmp/logs-2023-07-01-16:27:34
     ```
-- There's a RELEASE-NOTES.md and TODO.md that show a history of the project and a wish list of things to do.
+- There's a ``RELEASE-NOTES.md`` and ``TODO.md`` that show a history of the project and a wish list of things to do.
 - Google searches, of course ...
 - You can email me at mike99mac at gmail.com - can't promise anything, but I will try.
 
