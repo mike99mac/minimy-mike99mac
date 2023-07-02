@@ -726,7 +726,7 @@ Maybe everything will work perfectly the first time, and you won't have to debug
 
 Following are some debugging resources.
 
--Many, many debug statements have been added.  In most classes, every function has at least one log statement when in debug mode with the class, the function, and the parameters passed. 
+- Many, many debug statements have been added.  In most classes, every function has at least one log statement when in debug mode with the class, the function, and the parameters passed. 
 
 - Log files are in ``$HOME/minimy/logs``.  
     - Show the log files.
@@ -741,10 +741,10 @@ Following are some debugging resources.
 
         **``tail -f *``**
         
-- There is an HTML file with JavaScript code that displays the message bus in real time. If you do not have a Web server running, you must view it from the local host. Start a browser on the box you're installing on and point it to: ``file:///home/pi/minimy/display/sysmon.html``. You should see all messages written to the message bus and the associated data.
-    - **TODO:** get a screen shot
-- The **``sortlogs``** script - it merges and sorts all the log files by timestamp and saves them to ``/tmp``.  
-The merged output is often easier to peruse than the individual files.
+- There is an HTML file with JavaScript code that displays the message bus in real time. If you do not have a Web server running, you must view it from the local host.
+- Start a browser on the box you're installing on and point it to file:///home/pi/minimy/display/sysmon.html
+- You should see all messages written to the message bus and the associated data.
+- The **``sortlogs``** script - it merges and sorts all the log files by timestamp and saves them to ``/tmp``. The merged output is often easier to peruse than the individual files.
 
     ```
     $ cat sortlogs
@@ -765,7 +765,7 @@ The merged output is often easier to peruse than the individual files.
     echo "sorted logs saved to: $outFile"
     ```
 	
-- The **``stopminimy``** script now calls **``sortlogs``** so every time you stop Minimy, there
+- The **``stopminimy``** script now calls **``sortlogs``** so every time you stop Minimy, there is a new log file copied to ``/tmp/`` which persists across the starting and stopping of Minimy, unlike ``$HOME/minimy/tmp/``.
 
     ```
 	$ stopminimy
