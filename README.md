@@ -103,6 +103,8 @@ You should see a progress indicator as the image is copied to the SD card. It sh
 ### Prepare an SD card on Windows
 If you only have access to a Windows system Install the *Win 32 disk imager* from https://sourceforge.net/projects/win32diskimager/
 
+There is now a port of **``rpi-imager``** to Windows. See: https://downloads.raspberrypi.org/imager/imager_latest.exe
+
 No further details are provided.
 
 ## Connect the hardware
@@ -740,7 +742,37 @@ Following are some debugging resources.
         
 - There is an HTML file with JavaScript code that displays the message bus in real time. If you do not have a Web server running, you must view it from the local host. Start a browser on the box you're installing on and point it to: ``file:///home/pi/minimy/display/sysmon.html``. You should see all messages written to the message bus and the associated data.
     - **TODO:** get a screen shot
+- The **``sortlogs``** script - it merges and sorts all the log files by timestamp and saves them to ``/tmp``.  
+The merged output is often easier to peruse than the individual files.
 
+    ```
+    $ cat sortlogs
+    #!/bin/bash
+    #
+    # sortlogs - merge and sort all log files
+    #
+    tmpFile="all.logs"
+    cd $HOME/minimy/logs
+    if [ -f $tmpFile ]; then                   # old one exists
+      rm $tmpFile
+    fi
+    for i in *.log; do                         # copy all log files
+      cat $i >> $tmpFile
+    done
+    outFile="/tmp/logs-`date +\"%F-%T\"`"
+    sort $tmpFile > $outFile                   # sort by timestamp
+    echo "sorted logs saved to: $outFile"
+    ```
+	
+- The **``stopminimy``** script now calls **``sortlogs``** so every time you stop Minimy, there
+
+    ```
+	$ stopminimy
+	...
+    killing process: pi        952424       1 10 16:25 pts/3    00:00:11 python3 framework/services/input/buttons.py ...
+    killing process: pi        952425       1  7 16:25 pts/3    00:00:08 python3 framework/services/input/mic.py ...
+    sorted logs saved to: /tmp/logs-2023-07-01-16:27:34
+    ```
 - There's a RELEASE-NOTES.md and TODO.md that show a history of the project and a wish list of things to do.
 - Google searches, of course ...
 - You can email me at mike99mac at gmail.com - can't promise anything, but I will try.
