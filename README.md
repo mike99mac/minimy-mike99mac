@@ -38,13 +38,13 @@ The overall steps to build a *Smart Boombox* are:
 - Install and configure Minimy
 - Start Minimy and use it!
 
-This document  is based on *The smart boombox cookbook* which has more details on the construction of the enclosure and a parts list. 
+This document  is based on *The smart boombox cookbook* which has more details on building the box and a parts list. 
 See: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
 
 ## Acquire the hardware
 The recommended hardware is a Raspberry Pi (RasPi) 4B with 4 or 8 GB of memory.  Yes, they're still hard to get, but not impossible. 
 
-A Rasberry Pi 400 is another option.  It allows the CPU to be *offboard* which frees up space onboard to house lithium-ion batteries. It also runs a lot cooler due to the massive heat sink.
+A Rasberry Pi 400 is another option.  It allows the CPU to be *offboard* which frees up space onboard to house batteries. The CPUs also run a lot cooler due to the massive heat sink.
 
 Hopefully the RasPi 5 will be out soon and will be more powerful, run cooler, and be easier to procure.
 
@@ -116,7 +116,7 @@ To connect all the computer hardware, perform the following steps:
 - Plug the micro-SD card into the back underside of the RasPi.
 - If you have wired ethernet, plug it in to the RJ-45 connector on the RasPi.
 - Connect the mouse and keyboard to the USB slots.
-- Connect the monitor to the RasPi with an appropriate micro-HDMI cable.  The RasPi 4 two micro HDMI ports - use the left one.
+- Connect the monitor to the RasPi with an appropriate micro-HDMI cable.  The RasPi 4 two micro HDMI ports - only the left one sends output at boot time.
 - If you have a USB drive with music files on it, plug it in to a USB slot.
 - Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. An official RasPi power supply is recommended to avoid *undervoltage* warnings.  If you have an inline switch, turn it on.
 
@@ -252,7 +252,7 @@ You can continue to work from a *terminal session* or you can *SSH in* to your n
 SSH as the user ``pi``, if you want to continue from another system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS console.
 
 **IMPORTANT**: Do not run as ``root``. Doing so will almost certainly screw up your system. 
-Users other than ``pi`` ideally will work as the environment variable ``$HOME`` is used in scripts, but this has never been tested.
+Users other than ``pi`` ideally will work as the environment variable ``$HOME`` is used in scripts, however, this has never been tested.
 
 ### Update and upgrade your system
 
@@ -266,7 +266,7 @@ Update and upgrade your system which installs the latest code for all installed 
 
     **``$ sudo apt-get upgrade -y``**
     
-Your system should now be at the latest software level.
+Your system should now be at the latest software levels.
 
 ## Install and use mycroft-tools
 
@@ -321,7 +321,7 @@ To install **``mycroft-tools``** perform the following steps:
     
 ### Further customize 
 
-The script **``install1``**, in the **``mycroft-tools``** package you just installed, runs many commands and thus save typing, time and possible errors.
+The script **``install1``**, in the **``mycroft-tools``** package you just installed, runs many commands and thus saves typing, time and possible errors.
 
 It performs the following tasks:
 
@@ -334,7 +334,7 @@ It performs the following tasks:
 - Copies a **``systemctl``** configuration file to mount ``/var/log/`` in a ``tmpfs`` which helps prolong the life of the micro-SD card
 - Sets **``pulseaudio``** to start as a system service at boot time, and allows anonymous access so audio services work
 - Configures **``mpd``**, the music player daemon, which plays most of the sound
-- Turns off **``bluetooth``** as Linux makes connecting to it ridiculously hard, while most amplifiers make it easy
+- Turns off **``bluetooth``** as Linux makes connecting to it difficult, while most amplifiers make it easy
 
 To run **``intall1``**, perform the following steps:
 
@@ -505,7 +505,7 @@ To download and copy Minimy, perform the following steps:
     
 ### Install Minimy    
     
-- Run the following script to install Minimy and direct ``stdout`` and ``stderr`` to a file. This step can take up to 15 minutes.
+- Run the following script to install Minimy and direct ``stdout`` and ``stderr`` to a file. ** TAKE A BREAK? ** This step can take up to 15 minutes.
     
     **``$ ./install/linux_install.sh 2>&1 | tee linux_install.out``**
     
