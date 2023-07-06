@@ -505,7 +505,7 @@ To download and copy Minimy, perform the following steps:
     
 ### Install Minimy    
     
-- Run the following script to install Minimy and direct ``stdout`` and ``stderr`` to a file. ** TAKE A BREAK? ** This step can take up to 15 minutes.
+- Run the following script to install Minimy and direct ``stdout`` and ``stderr`` to a file. **TAKE A BREAK?** This step can take up to 15 minutes.
     
     **``$ ./install/linux_install.sh 2>&1 | tee linux_install.out``**
     
@@ -699,7 +699,7 @@ with this code:
     ```
 You should see two changes:
 
-- Minimy is now running - the output showing the user and system skill processes.
+- Minimy is now running - the output showing user and system skill processes.
 - The two minimy file systems frequently written to are now mounted over in-memory ``tmpfs``'s.
 
 ## The buttons process
@@ -726,7 +726,7 @@ Maybe everything will work perfectly the first time, and you won't have to debug
 
 Following are some debugging resources.
 
-- Many, many debug statements have been added.  In most classes, every function has at least one log statement when in debug mode with the class, the function, and the parameters passed. 
+- Many, many debug statements have been added to the code.  In most classes, every function has at least one log statement when in debug mode with the class, the function, and the parameters passed. 
 
 - Log files are in ``$HOME/minimy/logs``.  
     - Show the log files.
@@ -737,7 +737,7 @@ Following are some debugging resources.
         
         ``intent.log  media_player.log  skills.log  stt.log  tts.log``
    
-    - When Minimy is running, you can watch all the log files get populated in real time.
+    - When Minimy is running, you can watch all the log files get populated in real time with the following command:
 
         **``tail -f *``**
         
@@ -766,7 +766,7 @@ Following are some debugging resources.
     echo "sorted logs saved to: $outFile"
     ```
 	
-- The **``stopminimy``** script now calls **``sortlogs``** so every time you stop Minimy, there is a new log file copied to ``/tmp/`` which persists across the starting and stopping of Minimy, unlike ``$HOME/minimy/tmp/``.
+- The **``stopminimy``** script calls **``sortlogs``** so every time you stop Minimy, there is a new log file copied to ``/tmp/`` which persists across the starting and stopping of Minimy, unlike ``$HOME/minimy/tmp/``.
 
     ```
 	$ stopminimy
@@ -787,8 +787,6 @@ These reference sections follow:
 ## Vocabulary and examples
 
 In the samples that follow, (words) in parenthesis are the actual words spoken, while {words} in curly brackets become variables populated with the actual words spoken. When (multiple|words|) are separated by vertical bars, any of those can be spoken, and a trailing vertical bar means that word can be omitted.
-
-**``TODO``** Finish all vocabs and examples
 
 ### Connectivity skill
 
@@ -845,7 +843,7 @@ The MPC skill can:
 
 Following are the vocabularies for the MPC skill:
 
-- Music library vocabulary
+- Music library vocabulary:
     ```
     play (track|song|title|) {track} by (artist|band|) {artist}
     play (album|record) {album} by (artist|band) {artist}
@@ -854,7 +852,7 @@ Following are the vocabularies for the MPC skill:
     play (genre|johnra) {genre}    
     ```
 
-- Internet radio vocabulary
+- Internet radio vocabulary:
 
     ```
     play (the|) radio
@@ -868,19 +866,19 @@ Following are the vocabularies for the MPC skill:
     (different|next) (radio|) station
     ```  
     
-- Internet music vocabulary
+- Internet music vocabulary:
 
     ```
     play (track|artist|album|) {music} (from|on) (the|) internet
     ```
     
-- NPR News vocabulary    
+- NPR News vocabulary: 
 
     ```
     play (NPR|the|) news
     ```
     
-- Playlist vocabulary
+- Playlist vocabulary:
 
     ```
     (create|make) playlist {playlist}
@@ -893,7 +891,7 @@ Following are the vocabularies for the MPC skill:
     what are (my|the) playlists
     ```  
     
-- Basic player commands vocabulary (**NOTE:** code is not complete yet)
+- Basic player commands vocabulary:
 
     ```
     previous (song|station|title|track|)
@@ -907,17 +905,17 @@ Following are the vocabularies for the MPC skill:
     ```
 
 Following are examples of MPC skill's requests:
-- Play track one and only by artist Adele.
-- Play album Abbey Road
+- Play track one and only by artist adele.
+- Play album abbey road
 - Play genre blues on the radio
-- Play artist Billy Joel from the internet
-- Play track Stressed Out by artist Twenty One Pilots
-- Play NPR news
-- Play artist The Chainsmokers from the Internet
+- Play language german on the radio
+- Play track stressed out by artist twenty on pilots
+- Play npr news
+- Play artist the chainsmokers from the Internet
 
 ### Timedate skill
 
-Following is the Timedate skill vocabulary.
+Following is the Timedate skill vocabulary:
 
 ```
 what time (is it|)
@@ -933,13 +931,14 @@ Following are examples of  skill's requests:
  
 ### Weather skill
 
-Following is the Weather skill vocabulary.
+Following is the Weather skill vocabulary:
 
 ```
 (what's|what is) (the|) weather (forecast|)
 ```
  
 Following are examples of Weather skill requests:
+
 - What's the weather?
 
 ### Wiki skill
