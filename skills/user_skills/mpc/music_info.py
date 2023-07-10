@@ -2,7 +2,7 @@
 # This code is distributed under the Apache License, v2.0 
 #
 class Music_info:
-  match_type = ""                  # album, artist, next, none, playlist, prev or song 
+  match_type = ""                  # album, artist, empty_playlist, next, none, playlist_op, playlist, prev, radio or song 
   mesg_file = ""                   # if mycroft has to speak first
   mesg_info = {}                   # values to plug in
   tracks_or_urls = []              # list of music files or radio URLs to play

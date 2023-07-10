@@ -102,16 +102,18 @@ class MpcClient(SimpleVoiceAssistant):
       self.mpc_play()
       return True
 
-  def search_music(self, command_type: str, query_type: Optional[str] = None, music_name: Optional[str] = None) -> List[List[str]]:
+  def search_music(self, command: str, type1: Optional[str]=None, name1: Optional[str]=None, type2: Optional[str]=None, name2: Optional[str]=None) -> List[List[str]]:
     """
-    This handles two cases. One: a search for a particular song, artist, etc.
-    Two: a 'listall' command to return all music.
+    search for music by album, artist, title, or genre allowing up to two qualifiers.
+    A 'listall' command returns all music in library
     mpc syntax: https://www.musicpd.org/doc/mpc/html/#cmdoption-f
     """
-    self.log.debug(f"MpcClient.search_music(): command_type: {command_type} query_type: {query_type} music_name: {music_name}")
-    cmd = ["mpc", command_type, "--format", "%artist%\t%album%\t%title%\t%time%\t%file%"]
-    if query_type and music_name != None:
-      cmd.extend([query_type, music_name])
+    self.log.debug(f"MpcClient.search_music(): command: {command} type1: {type1} name1: {name1}, type2: {type2} name2: {name2}")
+    cmd = ["mpc", command, "--format", "%artist%\t%album%\t%title%\t%time%\t%file%"]
+    if type1 and name1 != None:            # there is a search qualifier
+      cmd.extend([type1, name1])
+    if type2 and name2 != None:            # there is a second search qualifier
+      cmd.extend([type2, name2])
     self.log.debug(f"MpcClient.search_music(): cmd: {cmd}")  
     return [
       line.split("\t")
@@ -146,17 +148,15 @@ class MpcClient(SimpleVoiceAssistant):
     """
     artist_name = "unknown_artist"
     found_by = "yes"                       # assume "by" is in the phrase
-    intent = "unknown"                     # album, album_artist, artist, genre, music, playlist,
-                                           #   track, track_artist, unknown_artist or unknown
-    phrase = phrase.split(' ', 1)[1]       # remove first word (always 'play'?)
-    phrase = phrase.lower()                # fold to lower case
-
+    intent = "unknown"                                                           
+    if phrase[0:4] == "play":              # play is the first word                       
+      phrase = phrase.split(' ', 1)[1]     # remove play   
     match_type = "unknown"                 # album, artist, song or unknown
     music_name = ""                        # search term of music being sought
     tracks_or_urls = []                    # files of songs to be played
     self.log.debug(f"MpcClient.search_library() phrase: {phrase}")
 
-    # check for a partial request with no music_name
+    # first check for a partial request with no music_name
     match phrase:
       case "album" | "track" | "song" | "artist" | "genre" | "johnra" | "playlist":
         if phrase == "johnra":             # fix the spelling
@@ -164,9 +164,9 @@ class MpcClient(SimpleVoiceAssistant):
         self.log.debug(f"MpcClient.search_library() not enough information in phrase: {phrase}")
         mesg_info = {"phrase": phrase}
         self.log.debug(f"MpcClient.search_library() mesg_info: {mesg_info}")
-        ret_val = Music_info("song", "not_enough_info", {"phrase": phrase}, None)
-        self.log.debug(f"MpcClient.search_library() ret_val.mesg_info: {ret_val.mesg_info}")
-        return ret_val
+        music_info = Music_info("song", "not_enough_info", {"phrase": phrase}, None)
+        self.log.debug(f"MpcClient.search_library() music_info.mesg_info: {music_info.mesg_info}")
+        return music_info
     key = re.split(" by ", phrase)
     if len(key) == 1:                      # did not find "by"
       found_by = "no"
@@ -175,21 +175,19 @@ class MpcClient(SimpleVoiceAssistant):
       match music_name:
         case "any music" | "all music" | "my music" | "random music" | "some music" | "music":
           self.log.debug(f"MpcClient.search_library() removed keyword {music_name} from music_name")
-          ret_val = self.get_music("music", music_name, artist_name)
-          return ret_val
+          music_info = self.get_music("music", music_name, artist_name)
+          return music_info
       key = re.split("^genre ", music_name)
       if len(key) == 2:                    # found first word "genre"
         genre = str(key[1])
         self.log.debug(f"MpcClient.search_library() removed keyword {music_name} from music_name")
-        ret_val = self.get_music("genre", genre, artist_name)
-        return ret_val 
+        return self.get_music("genre", genre, artist_name)
       else:
         key = re.split("^playlist ", music_name)
         if len(key) == 2:                # found first word "playlist"
           playlist = str(key[1])
           self.log.debug(f"MpcClient.search_library() removed keyword {music_name} from music_name")
-          ret_val = self.get_music("playlist", playlist, artist_name)
-          return ret_val
+          return self.get_music("playlist", playlist, artist_name)
     elif len(key) == 2:                  # found one "by"
       music_name = str(key[0])
       artist_name = str(key[1])          # artist name follows "by"
@@ -238,8 +236,7 @@ class MpcClient(SimpleVoiceAssistant):
       artist_name = str(key[1])
       self.log.debug("MpcClient.search_library() removed keyword artist or band from artist_name")
     self.log.debug(f"MpcClient.search_library() calling get_music with {intent}, {music_name} and {artist_name}")
-    ret_val = self.get_music(intent, music_name, artist_name) 
-    return ret_val
+    return self.get_music(intent, music_name, artist_name) 
 
   def get_album(self, album_name, album_id, artist_name):
     """
@@ -247,7 +244,10 @@ class MpcClient(SimpleVoiceAssistant):
     """
     self.log.debug(f"MpcClient.get_album() album_name: {album_name} artist_name: {artist_name}")
     artist_found = "none"
-    results = self.search_music("search", "album", album_name)    
+    if artist_name == "unknown_artist":    # artist is not a search term
+      results = self.search_music("search", "album", album_name)
+    else:                                  # artist is also a search term
+      results = self.search_music("search", "album", album_name, "artist", artist_name)
     num_hits = len(results)
     self.log.debug(f"MpcClient.get_album() num_hits: {num_hits}")
     if num_hits == 0: 
@@ -314,8 +314,7 @@ class MpcClient(SimpleVoiceAssistant):
       next_track='"'+self.music_dir+relative_path+'"'  # enclose file name in double quotes 
       self.log.debug(f"MpcClient.get_music_info() adding track: {next_track} to queue")     
       tracks_or_urls.append(next_track)    # add track to queue  
-    ret_val = Music_info(match_type, mesg_file, mesg_info, tracks_or_urls) 
-    return ret_val
+    return Music_info(match_type, mesg_file, mesg_info, tracks_or_urls) 
 
   def get_all_music(self):
     """
@@ -332,9 +331,8 @@ class MpcClient(SimpleVoiceAssistant):
     num_hits = len(results)
     self.log.debug(f"MpcClient.get_all_music() num_hits: {num_hits}")
     mesg_info = {"num_hits": num_hits}
-    ret_val = self.get_music_info("random", "playing_random", mesg_info, results)
     self.mpc_cmd("repeat", "on")           # keep playing random tracks 
-    return ret_val
+    return self.get_music_info("random", "playing_random", mesg_info, results)
     
   def get_genre(self, genre_name):
     """
@@ -348,9 +346,8 @@ class MpcClient(SimpleVoiceAssistant):
     random.shuffle(results)                # shuffle tracks found
     results = results[0:self.max_queued]   # prune to max number of tracks
     mesg_info = {"genre_name": genre_name}
-    ret_val = self.get_music_info("song", "playing_genre", mesg_info, results)
     self.mpc_cmd("repeat", "on")              # keep playing genre
-    return ret_val
+    return self.get_music_info("song", "playing_genre", mesg_info, results)
     
   def get_track(self, track_name, artist_name):
     """
@@ -358,9 +355,12 @@ class MpcClient(SimpleVoiceAssistant):
     If artist is not specified, it is passed in as "unknown_artist"
     """
     self.log.debug(f"MpcClient.get_track() track_name: {track_name} artist_name: {artist_name}")
-    results = self.search_music("search", "title", track_name)    
+    if artist_name == "unknown_artist":    # artist is not a search term
+      results = self.search_music("search", "title", track_name)
+    else:                                  # artist is also a search term
+      results = self.search_music("search", "title", track_name, "artist", artist_name)   
     num_recs = len(results)
-    if num_recs == 0:                    # no hits
+    if num_recs == 0:                      # no hits
       self.log.debug(f"MpcClient.get_track(): did not find a track matching {track_name}")
       if artist_name == "unknown_artist":
         mesg_file = "track_not_found"
@@ -368,41 +368,36 @@ class MpcClient(SimpleVoiceAssistant):
       else:
         mesg_file = "track_artist_not_found"
         mesg_info = {"track_name": track_name, "artist_name": artist_name}   
-      return Music_info("none", mesg_file, mesg_info, None)  
-    
-    # one or more hits
-    exact_match = -1                     # no exact match yet
-    index = 0
-    tracks_or_urls = []                  # return value(s)
-    possible_files = []                  # possible return values
-    possible_artists = []                # corresponding artists
-    possible_albums = []                 # corresponding albums
+      return Music_info("none", mesg_file, mesg_info, None) 
+
+    # matching music has been found   
+    num_hits = 0
+    mesg_file = ""
+    mesg_info = {}
+    tracks_or_urls = []                 
     for artist_found, album_found, track_found, time_str, relative_path in results:
-      possible_files.append('"'+self.music_dir + relative_path+'"')
-      possible_artists.append(artist_found)
-      possible_albums.append(album_found)
+      tracks_or_urls.append('"'+self.music_dir + relative_path+'"')
       if track_found.lower() == track_name: # track name matches
         if artist_name != "unknown_artist" and artist_found.lower() == artist_name: # exact match
-          exact_match = index
           self.log.debug(f"MpcClient.get_track() exact match at index: {index}") 
-          break
-      index += 1
-    if exact_match == -1:                # track and artist do not both match 
-      if index > 0:                      # multiple hits
-        num_hits = len(possible_files)
-        self.log.debug(f"MpcClient.get_track() no exact match but had {num_hits} hits")
-        index = random.randrange(num_hits) # choose a random track 
-        self.log.debug(f"MpcClient.get_track() random track index: {index}") 
-    tracks_or_urls.append(possible_files[index])
-    mesg_file = "playing_track"
-    mesg_info = {'track_name': track_name, 'artist_name': possible_artists[index], 'album_name': possible_albums[index]}
-      
-    # if artist was specified, verify it is correct
-    if artist_name != "unknown_artist" and artist_name != artist_found: # wrong artist _ speak correct artist before playing 
-      self.log.debug(f"MpcClient.get_track() found track {track_name} by {artist_found} not by {artist_name}")
-      mesg_file = "diff_artist"
-      mesg_info = {"track_name": track_name, "album_name": album_found, "artist_found": artist_found}
-    self.mpc_cmd("repeat", "off")             # play track once 
+          mesg_file = "playing_track"
+          mesg_info = {'track_name': track_name, 'artist_name': artist_found, 'album_name': album_found}
+          return Music_info("track", mesg_file, mesg_info, tracks_or_urls) # all done
+        num_hits += 1
+    self.log.debug(f"MpcClient.get_track(): num_hits: {num_hits}")    
+    if num_hits == 1:                      # one track found
+      self.mpc_cmd("repeat", "off")        # play just once      
+      if artist_name != "unknown_artist" and artist_name != artist_found: # wrong artist _ speak correct artist before playing 
+        self.log.debug(f"MpcClient.get_track() found track {track_name} by {artist_found} not by {artist_name}")
+        mesg_file = "diff_artist"
+        mesg_info = {"track_name": track_name, "album_name": album_found, "artist_found": artist_found}  
+      else:  
+        mesg_file = "playing_track"
+        mesg_info = {'track_name': track_name, 'artist_name': artist_found, 'album_name': album_found}
+    else:                                  # multiple hits
+      self.mpc_cmd("repeat", "on")         # allow loop
+      mesg_file = "found_tracks"
+      mesg_info = {'track_name': track_name, 'num_hits': num_hits}
     return Music_info("song", mesg_file, mesg_info, tracks_or_urls) 
 
   def get_unknown_music(self, music_name, artist_name):
@@ -427,20 +422,20 @@ class MpcClient(SimpleVoiceAssistant):
             continue                     # iterate loop
           else:      
             mesg_info = {"artist_name": artist}
-            ret_val = Music_info("artist", "playing_artist", mesg_info, tracks_or_urls)
+            music_info = Music_info("artist", "playing_artist", mesg_info, tracks_or_urls)
         case "album":                    # queue multiple tracks
           for artist, album, title, time_str, relative_path in results:
             tracks_or_urls.append('"'+self.music_dir+relative_path+'"')
           mesg_info = {"album_name": album, "artist_name": artist}
-          ret_val = Music_info("album", "playing_album", mesg_info, tracks_or_urls)
+          music_info = Music_info("album", "playing_album", mesg_info, tracks_or_urls)
         case "title":                    # queue one track
           index = random.randrange(num_recs) # choose a random track 
           self.log.debug(f"MpcClient.get_unknown_music() random track index: {index}")
           tracks_or_urls.append('"'+self.music_dir + results[index][4]+'"') # relative path is fifth value 
           self.log.debug(f"MpcClient.get_unknown_music() tracks_or_urls: {tracks_or_urls}")
           mesg_info = {"track_name": results[index][2], "album_name": results[index][1], "artist_name": results[index][0]}
-          ret_val = Music_info("song", "playing_track", mesg_info, tracks_or_urls)
-      return ret_val   
+          music_info = Music_info("song", "playing_track", mesg_info, tracks_or_urls)
+      return music_info   
 
     # if we fall through, no music was found 
     self.log.debug(f"MpcClient.get_unknown_music(): did not find music matching {music_name}") 
@@ -463,29 +458,29 @@ class MpcClient(SimpleVoiceAssistant):
     self.log.debug(f"MpcClient.get_music() intent: {intent} music_name: {music_name} artist_name: {artist_name}") 
     match intent:
       case "album":
-        ret_val = self.get_album(music_name, -1, "unknown_artist") # no album id
+        music_info = self.get_album(music_name, -1, "unknown_artist") # no album id
       case "album_artist":
-        ret_val = self.get_album(music_name, -1, artist_name) # no album id
+        music_info = self.get_album(music_name, -1, artist_name) # no album id
       case "artist":
-        ret_val = self.get_artist(artist_name) # no artist_id 
+        music_info = self.get_artist(artist_name) # no artist_id 
       case "genre":                   
-        ret_val = self.get_genre(music_name) 
+        music_info = self.get_genre(music_name) 
       case "music":                      # full random
-        ret_val = self.get_all_music()
+        music_info = self.get_all_music()
       case "playlist": 
-        ret_val = self.get_playlist(music_name)  
+        music_info = self.get_playlist(music_name)  
       case "track":                      # call get_track with unknown track ID
-        ret_val = self.get_track(music_name, "unknown_artist")
+        music_info = self.get_track(music_name, "unknown_artist")
       case "track_artist":           
-        ret_val = self.get_track(music_name, artist_name)
+        music_info = self.get_track(music_name, artist_name)
       case "unknown_artist":
-        ret_val = self.get_unknown_music(music_name, artist_name)
+        music_info = self.get_unknown_music(music_name, artist_name)
       case "unknown":
-        ret_val = self.get_unknown_music(music_name, "unknown_artist")
+        music_info = self.get_unknown_music(music_name, "unknown_artist")
       case _:                            # unexpected
         self.log.debug(f"MpcClient.get_music() INTERNAL ERROR: intent is not supposed to be: {intent}")
-        ret_val = Music_info("none", None, None, None)      
-    return ret_val
+        music_info = Music_info("none", None, None, None)      
+    return music_info
 
   def manipulate_playlists(self, utterance):
     """
@@ -525,7 +520,7 @@ class MpcClient(SimpleVoiceAssistant):
       case "list"|"what":  
         mesg_file, mesg_info = self.list_playlists()
     self.log.debug(f"MpcClient.manipulate_playlists() returned mesg_file: {mesg_file} and mesg_info: {mesg_info}")
-    return Music_info("playlist", mesg_file, mesg_info, [])
+    return Music_info("playlist_op", mesg_file, mesg_info, [])
 
   def get_playlist(self, playlist_name):
     """
@@ -536,13 +531,15 @@ class MpcClient(SimpleVoiceAssistant):
     mesg_file = ""
     mesg_info = {}  
     tracks_or_urls = []
+    playlist_name = playlist_name.replace(" ", "_") # replace spaces with underscores
 
-    # load the playlist
-    cmd = f'mpc load {playlist_name}'
+    # clear the queue then load the playlist
+    self.mpc_cmd("clear")
+    self.log.debug(f"MpcClient.get_playlist(): playlist_name: {playlist_name}")
+    cmd = f"/usr/bin/mpc load {playlist_name}"
     try:
       p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
       stdout, stderr = p.communicate()
-      track_files = str(stdout.decode('utf-8'))
     except subprocess.CalledProcessError as e:          
       self.log.error(f"MpcClient.get_playlist(): e.returncode: {e.returncode}")
       mesg_info = {"playlist_name": playlist_name}
@@ -555,9 +552,10 @@ class MpcClient(SimpleVoiceAssistant):
       p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
       stdout, stderr = p.communicate()
       track_files = str(stdout.decode('utf-8'))
+      self.log.debug(f"MpcClient.get_playlist(): track_files = {track_files}")
     except subprocess.CalledProcessError as e: # not expected        
-      self.log.error(f"MpcClient.get_playlist(): cmd: {cmd} e.returncode: {e.returncode}")
-      mesg_info = {"cmd": cmd, "rc": e.returncode}
+      self.log.error(f"MpcClient.get_playlist(): cmd: {cmd.split(' ', 1)[1]} e.returncode: {e.returncode}")
+      mesg_info = {"cmd": "playlist", "rc": e.returncode}
       mesg_file = "mpc_failed"
       return Music_info("none", mesg_file, mesg_info, tracks_or_urls)   
     if len(track_files) == 0:              # empty playlist
@@ -579,51 +577,45 @@ class MpcClient(SimpleVoiceAssistant):
     Return:     mesg_file, mesg_info
     """
     self.log.debug(f"MpcClient.create_playlist() called with phrase {phrase}")
-    playlist_name = phrase.replace(' ', '_').lower() # replace spaces with underscores, fold to lower case
-    self.log.debug(f"MpcClient.create_playlist() playlist_name: {playlist_name}")
+    playlist_name = phrase.replace(' ', '_').replace("'", "").lower() 
+    
     music_info = self.get_playlist(playlist_name)  # check if playlist already exists
-    if music_info.tracks_or_urls != []:    # it exists
+    self.log.debug(f"MpcClient.create_playlist() playlist_name: {playlist_name} music_info.mesg_file: {music_info.mesg_file}")
+    if music_info.mesg_file != "playlists_not_found" and music_info.mesg_file != "empty_playlist": # already exists
       self.log.debug(f"MpcClient.create_playlist() playlist already exists: {playlist_name}")
       mesg_info = {"playlist_name": playlist_name}
       return "playlist_exists", mesg_info
         
     # create the playlist
     cmd = f"/usr/bin/mpc save {playlist_name}" 
-    self.log.debug(f"MpcClient.delete_playlist(): calling cmd: {cmd}")
+    self.log.debug(f"MpcClient.create_playlist(): calling cmd: {cmd}")
     try:
       result = subprocess.check_output(cmd, shell=True) 
     except subprocess.CalledProcessError as e:     
-      self.log.error(f"MpcClient.delete_playlist(): mpc return code: {e.returncode}")     
+      self.log.error(f"MpcClient.create_playlist(): mpc return code: {e.returncode}")     
       mesg_file = "mpc_failed"
-      mesg_info = {'cmd': cmd, 'rc': result.returncode}
+      mesg_info = {'cmd': "save", 'rc': e.returncode}
       return mesg_file, mesg_info
-    mesg_info = {"playlist_name": phrase}  
+    mesg_info = {"playlist_name": phrase}
     mesg_file = "created_playlist"
-    return mesg_file, mesg_info  
+    return mesg_file, mesg_info
 
-  def delete_playlist(self, phrase):
+  def delete_playlist(self, playlist_name):
     """
     Delete a playlist
     Vocabulary: (delete|remove) playlist {playlist}
     Return: mesg_file, mesg_info
     """
-    self.log.debug(f"MpcClient.delete_playlist() called with phrase: {phrase}")
-    phrase = phrase.rstrip(' ').replace(' ', '_') # replace spaces with underscores
-    cmd = f"/usr/bin/mpc rm {phrase}"      # delete the playlist
+    self.log.debug(f"MpcClient.delete_playlist() called with playlist_name: {playlist_name}")
+    playlist_name = playlist_name.rstrip(' ').replace(' ', '_').replace("'", "") # replace spaces with underscores
+    cmd = f"/usr/bin/mpc rm {playlist_name}"      # delete the playlist
     self.log.debug(f"MpcClient.delete_playlist(): calling cmd: {cmd}")
     try:
       p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
       stdout, stderr = p.communicate()
     except subprocess.CalledProcessError as e:          
-      self.log.error(f"MpcClient.delete_playlist(): e.returncode: {e.returncode}")
-    try:
-      result = subprocess.check_output(cmd, shell=True) 
-    except subprocess.CalledProcessError as e:          
-      self.log.error(f"MpcClient.delete_playlist(): mpc return code: {e.returncode}")
-      mesg_file = "mpc_failed"
-      mesg_info = {'cmd': cmd, 'rc': e.returncode}
-      return mesg_file, mesg_info
-    mesg_info = {"playlist_name": phrase}  
+      self.log.error(f"MpcClient.delete_playlist(): unexpected: e.returncode: {e.returncode}")
+    mesg_info = {"playlist_name": playlist_name}  
     self.mpc_cmd("clear")                  # clear playlist in memory
     return "deleted_playlist", mesg_info
 
@@ -638,14 +630,13 @@ class MpcClient(SimpleVoiceAssistant):
     Return: "mesg_file", {mesg_info}  
     """
     self.mpc_cmd("clear")                  # clear the queue
-    self.log.debug(f"MpcClient.add_to_playlist() called with phrase: {phrase}")
+    self.log.debug(f"MpcClient.add_to_playlist() phrase: {phrase}")
     key = re.split(" to playlist| two playlist| 2 playlist ", phrase)
     if len(key) == 1:                      # did not find "to playlist"
       self.log.debug("MpcClient.add_to_playlist() ERROR 'to playlist' not found in phrase")
       return "to_playlist_missing", {} 
     music_name = key[0]
-    playlist_name = key[1] 
-    playlist_name = playlist_name.strip(' ').replace(' ', '_') # replace spaces with underscores
+    playlist_name = key[1].strip(' ').replace(' ', '_').replace("'", "") # replace spaces with underscores
     self.log.debug(f"MpcClient.add_to_playlist() music_name: {music_name} playlist_name: {playlist_name}")
 
     # get the tracks in the playlist
@@ -664,13 +655,14 @@ class MpcClient(SimpleVoiceAssistant):
       return False
     self.log.debug(f"MpcClient.add_to_playlist() new_music_info.tracks_or_urls {new_music_info.tracks_or_urls}")
     
-    # merge the lists with no duplicates (union of sets) then add them to the queue
-    new_music_info.tracks_or_urls = set(new_music_info.tracks_or_urls) | set(existing_music_info.tracks_or_urls)
+    # TODO: should check for duplicates here because mpc will add them
+    # However, files found are fully qaulified, with those in mpc are relative to the mount point (usually /media)
     for next_file in new_music_info.tracks_or_urls:
+      self.log.debug(f"MpcClient.add_to_playlist() next_file: {next_file}")
       if self.mpc_cmd("add", next_file) != 0:
         self.log.error(f"MpcClient.add_to_playlist() unexpected: 'mpc add {next_file}' failed")
-        mesg_info = {"cmd": "mpc add "+next_file, "rc": 1}
         mesg_file = "mpc_failed"
+        mesg_info = {"cmd": "add", "rc": 1}
         return mesg_file, mesg_info   
     
     # to save a playlist, it first must be deleted - go figure
@@ -680,8 +672,8 @@ class MpcClient(SimpleVoiceAssistant):
       result = subprocess.check_output(cmd, shell=True) 
     except subprocess.CalledProcessError as e: 
       self.log.error(f"MpcClient.add_to_playlist(): cmd: {cmd} e.returncode: {e.returncode}")
-      mesg_info = {"cmd": cmd, "rc": e.returncode}
       mesg_file = "mpc_failed"
+      mesg_info = {"cmd": "remove", "rc": e.returncode}
       return mesg_file, mesg_info   
 
     # now save it  
@@ -691,8 +683,8 @@ class MpcClient(SimpleVoiceAssistant):
       result = subprocess.check_output(cmd, shell=True) 
     except subprocess.CalledProcessError as e: 
       self.log.error(f"MpcClient.add_to_playlist(): cmd: {cmd} e.returncode: {e.returncode}")
-      mesg_info = {"cmd": cmd, "rc": e.returncode}
       mesg_file = "mpc_failed"
+      mesg_info = {"cmd": "save", "rc": e.returncode}
       return mesg_file, mesg_info   
     mesg_file = "added_to_playlist"  
     mesg_info = {'music_name': music_name, 'playlist_name': playlist_name}
@@ -738,11 +730,12 @@ class MpcClient(SimpleVoiceAssistant):
   def list_playlists(self):
     """
     Speak all saved playlists
-    Return: mesg_file (str), mesg_info (dict)  
+    Return: Music_info object  
     """
+    mesg_file = ""
+    mesg_info = {}
     cmd = "/usr/bin/mpc lsplaylists"
     self.log.debug(f"MpcClient.list_playlists(): cmd: {cmd}")
-    playlists = {}
     rc = 0
     try:
       p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
@@ -752,16 +745,20 @@ class MpcClient(SimpleVoiceAssistant):
       self.log.debug(f"MpcClient.list_playlists(): playlists: {playlists} rc: {rc}")
     except subprocess.CalledProcessError as e:          
       self.log.error(f"MpcClient.list_playlists(): e.returncode: {e.returncode}")
-    if len(playlists) == 0:
-      mesg_info={}
-      return "playlists_not_found", mesg_info
+    if len(playlists) == 0:                # no playlists found
+      self.log.debug(f"MpcClient.list_playlists(): cmd: {cmd}")
+      mesg_info = {}
+      mesg_file = "playlists_not_found"
     else:                                  # found - add "and" before the last playlist name
       pos = playlists.rfind(" ")
-      # print(f"playlists: {playlists} pos: {pos} len(playlists) = {len(playlists)}")
-      if pos > -1:
-        playlists =  playlists[:pos] + " and " + playlists[pos + 1:]
+      self.log.debug(f"MpcClient.list_playlists(): playlists found pos: {pos} len(playlists): {len(playlists)}")
+      if pos > -1:                         # a space was found
+        playlists =  playlists[:pos] + " and " + playlists[pos + 1:] # put "and" after the last space
+        mesg_file = "list_playlists" 
+      else:                                # just one playlist  
+        mesg_file = "list_playlist"
       mesg_info = {"playlists": playlists}  
-      return "list_playlists", mesg_info 
+    return mesg_file, mesg_info 
 
   def get_matching_stations(self, field_index, search_name):
     """
@@ -984,8 +981,7 @@ class MpcClient(SimpleVoiceAssistant):
         tracks_or_urls.append(next_url)
       mesg_file = None
       mesg_info = None 
-    ret_val = Music_info("internet", mesg_file, mesg_info, tracks_or_urls)
-    return ret_val 
+    return Music_info("internet", mesg_file, mesg_info, tracks_or_urls)
 
   def stream_internet_music(self, music_info):
     """
@@ -1013,22 +1009,24 @@ class MpcClient(SimpleVoiceAssistant):
     param: text of the request
     return: Music_info object
     """
-    self.log.debug(f"MpcClient.search_news() utterance: {utterance}")
     url = "https://www.npr.org/podcasts/500005/npr-news-now"
-    self.log.debug(f"MpcClient.search_news() url: {url}") 
-    # self.speak("Getting the latest from N.P.R news")
+    self.log.debug(f"MpcClient.search_news() utterance: {utterance} url: {url}") 
+    mesg_info = {}
+    mesg_file = "playing_npr"
     res = requests.get(url)
     page = res.text
     start_indx = page.find('audioUrl')
     if start_indx == -1:
       self.log.debug(f"MpcClient.search_news() cannot find NPR news URL") 
-      return
+      mesg_file = "cannot_play_npr"
+      return Music_info("none", mesg_file, {}, [])
     end_indx = start_indx + len('audioUrl')
-    page = page[end_indx+3:]
+    page = page[end_indx + 3:]
     end_indx = page.find('?')
     if end_indx == -1:
       self.log.debug(f"MpcClient.search_news() Parse error")
-      return
+      mesg_file = "cannot_parse_npr"
+      return Music_info("none", mesg_file, {}, [])
     self.log.debug(f"MpcClient.search_news() start_indx: {start_indx} end_indx: {end_indx} ")       
     new_url = page[:end_indx]
     new_url = new_url.replace("\\","")
@@ -1039,4 +1037,4 @@ class MpcClient(SimpleVoiceAssistant):
     file_names = glob.glob("*.mp3")        # find the downloaded file
     file_name = f"{self.temp_dir}/{file_names[0]}" # fully qualify file name
     self.log.debug(f"MpcClient.search_news() news file_name: {file_name}")
-    return Music_info("news", None, None, [file_name])
+    return Music_info("news", mesg_file, mesg_info, [file_name])

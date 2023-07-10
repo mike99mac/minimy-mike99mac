@@ -41,14 +41,11 @@ class MpcSkill(MediaSkill):
     self.log.debug(f"MpcSkill.get_media_confidence(): parse request {sentence}")
     sentence = sentence.lower()
  
-    # if first word is 'create', 'make', 'add', 'delete', 'remove' or 'list'
-    # then this request is to manipulate playlists
+    # if first word is a playlist verb then manipulate playlists
     first_word = sentence.split(' ', 1)[0]
     match first_word:
-      case 'create'|'make'|'add'|'at'|'delete'|'remove'|'list': # 'add' is sometimes 'at'
+      case 'create'|'make'|'add'|'at'|'delete'|"i'd"|'remove'|'list'|'what': # 'add' is sometimes 'at' or I'd
         self.music_info = self.mpc_client.manipulate_playlists(sentence)
-        # if self.music_info.mesg_file:      # there is a message to speak
-        #   self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info)
         return {'confidence':100, 'correlator':0, 'sentence':sentence, 'url':self.url} # all done
 
     # if track or album is specified, assume it is a song, else search for 'radio', 'internet' or 'news' requests 
@@ -74,54 +71,50 @@ class MpcSkill(MediaSkill):
       case "music":                        # if not found in library, search internet
         self.music_info = self.mpc_client.search_library(sentence)
         self.log.debug(f"MpcSkill.get_media_confidence() match_type = {self.music_info.match_type}")
-        if self.music_info.match_type == "none":
-          # if self.music_info.match_type == "playlist":
+        if self.music_info.match_type == "none": # music not found in library
           self.sentence = sentence 
           self.log.debug(f"MpcSkill.get_media_confidence(): not found in library - searching Internet")
           self.music_info.mesg_file = "searching_internet"
           self.music_info.mesg_info = {"sentence": sentence} 
-        # the callback did not get called  
-        # self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.fallback_internet) # tell user "searching internet"
+          # the callback did not get called  
+          # self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.fallback_internet) 
           self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info) 
           self.music_info = self.mpc_client.search_internet(self.sentence) # search Internet as fallback
       case "radio":
         self.music_info = self.mpc_client.parse_radio(sentence)
       case "internet":
         self.music_info = self.mpc_client.search_internet(sentence)
+      case "playlist":
+        self.music_info = self.mpc_client.get_playlist(playlist)
       case "news":
         self.music_info = self.mpc_client.search_news(sentence)
-      case "playlist":
-        playlist = sentence.split(' ', 1)[1].replace("playlist ", "").replace(" ", "_") # drop "playlist", replace spaces with _s
-        self.log.debug(f"MpcSkill.get_media_confidence() playlist: {playlist}")
-        self.music_info = self.mpc_client.get_playlist(playlist)
     if self.music_info.tracks_or_urls != None: # no error 
       self.log.debug("MpcSkill.get_media_confidence(): found tracks or URLs") 
     else:                                  # error encountered
       self.log.debug(f"MpcSkill.get_media_confidence() did not find music: mesg_file = {self.music_info.mesg_file} mesg_info = {self.music_info.mesg_info}")
-    confidence = 100                       # running uncontested - always return 100%
-    return {'confidence':confidence, 'correlator':0, 'sentence':sentence, 'url':self.url}
+    return {'confidence':100, 'correlator':0, 'sentence':sentence, 'url':self.url}
 
   def media_play(self, msg):
     """
-    First clear the mpc queue, then either some music has been found, a playlist operation finished, 
-    or an error message has to be spoken
+    Either music has been found, a playlist operation finished, or an error message has to be spoken
     """
     self.log.debug(f"MpcSkill.media_play() match_type = {self.music_info.match_type}")
-    self.mpc_client.mpc_cmd("clear")       # stop any media that might be playing
     if self.music_info.match_type == "none": # no music was found
       self.log.debug("MpcSkill.media_play() no music found") 
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info) 
       return None
-    elif self.music_info.match_type == "playlist": # no music is played, just speak message
-      self.log.debug("MpcSkill.media_play() speak results of playlist request") 
+    elif self.music_info.match_type == "playlist_op": # playlist operation - no music, just speak message
+      self.log.debug("MpcSkill.media_play() speak results of playlist request")
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info) 
       return None
-
-    # add station URLs or track files
-    for next_url in self.music_info.tracks_or_urls:
-      self.log.debug(f"MpcSkill.media_play() adding URL to MPC queue: {next_url}")
-      cmd = f'add "{next_url}"'            # double-quotes around URL
-      self.mpc_client.mpc_cmd(cmd)
+    elif self.music_info.match_type != "playlist": # playlists are already queued up
+      self.mpc_client.mpc_cmd("clear")     # stop any media that might be playing
+      for next_url in self.music_info.tracks_or_urls:
+        self.log.debug(f"MpcSkill.media_play() adding URL to MPC queue: {next_url}")
+        cmd = f"add {next_url}"    
+        self.mpc_client.mpc_cmd(cmd)
+    elif self.music_info.match_type == "playlist":     
+      self.mpc_client.mpc_cmd("random on") # shuffle tracks 
     if self.music_info.mesg_file == None:  # no message
       self.start_music()
     else:                                  # speak message and pass callback  
