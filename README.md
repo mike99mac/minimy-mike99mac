@@ -38,13 +38,13 @@ The overall steps to build a *Smart Boombox* are:
 - Install and configure Minimy
 - Start Minimy and use it!
 
-This document  is based on *The smart boombox cookbook* which has more details on the construction of the enclosure and a parts list. 
+This document  is based on *The smart boombox cookbook* which has more details on building the box and a parts list. 
 See: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
 
 ## Acquire the hardware
 The recommended hardware is a Raspberry Pi (RasPi) 4B with 4 or 8 GB of memory.  Yes, they're still hard to get, but not impossible. 
 
-A Rasberry Pi 400 is another option.  It allows the CPU to be *offboard* which frees up space onboard to house lithium-ion batteries. It also runs a lot cooler due to the massive heat sink.
+A Rasberry Pi 400 is another option.  It allows the CPU to be *offboard* which frees up space onboard to house batteries. The CPUs also run a lot cooler due to the massive heat sink.
 
 Hopefully the RasPi 5 will be out soon and will be more powerful, run cooler, and be easier to procure.
 
@@ -103,6 +103,8 @@ You should see a progress indicator as the image is copied to the SD card. It sh
 ### Prepare an SD card on Windows
 If you only have access to a Windows system Install the *Win 32 disk imager* from https://sourceforge.net/projects/win32diskimager/
 
+There is now a port of **``rpi-imager``** to Windows. See: https://downloads.raspberrypi.org/imager/imager_latest.exe
+
 No further details are provided.
 
 ## Connect the hardware
@@ -114,7 +116,7 @@ To connect all the computer hardware, perform the following steps:
 - Plug the micro-SD card into the back underside of the RasPi.
 - If you have wired ethernet, plug it in to the RJ-45 connector on the RasPi.
 - Connect the mouse and keyboard to the USB slots.
-- Connect the monitor to the RasPi with an appropriate micro-HDMI cable.  The RasPi 4 two micro HDMI ports - use the left one.
+- Connect the monitor to the RasPi with an appropriate micro-HDMI cable.  The RasPi 4 two micro HDMI ports - only the left one sends output at boot time.
 - If you have a USB drive with music files on it, plug it in to a USB slot.
 - Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. An official RasPi power supply is recommended to avoid *undervoltage* warnings.  If you have an inline switch, turn it on.
 
@@ -250,7 +252,7 @@ You can continue to work from a *terminal session* or you can *SSH in* to your n
 SSH as the user ``pi``, if you want to continue from another system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS console.
 
 **IMPORTANT**: Do not run as ``root``. Doing so will almost certainly screw up your system. 
-Users other than ``pi`` ideally will work as the environment variable ``$HOME`` is used in scripts, but this has never been tested.
+Users other than ``pi`` ideally will work as the environment variable ``$HOME`` is used in scripts, however, this has never been tested.
 
 ### Update and upgrade your system
 
@@ -264,7 +266,7 @@ Update and upgrade your system which installs the latest code for all installed 
 
     **``$ sudo apt-get upgrade -y``**
     
-Your system should now be at the latest software level.
+Your system should now be at the latest software levels.
 
 ## Install and use mycroft-tools
 
@@ -319,7 +321,7 @@ To install **``mycroft-tools``** perform the following steps:
     
 ### Further customize 
 
-The script **``install1``**, in the **``mycroft-tools``** package you just installed, runs many commands and thus save typing, time and possible errors.
+The script **``install1``**, in the **``mycroft-tools``** package you just installed, runs many commands and thus saves typing, time and possible errors.
 
 It performs the following tasks:
 
@@ -332,7 +334,7 @@ It performs the following tasks:
 - Copies a **``systemctl``** configuration file to mount ``/var/log/`` in a ``tmpfs`` which helps prolong the life of the micro-SD card
 - Sets **``pulseaudio``** to start as a system service at boot time, and allows anonymous access so audio services work
 - Configures **``mpd``**, the music player daemon, which plays most of the sound
-- Turns off **``bluetooth``** as Linux makes connecting to it ridiculously hard, while most amplifiers make it easy
+- Turns off **``bluetooth``** as Linux makes connecting to it difficult, while most amplifiers make it easy
 
 To run **``intall1``**, perform the following steps:
 
@@ -503,7 +505,7 @@ To download and copy Minimy, perform the following steps:
     
 ### Install Minimy    
     
-- Run the following script to install Minimy and direct ``stdout`` and ``stderr`` to a file. This step can take up to 15 minutes.
+- Run the following script to install Minimy and direct ``stdout`` and ``stderr`` to a file. **TAKE A BREAK?** This step can take up to 15 minutes.
     
     **``$ ./install/linux_install.sh 2>&1 | tee linux_install.out``**
     
@@ -697,7 +699,7 @@ with this code:
     ```
 You should see two changes:
 
-- Minimy is now running - the output showing the user and system skill processes.
+- Minimy is now running - the output showing user and system skill processes.
 - The two minimy file systems frequently written to are now mounted over in-memory ``tmpfs``'s.
 
 ## The buttons process
@@ -720,11 +722,12 @@ Here is a source of purchasing pushbuttons: https://www.amazon.com/dp/B09C8C53DM
 **TODO:** On the other boombox model, the computer is a RasPi 400 which is *offboard*, and the GPIO pins are not easily accessible. That will need new code to use the arrow keys on the RasPi 400 for the same function.
 
 # Debugging
-Maybe everything will work perfectly the first time, and you won't have to debug.  But we know how that goes :))
-
-Many, many debug statements have been added to the code.  In the important classes, almost every function has at least one log statement when in debug mode. 
+Maybe everything will work perfectly the first time, and you won't have to debug (but we know how that goes :))
 
 Following are some debugging resources.
+
+- Many, many debug statements have been added to the code.  In most classes, every function has at least one log statement when in debug mode with the class, the function, and the parameters passed. 
+
 - Log files are in ``$HOME/minimy/logs``.  
     - Show the log files.
    
@@ -734,14 +737,45 @@ Following are some debugging resources.
         
         ``intent.log  media_player.log  skills.log  stt.log  tts.log``
    
-    - When Minimy is running, you can watch all the log files get populated in real time.
+    - When Minimy is running, you can watch all the log files get populated in real time with the following command:
 
         **``tail -f *``**
         
-- There is an HTML file with JavaScript code that displays the message bus in real time. If you do not have a Web server running, you must view it from the local host. Start a browser on the box you're installing on and point it to: ``file:///home/pi/minimy/display/sysmon.html``. You should see all messages written to the message bus and the associated data.
-    - **TODO:** get a screen shot
+- There is an HTML file with JavaScript code that displays the message bus in real time. If you do not have a Web server running, you must view it from the local host.
+    - Start a browser on the box you're installing on and point it to ``file:///home/pi/minimy/display/sysmon.html``
+    - You should see all messages written to the message bus and the associated data.
+      
+- The **``sortlogs``** script - merges and sorts all the log files by timestamp and saves them to ``/tmp``. The merged output is often easier to peruse than the individual files.
 
-- There's a RELEASE-NOTES.md and TODO.md that show a history of the project and a wish list of things to do.
+    ```
+    $ cat sortlogs
+    #!/bin/bash
+    #
+    # sortlogs - merge and sort all log files
+    #
+    tmpFile="all.logs"
+    cd $HOME/minimy/logs
+    if [ -f $tmpFile ]; then                   # old one exists
+      rm $tmpFile
+    fi
+    for i in *.log; do                         # copy all log files
+      cat $i >> $tmpFile
+    done
+    outFile="/tmp/logs-`date +\"%F-%T\"`"
+    sort $tmpFile > $outFile                   # sort by timestamp
+    echo "sorted logs saved to: $outFile"
+    ```
+	
+- The **``stopminimy``** script calls **``sortlogs``** so every time you stop Minimy, there is a new log file copied to ``/tmp/`` which persists across the starting and stopping of Minimy, unlike ``$HOME/minimy/tmp/``.
+
+    ```
+	$ stopminimy
+	...
+    killing process: pi        952424       1 10 16:25 pts/3    00:00:11 python3 framework/services/input/buttons.py ...
+    killing process: pi        952425       1  7 16:25 pts/3    00:00:08 python3 framework/services/input/mic.py ...
+    sorted logs saved to: /tmp/logs-2023-07-01-16:27:34
+    ```
+- There's a ``RELEASE-NOTES.md`` and ``TODO.md`` that show a history of the project and a wish list of things to do.
 - Google searches, of course ...
 - You can email me at mike99mac at gmail.com - can't promise anything, but I will try.
 
@@ -753,8 +787,6 @@ These reference sections follow:
 ## Vocabulary and examples
 
 In the samples that follow, (words) in parenthesis are the actual words spoken, while {words} in curly brackets become variables populated with the actual words spoken. When (multiple|words|) are separated by vertical bars, any of those can be spoken, and a trailing vertical bar means that word can be omitted.
-
-**``TODO``** Finish all vocabs and examples
 
 ### Connectivity skill
 
@@ -811,7 +843,7 @@ The MPC skill can:
 
 Following are the vocabularies for the MPC skill:
 
-- Music library vocabulary
+- Music library vocabulary:
     ```
     play (track|song|title|) {track} by (artist|band|) {artist}
     play (album|record) {album} by (artist|band) {artist}
@@ -820,7 +852,7 @@ Following are the vocabularies for the MPC skill:
     play (genre|johnra) {genre}    
     ```
 
-- Internet radio vocabulary
+- Internet radio vocabulary:
 
     ```
     play (the|) radio
@@ -834,19 +866,19 @@ Following are the vocabularies for the MPC skill:
     (different|next) (radio|) station
     ```  
     
-- Internet music vocabulary
+- Internet music vocabulary:
 
     ```
     play (track|artist|album|) {music} (from|on) (the|) internet
     ```
     
-- NPR News vocabulary    
+- NPR News vocabulary: 
 
     ```
     play (NPR|the|) news
     ```
     
-- Playlist vocabulary
+- Playlist vocabulary:
 
     ```
     (create|make) playlist {playlist}
@@ -859,7 +891,7 @@ Following are the vocabularies for the MPC skill:
     what are (my|the) playlists
     ```  
     
-- Basic player commands vocabulary (**NOTE:** code is not complete yet)
+- Basic player commands vocabulary:
 
     ```
     previous (song|station|title|track|)
@@ -873,17 +905,17 @@ Following are the vocabularies for the MPC skill:
     ```
 
 Following are examples of MPC skill's requests:
-- Play track one and only by artist Adele.
-- Play album Abbey Road
+- Play track one and only by artist adele.
+- Play album abbey road
 - Play genre blues on the radio
-- Play artist Billy Joel from the internet
-- Play track Stressed Out by artist Twenty One Pilots
-- Play NPR news
-- Play artist The Chainsmokers from the Internet
+- Play language german on the radio
+- Play track stressed out by artist twenty on pilots
+- Play npr news
+- Play artist the chainsmokers from the Internet
 
 ### Timedate skill
 
-Following is the Timedate skill vocabulary.
+Following is the Timedate skill vocabulary:
 
 ```
 what time (is it|)
@@ -899,13 +931,14 @@ Following are examples of  skill's requests:
  
 ### Weather skill
 
-Following is the Weather skill vocabulary.
+Following is the Weather skill vocabulary:
 
 ```
 (what's|what is) (the|) weather (forecast|)
 ```
  
 Following are examples of Weather skill requests:
+
 - What's the weather?
 
 ### Wiki skill
