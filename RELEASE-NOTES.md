@@ -8,23 +8,23 @@ It only knows English - there is little internationalization code.
 
 The version numbers are simply *yy.mm.dd*.
 
-Version 23.07.01
-----------------
+### Version 23.07.10
+- Playlists are *mostly* working 
+- Will try a video with this version - probably one more bug fix is needed
+
+### Version 23.07.01
 - Playlists are almost working - see skills/user_skills/mpc/mpc_client.py line 490                             
 - Holding stop button for more than 2 secs still not working - shorted to just "pause"/"resume" for now
 - Strange bug with local TTS timing out - possible fix? see framework/services/tts/se_tts_session.py line 144
  
-Version 23.06.22
-----------------
+### Version 23.06.22
 - Fixed bug with stop button "stop" vs. "toggle" behavior
  
-Version 23.06.20
-----------------
+### Version 23.06.20
 - Pressing stop button for more than 2 seconds now does "mpc stop" which clears the queue
 - Fixed a couple of small bugs
 
-Version 23.06.11
-----------------
+### Version 23.06.11
 - Initial release
 - Complete documentation in README.md - details on all steps to install, configure and use
 - Works with an associated repo, mycroft-tools, to speed install and add a box of useful tools
