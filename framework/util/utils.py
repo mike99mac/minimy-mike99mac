@@ -10,8 +10,8 @@ import yaml
 # the chunk size the more choppy the outout sounds. you pick your poison.
 # MAX_CHUNK_LEN = 15
 # MIN_CHUNK_LEN = 5
-MAX_CHUNK_LEN = 25
-MIN_CHUNK_LEN = 15
+MAX_CHUNK_LEN = 45
+MIN_CHUNK_LEN = 35
 
 def get_hal_obj(which):
     jobj = ''

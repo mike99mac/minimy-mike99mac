@@ -39,9 +39,9 @@ class Server:
         return None
 
     async def send_to_clients(self, message):
-        # pseudo abstraction violation
-        # should not really care about 
-        # message structure at this level
+        """
+        pseudo abstraction violation should not really care about message structure at this level
+        """
         if self.clients:
             msg = json.loads(message)
             target = msg.get('target','')
@@ -56,8 +56,7 @@ class Server:
                 # DeprecationWarning: The explicit passing of coroutine objects to asyncio.wait() 
                 # is deprecated since Python 3.8, and scheduled for removal in Python 3.11.
                 await asyncio.wait([client.send(message) for client in self.clients])
-            else: 
-                # directed
+            else:                          # directed
                 client = await self.find_client(target)
                 if client == None:
                     logging.warning("Error, target not found! %s, %s" % (target,msg))

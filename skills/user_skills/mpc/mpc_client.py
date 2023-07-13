@@ -210,7 +210,7 @@ class MpcClient(SimpleVoiceAssistant):
         intent = "album"
       self.log.debug("MpcClient.search_library() removed keyword album or record")
     else:                                # leading "album" not found
-      key = re.split("^track |^song |^title ", music_name)
+      key = re.split("^track |^song |^title |tracked", music_name) # track can be tracked
       if len(key) == 2:                  # leading "track", "song" or "title" found
         music_name = str(key[1])
         match_type = "song"
@@ -379,7 +379,7 @@ class MpcClient(SimpleVoiceAssistant):
       tracks_or_urls.append('"'+self.music_dir + relative_path+'"')
       if track_found.lower() == track_name: # track name matches
         if artist_name != "unknown_artist" and artist_found.lower() == artist_name: # exact match
-          self.log.debug(f"MpcClient.get_track() exact match at index: {index}") 
+          # self.log.debug(f"MpcClient.get_track() exact match at index: {index}") 
           mesg_file = "playing_track"
           mesg_info = {'track_name': track_name, 'artist_name': artist_found, 'album_name': album_found}
           return Music_info("track", mesg_file, mesg_info, tracks_or_urls) # all done
@@ -652,9 +652,11 @@ class MpcClient(SimpleVoiceAssistant):
     new_music_info = self.search_library(music_name) 
     if new_music_info.match_type == "none":    # did not find track/album
       self.log.debug(f"MpcClient.add_to_playlist() did not find music_name: {music_name}") 
-      return False
+      mesg_file = "music_not_found"
+      mesg_info = {"music_name": music_name}
+      return mesg_file, mesg_info
+
     self.log.debug(f"MpcClient.add_to_playlist() new_music_info.tracks_or_urls {new_music_info.tracks_or_urls}")
-    
     # TODO: should check for duplicates here because mpc will add them
     # However, files found are fully qaulified, with those in mpc are relative to the mount point (usually /media)
     for next_file in new_music_info.tracks_or_urls:

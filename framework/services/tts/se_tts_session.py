@@ -149,10 +149,10 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
                 return self.local_file_name  # maybe this will work?
         if result['service'] == 'remote':
             file_name = self.remote_file_name
-            os.system(f"rm {self.local_file_name}")
+            os.system(f"if [ -f {self.local_file_name}; then rm {self.local_file_name}; fi")
         else:
             file_name = self.local_file_name
-            os.system(f"rm {self.remote_file_name}")
+            os.system(f"if [ -f {self.remote_file_name} ]; then rm {self.remote_file_name}; fi")
         self.log.debug(f"TTSSession.get_remote_tts() result: {result}, chunk: {chunk} file_name: {file_name}")
         return file_name
 
