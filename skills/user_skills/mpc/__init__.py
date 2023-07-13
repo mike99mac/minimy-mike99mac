@@ -85,7 +85,7 @@ class MpcSkill(MediaSkill):
       case "internet":
         self.music_info = self.mpc_client.search_internet(sentence)
       case "playlist":
-        self.music_info = self.mpc_client.get_playlist(playlist)
+        self.music_info = self.mpc_client.get_playlist(sentence)
       case "news":
         self.music_info = self.mpc_client.search_news(sentence)
     if self.music_info.tracks_or_urls != None: # no error 
