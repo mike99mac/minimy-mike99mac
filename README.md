@@ -23,6 +23,8 @@ So I continue to try to *give back to the community* while *standing on the shou
 
 This document describes how to get the solution running, and starts from the very beginning.
 
+Here is a video of a beta version: https://www.youtube.com/watch?v=WRiqg0b-EPI
+
 ## The build
 
 The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22.04 inside an *enclosure* that is a retro-looking boombox. Later Raspberry Pi OS (aka Raspbian) versions 10 (buster) and 11 (bullseye) were tested. However, this code and these steps should be relatively portable to any hardware that can run any Linux. 
