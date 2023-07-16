@@ -642,7 +642,7 @@ To get a Google API key file, perform the following steps:
 
 - You will need to obtain your own ``PROJECT_ID``, ``KEY_ID``, ``PRIVATE_KEY``, ``SERVICE_ACCOUNT_EMAIL`` and ``CLIENT_ID``. 
 - Go to https://console.cloud.google.com/freetrial/signup/tos and obtain these values.
-- Click on **IAM & Admin** => **Service Accounts** => **ADD KEY** ==> *Create new key**.
+- Click on **IAM & Admin** => **Service Accounts** => **ADD KEY** ==> **Create new key**.
 - Populate them in the file.
 
 ## Run Minimy
