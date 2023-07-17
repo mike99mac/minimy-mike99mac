@@ -29,6 +29,7 @@ pip install youtube-search
 pip install pyee 
 pip install RPi.GPIO
 pip install keyboard 
+pip install PyDictionary 
 deactivate
 
 echo
