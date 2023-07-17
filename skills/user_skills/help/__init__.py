@@ -16,10 +16,7 @@ class HelpSkill(SimpleVoiceAssistant):
                 'from_skill_id':self.skill_id,
                 'verb':'help'
                 }
-        #self.bus.emit(Message(MSG_SYSTEM, info))
         self.bus.send(MSG_SYSTEM, 'system_skill', info)
-
-
 
     def handle_message(self, message):
         data = message.data
@@ -31,11 +28,8 @@ class HelpSkill(SimpleVoiceAssistant):
             prompt = "Playing help for %s" % (topic,)
             self.speak(prompt)
 
-
-
     def stop(self):
         pass
-
 
 if __name__ == '__main__':
     hlp = HelpSkill()

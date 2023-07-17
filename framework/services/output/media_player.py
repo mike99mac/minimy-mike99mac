@@ -321,7 +321,6 @@ class SVAMediaPlayerSkill:
     def handle_message(self, message):
         self.log.debug(f"SVAMediaPlayerSkill.handle_message() message: {message}")
         data = message.data
-        self.log.debug(f"SVAMediaPlayerSkill.handle_message() message.data: {data}")
         if data['subtype'] == 'media_player_command':
             command = data['command']
             if command == 'play_media':
@@ -341,13 +340,13 @@ class SVAMediaPlayerSkill:
             elif command == 'cancel_session':
                 return self.cancel_session(message)
             else:
-                self.log.debug(f"SVAMediaPlayerSkill.handle_message() - Unrecognized command: {command}")
+                self.log.error(f"SVAMediaPlayerSkill.handle_message() - Unrecognized command: {command}")
 
     def wait_for_end_play(self, media_entry):
         self.log.debug(f"MediaPlayer:wait_for_end_play() media_entry: {media_entry}")
         while not self.current_session.ce.is_completed() and self.state == 'playing':
             time.sleep(0.01)
-        self.log.debug(f"wait_for_end() state: {self.state} owner: {self.current_session.owner} file_uri: {media_entry['file_uri']}")
+        self.log.info(f"MediaPlayer:wait_for_end_play() state: {self.state} owner: {self.current_session.owner} file_uri: {media_entry['file_uri']}")
 
         if self.state == 'paused':
             self.log.info("MediaPlayer:wait_for_end_play() Pausing current session")
@@ -379,21 +378,20 @@ class SVAMediaPlayerSkill:
             self.log.warning("MediaPlayer.wait_for_end_play() ILLEGAL STATE TRANSITION playing to resumed!")
         else:
             process_exit_code = self.current_session.ce.get_return_code()
-            self.log.debug("MediaPlayer end of play detected, process exit code:%s, state:%s" % (process_exit_code,self.state))
+            self.log.debug(f"MediaPlayer.wait_for_end_play() end of play detected, process_exit_code: {process_exit_code} state: {self.state}")
             if process_exit_code != -9:  # remove from q if not killed
                 self.current_session.media_queue = self.current_session.media_queue[1:]
 
                 # remove from file system if requested
                 if media_entry['delete_on_complete'] == 'true':
-                    cmd = "rm %s" % (media_entry['file_uri'],)
+                    cmd = f"if [ -f {media_entry['file_uri']} ]; then rm {media_entry['file_uri']}; fi"
                     os.system(cmd)
-
                 if len(self.current_session.media_queue) == 0:
                     self.state = 'idle'
-                    #print("MediaPlayer going idle because process ended and no more files to play for this session")
+                    self.log.info("MediaPlayer:wait_for_end_play() going idle because process ended and no more files to play for this session")
                     self.send_session_end_notify('eof')
             else:
-                self.log.info("MediaPlayer process was killed (-9)")
+                self.log.info("MediaPlayer:wait_for_end_play() process was killed (-9)")
                 if media_entry['delete_on_complete'] == 'true':
                     cmd = "rm %s" % (media_entry['file_uri'],)
                     os.system(cmd)

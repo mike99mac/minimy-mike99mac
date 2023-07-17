@@ -103,6 +103,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
                         'skill_id':'media_player_service',
                         'from_skill_id':self.skill_id,
                         'delete_on_complete':'true'
+                        # 'delete_on_complete':'false'
                        }
                 self.bus.send(MSG_MEDIA, 'media_player_service', info)
                 self.log.debug(f"TTSSession play_file() exit - play state: {self.state} file_name: {file_name}")
