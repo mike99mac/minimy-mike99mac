@@ -11,7 +11,7 @@ The version numbers are simply *yy.mm.dd*.
 ### Version 23.07.13
 - Fix some bugs in playlists 
 - Check if TTS file exists before removing it
-- Will try a video with this version 
+- Will try a video with this version => here it is: https://www.youtube.com/watch?v=WRiqg0b-EPI
 
 ### Version 23.07.10
 - Playlists are *mostly* working 
