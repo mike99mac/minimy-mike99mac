@@ -1,6 +1,5 @@
 # Building a boombox
-
-This describes how to build a smart boombox. 
+This page describes how to build a smart boombox. 
 
 ## Overview
 The goal of this project is to create a cool boombox that sounds amazing and can play music by voice. 
@@ -41,19 +40,21 @@ on the left. You can Bluetooth directly to the amp and bypass the computer.
 ## Bill of material
 Following are the wood parts that need to be cut out.
 
-
-Following are the wood parts that need to be cut out.
-
 ### Plywood
 The following pieces of 1/2" Baltic birch plywood are needed (nominal thickness: 0.480"). 
 
 **NOTE** These sizes need to be verified during the next build
 
-| Description        | Qty | Size |
-| -----------        | --- | ---- |
-| Main panel         | 1   | 19.875" x 32.295" |
-| Sides              | 2   | 6.005" x 32.295" |
-| Enclosure dividers | 1   | 6.375" x 6.875" ??? |
+| Description                | Qty | Size |
+| -----------                | --- | ---- |
+| Main panel                 | 1   | 19.875" x 32.295" |
+| Sides                      | 2   | 6.005" x 32.295" |
+| Internal vertical dividers | 2   | 6.375" x 6.875" ??? |
+
+The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of the CNC machine which is 30"
+Then that panel is cut into four: the front, bottom, lower back and internal horizontal divider.
+
+TODO: get measurements of what to cut.
 
 ### Moldings
 All moldings are hardwood - nominal size: 0.830" x 0.830".
