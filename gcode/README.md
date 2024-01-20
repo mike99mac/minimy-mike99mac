@@ -5,7 +5,8 @@ This describes how to build a smart boombox.
 ## Overview
 The goal of this project is to create a cool boombox that sounds amazing and can play music by voice. 
 
-The picture of the front shows the “carcass” which has three enclosures below for the left, right 
+The picture below shows the front view of a boombox carcass assembled and finished, but with no 
+components installed” which has three enclosures below for the left, right 
 and subwoofer, and the space above for the amp, computer and other components. Two removable panels 
 allow easy access to the components. It’s constructed of 1/2" Baltic birch plywood with some rare 
 curly oak for the edge moldings. The decorative molding in the front is curly maple and cherry. 
@@ -39,15 +40,47 @@ on the left. You can Bluetooth directly to the amp and bypass the computer.
 
 ## Bill of material
 Following are the wood parts that need to be cut out.
-All panels are from 1/2" baltic birch plywood. The nominal size should be 0.480".
-All moldings are cut from "one by ones" hardwood. The nominal size will be 0.820" x 0.820".
+
+- All panels are 1/2" baltic birch plywood - nominal thickness: 0.480"
+- All moldings are hardwood - nominal size: 0.830" x 0.830".
+
+Following are the wood parts that need to be cut out.
 
 ### Plywood
-- 1 Main panel: 19.875" wide x 32.295" high
-- 2: Sides: TODO: get exact size
+- 1 main panel: 19.875" wide x 32.295" high
+- 2 sides: TODO: get exact size
 
 ### Moldings
-TODO
+TODO - get sizes
+
+### Components  
+Following are the components needed.
+
+| Description                                  | Cost | Source      |
+| -----------                                  | ---- | ----------- |
+| Raspberry Pi 5: 8GB RAM                      | $80  | www.seeedstudio.com/Raspberry-Pi-5-8GB-p-5810.html |
+| RasPi power supply: CanaKit 5V, 3.5A         | $10  | www.amazon.com/gp/product/B01DID1TG4 |
+| DAC HAT: Hifiberry DAC2 Pro                  | $45  | www.hifiberry.com/shop/boards/hifiberry-dac2-pro/ |
+| MicroSC card: Sandisk 64GB                   |  $7  | www.amazon.com/gp/product/B07XDCZ9J3 |
+| 2.1 amplifier: Damgoo 50/50/100W             | $26  | www.amazon.com/gp/product/B089KT3FG9 |
+| Amp power supply 24V, 5A: Alitove            | $20  | www.amazon.com/gp/product/B0865LS8XB |
+| Midrange speakers: Eminence 4" pair          | $50  | www.parts-express.com/Eminence-Alpha-4-8-4-Full-Range-Pair-8-Ohm-290-4012 |
+| Tweeters: Skar Audio 1" 320W                 | $53  | www.amazon.com/gp/product/B01DID1TG4 |
+| Subwoofer: Tang Band 5-1/4"                  | $50  | www.parts-express.com/Tang-Band-W5-1138SMF-5-1-4-Paper-Cone-Subwoofer-Speaker-264-917 |
+| Front passive radiator: Dayton Audio 5-1/4"  | $14  | www.parts-express.com/Dayton-Audio-ND140-PR-5-1-4-Aluminum-Cone-Passive-Radiator-290-217 |
+| Back passive radiator: Peerless 3-1/2"       |  $8  | www.parts-express.com/Peerless-830878-3-1-2-Passive-Radiator-264-1060 |
+| L&R speaker ports: Parts Express 1-3/4" x 4" |  $2  | www.parts-express.com/Port-Tube-1-3-4-ID-x-4-L-260-407 |
+| 2 3.5mm male to female: Tan Audio 1Ft        | $12  | www.amazon.com/gp/product/B087CLK6Q5 |
+| 2 RCA to 3.5mm cable: Parts Express 3Ft      |  $2  | www.parts-express.com/2-RCA-Male-to-3.5mm-Stereo-Male-Y-Adapter-Cable-with-Gold-Plated-Connectors-3-ft.-240-1018
+| 3.5mm Y cable: Parts Express                 |  $2  | www.parts-express.com/3.5mm-Stereo-Male-to-Two-3.5mm-Stereo-Female-Y-Adapter-Cable-with-Gold-Plated-Connectors-3-240-1026 |
+| Handle | Penn-Elcomm Wide Strap              |  $6  | www.parts-express.com/Penn-Elcom-H1014K-Extra-Wide-Strap-Handle-Black-End-Caps-262-314 |
+| Subwoofer Grill: Parts Express 6"            |  $4  | www.parts-express.com/6-Economy-Speaker-Grill-260-371 |
+| pushbuttons: DaierTek Normally Open 10 pack  | $10  | www.amazon.com/gp/product/B09C8C53DM |
+| Female to Female jumper wires: GenBasic      |  $6  | www.amazon.com/gp/product/B077N58HFK |
+| Pair speaker grills: Facmogu 4"              |  $9  | www.amazon.com/gp/product/B077N58HFK |
+| Rubber feet: Parts Express 4-pack 1" x 1.25" |  $2  | www.parts-express.com/4-Pack-Rubber-Cabinet-Feet-1-Dia.-x-1.25-H-260-7515|
+| USB microphone: many choices                 |   ?  | ? |
+| Outlet and box, cover: hardware store        |   ?  | ? |
 
 ## G-code
 The following G-code files are used on a CNC machine to cut out all the pieces.
