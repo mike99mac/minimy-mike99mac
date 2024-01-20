@@ -41,17 +41,30 @@ on the left. You can Bluetooth directly to the amp and bypass the computer.
 ## Bill of material
 Following are the wood parts that need to be cut out.
 
-- All panels are 1/2" baltic birch plywood - nominal thickness: 0.480"
-- All moldings are hardwood - nominal size: 0.830" x 0.830".
 
 Following are the wood parts that need to be cut out.
 
 ### Plywood
-- 1 main panel: 19.875" wide x 32.295" high
-- 2 sides: TODO: get exact size
+The following pieces of 1/2" Baltic birch plywood are needed (nominal thickness: 0.480"). 
+
+**NOTE** These sizes need to be verified during the next build
+
+| Description        | Qty | Size |
+| -----------        | --- | ---- |
+| Main panel         | 1   | 19.875" x 32.295" |
+| Sides              | 2   | 6.005" x 32.295" |
+| Enclosure dividers | 1   | 6.375" x 6.875" ??? |
 
 ### Moldings
-TODO - get sizes
+All moldings are hardwood - nominal size: 0.830" x 0.830".
+
+| Description               | Qty | Size |
+| -----------               | --- | ---- |
+| Side tops and bottoms     | 4   | 7.385" |
+| Side fronts and backs     | 4   | 11.875" |
+| Front and back L moldings | 4   | > 20" cut each to size after assembly |
+
+TODO - get cross section drawings of "double-dado" and L molding 
 
 ### Components  
 Following are the components needed.
@@ -78,9 +91,9 @@ Following are the components needed.
 | pushbuttons: DaierTek Normally Open 10 pack  | $10  | www.amazon.com/gp/product/B09C8C53DM |
 | Female to Female jumper wires: GenBasic      |  $6  | www.amazon.com/gp/product/B077N58HFK |
 | Pair speaker grills: Facmogu 4"              |  $9  | www.amazon.com/gp/product/B077N58HFK |
-| Rubber feet: Parts Express 4-pack 1" x 1.25" |  $2  | www.parts-express.com/4-Pack-Rubber-Cabinet-Feet-1-Dia.-x-1.25-H-260-7515|
+| Rubber feet: Parts Express 4-pk, 1" x 1.25"  |  $2  | www.parts-express.com/4-Pack-Rubber-Cabinet-Feet-1-Dia.-x-1.25-H-260-7515|
 | USB microphone                               |   ?  | many choices |
-| Electrical box, Outlet and cover             |   ?  | hardware store |
+| Electrical box, outlet and cover             |   ?  | hardware store |
 
 ## G-code
 The following G-code files are used on a CNC machine to cut out all the pieces.
