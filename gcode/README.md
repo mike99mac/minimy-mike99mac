@@ -3,12 +3,39 @@
 This describes how to build a smart boombox. 
 
 ## Overview
-The goal of this project is to create a really f***ing cool boombox that sounds amazing and can play music by voice. 
+The goal of this project is to create a cool boombox that sounds amazing and can play music by voice. 
 
-The picture of the front shows the “carcass” which has three enclosures below for the left, right and subwoofer, and the space above for the amp, computer and other components. Two removable panels allow easy access to the components. It’s constructed of 1/2" Baltic birch plywood with some rare curly oak for the edge moldings. The decorative molding in the front is curly maple and cherry. The subwoofer is “down firing” while the other 5-1/4" device in front is a “passive radiator” - a speaker with no electronics. There is also a smaller passive radiator on the back, so the subwoofer is effectively driving three “speakers”. The left and right enclosures get 4" mid-range and 1" tweeters. “Crossover networks” come with the tweeters, so no soldering required. The tweeters really do bring out the highs when compared with “full range drivers”, and of course, the subwoofer and friends really bring out the lows. There will be a 3.5mm headphone jack on the left, and an “aux in” on the right. The left and right enclosures are ported with 1-3/4" ports seen on the sides. The sub and mid-ranges are protected with grills, while the passive radiators are unprotected because they’re the cheapest to replace and look kinda cool naked.
+The picture of the front shows the “carcass” which has three enclosures below for the left, right 
+and subwoofer, and the space above for the amp, computer and other components. Two removable panels 
+allow easy access to the components. It’s constructed of 1/2" Baltic birch plywood with some rare 
+curly oak for the edge moldings. The decorative molding in the front is curly maple and cherry. 
+The subwoofer is “down firing” while the other 5-1/4" device in front is a “passive radiator” - a 
+speaker with no electronics. There is also a smaller passive radiator on the back, so the subwoofer 
+is effectively driving three “speakers”. The left and right enclosures get 4" mid-range and 1" 
+tweeters. “Crossover networks” come with the tweeters, so no soldering required. The tweeters 
+really do bring out the highs when compared with “full range drivers”, and of course, the subwoofer 
+and friends really bring out the lows. There will be a 3.5mm headphone jack on the left, and an 
+“aux in” on the right. The left and right enclosures are ported with 1-3/4" ports seen on the sides. 
+The sub and mid-ranges are protected with grills, while the passive radiators are unprotected because 
+they’re the cheapest to replace and look kinda cool naked.
+
+Baltic birch has little grain and color, and it 
+just seemed too plain. Tried an orange stain, but it was too bright and gaudy. Mixing the stain with 
+about four parts water turned it into an “orange-wash”, which adds color, brings out the grain, but 
+is not overwhelming. After staining, two or three coats of pure Tung Oil are added. 
 
 ![](parts-front-view.jpg)
 *Front view of boombox carcass and parts*
+
+The picture of the back shows an amp on the left, a RasPi 5 and a Hifiberry “DAC HAT” to greatly 
+improve the audio. Two power supplies are needed: 24V for the amp and 5V for the computer; thus 
+the need for an electrical outlet. On the left is a USB microphone. In the center are three 
+pushbuttons for previous track, stop/pause, and next track. The amp has an on/off/volume control 
+on the right, treble and bass controls in the middle, and subwoofer volume and cutoff frequency 
+on the left. You can Bluetooth directly to the amp and bypass the computer.
+
+![](parts-back-view.jpg)
+*Back view of boombox carcass and parts*
 
 ## Bill of material
 Following are the wood parts that need to be cut out.
