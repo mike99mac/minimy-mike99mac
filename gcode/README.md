@@ -4,15 +4,20 @@ This page describes how to build a smart boombox.
 ## Overview
 The goal of this project is to create a cool boombox that sounds amazing and can play music by voice. 
 
-The picture below shows the front view of a boombox carcass assembled and finished, but with no 
-components installed” which has three enclosures below for the left, right 
-and subwoofer, and the space above for the amp, computer and other components. Two removable panels 
-allow easy access to the components. It’s constructed of 1/2" Baltic birch plywood with some rare 
-curly oak for the edge moldings. The decorative molding in the front is curly maple and cherry. 
+The picture below shows the front of a boombox carcass assembled and finished, but with no 
+components installed
+It has three enclosures at the bottom for the left speakers, subwoofer, and right speakers. 
+The top third houses the amp, the Raspberry Pi and all other components. 
+Two removable panels allow easy access to the components. 
+
+It is constructed of 1/2" Baltic birch plywood with hardwood edge moldings. 
+The decorative molding in the front is curly maple with cherry inlay. 
 The subwoofer is “down firing” while the other 5-1/4" device in front is a “passive radiator” - a 
 speaker with no electronics. There is also a smaller passive radiator on the back, so the subwoofer 
-is effectively driving three “speakers”. The left and right enclosures get 4" mid-range and 1" 
-tweeters. “Crossover networks” come with the tweeters, so no soldering required. The tweeters 
+is effectively driving three “speakers”. The left and right enclosures get 4" mid-range speakers and 1" 
+tweeters. “Crossover networks” come with the tweeters, so no soldering is required. 
+
+The tweeters 
 really do bring out the highs when compared with “full range drivers”, and of course, the subwoofer 
 and friends really bring out the lows. There will be a 3.5mm headphone jack on the left, and an 
 “aux in” on the right. The left and right enclosures are ported with 1-3/4" ports seen on the sides. 
@@ -27,7 +32,7 @@ is not overwhelming. After staining, two or three coats of pure Tung Oil are add
 ![](parts-front-view.jpg)
 *Front view of boombox carcass and parts*
 
-The picture of the back shows an amp on the left, a RasPi 5 and a Hifiberry “DAC HAT” to greatly 
+The next picture shows an amp on the left, a RasPi 5 and a Hifiberry “DAC HAT” to greatly 
 improve the audio. Two power supplies are needed: 24V for the amp and 5V for the computer; thus 
 the need for an electrical outlet. On the left is a USB microphone. In the center are three 
 pushbuttons for previous track, stop/pause, and next track. The amp has an on/off/volume control 
@@ -38,12 +43,12 @@ on the left. You can Bluetooth directly to the amp and bypass the computer.
 *Back view of boombox carcass and parts*
 
 ## Bill of material
-Following are the wood parts that need to be cut out.
+Following are the wood parts and components needed.
 
 ### Plywood
 The following pieces of 1/2" Baltic birch plywood are needed (nominal thickness: 0.480"). 
 
-**NOTE** These sizes need to be verified during the next build
+**NOTE** Verify values on the next build!!
 
 | Description                | Qty | Size |
 | -----------                | --- | ---- |
