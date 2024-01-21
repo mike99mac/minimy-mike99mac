@@ -1,11 +1,11 @@
-# Building a boombox
+# Building a smart boombox
 This page describes how to build a smart boombox. 
 
 ## Overview
-The goal of this project is to create a cool boombox that sounds amazing and can play music by voice. 
+The goal of this project is to create a retro-looking boombox that sounds amazing and can play music by voice. 
 
 The picture below shows the front of a boombox carcass assembled and finished, but with no 
-components installed
+components installed. 
 It has three enclosures at the bottom for the left speakers, subwoofer, and right speakers. 
 The top third houses the amp, the Raspberry Pi and all other components. 
 Two removable panels allow easy access to the components. 
@@ -56,10 +56,8 @@ The following pieces of 1/2" Baltic birch plywood are needed (nominal thickness:
 | Sides                      | 2   | 6.005" x 32.295" |
 | Internal vertical dividers | 2   | 6.375" x 6.875" ??? |
 
-The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of the CNC machine which is 30"
-Then that panel is cut into four: the front, bottom, lower back and internal horizontal divider.
-
-TODO: get measurements of what to cut.
+The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of the CNC machine which is 30".
+Then it is cut into four smaller panels: the front, the bottom, the lower back and the internal horizontal divider.
 
 ### Moldings
 All moldings are hardwood - nominal size: 0.830" x 0.830".
@@ -83,8 +81,8 @@ Following are the components needed.
 | MicroSC card: Sandisk 64GB                   |  $7  | www.amazon.com/gp/product/B07XDCZ9J3 |
 | 2.1 amplifier: Damgoo 50/50/100W             | $26  | www.amazon.com/gp/product/B089KT3FG9 |
 | Amp power supply 24V, 5A: Alitove            | $20  | www.amazon.com/gp/product/B0865LS8XB |
-| Midrange speakers: Eminence 4" pair          | $50  | www.parts-express.com/Eminence-Alpha-4-8-4-Full-Range-Pair-8-Ohm-290-4012 |
-| Tweeters: Skar Audio 1" 320W                 | $53  | www.amazon.com/gp/product/B01DID1TG4 |
+| Midrange speakers: Eminence 4"               | $50  | www.parts-express.com/Eminence-Alpha-4-8-4-Full-Range-Pair-8-Ohm-290-4012 |
+| Tweeters: Skar Audio 1", 320W                | $53  | www.amazon.com/gp/product/B01DID1TG4 |
 | Subwoofer: Tang Band 5-1/4"                  | $50  | www.parts-express.com/Tang-Band-W5-1138SMF-5-1-4-Paper-Cone-Subwoofer-Speaker-264-917 |
 | Front passive radiator: Dayton Audio 5-1/4"  | $14  | www.parts-express.com/Dayton-Audio-ND140-PR-5-1-4-Aluminum-Cone-Passive-Radiator-290-217 |
 | Back passive radiator: Peerless 3-1/2"       |  $8  | www.parts-express.com/Peerless-830878-3-1-2-Passive-Radiator-264-1060 |
@@ -115,8 +113,16 @@ The side
 | leftSide.nc       | 7.386" wide x 11.875" high| Cuts on the assembled left side |
 | righttSide.nc     | 7.386" wide x 11.875" high| Cuts on the assembled right side |
 
-## Assembling the sides
-The right and left sides are a piece of baltic birch framed by hardwood moldings. 
+## Building it 
+The width of the box was designed around being able to get three panels from a sheet of Baltic birch, 1550 x 1550mm, or about 60" x 60x.
+The G-code is in this repo as ``*.nc`` files.
+Here are the steps:
+
+- Cut a sheet of Baltic birch into three 19.875" pieces.
+- Cut a piece 32.395" from one of the sheets .
+- Get access to this repo, or download the four .nc files to the CNC machine.
+- Square and zero the piece on a CNC machine and run the job ``4PanelsMainJob``. This will cut the majority of the main panel.
+- Rotate the piece 180 degrees and run the job ``faceUpsideDown``. This will cut the holes and recesses at the top of the front panel. 
 
 ## Drilling holes in the face
 After the two jobs are finished on the main panel, 
