@@ -81,8 +81,8 @@ Following are the components needed.
 | MicroSC card: Sandisk 64GB                   |  $7  | www.amazon.com/gp/product/B07XDCZ9J3 |
 | 2.1 amplifier: Damgoo 50/50/100W             | $26  | www.amazon.com/gp/product/B089KT3FG9 |
 | Amp power supply 24V, 5A: Alitove            | $20  | www.amazon.com/gp/product/B0865LS8XB |
-| Midrange speakers: Eminence 4"               | $50  | www.parts-express.com/Eminence-Alpha-4-8-4-Full-Range-Pair-8-Ohm-290-4012 |
-| Tweeters: Skar Audio 1", 320W                | $53  | www.amazon.com/gp/product/B01DID1TG4 |
+| Pair midrange speakers: Eminence 4"          | $50  | www.parts-express.com/Eminence-Alpha-4-8-4-Full-Range-Pair-8-Ohm-290-4012 |
+| Pair tweeters: Skar Audio 1", 320W           | $53  | www.amazon.com/gp/product/B01DID1TG4 |
 | Subwoofer: Tang Band 5-1/4"                  | $50  | www.parts-express.com/Tang-Band-W5-1138SMF-5-1-4-Paper-Cone-Subwoofer-Speaker-264-917 |
 | Front passive radiator: Dayton Audio 5-1/4"  | $14  | www.parts-express.com/Dayton-Audio-ND140-PR-5-1-4-Aluminum-Cone-Passive-Radiator-290-217 |
 | Back passive radiator: Peerless 3-1/2"       |  $8  | www.parts-express.com/Peerless-830878-3-1-2-Passive-Radiator-264-1060 |
@@ -100,11 +100,10 @@ Following are the components needed.
 | Electrical box, outlet and cover             |   ?  | hardware store |
 
 ## G-code
+G-code is to a CNC machine what object code is to a computer.
 The following G-code files are used on a CNC machine to cut out all the pieces.
-All panels should be 1/2" (nominal - usually .480") baltic birch.
-The main panel is cut in two CNC jobs, and later is cut on the tablesaw to create four pieces: the front, the bottom, the back and interior divider. Because the panel is over 30", the maximum for many CNC machines, it must be cut twice rotating 180 degrees.  
-
-The side 
+Because the panel is over 30", the maximum for many CNC machines, it must be cut twice rotating 180 degrees.  
+The main panel is cut in two CNC jobs, and later is cut on the tablesaw to create four pieces: the front, the bottom, the back and interior divider. 
 
 | G-code file       | Size   | Description |
 | -----------       | ----   | -----------
