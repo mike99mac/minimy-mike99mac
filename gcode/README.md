@@ -10,22 +10,21 @@ Two removable panels allow easy access to the components.
 
 It is constructed of 1/2" Baltic birch plywood with hardwood edge moldings. 
 The decorative molding in the front is curly maple with cherry inlay. 
-The subwoofer is “down firing” while the other 5-1/4" device in front is a “passive radiator” - a 
+The subwoofer is in a sealed enclosure and  *down firing* while the other 5-1/4" device in front is a *passive radiator* - a 
 speaker with no electronics. There is also a smaller passive radiator on the back, so the subwoofer 
-is effectively driving three “speakers”. The left and right enclosures get 4" mid-range speakers and 1" 
-tweeters. “Crossover networks” come with the tweeters, so no soldering is required. 
+is driving itself and two other *speakers*. The left and right enclosures are ported. They each have a 4" mid-range speaker 
+and 1" tweeter. *Crossover networks* come with the tweeters, so no soldering is required. 
+The tweeters really do bring out the highs when compared with “full range drivers”, and of course, the subwoofer 
+and friends really bring out the bass.  The left and right enclosures are ported with 1-3/4" diameter ports seen on the sides. 
+The subwoofer and mid-ranges are protected with grills, while the passive radiators are unprotected because 
+they’re the cheapest to replace and they look kinda cool naked.
 
-The tweeters 
-really do bring out the highs when compared with “full range drivers”, and of course, the subwoofer 
-and friends really bring out the lows. There will be a 3.5mm headphone jack on the left, and an 
-“aux in” on the right. The left and right enclosures are ported with 1-3/4" ports seen on the sides. 
-The sub and mid-ranges are protected with grills, while the passive radiators are unprotected because 
-they’re the cheapest to replace and look kinda cool naked.
+There is a 3.5mm headphone jack on the left, and an *aux in* jack on the right. 
 
-Baltic birch has little grain and color, and it 
-just seemed too plain. Tried an orange stain, but it was too bright and gaudy. Mixing the stain with 
+Baltic birch has little grain and color, and it just seemed too plain with clear stain. 
+An orange stain was tested, but it was too bright and gaudy. Mixing the stain with 
 about four parts water turned it into an “orange-wash”, which adds color, brings out the grain, but 
-is not overwhelming. After staining, two coats of pure Tung Oil are applied, with sanding between each coat. 
+is not overwhelming. After staining, two or three coats of Tung Oil are applied, with sanding between each coat. 
 
 ![](parts-front-view.jpg)
 *Front view of boombox carcass and parts*
@@ -52,7 +51,11 @@ To build the boombox, perform the following steps:
 - [Stand up the stack](#stand-up-the-stack)
 
 ## Obtain all parts and components 
-Following are the wood parts and components needed.
+Obtain the follow parts and components:
+
+- [Plywood panels](plywood-panels)
+- [Hardwood pieces](#hardwood-pieces)
+- [Components](#components)
 
 ### Plywood panels
 Cut the following pieces of 1/2" Baltic birch plywood (nominal thickness: 0.480"). 
@@ -61,22 +64,24 @@ Cut the following pieces of 1/2" Baltic birch plywood (nominal thickness: 0.480"
 | -----------                | --- | ---- |
 | Main panel                 | 1   | 19.875" x 32.295" |
 | Sides                      | 2   | 6.005" x 32.295" |
-| Internal vertical dividers | 2   | 6.375" x 6.875" ? **TODO** verify these numbers |
+| Internal vertical dividers | 2   | 6.375" x 6.875" **TODO** verify numbers |
 
-The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of the CNC machine which is 30".
+The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of 30".
 Then it is cut into four smaller panels: the front, the bottom, the lower back and the internal horizontal divider.
 
 ### Hardwood pieces 
-Most hardwood pieces are moldings cut to 0.830" x 0.830". One other piece is need to elevate the Raspberry Pi.
+Most hardwood pieces are moldings cut to 0.830" x 0.830". 
 
 | Description               | Qty | Size |
 | -----------               | --- | ---- |
 | Side tops and bottoms     | 4   | 7.385" |
 | Side fronts and backs     | 4   | 11.875" |
 | Front and back L moldings | 4   | > 20" (each will be cut to size after assembly) |
-| Platform for Raspberry Pi | 1   | > 20" (each will be cut to size after assembly) |
 
-Dimensions of the two moldings:
+One other piece is used to elevate the Raspberry Pi. It is 2.75" wide x 3.625" long.  
+The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports.
+
+Following is a diagram of the side moldings (*Double dado*) and the L-shaped moldings
 
 ![](molding-dimensions.jpg)
 *Cross section of the two moldings*
