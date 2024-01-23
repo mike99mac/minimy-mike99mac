@@ -69,7 +69,7 @@ All moldings are almost any species of hardwood. The nominal size: 0.830" x 0.83
 Dimensions of the two moldings:
 
 ![](molding-dimensions.jpg)
-*Cross section of the two moldings
+*Cross section of the two moldings*
 
 ### Components  
 Following are the components needed.
@@ -119,7 +119,7 @@ The build can be split into the following steps
 - [Cut the plywood](#Cut the plywood)
 - [Cut the moldings](#Cut the moldings)
 
-### Cut the plywood
+### <a name="Cut the plywood"></a> Cut the plywood
 The width of the boombox was designed around being able to get three panels from a sheet of Baltic birch, 1550 x 1550mm, or about 60" x 60x.
 
 Cut the plywood parts as follows
@@ -132,7 +132,7 @@ Cut the plywood parts as follows
 **TODO** get a picture of the main panel after it is cut.
 - Rotate the piece 180 degrees and run the job ``faceUpsideDown``. This will cut the holes and recesses at the top of the front panel. 
 
-### Cut the plywood
+### <a name="Cut the moldings"></a> Cut the moldings
 
 
 ## Drilling holes in the face
