@@ -42,14 +42,14 @@ on the left. You can Bluetooth directly to the amp and bypass the computer.
 ![](parts-back-view.jpg)
 *Back view of boombox carcass and parts*
 
-To build the boombox, perform the following sections: 192.168.12.239
+To build the boombox, perform the following sections: 
 
-- [Obtain all parts and components](#Obtain all parts and components)
+- [Obtain all parts and components](#obtain-all-parts-and-components)
 - [Download the G-code](#download-the-g-code)
 - [Prepare for assembly](#prepare-for-assembly)
 - [Perform final assembly](#perform-final-assembly)
 - [Install components](#install-components)
-[comment]: - [](#)
+- [Stand up the stack](#stand-up-the-stack)
 
 ## Obtain all parts and components 
 Following are the wood parts and components needed.
@@ -144,8 +144,8 @@ Always use masking tape on the front face and sharp Forstner bits!
 Distance between each of the 5 knobs on amp: .720"
 
 ## Perform final assembly 
+### Glue the carcass 
 ### Enable sliding panels 
-## Install components 
 
 To build the boombox, perform the following sections: 192.168.12.239
 
@@ -171,4 +171,11 @@ This picture shows the main panel being cut.
 ### Cut the moldings
 
 
+
+## Install components 
+
+
+
+## Stand up the stack 
+The next task that needs to be done is to install the software.  However, that is outside the scope of this document.  TODO: Add a link.
 
