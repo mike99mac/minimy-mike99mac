@@ -1,7 +1,7 @@
 # Overview of a smart boombox
 The goal of this project is to create a retro-looking boombox that sounds amazing and can play music by voice. 
 
-This section gives an overview and [Building a smart boombox](*building-a-smart-boombox) gives all the detailed steps.
+This section gives an overview and [Building a smart boombox](#building-a-smart-boombox) gives all the detailed steps.
 
 The picture below shows the front of a boombox carcass assembled and finished, but with no components installed. 
 It has three enclosures at the bottom for the left speakers, subwoofer, and right speakers. 
@@ -40,7 +40,8 @@ on the left. You can Bluetooth directly to the amp and bypass the computer.
 *Back view of boombox carcass and parts*
 
 # Building a smart boombox
-This repo contains the G-Code to build a smart boombox using a CNC machine, 
+This repo contains the G-Code to build a smart boombox using a CNC machine. 
+
 To build the boombox, perform the following steps: 
 
 - [Obtain all parts and components](#obtain-all-parts-and-components)
@@ -58,19 +59,19 @@ Obtain the follow parts and components:
 - [Components](#components)
 
 ### Plywood panels
-Cut the following pieces of 1/2" Baltic birch plywood (nominal thickness: 0.480"). 
+Following 1/2" Baltic birch plywood pieces. The nominal thickness: 0.480". 
 
 | Description                | Qty | Size |
 | -----------                | --- | ---- |
 | Main panel                 | 1   | 19.875" x 32.295" |
-| Sides                      | 2   | 6.005" x 32.295" |
+| Side panels                | 2   | 6.005" x 32.295" |
 | Internal vertical dividers | 2   | 6.375" x 6.875" **TODO** verify numbers |
 
 The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of 30".
 Then it is cut into four smaller panels: the front, the bottom, the lower back and the internal horizontal divider.
 
 ### Hardwood pieces 
-Most hardwood pieces are moldings cut to 0.830" x 0.830". 
+All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One other piece of wood is needed
 
 | Description               | Qty | Size |
 | -----------               | --- | ---- |
@@ -78,8 +79,7 @@ Most hardwood pieces are moldings cut to 0.830" x 0.830".
 | Side fronts and backs     | 4   | 11.875" |
 | Front and back L moldings | 4   | > 20" (each will be cut to size after assembly) |
 
-One other piece is used to elevate the Raspberry Pi. It is 2.75" wide x 3.625" long.  
-The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports.
+One other piece is used to elevate the Raspberry Pi. It is 2.75" wide x 3.625" long.  The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports. Usually 1-1/4" thick is enough, but not always.
 
 Following is a diagram of the side moldings (*Double dado*) and the L-shaped moldings
 
@@ -87,7 +87,7 @@ Following is a diagram of the side moldings (*Double dado*) and the L-shaped mol
 *Cross section of the two moldings*
 
 ### Components  
-Following are the components needed, the cost as of Jan 2024 and the last source used.
+Following are the components needed, the cost as of Jan 2024 and the last source where they were purchased.
 
 | Description                                  | Cost | Source      |
 | -----------                                  | ---- | ----------- |
@@ -112,8 +112,12 @@ Following are the components needed, the cost as of Jan 2024 and the last source
 | Female to Female jumper wires: GenBasic      |  $6  | www.amazon.com/gp/product/B077N58HFK |
 | Pair speaker grills: Facmogu 4"              |  $9  | www.amazon.com/gp/product/B077N58HFK |
 | Rubber feet: Parts Express 4-pk, 1" x 1.25"  |  $2  | www.parts-express.com/4-Pack-Rubber-Cabinet-Feet-1-Dia.-x-1.25-H-260-7515|
-| USB microphone                               |   ?  | many choices |
-| Electrical box, outlet and cover             |   ?  | hardware store |
+| USB microphone                               |  $20? | many choices |
+| Electrical box, outlet and cover             |  $10? | hardware store |
+
+80+10+45+7+26+20+50+53+14+9+2+12+2+2+6+4+10+6+2+20+10=390
+A rough estimate of the cost of the components is $390
+If the wood is $60 or more, it costs $450-500 in parts.
 
 ## Download the G-code
 G-code is to a CNC machine what object code is to a computer.
