@@ -27,7 +27,7 @@ they’re the cheapest to replace and look kinda cool naked.
 Baltic birch has little grain and color, and it 
 just seemed too plain. Tried an orange stain, but it was too bright and gaudy. Mixing the stain with 
 about four parts water turned it into an “orange-wash”, which adds color, brings out the grain, but 
-is not overwhelming. After staining, two or three coats of pure Tung Oil are added. 
+is not overwhelming. After staining, two coats of pure Tung Oil are applied, with sanding between each coat. 
 
 ![](parts-front-view.jpg)
 *Front view of boombox carcass and parts*
@@ -60,7 +60,7 @@ The main panel is cut on the CNC machine using two different jobs because the pa
 Then it is cut into four smaller panels: the front, the bottom, the lower back and the internal horizontal divider.
 
 ### Moldings
-All moldings are hardwood - nominal size: 0.830" x 0.830".
+All moldings are almost any species of hardwood. The nominal size: 0.830" x 0.830".
 
 | Description               | Qty | Size |
 | -----------               | --- | ---- |
@@ -68,7 +68,7 @@ All moldings are hardwood - nominal size: 0.830" x 0.830".
 | Side fronts and backs     | 4   | 11.875" |
 | Front and back L moldings | 4   | > 20" cut each to size after assembly |
 
-TODO - get cross section drawings of "double-dado" and L molding 
+TODO - get cross section drawings of "double-dado" and the "L molding". 
 
 ### Components  
 Following are the components needed.
@@ -101,6 +101,7 @@ Following are the components needed.
 
 ## G-code
 G-code is to a CNC machine what object code is to a computer.
+
 The following G-code files are used on a CNC machine to cut out all the pieces.
 Because the panel is over 30", the maximum for many CNC machines, it must be cut twice rotating 180 degrees.  
 The main panel is cut in two CNC jobs, and later is cut on the tablesaw to create four pieces: the front, the bottom, the back and interior divider. 
@@ -112,16 +113,19 @@ The main panel is cut in two CNC jobs, and later is cut on the tablesaw to creat
 | leftSide.nc       | 7.386" wide x 11.875" high| Cuts on the assembled left side |
 | righttSide.nc     | 7.386" wide x 11.875" high| Cuts on the assembled right side |
 
-## Building it 
-The width of the box was designed around being able to get three panels from a sheet of Baltic birch, 1550 x 1550mm, or about 60" x 60x.
+## Building the boombox 
+The width of the boombox was designed around being able to get three panels from a sheet of Baltic birch, 1550 x 1550mm, or about 60" x 60x.
 The G-code is in this repo as ``*.nc`` files.
 Here are the steps:
 
 - Cut a sheet of Baltic birch into three 19.875" pieces.
-- Cut a piece 32.395" from one of the sheets .
-- Get access to this repo, or download the four .nc files to the CNC machine.
-- Square and zero the piece on a CNC machine and run the job ``4PanelsMainJob``. This will cut the majority of the main panel.
+- From one of those, cut a piece 32.395". This is the "main panel".
+- Copy the G-Code (.nc) files in this repo to the computer driving the CNC machine.
+- Square and zero XYZ the main panel on a CNC machine 
+- Load and run the job ``4PanelsMainJob``. This will cut the majority of the main panel.
+**TODO** get a picture of the main panel after it is cut.
 - Rotate the piece 180 degrees and run the job ``faceUpsideDown``. This will cut the holes and recesses at the top of the front panel. 
+
 
 ## Drilling holes in the face
 After the two jobs are finished on the main panel, 
