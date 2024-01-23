@@ -1,5 +1,5 @@
 # Building a smart boombox
-This page describes how to build a smart boombox. 
+This repo contains G-Code to build a smart boombox, and this document describes the process in annoying detail :)) 
 
 ## Overview
 The goal of this project is to create a retro-looking boombox that sounds amazing and can play music by voice. 
@@ -48,13 +48,11 @@ Following are the wood parts and components needed.
 ### Plywood
 The following pieces of 1/2" Baltic birch plywood are needed (nominal thickness: 0.480"). 
 
-**NOTE** Verify values on the next build!!
-
 | Description                | Qty | Size |
 | -----------                | --- | ---- |
 | Main panel                 | 1   | 19.875" x 32.295" |
 | Sides                      | 2   | 6.005" x 32.295" |
-| Internal vertical dividers | 2   | 6.375" x 6.875" ??? |
+| Internal vertical dividers | 2   | 6.375" x 6.875" ??? **TODO** verify these numbers |
 
 The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of the CNC machine which is 30".
 Then it is cut into four smaller panels: the front, the bottom, the lower back and the internal horizontal divider.
@@ -66,9 +64,11 @@ All moldings are almost any species of hardwood. The nominal size: 0.830" x 0.83
 | -----------               | --- | ---- |
 | Side tops and bottoms     | 4   | 7.385" |
 | Side fronts and backs     | 4   | 11.875" |
-| Front and back L moldings | 4   | > 20" cut each to size after assembly |
+| Front and back L moldings | 4   | > 20" (each will be cut to size after assembly) |
 
-TODO - get cross section drawings of "double-dado" and the "L molding". 
+Dimensions of the two moldings:
+![](molding-dimensions.jpg)
+*Cross section of the two moldings
 
 ### Components  
 Following are the components needed.
@@ -114,17 +114,24 @@ The main panel is cut in two CNC jobs, and later is cut on the tablesaw to creat
 | righttSide.nc     | 7.386" wide x 11.875" high| Cuts on the assembled right side |
 
 ## Building the boombox 
-The width of the boombox was designed around being able to get three panels from a sheet of Baltic birch, 1550 x 1550mm, or about 60" x 60x.
-The G-code is in this repo as ``*.nc`` files.
-Here are the steps:
+The build can be split into the following steps
+- Cut the plywood
+- Cut the moldings
 
+### Cut the plywood
+The width of the boombox was designed around being able to get three panels from a sheet of Baltic birch, 1550 x 1550mm, or about 60" x 60x.
+
+Cut the plywood parts as follows
 - Cut a sheet of Baltic birch into three 19.875" pieces.
-- From one of those, cut a piece 32.395". This is the "main panel".
+- From one of those, cut a piece 32.395". This is the "main panel" which will later be cut into four pieces.
 - Copy the G-Code (.nc) files in this repo to the computer driving the CNC machine.
-- Square and zero XYZ the main panel on a CNC machine 
+- Clamp and square the main panel on a CNC machine 
+- Zero XYZ of the main panel
 - Load and run the job ``4PanelsMainJob``. This will cut the majority of the main panel.
 **TODO** get a picture of the main panel after it is cut.
 - Rotate the piece 180 degrees and run the job ``faceUpsideDown``. This will cut the holes and recesses at the top of the front panel. 
+
+### Cut the plywood
 
 
 ## Drilling holes in the face
