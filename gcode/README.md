@@ -119,7 +119,7 @@ The build can be split into the following steps
 - [Cut the plywood](#Cut-the-plywood)
 - [Cut the moldings](#Cut-the-moldings)
 
-### <a name="Cut-the-plywood"></a> Cut the plywood
+### [Cut-the-plywood] Cut the plywood
 The width of the boombox was designed around being able to get three panels from a sheet of Baltic birch, 1550 x 1550mm, or about 60" x 60x.
 
 Cut the plywood parts as follows
@@ -136,7 +136,7 @@ This picture shows the main panel being cut.
 ![](main-panel-being-cut.jpg)
 *Main panel being cut*
 
-### <a name="Cut-the-moldings"></a> Cut the moldings
+### [Cut-the-moldings] Cut the moldings
 
 
 ## Drilling holes in the face
