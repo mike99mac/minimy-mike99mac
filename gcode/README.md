@@ -1,5 +1,5 @@
 # Building a smart boombox
-This repo contains G-Code to build a smart boombox, and this document describes the process in annoying detail :)) 
+This repo contains the G-Code to build a smart boombox using a CNC machine, and this document describes the process in annoying detail :)) 
 
 ## Overview
 The goal of this project is to create a retro-looking boombox that sounds amazing and can play music by voice. 
@@ -67,6 +67,7 @@ All moldings are almost any species of hardwood. The nominal size: 0.830" x 0.83
 | Front and back L moldings | 4   | > 20" (each will be cut to size after assembly) |
 
 Dimensions of the two moldings:
+
 ![](molding-dimensions.jpg)
 *Cross section of the two moldings
 
@@ -115,8 +116,8 @@ The main panel is cut in two CNC jobs, and later is cut on the tablesaw to creat
 
 ## Building the boombox 
 The build can be split into the following steps
-- Cut the plywood
-- Cut the moldings
+- [Cut the plywood](#Cut the plywood)
+- [Cut the moldings](#Cut the moldings)
 
 ### Cut the plywood
 The width of the boombox was designed around being able to get three panels from a sheet of Baltic birch, 1550 x 1550mm, or about 60" x 60x.
