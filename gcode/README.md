@@ -1,13 +1,11 @@
-# Building a smart boombox
-This repo contains the G-Code to build a smart boombox using a CNC machine, and this document describes the process in annoying detail :)) 
-
-## Overview
+# Overview of a smart boombox
 The goal of this project is to create a retro-looking boombox that sounds amazing and can play music by voice. 
 
-The picture below shows the front of a boombox carcass assembled and finished, but with no 
-components installed. 
+This section gives an overview and [Building a smart boombox](*building-a-smart-boombox) gives all the detailed steps.
+
+The picture below shows the front of a boombox carcass assembled and finished, but with no components installed. 
 It has three enclosures at the bottom for the left speakers, subwoofer, and right speakers. 
-The top third houses the amp, the Raspberry Pi and all other components. 
+The top third houses the amp, the Raspberry Pi computer and all other components. 
 Two removable panels allow easy access to the components. 
 
 It is constructed of 1/2" Baltic birch plywood with hardwood edge moldings. 
@@ -42,7 +40,9 @@ on the left. You can Bluetooth directly to the amp and bypass the computer.
 ![](parts-back-view.jpg)
 *Back view of boombox carcass and parts*
 
-To build the boombox, perform the following sections: 
+# Building a smart boombox
+This repo contains the G-Code to build a smart boombox using a CNC machine, 
+To build the boombox, perform the following steps: 
 
 - [Obtain all parts and components](#obtain-all-parts-and-components)
 - [Download the G-code](#download-the-g-code)
@@ -164,7 +164,7 @@ Cut the plywood parts as follows
 - Load and run the job ``4PanelsMainJob``. This will cut the majority of the main panel.
 - Rotate the piece 180 degrees and run the job ``faceUpsideDown``. This will cut the holes and recesses at the top of the front panel. 
 
-This picture shows the main panel being cut.
+This picture shows the main panel being cut by a CNC machine.
 ![](main-panel-being-cut.jpg)
 *Main panel being cut*
 
@@ -173,9 +173,13 @@ This picture shows the main panel being cut.
 
 
 ## Install components 
-
+### Install electrical outlet
+### Install amplifier power supply
+### Mount Raspberry Pi 
+### Install left and right speakers
 
 
 ## Stand up the stack 
 The next task that needs to be done is to install the software.  However, that is outside the scope of this document.  TODO: Add a link.
 
+TODO: add pictures of the finished product.
