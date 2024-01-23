@@ -46,13 +46,13 @@ on the left. You can Bluetooth directly to the amp and bypass the computer.
 Following are the wood parts and components needed.
 
 ### Plywood
-The following pieces of 1/2" Baltic birch plywood are needed (nominal thickness: 0.480"). 
+Cut the following pieces of 1/2" Baltic birch plywood (nominal thickness: 0.480"). 
 
 | Description                | Qty | Size |
 | -----------                | --- | ---- |
 | Main panel                 | 1   | 19.875" x 32.295" |
 | Sides                      | 2   | 6.005" x 32.295" |
-| Internal vertical dividers | 2   | 6.375" x 6.875" ??? **TODO** verify these numbers |
+| Internal vertical dividers | 2   | 6.375" x 6.875" ? **TODO** verify these numbers |
 
 The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of the CNC machine which is 30".
 Then it is cut into four smaller panels: the front, the bottom, the lower back and the internal horizontal divider.
