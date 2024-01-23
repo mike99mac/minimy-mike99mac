@@ -42,10 +42,19 @@ on the left. You can Bluetooth directly to the amp and bypass the computer.
 ![](parts-back-view.jpg)
 *Back view of boombox carcass and parts*
 
-## Bill of material
+To build the boombox, perform the following sections: 192.168.12.239
+
+- [Obtain all parts and components](#Obtain all parts and components)
+- [Download the G-code](#download-the-g-code)
+- [Prepare for assembly](#prepare-for-assembly)
+- [Perform final assembly](#perform-final-assembly)
+- [Install components](#install-components)
+[comment]: - [](#)
+
+## Obtain all parts and components 
 Following are the wood parts and components needed.
 
-### Plywood
+### Plywood panels
 Cut the following pieces of 1/2" Baltic birch plywood (nominal thickness: 0.480"). 
 
 | Description                | Qty | Size |
@@ -57,14 +66,15 @@ Cut the following pieces of 1/2" Baltic birch plywood (nominal thickness: 0.480"
 The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of the CNC machine which is 30".
 Then it is cut into four smaller panels: the front, the bottom, the lower back and the internal horizontal divider.
 
-### Moldings
-All moldings are almost any species of hardwood. The nominal size: 0.830" x 0.830".
+### Hardwood pieces 
+Most hardwood pieces are moldings cut to 0.830" x 0.830". One other piece is need to elevate the Raspberry Pi.
 
 | Description               | Qty | Size |
 | -----------               | --- | ---- |
 | Side tops and bottoms     | 4   | 7.385" |
 | Side fronts and backs     | 4   | 11.875" |
 | Front and back L moldings | 4   | > 20" (each will be cut to size after assembly) |
+| Platform for Raspberry Pi | 1   | > 20" (each will be cut to size after assembly) |
 
 Dimensions of the two moldings:
 
@@ -72,14 +82,14 @@ Dimensions of the two moldings:
 *Cross section of the two moldings*
 
 ### Components  
-Following are the components needed.
+Following are the components needed, the cost as of Jan 2024 and the last source used.
 
 | Description                                  | Cost | Source      |
 | -----------                                  | ---- | ----------- |
 | Raspberry Pi 5: 8GB RAM                      | $80  | www.seeedstudio.com/Raspberry-Pi-5-8GB-p-5810.html |
 | RasPi power supply: CanaKit 5V, 3.5A         | $10  | www.amazon.com/gp/product/B01DID1TG4 |
 | DAC HAT: Hifiberry DAC2 Pro                  | $45  | www.hifiberry.com/shop/boards/hifiberry-dac2-pro/ |
-| MicroSC card: Sandisk 64GB                   |  $7  | www.amazon.com/gp/product/B07XDCZ9J3 |
+| MicroSD card: Sandisk 64GB                   |  $7  | www.amazon.com/gp/product/B07XDCZ9J3 |
 | 2.1 amplifier: Damgoo 50/50/100W             | $26  | www.amazon.com/gp/product/B089KT3FG9 |
 | Amp power supply 24V, 5A: Alitove            | $20  | www.amazon.com/gp/product/B0865LS8XB |
 | Pair midrange speakers: Eminence 4"          | $50  | www.parts-express.com/Eminence-Alpha-4-8-4-Full-Range-Pair-8-Ohm-290-4012 |
@@ -100,11 +110,12 @@ Following are the components needed.
 | USB microphone                               |   ?  | many choices |
 | Electrical box, outlet and cover             |   ?  | hardware store |
 
-## G-code
+## Download the G-code
 G-code is to a CNC machine what object code is to a computer.
 
 The following G-code files are used on a CNC machine to cut out all the pieces.
-Because the panel is over 30", the maximum for many CNC machines, it must be cut twice rotating 180 degrees.  
+Because the panel is over 30", the maximum for many CNC machines, it must be cut twice, rotate 180 degrees between jobs.  
+
 The main panel is cut in two CNC jobs, and later is cut on the tablesaw to create four pieces: the front, the bottom, the back and interior divider. 
 
 | G-code file       | Size   | Description |
@@ -114,22 +125,43 @@ The main panel is cut in two CNC jobs, and later is cut on the tablesaw to creat
 | leftSide.nc       | 7.386" wide x 11.875" high| Cuts on the assembled left side |
 | righttSide.nc     | 7.386" wide x 11.875" high| Cuts on the assembled right side |
 
-## Building the boombox 
-The build can be split into the following steps
+## Prepare for assembly 
+Final assembly of the carcass can take place when you have 
+- Four panels prepared
+- Two sides assembled
+
+### Cut the main panel
+### Prepare all panels
+### Drill holes on face 
+
+After the two jobs are finished on the main panel, 
+Always use masking tape on the front face and sharp Forstner bits!
+
+2 holes for jacks:   11/32 (.344")
+3 holes for buttons:  9/32 (.281") 
+5 holes for amp:     19/64 (.297") 
+
+Distance between each of the 5 knobs on amp: .720"
+
+## Perform final assembly 
+### Enable sliding panels 
+## Install components 
+
+To build the boombox, perform the following sections: 192.168.12.239
+
 - [Cut the plywood](#cut-the-plywood)
 - [Cut the moldings](#cut-the-moldings)
 
 ### Cut the plywood
-The width of the boombox was designed around being able to get three panels from a sheet of Baltic birch, 1550 x 1550mm, or about 60" x 60x.
+The width of the boombox was designed around being able to get three panels from a sheet of Baltic birch, 1550mm x 1550mm, or about 60" x 60".
 
 Cut the plywood parts as follows
 - Cut a sheet of Baltic birch into three 19.875" pieces.
 - From one of those, cut a piece 32.395". This is the "main panel" which will later be cut into four pieces.
 - Copy the G-Code (.nc) files in this repo to the computer driving the CNC machine.
-- Clamp and square the main panel on a CNC machine 
-- Zero XYZ of the main panel
+- Clamp and square the main panel on a CNC machine. 
+- Zero XYZ of the main panel.
 - Load and run the job ``4PanelsMainJob``. This will cut the majority of the main panel.
-**TODO** get a picture of the main panel after it is cut.
 - Rotate the piece 180 degrees and run the job ``faceUpsideDown``. This will cut the holes and recesses at the top of the front panel. 
 
 This picture shows the main panel being cut.
@@ -139,13 +171,4 @@ This picture shows the main panel being cut.
 ### Cut the moldings
 
 
-## Drilling holes in the face
-After the two jobs are finished on the main panel, 
-Always use masking tape on the front face and sharp Forstner bits!
-
-2 holes for jacks:   11/32 (.344")
-3 holes for buttons:  9/32 (.281") 
-5 holes for amp:     19/64 (.297") 
-
-Distance between each of the 5 knobs on amp: .720"
 
