@@ -77,7 +77,7 @@ All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One 
 | -----------               | --- | ---- |
 | Side tops and bottoms     | 4   | 7.385" |
 | Side fronts and backs     | 4   | 11.875" |
-| Front and back L moldings | 4   | > 20" (each will be cut to size after assembly) |
+| Front and back L moldings | 4   | ~20" (each will be cut to size later) |
 
 One other piece is used to elevate the Raspberry Pi. It is 2.75" wide x 3.625" long.  The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports. Usually 1-1/4" thick is enough, but not always.
 
@@ -116,16 +116,17 @@ Following are the components needed, the cost as of Jan 2024 and the last source
 | Electrical box, outlet and cover             |  $10? | hardware store |
 
 80+10+45+7+26+20+50+53+14+9+2+12+2+2+6+4+10+6+2+20+10=390
+
 A rough estimate of the cost of the components is $390
-If the wood is $60 or more, it costs $450-500 in parts.
+If the wood is $60 or more, the cost to build it is about $450-500.
 
 ## Download the G-code
-G-code is to a CNC machine what object code is to a computer.
+G-code is to a CNC machine what object code is to a computer. It tells the machine what to do, and the machine (hopefully) does it.  This does assume the wood is the exact same size and aligned in the exact same place.
 
-The following G-code files are used on a CNC machine to cut out all the pieces.
-Because the panel is over 30", the maximum for many CNC machines, it must be cut twice, rotate 180 degrees between jobs.  
+The following G-code files in this repo are used on a CNC machine to cut out all the pieces.
 
-The main panel is cut in two CNC jobs, and later is cut on the tablesaw to create four pieces: the front, the bottom, the back and interior divider. 
+Because the panel is over 30" (max of my CNC machines),  it must be cut twice, rotate 180 degrees between jobs.  
+After is the main panel jobs, it is cut on the tablesaw to create four pieces: the front, the bottom, the back and interior divider. 
 
 | G-code file       | Size   | Description |
 | -----------       | ----   | -----------
@@ -140,7 +141,22 @@ Final assembly of the carcass can take place when you have
 - Two sides assembled
 
 ### Cut the main panel
+Consider the following rough drawing:
+
+![](main-panel-dimensions.jpg)
+*Rough drawing of main panel and two sliding panels*
+
+Following are the steps to cut the main panel.
+- Cut a sheet of Baltic birch into three 19.875" pieces. There should be almost no refuse.
+- From one of those, cut a piece 32.395". This is the "main panel" which will later be cut into four pieces.
+- Load the Gcode ``4PanelsMainJob.nc``.
+- Clamp and square the main panel. 
+- Zero XYZ of the main panel.
+- Load and run the job to cut the majority of the main panel.
+- Rotate the piece 180 degrees and run the job ``faceUpsideDown``. This will cut the holes and recesses at the top of the front panel. 
+
 ### Prepare all panels
+
 ### Drill holes on face 
 
 After the two jobs are finished on the main panel, 
@@ -164,14 +180,6 @@ To build the boombox, perform the following sections: 192.168.12.239
 ### Cut the plywood
 The width of the boombox was designed around being able to get three panels from a sheet of Baltic birch, 1550mm x 1550mm, or about 60" x 60".
 
-Cut the plywood parts as follows
-- Cut a sheet of Baltic birch into three 19.875" pieces.
-- From one of those, cut a piece 32.395". This is the "main panel" which will later be cut into four pieces.
-- Copy the G-Code (.nc) files in this repo to the computer driving the CNC machine.
-- Clamp and square the main panel on a CNC machine. 
-- Zero XYZ of the main panel.
-- Load and run the job ``4PanelsMainJob``. This will cut the majority of the main panel.
-- Rotate the piece 180 degrees and run the job ``faceUpsideDown``. This will cut the holes and recesses at the top of the front panel. 
 
 This picture shows the main panel being cut by a CNC machine.
 ![](main-panel-being-cut.jpg)
