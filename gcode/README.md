@@ -87,7 +87,7 @@ Following is a diagram of the side moldings (*Double dado*) and the L-shaped mol
 *Cross section of the two moldings*
 
 ### Components  
-Following are the components needed, the cost as of Jan 2024 and the last source where they were purchased.
+Following are the components needed, the cost (in Jan 2024) and the source where they were purchased.
 
 | Description                                  | Cost | Source      |
 | -----------                                  | ---- | ----------- |
@@ -117,16 +117,15 @@ Following are the components needed, the cost as of Jan 2024 and the last source
 
 80+10+45+7+26+20+50+53+14+9+2+12+2+2+6+4+10+6+2+20+10=390
 
-A rough estimate of the cost of the components is $390
-If the wood is $60 or more, the cost to build it is about $450-500.
+A rough estimate of the cost of the components is $390, so if the wood is $60 or more, the cost for parts is about $450-500.
 
 ## Download the G-code
 G-code is to a CNC machine what object code is to a computer. It tells the machine what to do, and the machine (hopefully) does it.  This does assume the wood is the exact same size and aligned in the exact same place.
 
-The following G-code files in this repo are used on a CNC machine to cut out all the pieces.
-
 Because the panel is over 30" (max of my CNC machines),  it must be cut twice, rotate 180 degrees between jobs.  
 After is the main panel jobs, it is cut on the tablesaw to create four pieces: the front, the bottom, the back and interior divider. 
+
+The following G-code files in this repo are used on a CNC machine to cut out all the pieces.
 
 | G-code file       | Size   | Description |
 | -----------       | ----   | -----------
@@ -136,7 +135,7 @@ After is the main panel jobs, it is cut on the tablesaw to create four pieces: t
 | righttSide.nc     | 7.386" wide x 11.875" high| Cuts on the assembled right side |
 
 ## Prepare for assembly 
-Final assembly of the carcass can take place when you have 
+Final assembly of the carcass can take place when you have:
 - Four panels prepared
 - Two sides assembled
 
