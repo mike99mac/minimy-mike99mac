@@ -150,9 +150,9 @@ To accomplish this, perform the following tasks:
 - [](*)
 
 ### Cut the main panel
-Consider the following rough drawing:
-
 The distance between each of the 5 knobs on the amplifier is 0.720" in the CNC job.  Before running the job, verify that is true on the amp in hand.
+
+Consider the following rough drawing:
 
 ![](main-panel-dimensions.jpg)
 *Rough drawing of main panel and two sliding panels*
@@ -185,13 +185,13 @@ To prepare the panels, perform the following tasks:
 - Cut the sliding panels, noting the mark to align the boards so the grain is continuous.
   - Back slider - 4.04" - The two "2" marks should be cut in half.
   - Top slider - 6.18"
-- Cut the two enclosure dividers 6.25" x 6.75" (**TODO:** verify these numbers)
-- Cut the two sides 6.005" x 11.875". 
+- Cut the 2 enclosure dividers - 6.25" x 6.75" (**TODO:** verify these numbers)
+- Cut the 2 sides - 6.005" x 11.875". 
 
 You should now have 10 pieces of plywood:
 - 4 milled panels to be glued together
+- 2 enclosure dividers to be glued inside carcass
 - 2 panels that will be sliding covers
-- 2 enclosure dividers
 - 2 sides 
 
 ### Drill holes on face 
@@ -200,22 +200,31 @@ as well as two cavities for the amplifier and the 3 buttons to go in.
 
 Baltic birch plywood is subject to tearout.  To avoid that as much as possible, perform the following steps:
 - Put masking tape on the front covering all 10 holes.
-- Drill 10 pilot holes from the back with a 1/16" bit.
+- Drill 10 pilot holes from the back in the center of each hole with a 1/16" bit.
 - Drill holes in the front with sharp Forstner bits:
   - 2 holes for jacks:   11/32 (.344")
   - 3 holes for buttons:  9/32 (.281") 
   - 5 holes for amp:     19/64 (.297") 
 
 ### Construct two sides
+There are CNC jobs for each of the sides after the five pieces are glued together.  They accomplish this function:
+- Cut a hole for the plastic port.
+- Cut the outside molding so the sliding panels can be inserted.
+- Cut most of the inside thin molding inside the carcass.  This step was added because it was extremely difficult to get the sides and carcass perfect.
+
 To construct the sides, perform the following tasks:
-- Cut 4 *double dado* moldings at 11.875" and 4 more at 7.385", all with 45 degree angles so they go together like a picture frame.
-- Arrange the two sides **ensuring there are left and right hand sides**. Leave the pieces in those positions 
-- Glue each side up without altering the arrangement.
+- Cut 4 *double dado* moldings to 11.875" and 4 more to 7.385", all with 45 degree angles so they go together like a picture frame.
+- Arrange the two sides **ensuring there are left and right sides**. Leave the pieces in those positions. 
+- Glue each side up without altering the left and right side arrangement.
 - Run the CNC job ``leftSide.nc`` on the left side.
 - Run the CNC job ``rightSide.nc`` on the right side.
 - Sand the sides, especially the inside edges which will not be easily accessible after they are glued to the carcass.
+- Pre-drill and screw in 4 stainless steel screws on each side
+
+**TODO** get a picture
  
 ## Perform final assembly 
+To perform the final assembly of all wood pieces, perform the following tasks:
 - [Glue carcass](#glue-carcass)
 - [Glue sides to carcass](#glue-sides-to-carcass)
 - [Glue L-shaped moldings](#glue-l-shaped-moldings)
@@ -223,13 +232,13 @@ To construct the sides, perform the following tasks:
 
 ### Glue carcass 
 To glue the main carcass, perform the following tasks:
-- Dry fit the four machined panels and two enclosure dividers
-- Glue the two enclosure dividers to the bottom and center divider and clamp with 2 clamps
+- Dry fit the four machined panels and two enclosure dividers.
+- Glue the two enclosure dividers to the bottom and center divider and clamp with 2 clamps.
 - Glue the side with no clamps to the front panel.
 - Remove the 2 clamps and glue the back panel on.
-- Add perhaps 4 clamps to lightly clamp all 6 pieces
+- Add perhaps 4 clamps to lightly clamp all 6 pieces.
 - Use 2 right-angle clamps at the left and right sides to ensure the box is square.
-- Add many more clamps to ensure tight joints all around
+- Add many more clamps to ensure tight joints all around.
 - Allow to dry.
 
 **TODO** Get a picture of this
@@ -237,8 +246,8 @@ To glue the main carcass, perform the following tasks:
 ### Glue sides to carcass 
 To glue the sides to the main carcass, perform the following tasks:
 - Dry fit the sides on.
-- Glue the sides on clamping with 5 24" clamps.
-- Allow to dry
+- Glue the sides on, clamping with 5 24" clamps.
+- Allow to dry.
 - Screw 4 screws through each side into carcass. 
 
 **TODO** Get a picture of this
@@ -247,11 +256,14 @@ To glue the sides to the main carcass, perform the following tasks:
 You should have four L-shaped moldings, each greater than 20".
 
 To attach the L-shaped moldings to the box, perform the following tasks:
+- Slide the top slider on, but not the back slider, so it cannot be glued to the top.
 - Cut one piece to the length of the top-back.  This will be the longest piece.
 - Cut the other three pieces to size.
-- Glue the 4 moldings onto the carcass and clamp. The long molding will be glued to the top sliding panel.  Do not put the back sliding panel on the box so it cannot be glued to the top panel.
+- Glue the 4 moldings onto the carcass and clamp. The long molding will be glued to the top sliding panel.  
 - Allow to dry.
 - Drill holes and screw two screws through the top sliding panel molding into the back sliding panel.  This will ensure the boombox stays together when being transported by handle
+
+**TODO** Get a picture of this
 
 ### Finish sliding panels 
 Ideally, the sliding panels will fit and slide perfectly.  
