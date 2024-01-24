@@ -64,7 +64,7 @@ Following are the 1/2" Baltic birch plywood pieces. The nominal thickness is 0.4
 | Description                | Qty | Size |
 | -----------                | --- | ---- |
 | Main panel                 | 1   | 19.875" x 32.295" |
-| Side panels                | 2   | 6.005" x 32.295" |
+| Side panels                | 2   | 6.005" x 11.875" |
 | Internal vertical dividers | 2   | 6.375" x 6.875" **TODO** verify numbers |
 
 The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of 30".
@@ -124,7 +124,7 @@ G-code is to a CNC machine what object code is to a computer. It tells the machi
 This assumes the wood is the exact same size and aligned in the exact same place.
 
 Because the panel is over 30" (max of my CNC machines), it must be cut twice, rotate 180 degrees between jobs.  
-After is the main panel jobs, it is cut on the tablesaw to create four pieces: the front, the bottom, the back and interior divider. 
+After is the main panel jobs, it is cut on the tablesaw to create four pieces: the front, the bottom, the back and enclosure divider. 
 
 The following G-code files in this repo are used on a CNC machine to cut out all the pieces.
 
@@ -138,14 +138,14 @@ The following G-code files in this repo are used on a CNC machine to cut out all
 ## Prepare for assembly 
 Final assembly of the carcass can take place when you have:
 - Four panels cut from the machined main panel
-- Two sides assembled and cut
+- Two sliding panels and two enclosure dividers
+- Two sides assembled and cut with CNC jobs
 
 To accomplish this, perform the following tasks:
 - [Cut the main panel](*cut-the-main-panel)
 - [Prepare all 8 panels](*prepare-all-8-panels)
 - [Drill holes on face](*drill-holes-on-face)
 - [Construct two sides](*construct-two-sides)
-- [](*)
 - [](*)
 
 ### Cut the main panel
@@ -159,7 +159,7 @@ The distance between each of the 5 knobs on the amplifier is 0.720" in the CNC j
 Following are the steps to cut the main panel.
 - Cut a sheet of Baltic birch into three 19.875" pieces. There should be almost no refuse.
 - Mark a "1" and a "2" at 32.395" and 36.56: (32.395" + 0.125" + 4.04").  This will allow you align the grain properly on all panels. 
-Note the "Before cutting" square in black in the picture.
+Note the **Before cutting** square in black in the picture.
   - **TODO:** Get a better drawing of the main panel.
 - Cut a piece 32.395". This is the "main panel" which will later be cut into four pieces. The two "1" marks should be cut in half.
   - **NOTE:** This value assumes a kerf of 0.125" which is common for table saw blades.  Some thin kerf blades are below 0.100", so you may have to reduce the 32.395" accordingly.
@@ -171,6 +171,7 @@ Note the "Before cutting" square in black in the picture.
 - Rotate the piece 180 degrees and run the job ``faceUpsideDown.nc``, again squaring and zeroing the piece.  This will cut the holes and recesses at the top of the front panel. 
 
 This picture shows the main panel being cut by a CNC machine.
+
 ![](main-panel-being-cut.jpg)
 *Main panel being cut*
 
@@ -178,25 +179,27 @@ This picture shows the main panel being cut by a CNC machine.
 Starting from the top of the main panel working down, cut the 4 machined panels:
 - Top - 11.5"
 - Bottom and center divider - both 6.5"
-- Back - 7.46"
+- Back - 7.46" (ideally that will be exactly what you are left with)
 
-Cut the sliding panels, noting the mark to align the boards so the grain is continuous.
-- Back slider - 4.04" - The two "2" marks should be cut in half.
-- Top slider - 6.18"
+- Cut the sliding panels, noting the mark to align the boards so the grain is continuous.
+  - Back slider - 4.04" - The two "2" marks should be cut in half.
+  - Top slider - 6.18"
 
-Cut the two enclosure dividers 6.25" x 6.75" (**TODO:** verify these numbers)
+- Cut the two enclosure dividers 6.25" x 6.75" (**TODO:** verify these numbers)
 
-You should now have:
+- Cut the two sides 6.005" x 11.875". 
+
+You should now have 10 pieces of plywood:
 - 4 milled panels to be glued together
 - 2 panels that will be sliding covers
-- 2 interior enclosure dividers
+- 2 enclosure dividers
+- 2 sides 
 
 ### Drill holes on face 
 The second CNC job on the main panel prepared 10 holes to be drilled from the front, for the amp, buttons and jacks,
 as well as two cavities for the amplifier and the 3 buttons to go in.
 
 Baltic birch plywood is subject to tearout.  To avoid that as much as possible, perform the following steps:
-
 - Put masking tape on the front covering all 10 holes.
 - Drill 10 pilot holes from the back with a 1/16" bit.
 - Drill holes in the front with sharp Forstner bits:
@@ -204,34 +207,110 @@ Baltic birch plywood is subject to tearout.  To avoid that as much as possible, 
   - 3 holes for buttons:  9/32 (.281") 
   - 5 holes for amp:     19/64 (.297") 
 
+### Construct two sides
+To construct the sides, perform the following tasks:
+- Cut 4 *double dado* moldings at 11.875" and 4 more at 7.385", all with 45 degree angles so they go together like a picture frame.
+- Arrange the two sides **ensuring there are left and right hand sides**. Leave the pieces in those positions 
+- Glue each side up without altering the arrangement.
+- Run the CNC job ``leftSide.nc`` on the left side.
+- Run the CNC job ``rightSide.nc`` on the right side.
+- Sand the sides, especially the inside edges which will not be easily accessible after they are glued to the carcass.
+ 
 ## Perform final assembly 
-- [Glue the carcass](#glue-the-carcass)
-- [Enable sliding panels](#enable-sliding-panels)
-- [Glue two sides](#glue-two-sides)
+- [Glue carcass](#glue-carcass)
+- [Glue sides to carcass](#glue-sides-to-carcass)
+- [Glue L-shaped moldings](#glue-l-shaped-moldings)
+- [Finish sliding panels](#finish-sliding-panels)
 
-### Glue the carcass 
+### Glue carcass 
+To glue the main carcass, perform the following tasks:
+- Dry fit the four machined panels and two enclosure dividers
+- Glue the two enclosure dividers to the bottom and center divider and clamp with 2 clamps
+- Glue the side with no clamps to the front panel.
+- Remove the 2 clamps and glue the back panel on.
+- Add perhaps 4 clamps to lightly clamp all 6 pieces
+- Use 2 right-angle clamps at the left and right sides to ensure the box is square.
+- Add many more clamps to ensure tight joints all around
+- Allow to dry.
 
+**TODO** Get a picture of this
 
-### Enable sliding panels 
+### Glue sides to carcass 
+To glue the sides to the main carcass, perform the following tasks:
+- Dry fit the sides on.
+- Glue the sides on clamping with 5 24" clamps.
+- Allow to dry
+- Screw 4 screws through each side into carcass. 
 
-To build the boombox, perform the following sections: 192.168.12.239
+**TODO** Get a picture of this
 
-- [Cut the plywood](#cut-the-plywood)
-- [Cut the moldings](#cut-the-moldings)
+### Glue L-shaped moldings
+You should have four L-shaped moldings, each greater than 20".
 
-### Cut the plywood
-The width of the boombox was designed around being able to get three panels from a sheet of Baltic birch, 1550mm x 1550mm, or about 60" x 60".
+To attach the L-shaped moldings to the box, perform the following tasks:
+- Cut one piece to the length of the top-back.  This will be the longest piece.
+- Cut the other three pieces to size.
+- Glue the 4 moldings onto the carcass and clamp. The long molding will be glued to the top sliding panel.  Do not put the back sliding panel on the box so it cannot be glued to the top panel.
+- Allow to dry.
+- Drill holes and screw two screws through the top sliding panel molding into the back sliding panel.  This will ensure the boombox stays together when being transported by handle
 
-
-### Cut the moldings
-
-
+### Finish sliding panels 
+Ideally, the sliding panels will fit and slide perfectly.  
+- Screw in the handle, centered on the top panel.  The location of the screws should be midway between the slots, so the handle is not too tight, nor does it open up too far when the boombox is being carried.
+- Use a piece of candle to wax the channels the panels slide in, and the ends of the panels.
 
 ## Install components 
+To install all components, perform the following tasks:
+- [Install electrical outlet](*install-electrical-outlet)
+- [Install amplifier power supply](*install-amplifier-power-supply)
+- [Install Raspberry Pi and DAC](*install-raspberry-pi-and-dac)
+- [Partially install speakers](*partially-install-speakers)
+- [Connect and test amplifier](*connect-and-test-amplifier)
+- [Finish installing speakers](*finish-installing-speakers)
+- [Install pushbuttons](*install-pushbuttons)
+- [Install remaining components](*install-remaining-components)
+- [](*)
+
 ### Install electrical outlet
+To install the electrical outlet, perform the following tasks:
+- one
+- two
+
 ### Install amplifier power supply
-### Mount Raspberry Pi 
-### Install left and right speakers
+To install the amplifier power supply, perform the following tasks:
+- one
+- two
+
+### Install Raspberry Pi and DAC 
+To install the Raspberry Pi and DAC HAT, perform the following tasks:
+- one
+- two
+
+### Partially install speakers 
+To partially install the two midrange speakers, two tweeters, and subwoofer, perform the following tasks:
+- one
+- two
+
+### Connect and test amplifier
+To connect the amplifier and test it, perorm the following tasks:
+- one
+- two
+
+### Finish installing speakers   
+Polyester fiber stuffing slows down sound waves inside the box, making the subwoofer perform as if the box were bigger. 
+To install , perform the following tasks:
+- one
+- two
+
+### Install pushbuttons 
+To install the three pushbuttons, perform the following tasks:
+- one
+- two
+
+### Install remaining components 
+To install , perform the following tasks:
+- one
+- two
 
 
 ## Stand up the software stack 
