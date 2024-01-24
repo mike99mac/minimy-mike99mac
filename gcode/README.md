@@ -49,7 +49,7 @@ To build the boombox, perform the following steps:
 - [Prepare for assembly](#prepare-for-assembly)
 - [Perform final assembly](#perform-final-assembly)
 - [Install components](#install-components)
-- [Stand up the stack](#stand-up-the-stack)
+- [Stand up the software stack](#stand-up-the-software-stack)
 
 ## Obtain all parts and components 
 Obtain the follow parts and components:
@@ -59,7 +59,7 @@ Obtain the follow parts and components:
 - [Components](#components)
 
 ### Plywood panels
-Following 1/2" Baltic birch plywood pieces. The nominal thickness: 0.480". 
+Following are the 1/2" Baltic birch plywood pieces. The nominal thickness is 0.480". 
 
 | Description                | Qty | Size |
 | -----------                | --- | ---- |
@@ -137,11 +137,13 @@ The following G-code files in this repo are used on a CNC machine to cut out all
 
 ## Prepare for assembly 
 Final assembly of the carcass can take place when you have:
-- Four panels prepared
-- Two sides assembled
+- Four panels cut from the machined main panel
+- Two sides assembled and cut
 
 ### Cut the main panel
 Consider the following rough drawing:
+
+The distance between each of the 5 knobs on the amplifier is 0.720" in the CNC job.  Before starting, verify that is true on the amp in hand.
 
 ![](main-panel-dimensions.jpg)
 *Rough drawing of main panel and two sliding panels*
@@ -162,17 +164,27 @@ This picture shows the main panel being cut by a CNC machine.
 *Main panel being cut*
 
 ### Prepare all panels
+From the top of the main panel working down, cut the:
+- Top - 11.5"
+- Bottom and center divider - both 6.5"
+- Back - 7.46"
+
+Now cut the sliding panels, noting the mark to align the boards so the grain is continuous.
+- Back slider - 4.04"
+- Top slider - 6.18"
 
 ### Drill holes on face 
+The second CNC job on the main panel prepared 10 holes to be drilled from the front.
 
-After the two jobs are finished on the main panel, 
-Always use masking tape on the front face and sharp Forstner bits!
+Baltic birch plywood is subject to tearout.  To avoid that as much as possible, perform the following steps:
 
-2 holes for jacks:   11/32 (.344")
-3 holes for buttons:  9/32 (.281") 
-5 holes for amp:     19/64 (.297") 
+- Put masking tape on the front covering all 10 holes
+- Drill pilot holes from the back with a 1/16" bit
+- Drill holes in the front with sharp Forstner bits:
+  - 2 holes for jacks:   11/32 (.344")
+  - 3 holes for buttons:  9/32 (.281") 
+  - 5 holes for amp:     19/64 (.297") 
 
-Distance between each of the 5 knobs on amp: .720"
 
 ## Perform final assembly 
 ### Glue the carcass 
@@ -198,7 +210,7 @@ The width of the boombox was designed around being able to get three panels from
 ### Install left and right speakers
 
 
-## Stand up the stack 
+## Stand up the software stack 
 The next task that needs to be done is to install the software.  However, that is outside the scope of this document.  TODO: Add a link.
 
 TODO: add pictures of the finished product.
