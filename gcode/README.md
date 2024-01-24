@@ -71,7 +71,7 @@ The main panel is cut on the CNC machine using two different jobs because the pa
 Then it is cut into four smaller panels: the front, the bottom, the lower back and the internal horizontal divider.
 
 ### Hardwood pieces 
-All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One other piece of wood is needed
+All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One other piece of wood is needed.
 
 | Description               | Qty | Size |
 | -----------               | --- | ---- |
@@ -148,12 +148,18 @@ Consider the following rough drawing:
 
 Following are the steps to cut the main panel.
 - Cut a sheet of Baltic birch into three 19.875" pieces. There should be almost no refuse.
+- Mark a "1" and a "2" at 32.395" and 32.395" + 0.125" + 4.04" = 36.56".  This will allow you align the grain properly on all panels. 
 - From one of those, cut a piece 32.395". This is the "main panel" which will later be cut into four pieces.
+  - **NOTE** This value assumes a kerf of 0.125" which is common for table saw blades.  Some thin kerf blades are below 0.100", so you may have to reduce the 32.395" accordingly.
 - Load the Gcode ``4PanelsMainJob.nc``.
 - Clamp and square the main panel. 
 - Zero XYZ of the main panel.
 - Load and run the job to cut the majority of the main panel.
-- Rotate the piece 180 degrees and run the job ``faceUpsideDown``. This will cut the holes and recesses at the top of the front panel. 
+- Rotate the piece 180 degrees and run the job ``faceUpsideDown``, again squaring and zeroing the piece.  This will cut the holes and recesses at the top of the front panel. 
+
+This picture shows the main panel being cut by a CNC machine.
+![](main-panel-being-cut.jpg)
+*Main panel being cut*
 
 ### Prepare all panels
 
@@ -180,10 +186,6 @@ To build the boombox, perform the following sections: 192.168.12.239
 ### Cut the plywood
 The width of the boombox was designed around being able to get three panels from a sheet of Baltic birch, 1550mm x 1550mm, or about 60" x 60".
 
-
-This picture shows the main panel being cut by a CNC machine.
-![](main-panel-being-cut.jpg)
-*Main panel being cut*
 
 ### Cut the moldings
 
