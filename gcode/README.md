@@ -140,54 +140,78 @@ Final assembly of the carcass can take place when you have:
 - Four panels cut from the machined main panel
 - Two sides assembled and cut
 
+To accomplish this, perform the following tasks:
+- [Cut the main panel](*cut-the-main-panel)
+- [Prepare all 8 panels](*prepare-all-8-panels)
+- [Drill holes on face](*drill-holes-on-face)
+- [Construct two sides](*construct-two-sides)
+- [](*)
+- [](*)
+
 ### Cut the main panel
 Consider the following rough drawing:
 
-The distance between each of the 5 knobs on the amplifier is 0.720" in the CNC job.  Before starting, verify that is true on the amp in hand.
+The distance between each of the 5 knobs on the amplifier is 0.720" in the CNC job.  Before running the job, verify that is true on the amp in hand.
 
 ![](main-panel-dimensions.jpg)
 *Rough drawing of main panel and two sliding panels*
 
 Following are the steps to cut the main panel.
 - Cut a sheet of Baltic birch into three 19.875" pieces. There should be almost no refuse.
-- Mark a "1" and a "2" at 32.395" and 32.395" + 0.125" + 4.04" = 36.56".  This will allow you align the grain properly on all panels. 
-- From one of those, cut a piece 32.395". This is the "main panel" which will later be cut into four pieces.
-  - **NOTE** This value assumes a kerf of 0.125" which is common for table saw blades.  Some thin kerf blades are below 0.100", so you may have to reduce the 32.395" accordingly.
+- Mark a "1" and a "2" at 32.395" and 36.56: (32.395" + 0.125" + 4.04").  This will allow you align the grain properly on all panels. 
+Note the "Before cutting" square in black in the picture.
+  - **TODO:** Get a better drawing of the main panel.
+- Cut a piece 32.395". This is the "main panel" which will later be cut into four pieces. The two "1" marks should be cut in half.
+  - **NOTE:** This value assumes a kerf of 0.125" which is common for table saw blades.  Some thin kerf blades are below 0.100", so you may have to reduce the 32.395" accordingly.
 - Load the Gcode ``4PanelsMainJob.nc``.
 - Clamp and square the main panel. 
 - Zero XYZ of the main panel.
 - Load and run the job to cut the majority of the main panel.
-- Rotate the piece 180 degrees and run the job ``faceUpsideDown``, again squaring and zeroing the piece.  This will cut the holes and recesses at the top of the front panel. 
+- **Before removing the panel from the clamps**, verify the dados are wide enough to fit the plywood!
+- Rotate the piece 180 degrees and run the job ``faceUpsideDown.nc``, again squaring and zeroing the piece.  This will cut the holes and recesses at the top of the front panel. 
 
 This picture shows the main panel being cut by a CNC machine.
 ![](main-panel-being-cut.jpg)
 *Main panel being cut*
 
-### Prepare all panels
-From the top of the main panel working down, cut the:
+### Prepare all 8 panels
+Starting from the top of the main panel working down, cut the 4 machined panels:
 - Top - 11.5"
 - Bottom and center divider - both 6.5"
 - Back - 7.46"
 
-Now cut the sliding panels, noting the mark to align the boards so the grain is continuous.
-- Back slider - 4.04"
+Cut the sliding panels, noting the mark to align the boards so the grain is continuous.
+- Back slider - 4.04" - The two "2" marks should be cut in half.
 - Top slider - 6.18"
 
+Cut the two enclosure dividers 6.25" x 6.75" (**TODO:** verify these numbers)
+
+You should now have:
+- 4 milled panels to be glued together
+- 2 panels that will be sliding covers
+- 2 interior enclosure dividers
+
 ### Drill holes on face 
-The second CNC job on the main panel prepared 10 holes to be drilled from the front.
+The second CNC job on the main panel prepared 10 holes to be drilled from the front, for the amp, buttons and jacks,
+as well as two cavities for the amplifier and the 3 buttons to go in.
 
 Baltic birch plywood is subject to tearout.  To avoid that as much as possible, perform the following steps:
 
-- Put masking tape on the front covering all 10 holes
-- Drill pilot holes from the back with a 1/16" bit
+- Put masking tape on the front covering all 10 holes.
+- Drill 10 pilot holes from the back with a 1/16" bit.
 - Drill holes in the front with sharp Forstner bits:
   - 2 holes for jacks:   11/32 (.344")
   - 3 holes for buttons:  9/32 (.281") 
   - 5 holes for amp:     19/64 (.297") 
 
-
 ## Perform final assembly 
+- [Glue the carcass](#glue-the-carcass)
+- [Enable sliding panels](#enable-sliding-panels)
+- [Glue two sides](#glue-two-sides)
+
 ### Glue the carcass 
+
+
 ### Enable sliding panels 
 
 To build the boombox, perform the following sections: 192.168.12.239
