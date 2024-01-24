@@ -120,9 +120,10 @@ Following are the components needed, the cost (in Jan 2024) and the source where
 A rough estimate of the cost of the components is $390, so if the wood is $60 or more, the cost for parts is about $450-500.
 
 ## Download the G-code
-G-code is to a CNC machine what object code is to a computer. It tells the machine what to do, and the machine (hopefully) does it.  This does assume the wood is the exact same size and aligned in the exact same place.
+G-code is to a CNC machine what object code is to a computer. It tells the machine what to do, and the machine (hopefully) does it.  
+This assumes the wood is the exact same size and aligned in the exact same place.
 
-Because the panel is over 30" (max of my CNC machines),  it must be cut twice, rotate 180 degrees between jobs.  
+Because the panel is over 30" (max of my CNC machines), it must be cut twice, rotate 180 degrees between jobs.  
 After is the main panel jobs, it is cut on the tablesaw to create four pieces: the front, the bottom, the back and interior divider. 
 
 The following G-code files in this repo are used on a CNC machine to cut out all the pieces.
