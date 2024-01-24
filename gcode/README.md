@@ -78,6 +78,7 @@ All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One 
 | Side tops and bottoms     | 4   | 7.385" |
 | Side fronts and backs     | 4   | 11.875" |
 | Front and back L moldings | 4   | ~20" (each will be cut to size later) |
+| Raspberry Pi platform     | 1   | 2-5/8" x h will be cut to size later) |
 
 One other piece is used to elevate the Raspberry Pi. It is 2.75" wide x 3.625" long.  The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports. Usually 1-1/4" thick is enough, but not always.
 
@@ -175,18 +176,16 @@ This picture shows the main panel being cut by a CNC machine.
 ![](main-panel-being-cut.jpg)
 *Main panel being cut*
 
-### Prepare all 8 panels
-Starting from the top of the main panel working down, cut the 4 machined panels:
-- Top - 11.5"
-- Bottom and center divider - both 6.5"
-- Back - 7.46" (ideally that will be exactly what you are left with)
-
+### Prepare all panels
+To prepare the panels, perform the following tasks:
+- Starting from the top of the main panel working down, cut the 4 machined panels:
+  - Top - 11.5"
+  - Bottom and center divider - both 6.5"
+  - Back - 7.46" (ideally that will be exactly what you are left with)
 - Cut the sliding panels, noting the mark to align the boards so the grain is continuous.
   - Back slider - 4.04" - The two "2" marks should be cut in half.
   - Top slider - 6.18"
-
 - Cut the two enclosure dividers 6.25" x 6.75" (**TODO:** verify these numbers)
-
 - Cut the two sides 6.005" x 11.875". 
 
 You should now have 10 pieces of plywood:
