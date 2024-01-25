@@ -78,9 +78,9 @@ All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One 
 | Side tops and bottoms     | 4   | 7.385" |
 | Side fronts and backs     | 4   | 11.875" |
 | Front and back L moldings | 4   | ~20" (each will be cut to size later) |
-| Raspberry Pi platform     | 1   | 2-5/8" x h will be cut to size later) |
+| Raspberry Pi platform     | 1   | 2.75" x 3.625" |
 
-One other piece is used to elevate the Raspberry Pi. It is 2.75" wide x 3.625" long.  The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports. Usually 1-1/4" thick is enough, but not always.
+One other piece call a platform is used to elevate the Raspberry Pi. The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports. Usually 1-1/4" thick is enough, but not always - measure the big power supply.
 
 Following is a diagram of the side moldings (*Double dado*) and the L-shaped moldings
 
@@ -113,10 +113,11 @@ Following are the components needed, the cost (in Jan 2024) and the source where
 | Female to Female jumper wires: GenBasic      |  $6  | www.amazon.com/gp/product/B077N58HFK |
 | Pair speaker grills: Facmogu 4"              |  $9  | www.amazon.com/gp/product/B077N58HFK |
 | Rubber feet: Parts Express 4-pk, 1" x 1.25"  |  $2  | www.parts-express.com/4-Pack-Rubber-Cabinet-Feet-1-Dia.-x-1.25-H-260-7515|
+| Power cord, 10', 18-3 wire                   |  $4  | www.parts-express.com/6-ft.-Power-Cord-Black-18-3-110-100 |
 | USB microphone                               |  $20? | many choices |
-| Electrical box, outlet and cover             |  $10? | hardware store |
+| Electrical box, outlet, connector and cover  |  $10? | hardware store |
 
-80+10+45+7+26+20+50+53+14+9+2+12+2+2+6+4+10+6+2+20+10=390
+80+10+45+7+26+20+50+53+14+9+2+12+2+2+6+4+10+6+2+4+20+10=394
 
 A rough estimate of the cost of the components is $390, so if the wood is $60 or more, the cost for parts is about $450-500.
 
@@ -144,7 +145,7 @@ Final assembly of the carcass can take place when you have:
 
 To accomplish this, perform the following tasks:
 - [Cut the main panel](*cut-the-main-panel)
-- [Prepare all 8 panels](*prepare-all-8-panels)
+- [Prepare all panels](*prepare-all-panels)
 - [Drill holes on face](*drill-holes-on-face)
 - [Construct two sides](*construct-two-sides)
 - [](*)
@@ -284,45 +285,103 @@ To install all components, perform the following tasks:
 
 ### Install electrical outlet
 To install the electrical outlet, perform the following tasks:
-- one
-- two
+- Attach a Romex connector to the bottom of the electrical box.
+- Rest the outlet on a small piece of plywood about 0.400" thick.  This will raise it up so the cover will fit.
+- Place the outlet 0.750" away from the front panel.  This will leave enough room in the back to stow the main power cord.
+- Run the power cord through the Romex connector and attach it to the outlet
+- Screw the outlet into the side of the box.
+-  
 
 ### Install amplifier power supply
 To install the amplifier power supply, perform the following tasks:
-- one
-- two
+- Get a piece of about 1" wide aluminum flashing about 2" longer the the width of the power supply, plus two sides.
+- Make 4 folds so the flashing extends about 1" on either side of the power supply, and screw in.
+- Attach the power supply centered under the buttons and touching the front panel.
 
 ### Install Raspberry Pi and DAC 
 To install the Raspberry Pi and DAC HAT, perform the following tasks:
-- one
-- two
+- Plug the DAC HAT onto the Raspberry Pi, making certain that the pins are aligned.
+- Procure 4 standoffs about 0.125" and 2 about 0,430" that a small screw will fit through 
+- Attach the platform behind the power supply.
 
 ### Partially install speakers 
 To partially install the two midrange speakers, two tweeters, and subwoofer, perform the following tasks:
-- one
-- two
+- Cut 3 pieces of 16 guage speaker wire to the following lengths:
+  - 20": right speaker
+  - 26": subwoofer 
+  - 34": left speaker
+- Drill 3 holes, each 7/32" (0.219") each 1-3/4" from the back into each enclosure.
+- Run the wires to the enclosures.
+- On the wire to the subwoofer, attach a narrow female spade connector to the negative side and a wide connector to the positive side, and attach to the subwoofer  
+- In the left and right enclosures, do the following:
+  - Attach the short wire from the crossover to the tweeters
+  - Cut the long wire to 12" and strip
+  - Prepare a 6" jumper, stripped on one end and wide female spade connectors on the other and attach it to the midrange speaker.
+  - Attach the speaker wire, the crossover network and the midrange speaker together with a crimp.
+
+Leave three speakers in front of their enclosures for a test.
 
 ### Connect and test amplifier
 To connect the amplifier and test it, perorm the following tasks:
-- one
-- two
+- Strip about 1/2" of insulation off the three speaker wires. 
+- Twist the copper strands and attach the 6 wires to the amp using the wiring guide provided. **NOTE**: tinning the wires makes them too wide to fit
+- Plug the amp's power supply into the socket, and plug the boombox into the wall.
+- Test the amp and be sure all five speakers are working. 
 
 ### Finish installing speakers   
 Polyester fiber stuffing slows down sound waves inside the box, making the subwoofer perform as if the box were bigger. 
-To install , perform the following tasks:
-- one
-- two
+
+To finish installing the speakers, perform the following tasks:
+- Put polyester fiber in the subwoofer enclosure from both sides of the passive radiator openings
+- Use 4 black 3/4" screws, with large heads, to fasten the subwoofer grill and the subwoofer
+- Attach the two passive radiators with 1/2" screws. 
 
 ### Install pushbuttons 
+Following are the GPIO pins on a Raspberry Pi with pin 1 being on the left side and inside of the Pi:
+```
+       3V3  (1)  (2)  5V
+     GPIO2  (3)  (4)  5V
+     GPIO3  (5)  (6)  GND
+     GPIO4  (7)  (8)  GPIO14
+       GND  (9)! (10) GPIO15
+    GPIO17 (11)! (12) GPIO18
+    GPIO27 (13)! (14) GND
+    GPIO22 (15)! (16) GPIO23
+       3V3 (17)  (18) GPIO24
+    GPIO10 (19)  (20) GND
+     GPIO9 (21)  (22) GPIO25
+    GPIO11 (23)  (24) GPIO8
+       GND (25)  (26) GPIO7
+     GPIO0 (27)  (28) GPIO1
+     GPIO5 (29)  (30) GND
+     GPIO6 (31)  (32) GPIO12
+    GPIO13 (33)  (34) GND
+    GPIO19 (35)  (36) GPIO16
+    GPIO26 (37)  (38) GPIO20
+       GND (39)  (40) GPIO21
+```
 To install the three pushbuttons, perform the following tasks:
-- one
-- two
+- Cut 4 GPIO pin jumpers to their maximum length of about 3".
+- Solder the 3 black wires and one of the jumpers together.  This will be the ground.
+- Solder the other 3 jumpers to the red wire of each button.
+- Attach the ground wire to pin 9.
+- Attach the previous track, pause/resume, and next track jumpers to pins 11, 13 and 15.
+
+### Glue the jacks to the face.
+To glue the jacks to the face, perform the following tasks:
+
+- Protecting the face with boards on the sides, place the boombox face down
+- Insert the two 3.5mm female jacks into the 2 holes not in cavities.
+- Use polyurethane glue on the back side of the panel to attach the jacks, so the glue cannot bubble out the front.
+- Allow the glue to dry.
 
 ### Install remaining components 
 To install , perform the following tasks:
-- one
-- two
-
+- Attach the male end of the headphone jack to the headphone amp on the HifiBerry DAC.
+- With the RCA to 3.5mm male adapter, attach the RCA jacks to the the HifiBerry DAC 
+- With the 3.5mm Y-cable, attach the Aux-in male to one side and RCA to 3.5mm male to the other.
+- Attach the male of the Y-cable into the amplifier.
+- Plug the Raspberry Pi power supply in the outlet and attach 
 
 ## Stand up the software stack 
 The next task that needs to be done is to install the software.  However, that is outside the scope of this document.  TODO: Add a link.
