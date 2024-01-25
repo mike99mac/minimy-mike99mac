@@ -114,8 +114,11 @@ Following are the components needed, the cost (in Jan 2024) and the source where
 | Pair speaker grills: Facmogu 4"              |  $9  | www.amazon.com/gp/product/B077N58HFK |
 | Rubber feet: Parts Express 4-pk, 1" x 1.25"  |  $2  | www.parts-express.com/4-Pack-Rubber-Cabinet-Feet-1-Dia.-x-1.25-H-260-7515|
 | Power cord, 10', 18-3 wire                   |  $4  | www.parts-express.com/6-ft.-Power-Cord-Black-18-3-110-100 |
-| USB microphone                               |  $20? | many choices |
-| Electrical box, outlet, connector and cover  |  $10? | hardware store |
+| USB microphone                               | $20? | many choices |
+| Electrical box, outlet, connector and cover  | $10? | hardware store |
+| 10 flat-head 1-1/2" stainless steel screws   |      | hardware store |
+| 1/2", 3/4" and 1" black pan-head screws      |      | parts-express |
+| Double stick tape                            |      | parts-express |
 
 80+10+45+7+26+20+50+53+14+9+2+12+2+2+6+4+10+6+2+4+20+10=394
 
@@ -220,7 +223,7 @@ To construct the sides, perform the following tasks:
 - Run the CNC job ``leftSide.nc`` on the left side.
 - Run the CNC job ``rightSide.nc`` on the right side.
 - Sand the sides, especially the inside edges which will not be easily accessible after they are glued to the carcass.
-- Pre-drill and screw in 4 stainless steel screws on each side
+- Pre-drill and screw in 4 1-1/2" stainless steel screws on each side.
 
 **TODO** get a picture
  
@@ -281,7 +284,6 @@ To install all components, perform the following tasks:
 - [Finish installing speakers](*finish-installing-speakers)
 - [Install pushbuttons](*install-pushbuttons)
 - [Install remaining components](*install-remaining-components)
-- [](*)
 
 ### Install electrical outlet
 To install the electrical outlet, perform the following tasks:
@@ -290,19 +292,23 @@ To install the electrical outlet, perform the following tasks:
 - Place the outlet 0.750" away from the front panel.  This will leave enough room in the back to stow the main power cord.
 - Run the power cord through the Romex connector and attach it to the outlet
 - Screw the outlet into the side of the box.
--  
 
 ### Install amplifier power supply
 To install the amplifier power supply, perform the following tasks:
 - Get a piece of about 1" wide aluminum flashing about 2" longer the the width of the power supply, plus two sides.
-- Make 4 folds so the flashing extends about 1" on either side of the power supply, and screw in.
-- Attach the power supply centered under the buttons and touching the front panel.
+- Make 4 folds so the flashing extends about 1" on either side of the power supply.
+- Attach this strap with 1/2" screws to the power supply centered under the buttons and touching the front panel.
 
 ### Install Raspberry Pi and DAC 
 To install the Raspberry Pi and DAC HAT, perform the following tasks:
+- Carefully drill out the 4 holes in the corners of the RasPi so that the screws will fit through.
 - Plug the DAC HAT onto the Raspberry Pi, making certain that the pins are aligned.
-- Procure 4 standoffs about 0.125" and 2 about 0,430" that a small screw will fit through 
-- Attach the platform behind the power supply.
+- Attach the wooden platform with 2 2" screws behind the amp's power supply.
+- Procure 4 standoffs about 0.125" and 2 about 0,430" that the screws will fit through.
+- Drill 4 1/16" pilot holes.
+- Put the small standoffs over the pilot holes.
+- Put the RasPi/DAC HAT on the 4 standoffs, and put the 2 standoffs on the side opposite the GPIO pins.
+
 
 ### Partially install speakers 
 To partially install the two midrange speakers, two tweeters, and subwoofer, perform the following tasks:
