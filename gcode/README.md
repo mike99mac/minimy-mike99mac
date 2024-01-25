@@ -90,8 +90,8 @@ Following is a diagram of the side moldings (*Double dado*) and the L-shaped mol
 ### Components  
 Following are the components needed, the cost (in Jan 2024) and the source where they were purchased.
 
-| Description                                  | Cost | Source      |
-| -----------                                  | ---- | ----------- |
+| Description                                  | Cost | Source/use |
+| -----------                                  | ---- | ---------- |
 | Raspberry Pi 5: 8GB RAM                      | $80  | www.seeedstudio.com/Raspberry-Pi-5-8GB-p-5810.html |
 | RasPi power supply: CanaKit 5V, 3.5A         | $10  | www.amazon.com/gp/product/B01DID1TG4 |
 | DAC HAT: Hifiberry DAC2 Pro                  | $45  | www.hifiberry.com/shop/boards/hifiberry-dac2-pro/ |
@@ -116,9 +116,10 @@ Following are the components needed, the cost (in Jan 2024) and the source where
 | Power cord, 10', 18-3 wire                   |  $4  | www.parts-express.com/6-ft.-Power-Cord-Black-18-3-110-100 |
 | USB microphone                               | $20? | many choices |
 | Electrical box, outlet, connector and cover  | $10? | hardware store |
-| 10 flat-head 1-1/2" stainless steel screws   |      | hardware store |
-| 1/2", 3/4" and 1" black pan-head screws      |      | parts-express |
-| Double stick tape                            |      | parts-express |
+| 10 flat-head 1-1/2" stainless steel screws   |      | for sides and top |
+| 4 flat-head 1-1/2" black screws              |      | for Raspberry Pi |
+| 1/2", 3/4" and 1" black pan-head screws      |      | for speakers |
+| Double stick tape                            |      | for crossover networks |
 
 80+10+45+7+26+20+50+53+14+9+2+12+2+2+6+4+10+6+2+4+20+10=394
 
@@ -151,7 +152,6 @@ To accomplish this, perform the following tasks:
 - [Prepare all panels](*prepare-all-panels)
 - [Drill holes on face](*drill-holes-on-face)
 - [Construct two sides](*construct-two-sides)
-- [](*)
 
 ### Cut the main panel
 The distance between each of the 5 knobs on the amplifier is 0.720" in the CNC job.  Before running the job, verify that is true on the amp in hand.
@@ -183,13 +183,13 @@ This picture shows the main panel being cut by a CNC machine.
 ### Prepare all panels
 To prepare the panels, perform the following tasks:
 - Starting from the top of the main panel working down, cut the 4 machined panels:
-  - Top - 11.5"
-  - Bottom and center divider - both 6.5"
-  - Back - 7.46" (ideally that will be exactly what you are left with)
+  - Top - 11.500"
+  - Bottom and center divider - both 6.500"
+  - Back - 7.460" (ideally that will be exactly what you are left with)
 - Cut the sliding panels, noting the mark to align the boards so the grain is continuous.
-  - Back slider - 4.04" - The two "2" marks should be cut in half.
-  - Top slider - 6.18"
-- Cut the 2 enclosure dividers - 6.25" x 6.75" (**TODO:** verify these numbers)
+  - Back slider - 4.040" - The two "2" marks should be cut in half.
+  - Top slider - 6.180"
+- Cut the 2 enclosure dividers - 6.250" x 6.750" (**TODO:** verify these numbers)
 - Cut the 2 sides - 6.005" x 11.875". 
 
 You should now have 10 pieces of plywood:
@@ -206,15 +206,16 @@ Baltic birch plywood is subject to tearout.  To avoid that as much as possible, 
 - Put masking tape on the front covering all 10 holes.
 - Drill 10 pilot holes from the back in the center of each hole with a 1/16" bit.
 - Drill holes in the front with sharp Forstner bits:
-  - 2 holes for jacks:   11/32 (.344")
-  - 3 holes for buttons:  9/32 (.281") 
-  - 5 holes for amp:     19/64 (.297") 
+  - 2 holes for jacks:   11/32 (0.344")
+  - 3 holes for buttons:  9/32 (0.281") 
+  - 5 holes for amp:     19/64 (0.297") 
 
 ### Construct two sides
-There are CNC jobs for each of the sides after the five pieces are glued together.  They accomplish this function:
+There are CNC jobs for the glued up left and right sides which accomplish this function:
 - Cut a hole for the plastic port.
 - Cut the outside molding so the sliding panels can be inserted.
-- Cut most of the inside thin molding inside the carcass.  This step was added because it was extremely difficult to get the sides and carcass perfect.
+- Cut most of the inside thin molding inside the carcass.  
+This step was added because it was extremely difficult to get the sides and carcass to align perfect.
 
 To construct the sides, perform the following tasks:
 - Cut 4 *double dado* moldings to 11.875" and 4 more to 7.385", all with 45 degree angles so they go together like a picture frame.
@@ -252,7 +253,7 @@ To glue the sides to the main carcass, perform the following tasks:
 - Dry fit the sides on.
 - Glue the sides on, clamping with 5 24" clamps.
 - Allow to dry.
-- Screw 4 screws through each side into carcass. 
+- Screw 4 1-1/2" stainless steel screws through each side into carcass. 
 
 **TODO** Get a picture of this
 
@@ -265,14 +266,17 @@ To attach the L-shaped moldings to the box, perform the following tasks:
 - Cut the other three pieces to size.
 - Glue the 4 moldings onto the carcass and clamp. The long molding will be glued to the top sliding panel.  
 - Allow to dry.
-- Drill holes and screw two screws through the top sliding panel molding into the back sliding panel.  This will ensure the boombox stays together when being transported by handle
+- Drill holes and screw 2 1-1/2" stainelss steel screws through the top sliding panel molding into the back sliding panel.  
+This will ensure the boombox stays together when being carried. 
 
 **TODO** Get a picture of this
 
 ### Finish sliding panels 
 Ideally, the sliding panels will fit and slide perfectly.  
-- Screw in the handle, centered on the top panel.  The location of the screws should be midway between the slots, so the handle is not too tight, nor does it open up too far when the boombox is being carried.
-- Use a piece of candle to wax the channels the panels slide in, and the ends of the panels.
+- Screw in the handle, centered on the top panel.  
+The location of the screws should be midway between the slots on the metal insert, so the handle is not too tight, 
+nor does it open up too far when the boombox is being carried.
+- Use a piece of candle to wax the channels that the panels slide in, and the ends of the panels.
 
 ## Install components 
 To install all components, perform the following tasks:
@@ -288,7 +292,8 @@ To install all components, perform the following tasks:
 ### Install electrical outlet
 To install the electrical outlet, perform the following tasks:
 - Attach a Romex connector to the bottom of the electrical box.
-- Rest the outlet on a small piece of plywood about 0.400" thick.  This will raise it up so the cover will fit.
+- Rest the outlet on a small piece of plywood about 0.400" thick on the right side of the boombox.  
+This will raise it up so the cover will fit.
 - Place the outlet 0.750" away from the front panel.  This will leave enough room in the back to stow the main power cord.
 - Run the power cord through the Romex connector and attach it to the outlet
 - Screw the outlet into the side of the box.
@@ -319,9 +324,10 @@ To partially install the two midrange speakers, two tweeters, and subwoofer, per
 - Drill 3 holes, each 7/32" (0.219") each 1-3/4" from the back into each enclosure.
 - Run the wires to the enclosures.
 - On the wire to the subwoofer, attach a narrow female spade connector to the negative side and a wide connector to the positive side, and attach to the subwoofer  
-- In the left and right enclosures, do the following:
-  - Attach the short wire from the crossover to the tweeters
-  - Cut the long wire to 12" and strip
+- In the left and right enclosures, perform the following tasks:
+  - Attach the short wire from the crossover to the tweeters.
+  - Cut the long wire to 12" and strip insulation.
+  - Using double-stick tape, fasten the crossover units to the bottom, nearest the subwoofer enclosure.
   - Prepare a 6" jumper, stripped on one end and wide female spade connectors on the other and attach it to the midrange speaker.
   - Attach the speaker wire, the crossover network and the midrange speaker together with a crimp.
 
