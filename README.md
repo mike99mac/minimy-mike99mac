@@ -201,6 +201,16 @@ The secure shell (SSH) server is not installed by default on Ubuntu desktop. Ins
     ...
     ```
     
+- Update and upgrade your system which installs the latest code for all installed packages.
+    
+    **``$ sudo apt-get update ``**
+    
+    ``...``
+
+    **``$ sudo apt-get upgrade -y ``**
+    
+    ``...``
+
 - Install the ``openssh-server`` package, with the following command.  You will be prompted for your password.
     
     **``$ sudo apt-get install -y openssh-server ``**
@@ -255,20 +265,6 @@ SSH as the user ``pi``, if you want to continue from another system. You can use
 
 **IMPORTANT**: Do not run as ``root``. Doing so will almost certainly screw up your system. 
 Users other than ``pi`` ideally will work as the environment variable ``$HOME`` is used in scripts, however, this has never been tested.
-
-### Update and upgrade your system
-
-Update and upgrade your system which installs the latest code for all installed packages.
-
-- Enter the following command to prepare for the upgrade.  You will be prompted for your password.
-
-    **``$ sudo apt-get update``**
-    
-- Upgrade your system so you have all the latest code. **TAKE A BREAK?** This step could take up to 20 minutes.
-
-    **``$ sudo apt-get upgrade -y``**
-    
-Your system should now be at the latest software levels.
 
 ## Install and use mycroft-tools
 
