@@ -339,10 +339,12 @@ To partially install the two midrange speakers, two tweeters, and subwoofer, per
 Leave three speakers resting in front of their enclosures for a test.
 
 ### Connect and test amplifier
-To connect the amplifier and test it, perorm the following tasks:
+To connect the amplifier and test it, perform the following tasks:
 - Strip about 1/2" of insulation off the three speaker wire pairs. 
-- Twist the copper strands and attach the 6 wires to the amp using the wiring guide provided. **NOTE**: tinning the wires makes them too wide to fit
-- Plug the amp's power supply into the socket, and plug the boombox into the wall.
+- Twist the copper strands and attach the 6 wires to the amp using the wiring guide provided. 
+**NOTE**: tinning the wires makes them too wide to fit.
+- Plug the amp's power supply into the socket. 
+- Plug the boombox into the wall.
 - Test the amp and be sure all five speakers are working. 
 
 ### Finish installing speakers   
@@ -400,12 +402,14 @@ To install , perform the following tasks:
 - With the RCA to 3.5mm male adapter, attach the RCA jacks to the the HifiBerry DAC 
 - With the 3.5mm Y-cable, attach the Aux-in male to one side and RCA to 3.5mm male to the other.
 - Attach the male of the Y-cable into the amplifier.
-- Plug the Raspberry Pi power supply in the outlet 
+- Plug the Raspberry Pi power supply in the outlet.
 - Attach the USB-C end of the power supply to the left side of the Raspberry Pi. 
+**TODO:** Add picture.
 
 ## Stand up the software stack 
 Installing the software is outside the scope of this document, but here's a short answer.
 - Plug a monitor, keyboard and mouse into the Raspberry Pi.
+**TODO:** Add picture.
 - Flash a Linux to a micro-SD card and plug it in to the Raspberry Pi.
 - Power on the RasPi with the new on/off button. 
 
