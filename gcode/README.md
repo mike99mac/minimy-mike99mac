@@ -405,7 +405,10 @@ To install , perform the following tasks:
 Installing the software is outside the scope of this document, but here's a short answer.
 - Plug a monitor, keyboard and mouse into the Raspberry Pi.
 - Flash a Linux to a micro-SD card and plug it in to the Raspberry Pi.
-- Power on the RasPi with the inline switch.  
+- Power on the RasPi with the new on/off button. 
+
+# The finished product
+Below is one completed boombox.
 
 ![](assembled-front-view.jpg)
 *Smart boombox front view*
