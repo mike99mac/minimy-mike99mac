@@ -402,13 +402,14 @@ To install , perform the following tasks:
 - Attach the USB-C end of the power supply to the left side of the Raspberry Pi. 
 
 ## Stand up the software stack 
-The next task that needs to be done is to install the software.  
-That is largely outside the scope of this document, but here's the short answer.
+Installing the software is outside the scope of this document, but here's a short answer.
 - Plug a monitor, keyboard and mouse into the Raspberry Pi.
-- Flash a Linux to a micro-SD card.
-- Place the micro-SD card upside-down in the Raspberry Pi.
+- Flash a Linux to a micro-SD card and plug it in to the Raspberry Pi.
 - Power on the RasPi with the inline switch.  
 
-**TODO:** Add a link.
+![](assembled-front-view.jpg)
+*Smart boombox front view*
 
-TODO: add pictures of the finished product.
+![](assembled-back-view.jpg)
+*Under the hood*
+
