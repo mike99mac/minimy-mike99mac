@@ -310,9 +310,10 @@ To install the amplifier power supply, perform the following tasks:
 ### Install Raspberry Pi and DAC 
 To install the Raspberry Pi and DAC HAT, perform the following tasks:
 - Carefully drill out the 4 holes in the corners of the RasPi so that the screws will fit through.
+- Put heat sinks on all 4 chips on the Raspberry Pi.
 - Plug the DAC HAT onto the Raspberry Pi, making certain that the pins are aligned.
 - Attach the wooden platform with 2 2" screws behind the amp's power supply.
-- Procure 4 standoffs about 0.125" and 2 about 0,430" that the screws will fit through.
+- Procure 4 standoffs about 0.125" and 2 about 0.430" that the screws will fit through.
 - Drill 4 1/16" pilot holes.
 - Put the small standoffs over the pilot holes.
 - Put the RasPi/DAC HAT on the 4 standoffs, and put the 2 standoffs on the side opposite the GPIO pins.
@@ -327,14 +328,13 @@ To partially install the two midrange speakers, two tweeters, and subwoofer, per
   - 34": left speaker
 - Drill 3 holes, each 7/32" (0.219") each 1-3/4" from the back of the boombox into each enclosure.
 - Run the wires to the enclosures.
-- On the wire to the subwoofer, attach a narrow female spade connector to the negative side and a wide connector to the positive side, and attach to the subwoofer  
+- On the wire to the subwoofer, attach a narrow female spade connector to the negative side and a wide connector to the positive side, and attach to the subwoofer. 
 - In the left and right enclosures, perform the following tasks:
   - Attach the short wire from the crossover to the tweeters.
-  - Cut the long wire to 12" and strip insulation.
+  - Cut the long wire to 12" and strip the insulation.
   - Using double-stick tape, fasten the crossover units to the bottom, nearest the subwoofer enclosure.
   - Prepare a 6" jumper, stripped on one end and wide female spade connectors on the other and attach it to the midrange speaker.
   - Attach the speaker wire, the crossover network and the midrange speaker together with a crimp.
-- Seal the holes where the wires go into the enclosures with polyurethane glue.
 
 Leave three speakers resting in front of their enclosures for a test.
 
@@ -352,6 +352,7 @@ To finish installing the speakers, perform the following tasks:
 - Put polyester fiber in the subwoofer enclosure from both sides of the passive radiator openings.
 - Use 4 black 3/4" screws, with large heads, to fasten both the subwoofer grill and the subwoofer.
 - Attach the two passive radiators on the front and back with 1/2" screws. 
+- Seal the holes where the wires go into the enclosures with polyurethane glue.
 
 ### Install pushbuttons 
 Following are the GPIO pins on a Raspberry Pi with pin 1 being on the left side and inside of the Pi:
