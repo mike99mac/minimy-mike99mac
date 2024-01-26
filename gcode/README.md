@@ -61,14 +61,14 @@ Obtain the follow parts and components:
 ### Plywood panels
 Following are the 1/2" Baltic birch plywood pieces. The nominal thickness is 0.480". 
 
-| Description                | Qty | Size |
-| -----------                | --- | ---- |
-| Main panel                 | 1   | 19.875" x 32.295" |
-| Side panels                | 2   | 6.005" x 11.875" |
-| Internal vertical dividers | 2   | 6.375" x 6.875" **TODO** verify numbers |
+| Description                 | Qty | Size |
+| -----------                 | --- | ---- |
+| Main panel                  | 1   | 19.875" x 32.295" |
+| Side panels                 | 2   | 6.005" x 11.875" |
+| Internal enclosure dividers | 2   | 6.375" x 6.875" **TODO** verify numbers |
 
 The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of 30".
-Then it is cut into four smaller panels: the front, the bottom, the lower back and the internal horizontal divider.
+Later it is cut into four panels: the front, the bottom, the lower back and the internal horizontal divider.
 
 ### Hardwood pieces 
 All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One other piece of wood is needed.
@@ -80,7 +80,7 @@ All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One 
 | Front and back L moldings | 4   | ~20" (each will be cut to size later) |
 | Raspberry Pi platform     | 1   | 2.75" x 3.625" |
 
-One other piece call a platform is used to elevate the Raspberry Pi. The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports. Usually 1-1/4" thick is enough, but not always - measure the big power supply.
+One other piece is a *platform* used to elevate the Raspberry Pi. The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports. Usually 1-1/4" thick is enough, but not always - measure the big power supply you have.
 
 Following is a diagram of the side moldings (*Double dado*) and the L-shaped moldings
 
@@ -123,7 +123,7 @@ Following are the components needed, the cost (in Jan 2024) and the source where
 
 80+10+45+7+26+20+50+53+14+9+2+12+2+2+6+4+10+6+2+4+20+10=394
 
-A rough estimate of the cost of the components is $394, so adding in wood and expendibles the price tag is around $450-500.
+An estimate of the cost of the components is $394. Adding in wood and expendibles the price tag is around $450-500.
 
 ## Download the G-code
 G-code is to a CNC machine what object code is to a computer. It tells the machine what to do, and the machine (hopefully) does it.  
@@ -140,6 +140,8 @@ The following G-code files in this repo are used on a CNC machine to cut out all
 | faceUpsideDown.nc | 19.875" wide x 32.295" high | Remaining cuts on the top face with panel rotated 180 degrees |
 | leftSide.nc       | 7.386" wide x 11.875" high| Cuts on the assembled left side |
 | righttSide.nc     | 7.386" wide x 11.875" high| Cuts on the assembled right side |
+
+If you don't have a CNC machine, all of the cuts can be done on a table saw with dado blades.
 
 ## Prepare for assembly 
 Final assembly of the carcass can take place when you have:
@@ -194,7 +196,7 @@ To prepare the panels, perform the following tasks:
 
 You should now have 10 pieces of plywood:
 - 4 milled panels to be glued together
-- 2 enclosure dividers to be glued inside carcass
+- 2 enclosure dividers to be glued inside the carcass
 - 2 panels that will be sliding covers
 - 2 sides 
 
@@ -224,7 +226,6 @@ To construct the sides, perform the following tasks:
 - Run the CNC job ``leftSide.nc`` on the left side.
 - Run the CNC job ``rightSide.nc`` on the right side.
 - Sand the sides, especially the inside edges which will not be easily accessible after they are glued to the carcass.
-- Pre-drill and screw in 4 1-1/2" stainless steel screws on each side.
 
 **TODO** get a picture
  
