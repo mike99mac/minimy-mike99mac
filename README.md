@@ -463,6 +463,7 @@ You should hear your words played back to you. If you do not, you must debug the
 At this point your system should have a solid sound and microphone stack running, especially **``mpd``** and **``pulseaudio``**, and all software necessary for the installation of Minimy.
 
 ## Install and configure Minimy
+If you want to install OVOS instead of Minimy, go here: https://github.com/mike99mac/mycroft-tools/ovos
 
 In this section you will perform the following steps:
 - Download and copy Minimy
