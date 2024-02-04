@@ -413,19 +413,20 @@ class SVAMediaPlayerSkill:
                 file_ext = fa[len(fa) - 1]
                 cfg = Config()
                 device_id = cfg.get_cfg_val('Advanced.OutputDeviceName')
+                self.log.debug(f"SVAMediaPlayerSkill.run() device_id = {device_id}")
                 cmd = ''
                 if media_type is None or media_type == '':
                     self.log.warning(f"SVAMediaPlayerSkill.run() invalid media type: {media_type}")
                     self.current_session.media_type = 'mp3'
-                    cmd = "mpg123 %s" % (file_uri,)  
+                    cmd = f"mpg123 {file_uri}"  
                     if device_id is not None:
-                        cmd = "mpg123 -a " + device_id + " " + file_uri
+                        cmd = f"mpg123 -a {device_id} {file_uri}"
                         if file_ext == "wav":
-                            cmd = "aplay " + file_uri
+                            cmd = f"aplay {file_uri}"
                             if device_id is not None and device_id != '':
-                                cmd = "aplay -D" + device_id + " " + file_uri
+                                cmd = "aplay -D {device_id} {file_uri}"
                             self.current_session.media_type = 'wav'
-                    self.log.warning("SVAMediaPlayerSkill.run() derived media type = %s." % (media_type,))
+                    self.log.warning(f"SVAMediaPlayerSkill.run() derived media type = {media_type}")
                 else:                      # media type is known so use it to get cmd line from hal cfg file
                     self.current_session.media_type = media_type
                     media_player_cfg = self.hal.get('play_media', None)
@@ -436,7 +437,7 @@ class SVAMediaPlayerSkill:
                         return 
                     else:
                         cmd = cmd % (file_uri,)
-                self.log.info("cmd = %s" % (cmd,))
+                self.log.info(f"SVAMediaPlayerSkill.run(): cmd = {cmd}")
                 self.current_session.ce = CommandExecutor(cmd)
                 self.wait_for_end_play(media_entry)
             if self.state == 'resumed':

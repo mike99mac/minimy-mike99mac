@@ -393,8 +393,8 @@ class SimpleVoiceAssistant:
                 else:
                     self.log.error(f"SimpleVoiceAssistant.handle_utterance() skill_id: {self.skill_control.skill_id} has no handle_fallback() method!")
         else:
-            self.log.debug(f"SimpleVoiceAssistant.handle_utterance() skill_id = {self.skill_control.skill_id} data = {data}")
             if data.get('skill_id', '') == self.skill_control.skill_id:
+                self.log.debug(f"SimpleVoiceAssistant.handle_utterance() skill_id matches: {self.skill_control.skill_id} data = {data}")
                 subject = ''
                 verb = ''
                 intent_type = 'C'
