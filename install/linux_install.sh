@@ -114,8 +114,12 @@ sudo systemctl enable home-pi-minimy-logs.mount
 sudo systemctl enable home-pi-minimy-tmp.mount 
 
 echo 
-echo "Step 23) copying start, stop and restart scripts"
-cp ../startmycroft ../stopmycroft ../restartmycroft /usr/local/sbin 
+echo "Step 23) copying Minimy scripts to /usr/local/sbin"
+minimyScripts="startmycroft stopmycroft restartmycroft grm cmpcode"
+cd $HOME/minimy-mike99mac
+cp $minimyScripts /usr/local/sbin 
+cd /usr/local/sbin
+sudo chown $USER:$USER $minimyScripts
 
 source venv_ngv/bin/activate
 echo " "

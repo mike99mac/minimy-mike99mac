@@ -1,0 +1,38 @@
+#!/bin/bash
+#
+# cmpcode - compare running and github Minimy Python files 
+#
+# NOTE: it is hard coded for Minimy - needs to be updated for OVOS
+#
+copyCmds=""                                # copy commands 
+gitCode="$HOME/minimy-mike99mac"           # git code
+srcCode="$HOME/minimy"                     # running code
+omit1="framework/services/tts/local/mimic3/*"   # files that never change
+omit2="framework/services/stt/local/CoquiSTT/*" # more
+
+cd /home/pi/minimy
+sourceFiles=`find skills/ bus/ framework/ display/ -name "*.py" ! -path "$omit1" ! -path "$omit2"`
+for nextFile in $sourceFiles; do
+  # echo "$nextFile:"
+  diff $srcCode/$nextFile $gitCode/$nextFile >/dev/null
+  if [ $? != 0 ]; then                     # file has changed
+    if [ ${#copyCmds} = 0 ]; then          # first copy command
+      copyCmds="cp $srcCode/$nextFile $gitCode/$nextFile"
+    else
+      copyCmds="$copyCmds \ncp $srcCode/$nextFile $gitCode/$nextFile"
+    fi
+  fi
+done
+
+if [ ${#copyCmds} = 0 ]; then              # nothing changed
+  echo "No code changes found in $srcCode"
+else                                       # at least one change
+  tmpFile=`mktemp`
+  echo "#!/bin/bash" > $tmpFile           # restart file
+  echo -e "$copyCmds" >> $tmpFile         # add copy commands with newlines
+  echo "Copy commands in: $tmpFile"
+  echo
+  sudo mv $tmpFile /usr/local/sbin/copycode  # script to copy modified files
+  cat $copycode
+fi 
+
