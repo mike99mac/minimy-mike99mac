@@ -40,7 +40,7 @@ class MpcClient(SimpleVoiceAssistant):
   def __init__(self, music_dir: Path):
     self.log = logging.getLogger(__name__)
     self.music_dir = music_dir
-    self.max_queued = 50                                         
+    self.max_queued = 20                                         
     self.station_name = "unknown"                   
     self.station_genre = "unknown"
     self.station_country = "unknown"
