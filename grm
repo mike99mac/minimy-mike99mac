@@ -1,0 +1,6 @@
+#!/bin/bash
+#
+# grm - short command to search through Minimy python files 
+#
+cd $HOME/minimy
+grep -n "$@" *py */*py */*/*py */*/*/*py 2>/dev/null | sed "s:^:$HOME/minimy/:g"
