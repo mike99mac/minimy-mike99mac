@@ -1,0 +1,15 @@
+[Unit]
+Description=Minimy voice assistant
+After=pulseaudio.service
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/
+ExecStart=/usr/local/sbin/startminimy
+ExecStop=/usr/local/sbin/stopminimy
+Type=forking
+Restart=no
+Environment="XDG_RUNTIME_DIR=/run/user/1000"
+
+[Install]
+WantedBy=multi-user.target

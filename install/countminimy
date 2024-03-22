@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+# countminimy - count the Lines of Code in Minimy Python files 
+#
+# main() 
+rootDir="$HOME/minimy-mike99mac"
+if [ ! -d $rootDir ]; then
+  echo "ERROR: no directory $rootDir"
+  echo "did you: git clone https://github.com/mike99mac/minimy-mike99mac"
+  exit 1
+fi
+cd $rootDir
+files=`ls bus/*py framework/*py framework/*/*py framework/*/*/*py framework/*/*/*/*py skills/*py skills/*py skills/*/*py | xargs`
+loc=`wc -l $files | tail -1 | awk '{print $1}'`
+echo "Lines of code in Minimy: $loc"

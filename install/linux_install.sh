@@ -107,16 +107,18 @@ pip install importlib-resources
 deactivate
 
 echo
-echo "Step 22) copying and enabling systemd .mount files to create in-memory file systems"
+echo "Step 22) copying and enabling systemd .mount and .service files" 
 sudo cp install/home-pi-minimy-logs.mount /etc/systemd/system 
-sudo cp install/home-pi-minimy-tmp.mount /etc/systemd/system 
 sudo systemctl enable home-pi-minimy-logs.mount 
+sudo cp install/home-pi-minimy-tmp.mount /etc/systemd/system 
 sudo systemctl enable home-pi-minimy-tmp.mount 
+sudo cp install/minimy.service /etc/systemd/system 
+sudo systemctl enable minimy
 
 echo 
 echo "Step 23) copying Minimy scripts to /usr/local/sbin"
-minimyScripts="startmycroft stopmycroft restartmycroft grm cmpcode"
-cd $HOME/minimy-mike99mac
+minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy"
+cd $HOME/minimy-mike99mac/install
 cp $minimyScripts /usr/local/sbin 
 cd /usr/local/sbin
 sudo chown $USER:$USER $minimyScripts

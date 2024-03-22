@@ -8,6 +8,13 @@ It only knows English - there is little internationalization code.
 
 The version numbers are simply *yy.mm.dd*.
 
+### Version 24.03.22
+- Added scripts ``startminimy stopminimy restartminimy grm cmpcode countminimy`` which get copied to ``/usr/local/sbin``
+- Added a Google API key file 
+- Added a mycroft.service file - linux_install.sh copies and enables it
+- Updated install/linux_install.sh
+- General cleanup 
+
 ### Version 23.07.13
 - Fix some bugs in playlists 
 - Check if TTS file exists before removing it
