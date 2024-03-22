@@ -426,7 +426,7 @@ class SVAMediaPlayerSkill:
                             if device_id is not None and device_id != '':
                                 cmd = "aplay -D {device_id} {file_uri}"
                             self.current_session.media_type = 'wav'
-                    self.log.warning(f"SVAMediaPlayerSkill.run() derived media type = {media_type}")
+                    self.log.warning(f"SVAMediaPlayerSkill.run() derived media type = {media_type} device_id = {device_id}")
                 else:                      # media type is known so use it to get cmd line from hal cfg file
                     self.current_session.media_type = media_type
                     media_player_cfg = self.hal.get('play_media', None)
