@@ -16,5 +16,6 @@
 1. Add a minimy.service file so it can be started by systemd.
 1. Write a regression test.
 1. Write a dictionary skill using https://pypi.org/project/PyDictionary/
+1. Remove all use of mpg123 and aplay and send all audio to mpc 
 
 
