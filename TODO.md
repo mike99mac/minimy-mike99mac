@@ -17,5 +17,6 @@
 1. Write a regression test.
 1. Write a dictionary skill using https://pypi.org/project/PyDictionary/
 1. Remove all use of mpg123 and aplay and send all audio to mpc 
+1. Add ``Ask wikipedia {question}`` 
 
 
