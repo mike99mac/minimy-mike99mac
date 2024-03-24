@@ -85,7 +85,9 @@ If you have a Linux box with an SD card port, you can use **``rpi-imager``** to 
 
     **``$ rpi-imager``**
     
-    You should see a window as shown in the following figure. **TODO**: add a screenshot
+    You should see a window as shown in the following figure. 
+
+![](rpi-imager.jpg)
 
 - To flash a Linux image to the card, perform the following steps:
 
@@ -719,8 +721,6 @@ If you want to add buttons to your enclosure, attach them to the following GPIO 
     
 Here is a source of purchasing pushbuttons: https://www.amazon.com/dp/B09C8C53DM  
 
-**TODO:** On the other boombox model, the computer is a RasPi 400 which is *offboard*, and the GPIO pins are not easily accessible. That will need new code to use the arrow keys on the RasPi 400 for the same function.
-
 # Debugging
 Maybe everything will work perfectly the first time, and you won't have to debug (but we know how that goes :))
 
@@ -790,8 +790,6 @@ In the samples that follow, (words) in parenthesis are the actual words spoken, 
 
 ### Connectivity skill
 
-**TODO:** Finish writing this skill.
-
 Following is the Connectivity skill vocabulary.
  
 Following are examples of Connectivity skill requests:
@@ -824,8 +822,6 @@ Following are examples of Example1 skill requests:
  
 ### Help skill
 
-**TODO:** Finish the code for this skill!
-
 Following is the Help skill vocabulary.
 
 Following are examples of Help skill requests:
@@ -838,7 +834,7 @@ The MPC skill can:
 - Play Internet radio stations
 - Play Internet music
 - Play NPR news
-- Create, delete, manage and play playlists (**TODO:** finish this code)
+- Create, delete, manage and play playlists 
 - Perform basic player operations 
 
 Following are the vocabularies for the MPC skill:
@@ -945,19 +941,7 @@ Following are examples of Weather skill requests:
 
 The Wiki skill is a fallback skill. As such it does not have a vocabulary
 
-**TODO:** Add ``Ask wikipedia {question}``
-
 ## More documentation
 
 There is more documentation, by the original author Ken Smith, here: https://github.com/ken-mycroft/minimy/tree/main/doc
 
-## Afterthought
-
-One of my mantras is *Less is more*. I like minimy because it is a **Mini-My**croft. Here is a rough estimate of the lines of Python code in the three projects as of May 2023:
-```
-            Repo         Loc           files
-    mycroft-core       38074             229
-       ovos-core       18067             238
-minimy-mike99mac        9900              79
-```
-So OVOS is half the size of Mycroft, and Minimy is about half again smaller.
