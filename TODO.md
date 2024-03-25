@@ -12,8 +12,7 @@
 1. Finish the help skill.
 1. Finish the connectivity skill.
 1. Ask user "Do you want me to search Wikipedia for that?" before going to fallback.
-1. Add vocabulary: "Ask wikipedia {question}"
-1. Add a minimy.service file so it can be started by systemd.
+1. ~~Add a minimy.service file so it can be started by systemd.~~
 1. Write a regression test.
 1. Write a dictionary skill using https://pypi.org/project/PyDictionary/
 1. Remove all use of mpg123 and aplay and send all audio to mpc 
