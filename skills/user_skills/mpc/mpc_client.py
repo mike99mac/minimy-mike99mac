@@ -788,7 +788,7 @@ class MpcClient(SimpleVoiceAssistant):
           self.station_ads = next_line[4].strip()
           self.station_url = next_line[5].strip()
         elif num_hits == self.max_queued:  # that's enough URLs
-          self.log.debug(f"MpcClient.get_matching_stations() reached max_queued: {max_queued}")  
+          self.log.debug(f"MpcClient.get_matching_stations() reached max_queued: {self.max_queued}")  
           break
       index += 1  
     if num_hits == 0:                      # music not found

@@ -43,6 +43,7 @@ class SVAMediaSkill(SimpleVoiceAssistant):
         self.register_intent('O', 'pause', 'music', self.handle_pause)
         self.register_intent('O', 'resume', 'music', self.handle_resume)
         self.register_intent('O', 'stop', 'music', self.handle_stop)
+        self.register_intent('O', 'create', 'playlist', self.create_playlist)
 
     def handle_oob_detected(self, msg):
         self.log.debug(f"SVAMediaSkill.handle_oob_detected() OOB detected - msg: {msg}")
@@ -112,7 +113,7 @@ class SVAMediaSkill(SimpleVoiceAssistant):
         data['subtype'] = 'media_player_command'
         self.send_message('media_player_service', data)
 
-    def handle_message(self,msg):
+    def handle_message(self, msg):
         self.log.debug(f"SVAMediaSkill.handle_message(): active media is {self.active_media_skill}")
         #print("SVA-Media:handle_message() %s" % (msg.data,))
         if msg.data['subtype'] == 'media_register_request':
@@ -124,7 +125,7 @@ class SVAMediaSkill(SimpleVoiceAssistant):
         elif msg.data['subtype'] == 'media_command':
             return self.handle_command(msg)
       # 'stop' coming in as a subtype - but changing to the next line caused a traceback  -MM
-      # elif msg.data['subtype'] == 'oob_detect' or msg.data['subtype'] == 'stop':
+      #  elif msg.data['subtype'] == 'oob_detect' or msg.data['subtype'] == 'stop':
         elif msg.data['subtype'] == 'oob_detect':
             return self.handle_oob_detected(msg)
         elif msg.data['from_skill_id'] == 'media_player_service' and msg.data['subtype'] == 'media_player_command_response' and msg.data['response'] == 'session_ended' and self.active_media_skill == msg.data['skill_id']:
@@ -171,6 +172,14 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     def stop(self, message):
         self.log.info("SVAMediaSkill.stop() - pausing music")
         self.mpc_cmd("pause")      
+
+    def create_playlist(self, msg):
+        """
+        Create a playlist 
+        """
+        self.log.info("SVAMediaSkill.create_playlist() - what to do?")
+        # get_media_confidence(self, msg)
+   
 
 if __name__ == '__main__':
     sva_ms = SVAMediaSkill()

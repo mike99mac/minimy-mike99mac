@@ -107,7 +107,7 @@ class MpcSkill(MediaSkill):
       self.log.debug("MpcSkill.media_play() speak results of playlist request")
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info) 
       return None
-    elif self.music_info.match_type != "playlist": # playlists are already queued up
+    elif self.music_info.match_type != "playlist" and self.music_info.match_type != "internet":
       self.mpc_client.mpc_cmd("clear")     # stop any media that might be playing
       for next_url in self.music_info.tracks_or_urls:
         self.log.debug(f"MpcSkill.media_play() adding URL to MPC queue: {next_url}")
