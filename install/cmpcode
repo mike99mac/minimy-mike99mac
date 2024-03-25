@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# cmpcode - compare running and github Minimy Python files 
+# cmpcode - compare code in $HOME/minimy and $HOME/minimy-mike99mac 
 #
 # NOTE: it is hard coded for Minimy - needs to be updated for OVOS
 #
@@ -11,9 +11,10 @@ omit1="framework/services/tts/local/mimic3/*"   # files that never change
 omit2="framework/services/stt/local/CoquiSTT/*" # more
 
 cd /home/pi/minimy
-sourceFiles=`find skills/ bus/ framework/ display/ -name "*.py" ! -path "$omit1" ! -path "$omit2"`
+# sourceFiles=`find skills/ bus/ framework/ display/ -name "*.py" ! -path "$omit1" ! -path "$omit2"`
+sourceFiles=`ls bus/*py framework/*py framework/*/*py framework/*/*/*py framework/*/*/*/*py skills/*py skills/*/*py skills/*/*/*py | xargs`
 for nextFile in $sourceFiles; do
-  # echo "$nextFile:"
+  echo "comparing $nextFile ..."
   diff $srcCode/$nextFile $gitCode/$nextFile >/dev/null
   if [ $? != 0 ]; then                     # file has changed
     if [ ${#copyCmds} = 0 ]; then          # first copy command
@@ -27,12 +28,15 @@ done
 if [ ${#copyCmds} = 0 ]; then              # nothing changed
   echo "No code changes found in $srcCode"
 else                                       # at least one change
+  copycode="/usr/local/sbin/copycode"
   tmpFile=`mktemp`
-  echo "#!/bin/bash" > $tmpFile           # restart file
-  echo -e "$copyCmds" >> $tmpFile         # add copy commands with newlines
-  echo "Copy commands in: $tmpFile"
+  echo "#!/bin/bash" > $tmpFile            # restart file
+  echo -e "$copyCmds" >> $tmpFile          # add copy commands with newlines
+  sudo mv $tmpFile $copycode               # script to copy modified files
+  sudo chown $USER.$USER $copycode     
+  sudo chmod 755 $copycode      
+  echo "Copy commands in: $copycode"
   echo
-  sudo mv $tmpFile /usr/local/sbin/copycode  # script to copy modified files
   cat $copycode
 fi 
 

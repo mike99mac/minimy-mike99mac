@@ -10,6 +10,6 @@ if [ ! -d $rootDir ]; then
   exit 1
 fi
 cd $rootDir
-files=`ls bus/*py framework/*py framework/*/*py framework/*/*/*py framework/*/*/*/*py skills/*py skills/*py skills/*/*py | xargs`
+files=`ls bus/*py framework/*py framework/*/*py framework/*/*/*py framework/*/*/*/*py skills/*py skills/*/*py skills/*/*/*py | xargs`
 loc=`wc -l $files | tail -1 | awk '{print $1}'`
 echo "Lines of code in Minimy: $loc"
