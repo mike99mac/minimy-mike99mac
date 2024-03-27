@@ -35,13 +35,10 @@ The overall steps to build a *Smart Boombox* are:
 - Flash Linux to a memory device
 - Connect the hardware
 - Install and configure Linux
-- Install and use mycroft-tools
+- Install and use ovos-tools
 - Test microphone and speakers
 - Install and configure Minimy
 - Start Minimy and use it!
-
-This document  is based on *The smart boombox cookbook* which has more details on building the box and a parts list. 
-See: https://github.com/mike99mac/mycroft-tools/blob/master/smartBoombox.pdf 
 
 ## Acquire the hardware
 The recommended hardware is a Raspberry Pi (RasPi) 4B with 4 or 8 GB of memory.  Yes, they're still hard to get, but not impossible. 
@@ -268,11 +265,11 @@ SSH as the user ``pi``, if you want to continue from another system. You can use
 **IMPORTANT**: Do not run as ``root``. Doing so will almost certainly screw up your system. 
 Users other than ``pi`` ideally will work as the environment variable ``$HOME`` is used in scripts, however, this has never been tested.
 
-## Install and use mycroft-tools
+## Install and use ovos-tools
 
-The **``mycroft-tools``** repo has been developed to help with the installation, configuration, use and testing of the free and open personal voice assistants.
+The **``ovos-tools``** repo has been developed to help with the installation, configuration, use and testing of the free and open personal voice assistants.
 
-To install **``mycroft-tools``** perform the following steps:
+To install **``ovos-tools``** perform the following steps:
   
 - Install **``git``** and **``vim``** as they are needed shortly.
 
@@ -296,19 +293,19 @@ To install **``mycroft-tools``** perform the following steps:
     ...
     ```
 
-- Clone the **``mycroft-tools``** package in the ``pi`` home directory with the following commands:
+- Clone the **``ovos-tools``** package in the ``pi`` home directory with the following commands:
 
-    **``$ git clone https://github.com/mike99mac/mycroft-tools.git``**
+    **``$ git clone https://github.com/mike99mac/ovos-tools``**
     
     ```
-    Cloning into 'mycroft-tools'...
+    Cloning into 'ovos-tools'...
     ...
     Resolving deltas: 100% (366/366), done.
     ```
     
 - Change to the newly installed directory and run the setup script. It will copy scripts to the directory ``/usr/local/sbin`` which is in the default ``PATH``.
 
-    **``$ cd mycroft-tools``**
+    **``$ cd ovos-tools``**
     
     **``$ sudo ./setup.sh``**
     
@@ -317,11 +314,11 @@ To install **``mycroft-tools``** perform the following steps:
     Success!  There are new scripts in your /usr/local/sbin/ directory
     ```
     
-    The **``mycroft-tools``** repo is now installed.
+    The **``ovos-tools``** repo is now installed.
     
 ### Further customize 
 
-The script **``install1``**, in the **``mycroft-tools``** package you just installed, runs many commands and thus saves typing, time and possible errors.
+The script **``install1``**, in the **``ovos-tools``** package you just installed, runs many commands and thus saves typing, time and possible errors.
 
 It performs the following tasks:
 
@@ -445,7 +442,7 @@ You should see three changes:
 ## Test microphone and speakers
 
 It is important to know your microphone and speakers are working. 
-There are scripts in *mycroft-tools* named **``testrecord``** and **``testplay``**. 
+There are scripts in *ovos-tools* named **``testrecord``** and **``testplay``**. 
 They are wrappers around the **``arecord``** and **``aplay``** commands designed to make it easier to test recording audio to a file and playing it back on the speaker(s).
 
 - To test your microphone and speakers, issue the following command then speak for up to five seconds. 
