@@ -345,7 +345,13 @@ To run **``intall1``**, perform the following steps:
 
     **``$ cd``**
     
-    **``$ install1 2>&1 | tee install1.out``**
+    **``$ install1``**
+
+    ```
+    ...
+    Successfully installed co-reqs for OVOS in 4:24
+    Log file of all operations: /home/pi/24-03-27-10:33:38-install1.out
+    ```
     
     ``...``
     

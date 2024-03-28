@@ -229,6 +229,7 @@ export PYTHONPATH="$baseDir:$baseDir/venv_ngv/lib/python3.10/site-packages"
 export SVA_BASE_DIR="$baseDir"
 
 echo "Starting Minimy..."
+rmlogs -y                                  # remove old log files
 mountUmountDirs                            # unmount then remount logs and tmp dirs as tmpfs's
 startSystem
 loadSystemSkills 
@@ -245,3 +246,5 @@ python3 framework/services/input/mic.py &
 
 echo "Started Minimy ..."
 
+# tried to convice systemctl minimy is running, but this didn't work
+# sleep infinity

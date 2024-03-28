@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+# minimynver - get the Minimy version 
+#
+baseDir="$HOME/minimy"
+if [ ! -d $baseDir ]; then
+  echo "ERROR: directory $baseDir not found - is Minimy installed?"
+  exit 1
+fi
+cd $baseDir
+if [ ! -f version ]; then                  # version file not found
+  echo "Unknown"
+  exit 2
+fi
+cat $HOME/minimy/version
+
