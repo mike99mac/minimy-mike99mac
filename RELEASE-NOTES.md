@@ -8,6 +8,9 @@ It only knows English - there is little internationalization code.
 
 The version numbers are simply *yy.mm.dd*.
 
+### Version 24.03.28
+- More music playing function working!  Here's a video: https://www.youtube.com/watch?v=a-GOJN0nqN8
+
 ### Version 24.03.22
 - Added scripts ``startminimy stopminimy restartminimy grm cmpcode countminimy`` which get copied to ``/usr/local/sbin``
 - Added a Google API key file 
