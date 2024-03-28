@@ -117,7 +117,7 @@ sudo systemctl enable minimy
 
 echo 
 echo "Step 23) copying Minimy scripts to /usr/local/sbin"
-minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy"
+minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver"
 cd $HOME/minimy-mike99mac/install
 cp $minimyScripts /usr/local/sbin 
 cd /usr/local/sbin
