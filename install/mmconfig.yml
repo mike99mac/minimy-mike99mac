@@ -1,0 +1,24 @@
+- Advanced:
+    ButtonsType: '3'
+    CrappyAEC: n
+    InputDeviceId: '0'
+    InputLevelControlName: Mic
+    LogLevel: d
+    NLP:
+      UseRemote: n
+    OutputDeviceName: ''
+    OutputLevelControlName: Speaker
+    Platform: u
+    STT:
+      UseRemote: y
+    TTS:
+      Local: p
+      Remote: p
+      UseRemote: n
+  Basic:
+    AWSId: ''
+    AWSKey: ''
+    BaseDir: /home/pi/minimy
+    GoogleApiKeyPath: install/my_google_key.json
+    Version: 1.0.4
+    WakeWords: computer
