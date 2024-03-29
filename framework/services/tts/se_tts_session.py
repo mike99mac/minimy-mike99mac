@@ -65,6 +65,9 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
         elif cfg.get_cfg_val('Advanced.TTS.Local') == 'm': # mimic3
             from framework.services.tts.local.mimic3 import local_speak_dialog
             self.which_local_tts = 'm'
+        elif cfg.get_cfg_val('Advanced.TTS.Local') == 'p':
+            from framework.services.tts.local.piper import local_speak_dialog
+            self.which_local_tts = 'p'   
         else:
             from framework.services.tts.local.espeak import local_speak_dialog
         self.local_speak = local_speak_dialog
