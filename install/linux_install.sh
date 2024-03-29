@@ -10,10 +10,10 @@ version=`cat ../version`
 echo "Begin Installation, MiniMy Version $version"
 
 echo; echo "Step 1): installing python3-venv..." 
-sudo apt install python3-venv
+sudo apt-get -qq install python3-venv
 
 echo; echo "Step 2): installing python3-dev..." 
-sudo apt install python3-dev
+sudo apt-get -qq install python3-dev
 python3 -m venv venv_ngv
 source venv_ngv/bin/activate
 
@@ -25,25 +25,25 @@ pip install --upgrade wheel setuptools
 pip install setuptools -U
 
 echo; echo "Step 5): installing python3-dev..." 
-sudo apt install -y python3-dev
+sudo apt-get -qq install -y python3-dev
 
 echo; echo "Step 6): installing build-essential..." 
-sudo apt install -y build-essential
+sudo apt-get -qq install -y build-essential
 
 echo; echo "Step 7): installing portaudio19-dev..." 
-sudo apt install -y portaudio19-dev
+sudo apt-get -qq install -y portaudio19-dev
 
 echo; echo "Step 8): installing mpg123..." 
-sudo apt install -y mpg123
+sudo apt-get -qq install -y mpg123
 
 echo; echo "Step 9): installing ffmpeg..." 
-sudo apt install -y ffmpeg
+sudo apt-get -qq install -y ffmpeg
 
 echo; echo "Step 10): installing curl..." 
-sudo apt install -y curl
+sudo apt-get -qq install -y curl
 
 echo; echo "Step 11): installing wget..." 
-sudo apt install -y wget
+sudo apt-get -qq install -y wget
 
 echo; echo "Step 12): installing yt-dlp..." 
 python3 -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
@@ -118,12 +118,14 @@ sudo systemctl enable minimy
 echo 
 echo "Step 23) copying Minimy scripts to /usr/local/sbin"
 minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver"
-cd $HOME/minimy-mike99mac/install
-cp $minimyScripts /usr/local/sbin 
+cd $HOME/minimy/install
+sudo cp $minimyScripts /usr/local/sbin 
 cd /usr/local/sbin
 sudo chown $USER:$USER $minimyScripts
 
-source venv_ngv/bin/activate
+echo 
+echo "Step 24) starting virtual environment" 
+source $HOME/minimy/venv_ngv/bin/activate
 echo " "
 echo "Install Complete!"
 echo " "
