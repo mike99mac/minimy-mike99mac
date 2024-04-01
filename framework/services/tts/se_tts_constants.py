@@ -1,6 +1,6 @@
 # how long we wait for a responses before we timeout
 REMOTE_TIMEOUT = 7
-LOCAL_TIMEOUT = 10
+LOCAL_TIMEOUT = 15
 
 # these are communicated from the session to the engine via the internal_event_callback
 INTERNAL_EVENT_PAUSED = 'ie_paused'

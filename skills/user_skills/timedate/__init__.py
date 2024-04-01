@@ -24,6 +24,13 @@ class TimeSkill(SimpleVoiceAssistant):
     def handle_time_match(self,msg):
         now = datetime.datetime.now()
         text = now.strftime("%I %M %p")
+        minute = int(text.split(" ")[1])
+        hour = int(text.split(" ")[0])
+        ampm = text.split(" ")[2]
+        if minute > 0 and minute < 10:     # add an "oh" before the minute
+            text = f"{hour} oh {minute} {ampm}"
+        else:                              # hour as integer
+            text = f"{hour} {minute} {ampm}"
         self.speak(text)
 
     def handle_day_match(self,msg):

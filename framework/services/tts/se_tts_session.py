@@ -105,8 +105,8 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
                         'session_id':self.msid,
                         'skill_id':'media_player_service',
                         'from_skill_id':self.skill_id,
-                        'delete_on_complete':'true'
-                        # 'delete_on_complete':'false'
+                        # 'delete_on_complete':'true'
+                        'delete_on_complete':'false'
                        }
                 self.bus.send(MSG_MEDIA, 'media_player_service', info)
                 self.log.debug(f"TTSSession play_file() exit - play state: {self.state} file_name: {file_name}")
@@ -153,10 +153,10 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
                 return self.local_file_name  # maybe this will work?
         if result['service'] == 'remote':
             file_name = self.remote_file_name
-            os.system(f"if [ -f {self.local_file_name}; then rm {self.local_file_name}; fi")
+      #      os.system(f"if [ -f {self.local_file_name}; then rm {self.local_file_name}; fi")
         else:
             file_name = self.local_file_name
-            os.system(f"if [ -f {self.remote_file_name} ]; then rm {self.remote_file_name}; fi")
+      #      os.system(f"if [ -f {self.remote_file_name} ]; then rm {self.remote_file_name}; fi")
         self.log.debug(f"TTSSession.get_remote_tts() result: {result}, chunk: {chunk} file_name: {file_name}")
         return file_name
 
