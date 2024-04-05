@@ -380,7 +380,7 @@ class SimpleVoiceAssistant:
                     self.bus.send(MSG_REGISTER_INTENT, 'intent_service', info)
 
     def handle_utterance(self, message):
-        self.log.debug(f"SimpleVoiceAssistant.handle_utterance() message = {message} skill_control.category = {self.skill_control.category}")
+        self.log.debug(f"SimpleVoiceAssistant.handle_utterance() category = {self.skill_control.category} skill_id = {self.skill_control.skill_id}")
 
         # invokes callback based on verb:subject
         data = message.data
@@ -393,7 +393,10 @@ class SimpleVoiceAssistant:
                 else:
                     self.log.error(f"SimpleVoiceAssistant.handle_utterance() skill_id: {self.skill_control.skill_id} has no handle_fallback() method!")
         else:
-            if data.get('skill_id', '') == self.skill_control.skill_id:
+            # data_skill_id = data.get('skill_id', '')
+            data_skill_id = data.get('skill_id')
+            self.log.debug(f"SimpleVoiceAssistant.handle_utterance() data_skill_id = {data_skill_id}")
+            if data_skill_id == self.skill_control.skill_id:
                 self.log.debug(f"SimpleVoiceAssistant.handle_utterance() skill_id matches: {self.skill_control.skill_id} data = {data}")
                 subject = ''
                 verb = ''
