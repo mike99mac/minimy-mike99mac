@@ -91,7 +91,8 @@ class STTSvc:
         self.wws = get_wake_words()
 
         # hard wire wake words - TODO - fix -MM
-        self.wws = ["computer", "hey boombox"] 
+        # self.wws = ["computer", "hey boombox"] 
+        self.wws = ["computer"] 
         base_dir = os.getenv('SVA_BASE_DIR')
         self.beep_loc = "%s/framework/assets/what.wav" % (base_dir,)
         cfg = Config()
@@ -105,8 +106,7 @@ class STTSvc:
             print(f"STTSvc.__init__() use_remote_stt: {self.use_remote_stt} wws: {self.wws}")
 
     def send_message(self, target, subtype):
-        # send a standard skill message on the bus.
-        # message must be a dict
+        # send a standard skill message on the bus. message must be a dict
         if not self.no_bus:
             info = {
                     'from_skill_id': self.skill_id,
@@ -118,11 +118,11 @@ class STTSvc:
             self.bus.send(MSG_SKILL, target, info)
 
     def send_mute(self):
-        self.log.debug("STT: sending mute!")
+        self.log.debug("STT.send_mute(): sending mute!")
         self.send_message('volume_skill', 'mute_volume')
 
     def send_unmute(self):
-        self.log.debug("STT: sending unmute!")
+        self.log.debug("STT.send_unmute(): sending unmute!")
         self.send_message('volume_skill', 'unmute_volume')
 
     def process_stt_result(self, utt):

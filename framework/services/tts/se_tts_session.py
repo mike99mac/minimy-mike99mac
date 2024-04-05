@@ -59,13 +59,13 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
 
         # which local tts engine to use. 
         self.which_local_tts = 'e'
-        if cfg.get_cfg_val('Advanced.TTS.Local') == 'c': # coqui
+        if cfg.get_cfg_val('Advanced.TTS.Local') == 'c':   # coqui
             from framework.services.tts.local.coqui_tts import local_speak_dialog
             self.which_local_tts = 'c'
         elif cfg.get_cfg_val('Advanced.TTS.Local') == 'm': # mimic3
             from framework.services.tts.local.mimic3 import local_speak_dialog
             self.which_local_tts = 'm'
-        elif cfg.get_cfg_val('Advanced.TTS.Local') == 'p':
+        elif cfg.get_cfg_val('Advanced.TTS.Local') == 'p': # piper
             from framework.services.tts.local.piper import local_speak_dialog
             self.which_local_tts = 'p'   
         else:
