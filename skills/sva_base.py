@@ -5,16 +5,7 @@ from bus.MsgBusClient import MsgBusClient
 from framework.util.utils import LOG, Config
 from threading import Event, Thread
 import subprocess
-
-from framework.message_types import (
-        MSG_UTTERANCE, 
-        MSG_SPEAK, 
-        MSG_REGISTER_INTENT, 
-        MSG_MEDIA,
-        MSG_SYSTEM,
-        MSG_RAW,
-        MSG_SKILL
-        )
+from framework.message_types import (MSG_UTTERANCE, MSG_SPEAK, MSG_REGISTER_INTENT, MSG_MEDIA, MSG_SYSTEM, MSG_RAW, MSG_SKILL)
 
 class SimpleVoiceAssistant:
     def __init__(self, msg_handler=None, skill_id=None, skill_category=None, bus=None, timeout=5):
@@ -393,7 +384,6 @@ class SimpleVoiceAssistant:
                 else:
                     self.log.error(f"SimpleVoiceAssistant.handle_utterance() skill_id: {self.skill_control.skill_id} has no handle_fallback() method!")
         else:
-            # data_skill_id = data.get('skill_id', '')
             data_skill_id = data.get('skill_id')
             self.log.debug(f"SimpleVoiceAssistant.handle_utterance() data_skill_id = {data_skill_id}")
             if data_skill_id == self.skill_control.skill_id:

@@ -30,16 +30,6 @@ MSG_SPEAK = 'speak'
 MSG_REGISTER_INTENT = 'register_intent'
 
 # someday this could be used for validation
-MSG_TYPES = [
-        MSG_CONNECTED,
-        MSG_SKILL,
-        MSG_UTTERANCE,
-        MSG_MEDIA,
-        MSG_RAW,
-        MSG_SYSTEM,
-        MSG_STOP,
-        MSG_SPEAK,
-        MSG_REGISTER_INTENT
-        ]
+MSG_TYPES = [MSG_CONNECTED, MSG_SKILL, MSG_UTTERANCE, MSG_MEDIA, MSG_RAW, MSG_SYSTEM, MSG_STOP, MSG_SPEAK, MSG_REGISTER_INTENT]
 
 

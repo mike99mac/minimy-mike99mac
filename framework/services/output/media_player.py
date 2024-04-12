@@ -113,7 +113,7 @@ class SVAMediaPlayerSkill:
         file_uri = message.data['file_uri']
         play_session_id = message.data['session_id']
         media_type = message.data.get('media_type', None)
-        self.log.info(f"SVAMediaPlayerSkill.play_file(): MediaType: {media_type} PlaySID: {play_session_id} CurrentSID: {self.current_session.session_id} file_uri: {file_uri}")
+        self.log.info(f"SVAMediaPlayerSkill.play_file(): media_type: {media_type} play_session_id: {play_session_id} current.session_id: {self.current_session.session_id} file_uri: {file_uri}")
         if play_session_id == self.current_session.session_id:
             media_entry = {
                            'file_uri':file_uri,

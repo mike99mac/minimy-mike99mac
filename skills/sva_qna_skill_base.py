@@ -18,7 +18,7 @@ class QuestionAnswerSkill(SimpleVoiceAssistant):
         self.bus.send(MSG_SKILL, 'fallback_skill', info)
 
     def handle_message(self,msg):
-        #print("Q&A handle_message() %s" % (msg.data,))
+        print(f"Q&A handle_message() {msg.data}")
         skill_data = {'confidence':0, 'page_id':'', 'correlator':0}
         if msg.data['subtype'] == 'qna_get_confidence':
             try:

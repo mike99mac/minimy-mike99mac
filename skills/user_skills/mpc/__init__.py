@@ -7,7 +7,7 @@ from music_info import Music_info
 import os, requests, time
 from skills.sva_media_skill_base import MediaSkill
 from threading import Event
-import subprocess
+# import subprocess
 
 class MpcSkill(MediaSkill):  
   """
