@@ -148,7 +148,7 @@ class STTSvc:
                         handle_utt(wake_word, cmd, self.tmp_file_path)
                     else:
                         if self.bark:
-                            self.log.info("Too short --->%s" % (cmd,))
+                            self.log.info(f"STT.process_stt_result() cmd too short: {cmd}")
                             print("Too short --->%s" % (cmd,))
                 else:                      # ww not found and previous utt not ww => raw statement
                     handle_utt('', utt, self.tmp_file_path)
@@ -172,7 +172,7 @@ class STTSvc:
                         handle_utt(wake_word, cmd, self.tmp_file_path)
                     else:
                         if self.bark:
-                            self.log.info("Too short --->%s" % (cmd,))
+                            self.log.info(f"STT.process_stt_result() cmd too short: {cmd}")
                             print("Too short --->%s" % (cmd,))
                     self.previous_utt_was_ww = False
             self.previous_utterance = utt
@@ -262,7 +262,7 @@ class STTSvc:
 
                 # if we have both responses we create a new cache entry 
                 if self.goog_return_dict and self.local_return_dict:
-                    self.log.error("STT new cache entry. local=%s, remote=%s" % (self.local_return_dict['text'], self.goog_return_dict['text']))
+                    self.log.error("STT.run() new cache entry: local: %s, remote=%s" % (self.local_return_dict['text'], self.goog_return_dict['text']))
                     self.local2remote[ self.local_return_dict['text'] ] = self.goog_return_dict['text']
             time.sleep(0.025)
 

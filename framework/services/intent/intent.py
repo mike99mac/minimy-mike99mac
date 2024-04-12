@@ -4,12 +4,7 @@ from bus.MsgBusClient import MsgBusClient
 from framework.util.utils import LOG, Config, get_wake_words, aplay, normalize_sentence, remove_pleasantries
 from framework.services.intent.nlp.shallow_parse.nlu import SentenceInfo
 from framework.services.intent.nlp.shallow_parse.shallow_utils import scrub_sentence, remove_articles
-from framework.message_types import (
-        MSG_UTTERANCE, 
-        MSG_MEDIA, 
-        MSG_RAW, 
-        MSG_SYSTEM
-        )
+from framework.message_types import (MSG_UTTERANCE, MSG_MEDIA, MSG_RAW, MSG_SYSTEM)
 
 class UttProc:
     """
@@ -126,13 +121,13 @@ class UttProc:
         return resp
 
     def send_utt(self, utt):
-        self.log.debug("UttProc:send_utt()")  
         # sends an utterance to a target and handles edge cases
         target = utt.get('skill_id','*')
         if target == '':
             target = '*'
         if utt == 'stop':
             target = 'system_skill'
+        self.log.debug(f"UttProc:send_utt() sending MSG_UTTERANCE  target = {target}")      
         self.bus.send(MSG_UTTERANCE, target, {'utt': utt,'subtype':'utt'})
 
     def send_media(self, info):
@@ -154,7 +149,7 @@ class UttProc:
         self.bus.send(MSG_SYSTEM, 'system_skill', info)
 
     def get_question_intent_match(self, info):
-        self.log.debug("UttProc:get_question_intent_match()")
+        self.log.debug(f"UttProc:get_question_intent_match(): info: {info}")
         aplay(self.earcon_filename)  # should be configurable
 
         # see if a quation matches an intent.
@@ -178,7 +173,6 @@ class UttProc:
         intent_type = 'C'
         if info['sentence_type'] == 'I':
             self.log.warning(f"Intent trying to match an informational statement which it is not designed to do! {info}")
-          # info['sentence_type'] == 'C'  -MM
             info['sentence_type'] = 'C'
 
         subject = remove_articles(info['subject'])
@@ -201,11 +195,6 @@ class UttProc:
         subject = data['subject'].replace(":", ";") # convert colons to semicolons
         verb = data['verb']
         key = data['intent_type'] + ':' + subject.lower() + ':' + verb
-        
-        # try adding to recognized_verbs - it is not getting set -MM
-        # if verb not in self.recognized_verbs:
-        #   self.recognized_verbs.append(data['verb'])
-        # end -MM  
 
         if key in self.intents:
             self.log.warning(f"UttProc:handle_register_intent() Intent clash! key={key} skill_id=%{data['skill_id']}")
