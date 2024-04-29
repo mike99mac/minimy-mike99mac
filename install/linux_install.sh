@@ -6,7 +6,7 @@
 #
 echo
 date
-version=`cat ../version`
+version=`cat version`
 echo "Begin Installation, MiniMy Version $version"
 
 echo; echo "Step 1): installing python3-venv..." 
