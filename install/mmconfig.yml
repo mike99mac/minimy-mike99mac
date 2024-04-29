@@ -12,7 +12,7 @@
     STT:
       UseRemote: y
     TTS:
-      Local: p
+      Local: m
       Remote: p
       UseRemote: n
   Basic:
