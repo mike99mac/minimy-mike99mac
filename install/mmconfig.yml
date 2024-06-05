@@ -10,7 +10,7 @@
     OutputLevelControlName: Speaker
     Platform: u
     STT:
-      UseRemote: y
+      UseRemote: n
     TTS:
       Local: m
       Remote: p

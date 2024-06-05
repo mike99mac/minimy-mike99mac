@@ -9,6 +9,7 @@ date
 version=`cat version`
 echo "Begin Installation, MiniMy Version $version"
 
+cd $HOME/minimy
 echo; echo "Step 1): installing python3-venv..." 
 sudo apt-get -qq install python3-venv
 
@@ -58,17 +59,20 @@ pip install youtube-search
 echo; echo "Step 15): installing pyee..." 
 pip install pyee 
 
-echo; echo "Step 16): installing RPi.GPIO..." 
+echo; echo "Step 16): installing faster-whisper..." 
+pip install faster-whisper
+
+echo; echo "Step 17): installing RPi.GPIO..." 
 pip install RPi.GPIO
 
-echo; echo "Step 17): installing keyboard..." 
+echo; echo "Step 18): installing keyboard..." 
 pip install keyboard 
 # PyDictionary seems to pull in 'futures' which causes problems...
 # echo; echo "installing ..." 
 # pip install PyDictionary 
 deactivate
 
-echo; echo "Step 18): installing Internet music tools ..."
+echo; echo "Step 19): installing Internet music tools ..."
 pip install youtube-search-python
 sudo cp install/ytplay /usr/local/sbin
 sudo ln -s /usr/local/sbin/ytplay /usr/local/sbin/ytadd
@@ -77,15 +81,15 @@ sudo ln -s /usr/local/sbin/ytplay /usr/local/sbin/ytadd
 #sudo chmod a+rx /usr/local/bin/yotube-dl
 
 echo
-echo "Step 19) installing Local NLP..."
-cd framework/services/intent/nlp/local
+echo "Step 20) installing Local NLP..."
+cd $HOME/minimy/framework/services/intent/nlp/local
 tar xzfv cmu_link-4.1b.tar.gz
 cd link-4.1b
 make
 cd ../../../../../..
 
 echo
-echo "Step 20) installing Local STT..."
+echo "Step 21) installing Local STT..."
 cd framework/services/stt/local/CoquiSTT/ds_model
 wget https://github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/huge-vocabulary.scorer
 wget https://github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/alphabet.txt
@@ -95,7 +99,7 @@ bash install_linux.sh
 cd ../../../../..
 
 echo
-echo "Step 21) installing Local TTS..."
+echo "Step 22) installing Local TTS..."
 cd framework/services/tts/local
 wget http://rioespana.com/images/mimic3.tgz
 tar xzfv mimic3.tgz
@@ -107,7 +111,7 @@ pip install importlib-resources
 deactivate
 
 echo
-echo "Step 22) copying and enabling systemd .mount and .service files..." 
+echo "Step 23) copying and enabling systemd .mount and .service files..." 
 sudo cp install/home-pi-minimy-logs.mount /etc/systemd/system 
 sudo systemctl enable home-pi-minimy-logs.mount 
 sudo cp install/home-pi-minimy-tmp.mount /etc/systemd/system 
@@ -116,7 +120,7 @@ sudo cp install/minimy.service /etc/systemd/system
 sudo systemctl enable minimy
 
 echo 
-echo "Step 23) copying Minimy scripts to /usr/local/sbin..."
+echo "Step 24) copying Minimy scripts to /usr/local/sbin..."
 minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver"
 cd $HOME/minimy/install
 sudo cp $minimyScripts /usr/local/sbin 
@@ -124,11 +128,11 @@ cd /usr/local/sbin
 sudo chown $USER:$USER $minimyScripts
 
 echo 
-echo "Step 24) copying great_songs playlist to /var/lib/mpd/playlists..."
-sudo cp great_songs.m3u /var/lib/mpd/playlists
+echo "Step 25) copying great_songs playlist to /var/lib/mpd/playlists..."
+sudo cp $HOME/minimy/install/great_songs.m3u /var/lib/mpd/playlists
 
 echo 
-echo "Step 25) starting virtual environment..." 
+echo "Step 26) starting virtual environment..." 
 source $HOME/minimy/venv_ngv/bin/activate
 echo " "
 echo "Install Complete!"

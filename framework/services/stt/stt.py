@@ -7,6 +7,7 @@ from framework.message_types import MSG_SKILL
 from google.cloud import speech
 from subprocess import Popen, PIPE, STDOUT
 from framework.util.utils import LOG, Config, aplay, get_wake_words
+from faster_whisper import WhisperModel
 
 REMOTE_TIMEOUT = 3
 LOCAL_TIMEOUT = 5
@@ -20,12 +21,28 @@ def execute_command(command):
 
 def _local_transcribe_file(wav_filename, return_dict):
     start_time = time.time()
-    cmd = 'curl http://localhost:5002/stt -H "Content-Type: audio/wav" --data-binary @"%s"' % (wav_filename,)
-    out, err = execute_command(cmd)
-    res = out.strip()
-    if res != '':
-        return_dict['service'] = 'local'
-        return_dict['text'] = res
+    # cmd = 'curl http://localhost:5002/stt -H "Content-Type: audio/wav" --data-binary @"%s"' % (wav_filename,)
+    # out, err = execute_command(cmd)
+    # res = out.strip()
+    # if res != '':
+    #     return_dict['service'] = 'local'
+    #     return_dict['text'] = res
+    # print(f"wav_filename = {wav_filename}")
+    # replace local STT with faster-whisper   -MM
+    model_size = "tiny.en"
+    model = WhisperModel(model_size, device="cpu", compute_type="int8") # run on CPU with INT8
+    segments, info = model.transcribe(wav_filename, beam_size=5)
+    # print("Detected language '%s' with probability %f" % (info.language, info.language_probability))
+    all_text = ""
+    for segment in segments:
+        # print("[%.2fs -> %.2fs] %s" % (segment.start, segment.end, segment.text))
+        all_text = f"{all_text}{segment.text}"
+    return_dict['service'] = 'local'
+    # split_text = all_text.split()
+    # all_text = " ".join(split_text[1:]) # remove ww "Computer"
+    return_dict['text'] = all_text  
+    # print(all_text)
+    # end -MM
 
 def _remote_transcribe_file(speech_file, return_dict):
     start_time = time.time()
@@ -102,8 +119,7 @@ class STTSvc:
         if remote_stt and remote_stt == 'n':
             self.use_remote_stt = False
         if self.bark:
-            self.log.info(f"STT:Remote=%s, wake word(s)=%s" % (self.use_remote_stt, self.wws))
-            print(f"STTSvc.__init__() use_remote_stt: {self.use_remote_stt} wws: {self.wws}")
+            self.log.info(f"STTSvc.__init__(): use_remote_stt {self.use_remote_stt} wws: {self.wws}")
 
     def send_message(self, target, subtype):
         # send a standard skill message on the bus. message must be a dict
@@ -118,17 +134,18 @@ class STTSvc:
             self.bus.send(MSG_SKILL, target, info)
 
     def send_mute(self):
-        self.log.debug("STT.send_mute(): sending mute!")
+        self.log.debug("STTSvc.send_mute(): sending mute!")
         self.send_message('volume_skill', 'mute_volume')
 
     def send_unmute(self):
-        self.log.debug("STT.send_unmute(): sending unmute!")
+        self.log.debug("STTSvc.send_unmute(): sending unmute!")
         self.send_message('volume_skill', 'unmute_volume')
 
     def process_stt_result(self, utt):
         # we want the wake word but if we don't have it maybe
         # it was the previous utterance so handle that too.
-        self.log.info(f"STT.process_stt_result() utt: {utt}")
+        utt = utt.lower()                  # fold to lower case
+        self.log.info(f"STTSvc.process_stt_result() utt: {utt}")
         if utt:
             utt = utt.strip()
             wake_word = ''
@@ -137,6 +154,7 @@ class STTSvc:
                     wake_word = ww
                     break
             if wake_word == '':            # ww not found in utt
+                self.log.info("STTSvc.process_stt_result(): wake word not found")
                 if self.muted:
                     self.muted = False
                     self.send_unmute()
@@ -148,7 +166,7 @@ class STTSvc:
                         handle_utt(wake_word, cmd, self.tmp_file_path)
                     else:
                         if self.bark:
-                            self.log.info(f"STT.process_stt_result() cmd too short: {cmd}")
+                            self.log.info(f"STTSvc.process_stt_result() cmd too short: {cmd}")
                             print("Too short --->%s" % (cmd,))
                 else:                      # ww not found and previous utt not ww => raw statement
                     handle_utt('', utt, self.tmp_file_path)
@@ -172,7 +190,7 @@ class STTSvc:
                         handle_utt(wake_word, cmd, self.tmp_file_path)
                     else:
                         if self.bark:
-                            self.log.info(f"STT.process_stt_result() cmd too short: {cmd}")
+                            self.log.info(f"STTSvc.process_stt_result() cmd too short: {cmd}")
                             print("Too short --->%s" % (cmd,))
                     self.previous_utt_was_ww = False
             self.previous_utterance = utt
@@ -189,7 +207,7 @@ class STTSvc:
         # this is not necessary if you have good echo cancellation like a headset
         self.muted = False
         self.mute_start_time = 0
-        self.log.info("STT.run() Service is running **")
+        self.log.info("STTSvc.run() Service is running **")
         while True:
             loop_ctr += 1
             if loop_ctr > clear_utt_time_in_seconds:
@@ -248,21 +266,21 @@ class STTSvc:
                     pass
 
                 self.wav_file = None
-                self.log.debug(f"STT.run(): goog_return_dict: {self.goog_return_dict} local_return_dict: {self.local_return_dict}")
+                self.log.debug(f"STTSvc.run(): goog_return_dict: {self.goog_return_dict} local_return_dict: {self.local_return_dict}")
                 if self.goog_return_dict:
                     self.process_stt_result(self.goog_return_dict['text'])
                 elif self.local_return_dict: # we only have a local result, BUT we have a cache hit, use that here instead
                     if len( self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8") ) > 0:
-                        self.log.error("STT.run() CACHE HIT!!! converted local=%s  to remote=%s" % (self.local_return_dict['text'], self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")))
+                        self.log.error("STTSvc.run() CACHE HIT!!! converted local=%s  to remote=%s" % (self.local_return_dict['text'], self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")))
                         self.process_stt_result( self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8") )
                     else:
                         self.process_stt_result( self.local_return_dict['text'] )
                 else:
-                    self.log.info("STT.run() Can't produce STT from wav")
+                    self.log.info("STTSvc.run() Can't produce STT from wav")
 
                 # if we have both responses we create a new cache entry 
                 if self.goog_return_dict and self.local_return_dict:
-                    self.log.error("STT.run() new cache entry: local: %s, remote=%s" % (self.local_return_dict['text'], self.goog_return_dict['text']))
+                    self.log.error("STTSvc.run() new cache entry: local: %s, remote=%s" % (self.local_return_dict['text'], self.goog_return_dict['text']))
                     self.local2remote[ self.local_return_dict['text'] ] = self.goog_return_dict['text']
             time.sleep(0.025)
 
@@ -273,7 +291,7 @@ if __name__ == '__main__':
         no_bus = sys.argv[1]
     if no_bus == 'y' or no_bus == 'Y' or no_bus == 'true' or no_bus == 'True':
         no_bus = True
-    print(f"STT: no_bus: {no_bus}")
+    print(f"STTSvc: no_bus: {no_bus}")
     stt_svc = STTSvc(no_bus=no_bus)
     stt_svc.run()
     Event().wait()  # Wait forever
