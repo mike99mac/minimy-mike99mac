@@ -55,7 +55,9 @@ class Server:
                 # got this warning on the line below - how to fix?    -MM
                 # DeprecationWarning: The explicit passing of coroutine objects to asyncio.wait() 
                 # is deprecated since Python 3.8, and scheduled for removal in Python 3.11.
-                await asyncio.wait([client.send(message) for client in self.clients])
+                #await asyncio.wait([client.send(message) for client in self.clients])
+                # fix from Mike Gray 
+                await asyncio.gather(*[client.send(message) for client in self.clients])
             else:                          # directed
                 client = await self.find_client(target)
                 if client == None:
