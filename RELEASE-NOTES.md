@@ -8,6 +8,9 @@ It only knows English - there is little internationalization code.
 
 The version numbers are simply *yy.mm.dd*.
 
+### Version 24.06.05
+- Added faster-whisper as a new local Speech To Text (STT) engine - ideally going to google will no longer be necessary
+
 ### Version 24.03.28
 - More music playing function working!  Here's a video: https://www.youtube.com/watch?v=a-GOJN0nqN8
 
