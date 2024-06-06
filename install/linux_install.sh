@@ -7,7 +7,6 @@
 function doIt
  {
   echo
-  date
   version=`cat version`
   echo "Begin Installation, MiniMy Version $version"
   
@@ -142,11 +141,18 @@ function doIt
   echo "Install Complete!"
   echo " "
   date
- } | tee -a $outFile                       # doIt()
+ }                                         # doIt()
 
 # main()
-timeStamp=`date +"%y-%m-%d-%H:%M:%S"`      # YY-MM-DD-HH:MM:SS
-outFile="$HOME/$timeStamp-install1.out"    # output file
-echo "Running linux_install.sh on $timestamp ..." > $outFile # create a new log file
-
+timeStamp=`date +"%y-%m-%d-%H-%M-%S"`   
+outFile="$HOME/$timeStamp-linux_install.out" # output file
+echo "Running linux_install.sh on $timeStamp ..." > $outFile # create a new log file
+doIt | tee -a $outFile 2>&1                # do the work
+let min=$SECONDS/60
+let sec=$SECONDS%60
+if [ $sec -lt 10 ]; then                   # add a leading 0
+  sec="0$sec"
+fi
+echo "Successfully installed Minimy in $min:$sec" | tee -a $outFile
+echo "Log file: $outFile"
 
