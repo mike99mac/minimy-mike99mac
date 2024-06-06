@@ -64,7 +64,7 @@ function doIt
   echo; echo "Step 16): installing faster-whisper..." 
   pip install faster-whisper
   echo; echo "Step 16a): downloading faster-whisper model..." 
-  python3 $HOME/minimy-mike99mac 
+  python3 $HOME/minimy-mike99mac/fw.py 
   
   echo; echo "Step 17): installing RPi.GPIO..." 
   pip install RPi.GPIO
