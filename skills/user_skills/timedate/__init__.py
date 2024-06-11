@@ -32,6 +32,8 @@ class TimeSkill(SimpleVoiceAssistant):
             ampm = "pee em"
         if minute > 0 and minute < 10:     # add an "oh" before the minute
             text = f"{hour} oh {minute} {ampm}"
+        elif minute == 0:                  # top of the hour
+            text = f"{hour} oh clock {ampm}"
         else:                              # hour as integer
             text = f"{hour} {minute} {ampm}"
         print(f"handle_time_match() text = {text}")    
