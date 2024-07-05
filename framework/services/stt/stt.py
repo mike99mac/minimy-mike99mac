@@ -107,9 +107,9 @@ class STTSvc:
         self.mute_start_time = 0
         self.wws = get_wake_words()
 
-        # hard wire wake words - TODO - fix -MM
-        # self.wws = ["computer", "hey boombox"] 
-        self.wws = ["computer"] 
+        # hard wire wake words - did not work  -MM 
+        self.wws = ["computer", "hey boombox"] 
+        # self.wws = ["computer"] 
         base_dir = os.getenv('SVA_BASE_DIR')
         self.beep_loc = "%s/framework/assets/what.wav" % (base_dir,)
         cfg = Config()

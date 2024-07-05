@@ -45,7 +45,6 @@ class Config:
             'OutputDeviceName': '',
             'InputLevelControlName': '',
             'OutputLevelControlName': '',
-            'ButtonsType': '3',
             'STT' : {
                      'UseRemote': 'y'
                     },
