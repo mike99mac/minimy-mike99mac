@@ -433,7 +433,7 @@ To download and copy Minimy, perform the following steps:
     ```
     
     ```
-    git clone https://github.com/mike99mac/minimy-mike99mac``**
+    git clone https://github.com/mike99mac/minimy-mike99mac
     ```
 
 - Copy the directory recursively from ``minimy-mike99mac`` to ``minimy``.
@@ -532,47 +532,6 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
         ('WakeWords', ['hey computer', 'computer'])
     ```
 
-### Get a Google API key
-
-You need a Google Speech API key in order to be able to convert speech to text.  A template file is in the ``install/`` directory.
-
-An alternative is to use a different STT engine, but that has not been tested.
-
-To get a Google API key file, perform the following steps:
-
-- Change to the install directory.
-
-    **``$ cd /home/pi/minimy/install``**
-    
-- Copy the GPG key template file to the file that will be populated.
-
-    **``$ cp my-google-key.json.template my-google-key.json``**
-
-- Show the file.
-
-    **``$ cat my-google-key.json``**
-    
-    ```
-    (venv_ngv) pi@johnsbox:~/minimy-mike99mac$ cat my-google-key.json.template
-    {
-      "type": "service_account",
-      "project_id": "PROJECT_ID",
-      "private_key_id": "KEY_ID",
-      "private_key": "-----BEGIN PRIVATE KEY-----\nPRIVATE_KEY\n-----END PRIVATE KEY-----\n",
-      "client_email": "SERVICE_ACCOUNT_EMAIL",
-      "client_id": "CLIENT_ID",
-      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-      "token_uri": "https://accounts.google.com/o/oauth2/token",
-      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-      "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/SERVICE_ACCOUNT_EMAIL"
-    }
-    ```
-
-- You will need to obtain your own ``PROJECT_ID``, ``KEY_ID``, ``PRIVATE_KEY``, ``SERVICE_ACCOUNT_EMAIL`` and ``CLIENT_ID``. 
-- Go to https://console.cloud.google.com/freetrial/signup/tos and obtain these values.
-- Click on **IAM & Admin** => **Service Accounts** => **ADD KEY** ==> **Create new key**.
-- Populate them in the file.
-
 ## Run Minimy
 The scripts **``startminimy``** and **``stopminimy``** are used to start and stop processes. 
 Each skill and service run as process and use the message bus or file system to synchronize. 
@@ -589,15 +548,15 @@ with this code:
 
 - Start Minimy, ensuring it is run from the base directory, as follows.
 
-    **``(venv_ngv) $ cd $HOME/minimy``**
+    ``` 
+    startminimy
+    ```
     
-    **``(venv_ngv) $ ./startminimy``**
-    
-    ``...``
     
 - Run **``lsenv``** again to see how your environment has changed.    
 
-    **``$ lsenv``**
+    ```
+    lsenv
 
     ```
     Status of minimy:
