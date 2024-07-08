@@ -485,25 +485,29 @@ To download and copy Minimy, perform the following steps:
 
 - Change to your home directory and clone the repo from github.
 
-    **``$ cd``**
+    ```
+    cd
+    ```
     
-    **``$ git clone https://github.com/mike99mac/minimy-mike99mac``**
+    ```
+    git clone https://github.com/mike99mac/minimy-mike99mac``**
+    ```
 
-    ```
-    Cloning into 'minimy-mike99mac'...
-    ...
-    Resolving deltas: 100% (450/450), done.
-    ```
-    
 - Copy the directory recursively from ``minimy-mike99mac`` to ``minimy``.
 
-    **``$ cp -a minimy-mike99mac minimy``**
+    ```
+    cp -a minimy-mike99mac minimy``**
+    ```
     
 - Remove the ``.git`` directory from the copy.
 
-    **``$ cd minimy``**
+    ```
+    cd minimy
+    ```
     
-    **``$ rm -fr .git``**
+    ```
+    rm -fr .git
+    ```
     
     Now the code will run and you can work in ``minimy`` and keep ``minimy-mike99mac`` as a reference copy.
     
@@ -511,24 +515,17 @@ To download and copy Minimy, perform the following steps:
     
 - Run the following script to install Minimy and direct ``stdout`` and ``stderr`` to a file. **TAKE A BREAK?** This step can take up to 15 minutes.
     
-    **``$ ./install/linux_install.sh 2>&1 | tee linux_install.out``**
-    
     ```
-    ...
-    Install Complete
+    ./install/linux_install.sh 
     ```
     
     It is recommended that you review the output file, checking for warnings or errors.
     
-- Confirm that **``venv``** is an alias which should have been set in your ``.bash_profile`` after the reboot.
-
-    **``alias venv``**
-    
-    ``alias venv='source /home/pi/minimy/venv_ngv/bin/activate'``
-    
 - Open a virtual environment.
 
-    **``$ venv``**
+    ```
+    venv
+    ```
     
     You should notice a new ``(venv_ngv)`` prefix on the command line.
     
@@ -554,26 +551,12 @@ connection. Devices with decent connectivity should use remote for both.
 You will also be asked for operating environment.  Currently the options are (p) for piOS, (l) for 
 Ubuntu or (m) for the Mycroft MarkII.
 
-During configuration you will be asked to provide one or more words to act as wake words. You will
-enter them separated by commas with no punctuation.  For example, 
-```
-hey Bubba, bubba
-```
-or
-```
-computer
-```
-
-Wake words work best when you choose multi-syllable words. Longer names like 'Esmerelda' or  words like
-'computer' or words with distinct sounds like 'expression' (the 'x') or 'kamakazi' (two hard
-'k's) will always work better than words like 'hey' or 'Joe'. You can use the ``test_recognition.sh`` 
-script to see how well your recognition is working.  Just using the word 'computer' should work adequately.
+Three syllable or more wake words are best. Words like 'computer' or words with distinct sounds like 'expression' (the 'x') or 'kamakazi' (two hard
+'k's) will always work better than words like 'hey' or 'Joe'. 
 
 You will also be asked to provide an input device index. If you do not know what this means enter the
 value 0. If you would like to see your options you can run 'python framework/tests/list_input_devices.py'.
 Remember, if you do not source your virtual environment first, things will not go well for you. 
-
-Always source the virtual environment before you run anything. 
 
 The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properly in your ``~/.bash_profile``.
 
