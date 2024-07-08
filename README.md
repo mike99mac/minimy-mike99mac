@@ -237,7 +237,7 @@ To start it now, and enable it at boot time, perform the following steps:
 - Set the SSH server to start at boot time.
 
     ```
-    **``$ systemctl enable ssh``**
+    systemctl enable ssh
     ```
     
 ### Start a terminal or SSH session
@@ -299,7 +299,7 @@ To install **``ovos-tools``** perform the following steps:
 - Clone the **``ovos-tools``** package in the ``pi`` home directory with the following commands:
 
     ```
-    **``$ git clone https://github.com/mike99mac/ovos-tools``**
+    git clone https://github.com/mike99mac/ovos-tools
     ```
     
     ```
@@ -660,9 +660,10 @@ Following are some debugging resources.
 - Log files are in ``$HOME/minimy/logs``.  
     - Show the log files.
    
-        **``$ cd $HOME/minimy/logs``**
-        
-        **``$ ls``**
+        ```
+        cd $HOME/minimy/logs
+        ls
+        ```
         
         ``intent.log  media_player.log  skills.log  stt.log  tts.log``
    
@@ -676,30 +677,11 @@ Following are some debugging resources.
       
 - The **``sortlogs``** script - merges and sorts all the log files by timestamp and saves them to ``/tmp``. The merged output is often easier to peruse than the individual files.
 
-    ```
-    $ cat sortlogs
-    #!/bin/bash
-    #
-    # sortlogs - merge and sort all log files
-    #
-    tmpFile="all.logs"
-    cd $HOME/minimy/logs
-    if [ -f $tmpFile ]; then                   # old one exists
-      rm $tmpFile
-    fi
-    for i in *.log; do                         # copy all log files
-      cat $i >> $tmpFile
-    done
-    outFile="/tmp/logs-`date +\"%F-%T\"`"
-    sort $tmpFile > $outFile                   # sort by timestamp
-    echo "sorted logs saved to: $outFile"
-    ```
-	
 - The **``stopminimy``** script calls **``sortlogs``** so every time you stop Minimy, there is a new log file copied to ``/tmp/`` which persists across the starting and stopping of Minimy, unlike ``$HOME/minimy/tmp/``.
 
     ```
-	$ stopminimy
-	...
+    $ stopminimy
+    ...
     killing process: pi        952424       1 10 16:25 pts/3    00:00:11 python3 framework/services/input/buttons.py ...
     killing process: pi        952425       1  7 16:25 pts/3    00:00:08 python3 framework/services/input/mic.py ...
     sorted logs saved to: /tmp/logs-2023-07-01-16:27:34
