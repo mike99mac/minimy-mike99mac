@@ -439,7 +439,7 @@ To download and copy Minimy, perform the following steps:
 - Copy the directory recursively from ``minimy-mike99mac`` to ``minimy``.
 
     ```
-    cp -a minimy-mike99mac minimy``**
+    cp -a minimy-mike99mac minimy
     ```
     
 - Remove the ``.git`` directory from the copy.
