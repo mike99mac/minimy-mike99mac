@@ -467,10 +467,10 @@ To download and copy Minimy, perform the following steps:
 - Open a virtual environment.
 
     ```
-    venv
+    source $HOME/minimy/venv_ngv/bin/activate
     ```
     
-    You should notice a new ``(venv_ngv)`` prefix on the command line.
+    You should see a new ``(venv_ngv)`` prefix on the command line.
     
 ### Configure Minimy
 
