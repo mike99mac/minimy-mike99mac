@@ -42,20 +42,20 @@ on the left. You can Bluetooth directly to the amp and bypass the computer.
 # Building a smart boombox
 To build the boombox, perform the following steps: 
 
-- [Obtain all parts and components](#obtain-all-parts-and-components)
+- [Obtain parts and components](#obtain-all-parts-and-components)
 - [Prepare for assembly](#prepare-for-assembly)
 - [Perform final assembly](#perform-final-assembly)
 - [Install components](#install-components)
 - [Stand up the software stack](#stand-up-the-software-stack)
 
-## Obtain all parts and components 
+## Obtain parts and components 
 Obtain the follow parts and components:
 
 - [Electronic components](#components)
 - [Plywood panels](plywood-panels)
 - [Hardwood pieces](#hardwood-pieces)
 
-### Components  
+### Electronic components  
 Following are the components needed, the cost (in Jan 2024) and the source where they were purchased.
 
 | Description                                  | Cost | Source/use |
@@ -145,23 +145,18 @@ Final assembly of the carcass can take place when you have:
 - Two sides assembled and cut with CNC jobs
 
 To accomplish this, perform the following tasks:
-- [Cut the main panel](*cut-the-main-panel)
+- [Cut the main panels](*cut-the-main-panels)
 - [Prepare all panels](*prepare-all-panels)
 - [Drill holes on face](*drill-holes-on-face)
 - [Construct two sides](*construct-two-sides)
 
-### Cut the main panel
+### Cut the main panels
 The distance between each of the 5 knobs on the amplifier is 0.720" in the CNC job.  Before running the job, verify that is true on the amp in hand.
-
-Consider the following rough drawing:
-
-![](main-panel-dimensions.jpg)
-*Rough drawing of main panel and two sliding panels*
 
 Following are the steps to cut the main panel.
 - Cut a sheet of Baltic birch into thirds - 19.875" x ~60"
 - Mark a "1" and a "2" at 32.395" and 36.56: (32.395" + 0.125" + 4.04").  This will allow you align the grain properly on all panels. 
-- Cut a piece 32.395". This is the "main panel" which will later be cut into four pieces. The two "1" marks should be cut in half.
+- Cut a piece 43.68". This is the "main panel" which will later be cut into six pieces. The two "1" marks should be cut in half.
 - Load the Gcode ``MainPanelsJob1.nc``.
 - Clamp and square the main panel. 
 - Zero XYZ of the main panel.
