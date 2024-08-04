@@ -40,12 +40,9 @@ on the left. You can Bluetooth directly to the amp and bypass the computer.
 *Back view of boombox carcass and parts*
 
 # Building a smart boombox
-This repo contains the G-Code to build a smart boombox using a CNC machine. 
-
 To build the boombox, perform the following steps: 
 
 - [Obtain all parts and components](#obtain-all-parts-and-components)
-- [Download the G-code](#download-the-g-code)
 - [Prepare for assembly](#prepare-for-assembly)
 - [Perform final assembly](#perform-final-assembly)
 - [Install components](#install-components)
@@ -99,14 +96,8 @@ The 6 main panels are cut on the CNC machine. Below is a sketch of the cuts.
 
 ![](main-panel-sketch.jpg)
 
-## Download the G-code
-G-code is to a CNC machine what object code is to a computer. It tells the machine what to do, and the machine (hopefully) does it.  
-This assumes the wood is the exact same size and aligned in the exact same place.
-
-Because the panel is over 30" (max of my CNC machines), it must be cut twice, rotate 180 degrees between jobs.  
-After is the main panel jobs, it is cut on the tablesaw to create four pieces: the front, the bottom, the back and enclosure divider. 
-
-The following G-code files in this repo are used on a CNC machine to cut out all the pieces.
+## G-code
+G-code is to a CNC machine what object code is to a computer. Because the panel is over 30" (max of test CNC machines), it must be cut twice, rotated 180 degrees between jobs. The following G-code are used on a CNC machine to cut out all the pieces.
 
 | G-code file     | Size   | Description |
 | -----------     | ----   | -----------
