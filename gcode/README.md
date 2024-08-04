@@ -116,11 +116,10 @@ Following are the 1/2" Baltic birch plywood pieces. The nominal thickness is 0.4
 | Description                 | Qty | Size |
 | -----------                 | --- | ---- |
 | Main panel                  | 1   | 19.875" x 43.68" |
-| Side panels                 | 2   | 6.005" x 11.875" |
-| Internal enclosure dividers | 2   | 6.375" x 6.875" **TODO** verify numbers |
+| Side panels                 | 2   | 6" x 11.875" |
+| Internal enclosure dividers | 2   | 6.5" x 6.875" | 
 
-The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of 30".
-Later it is cut into four panels: the front, the bottom, the lower back and the internal horizontal divider.
+The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of 30". 
 
 ### Hardwood pieces 
 All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One other piece of wood is needed.
@@ -141,8 +140,8 @@ Following is a diagram of the side moldings (*Double dado*) and the L-shaped mol
 
 ## Prepare for assembly 
 Final assembly of the carcass can take place when you have:
-- Four panels cut from the machined main panel
-- Two sliding panels and two enclosure dividers
+- Six panels cut from the two CNC jobs 
+- Two sides and internal dividers cut on the tablesaw 
 - Two sides assembled and cut with CNC jobs
 
 To accomplish this, perform the following tasks:
@@ -160,11 +159,10 @@ Consider the following rough drawing:
 *Rough drawing of main panel and two sliding panels*
 
 Following are the steps to cut the main panel.
-- Cut a sheet of Baltic birch into three 19.875" pieces. There should be almost no refuse.
+- Cut a sheet of Baltic birch into thirds - 19.875" x ~60"
 - Mark a "1" and a "2" at 32.395" and 36.56: (32.395" + 0.125" + 4.04").  This will allow you align the grain properly on all panels. 
 - Cut a piece 32.395". This is the "main panel" which will later be cut into four pieces. The two "1" marks should be cut in half.
-  - **NOTE:** This value assumes a kerf of 0.125" which is common for table saw blades.  Some thin kerf blades are below 0.100", so you may have to reduce the 32.395" accordingly.
-- Load the Gcode ``10PanelsJob1.nc``.
+- Load the Gcode ``MainPanelsJob1.nc``.
 - Clamp and square the main panel. 
 - Zero XYZ of the main panel.
 - Load and run the job to cut the majority of the main panel.
