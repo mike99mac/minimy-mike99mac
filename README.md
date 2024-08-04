@@ -61,13 +61,7 @@ The following three flavors of two Linux distributions are supported. Note that 
 - ``Raspbian GNU/Linux 10 (buster)``
 - ``Raspbian GNU/Linux 11 (bullseye)``
 
-**NOTE:** The text above is obtained in the first line of the file ``/etc/os-release``. For example:
-
-**``$ head -1 /etc/os-release``**
-
-``PRETTY_NAME="Ubuntu 22.04.2 LTS"``
-
-You will need another computer running Linux or another OS to copy the Linux image to the memory card.
+You will need another computer (ideally running Linux) to copy the Linux image to the memory card.
 
 ### Prepare on Linux
 
@@ -76,11 +70,15 @@ If you have a Linux box with an SD card port, you can use **``rpi-imager``** to 
 - Plug the SD adapter into the card reader.
 - If you don't have it already, install the tool.
 
-    **``$ sudo apt-get install -y rpi-imager``**
+    ```
+    sudo apt-get install -y rpi-imager
+    ```
 
 - Run the tool.
 
-    **``$ rpi-imager``**
+    ```
+    rpi-imager
+    ```
     
     You should see a window as shown in the following figure. 
 
@@ -188,43 +186,38 @@ If you are installing Raspbian, skip to the next section.
 The secure shell (SSH) server is not installed by default on Ubuntu desktop. Install it so you can access your system remotely. To do so, perform the following steps:
 
 - Open a terminal session by right-clicking the mouse anywhere on the desktop and choosing **Open in Terminal**. You should see a console window open.
-- Show the contents of the ``/etc/os-release`` file just to confirm the Ubuntu release level.
+- Show the contents of the ``/etc/os-release`` file. 
 
-    **``$ cat /etc/os-release``**
-    
     ```
-    PRETTY_NAME="Ubuntu 22.04.2 LTS"
-    NAME="Ubuntu"
-    VERSION_ID="22.04"
-    VERSION="22.04.2 LTS (Jammy Jellyfish)"
-    ...
+    cat /etc/os-release
     ```
     
 - Update and upgrade your system which installs the latest code for all installed packages.
     
-    **``$ sudo apt-get update ``**
-    
-    ``...``
+    ```
+    sudo apt-get update
+    ```
 
-    **``$ sudo apt-get upgrade -y ``**
-    
-    ``...``
+    ```
+    sudo apt-get upgrade -y
+    ```
 
 - Install the ``openssh-server`` package, with the following command.  You will be prompted for your password.
     
-    **``$ sudo apt-get install -y openssh-server ``**
+    ```
+    sudo apt-get install -y openssh-server
+    ```
     
-    ``[sudo] password for pi:``
+    ```
+    [sudo] password for pi:
+    ```
 
 - After it installs **``sshd``** should be running. Verify with the following command:
 
-    **``$ service sshd status``**
+    ```
+    service sshd status
+    ```
     
-    ```
-    ...
-    Active: active (running) 
-    ...
-    ```
 ### Setting up the SSH server on Raspbian
 
 If you are installing Ubuntu, skip this section.
@@ -237,11 +230,15 @@ To start it now, and enable it at boot time, perform the following steps:
 
 - From the terminal session, start the SSH server for the current session.
 
-    **``$ systemctl start ssh``**
+    ```
+    systemctl start ssh
+    ```
 
 - Set the SSH server to start at boot time.
 
-    **``$ systemctl enable ssh``**
+    ```
+    systemctl enable ssh
+    ```
     
 ### Start a terminal or SSH session
 
@@ -249,8 +246,8 @@ You can continue to work from a *terminal session* or you can *SSH in* to your n
 
 - Get your IP address. You should have either a Wi-Fi (``wlan0``) or a hard-wired (``eth0``) connection. To verify, enter the following command. 
 
-    **``$ ip a``**
     ```
+    ip a 
     1: lo:
     ...
     2: eth0:
@@ -273,19 +270,25 @@ To install **``ovos-tools``** perform the following steps:
   
 - Install **``git``** and **``vim``** as they are needed shortly.
 
-    **``$ sudo apt-get install -y git vim``**
-    
-    **``...``**
+    ```
+    sudo apt-get install -y git vim
+    ```
     
 - Make **``vim``** the default editor.
 
-    **``$ sudo update-alternatives --install /usr/bin/editor editor /usr/bin/vim 100``**
+    ```
+    sudo update-alternatives --install /usr/bin/editor editor /usr/bin/vim 100
+    ```
     
-    ``update-alternatives: using /usr/bin/vim to provide /usr/bin/editor (editor) in auto mode``
+    ```
+    update-alternatives: using /usr/bin/vim to provide /usr/bin/editor (editor) in auto mode
+    ```
     
 - Allow members of the ``sudo`` group to be able to run **``sudo``** commands without a password, by adding **``NOPASSWD:``** to the line near the bottom of the file.
 
-    **``$ sudo visudo``**
+    ```
+    sudo visudo
+    ```
 
     ```
     ...
@@ -295,7 +298,9 @@ To install **``ovos-tools``** perform the following steps:
 
 - Clone the **``ovos-tools``** package in the ``pi`` home directory with the following commands:
 
-    **``$ git clone https://github.com/mike99mac/ovos-tools``**
+    ```
+    git clone https://github.com/mike99mac/ovos-tools
+    ```
     
     ```
     Cloning into 'ovos-tools'...
@@ -305,13 +310,12 @@ To install **``ovos-tools``** perform the following steps:
     
 - Change to the newly installed directory and run the setup script. It will copy scripts to the directory ``/usr/local/sbin`` which is in the default ``PATH``.
 
-    **``$ cd ovos-tools``**
-    
-    **``$ sudo ./setup.sh``**
+    ```
+    cd ovos-tools
+    ```
     
     ```
-    Copying all scripts to /usr/local/sbin ... 
-    Success!  There are new scripts in your /usr/local/sbin/ directory
+    sudo ./setup.sh
     ```
     
     The **``ovos-tools``** repo is now installed.
@@ -335,61 +339,25 @@ It performs the following tasks:
 
 To run **``intall1``**, perform the following steps:
 
-- First verify it is in your ``PATH`` with the **``which``** command.
-
-    **``$ which install1``**
-    
-    ``/usr/local/sbin/install1``
-
-- Run the **``install1``** script in the home directory and send ``stdout`` and ``stderr`` to a file.  You may want to reference that file in case of errors. This step will take a couple of minutes.
-
-    **``$ cd``**
-    
-    **``$ install1``**
+- Run the **``install1``** script. 
 
     ```
-    ...
-    Successfully installed co-reqs for OVOS in 4:24
-    Log file of all operations: /home/pi/24-03-27-10:33:38-install1.out
+    cd
     ```
     
-    ``...``
-    
+    ```
+    install1
+    ```
+
 ### Test the changes
 
 - Test your environment with the newly installed **``lsenv``** script which reports on many aspects of your Linux system.
 
-    **``$ lsenv``**
-    
     ```
-    Status of minimy:
-     -) WARNING: minimy is not running as a service ... checking for processes ...
-        WARNING: minimy does not appear to be running
-    ---------------------------------------------------------------------------------
-    Status of mpd:
-     -) WARNING: mpd is not running as a service ... checking for processes ...
-        WARNING: mpd does not appear to be running
-    ---------------------------------------------------------------------------------
-    Status of pulseaudio:
-     -) WARNING: pulseaudio is not running as a service ... checking for processes ...
-        Found matching pulseaudio processes:
-        pi         34471   34454  0 09:44 ?        00:00:01 /usr/bin/pulseaudio --daemonize=no --log-target=journal
-    ---------------------------------------------------------------------------------
-         IP address : 192.168.1.148
-    CPU temperature : 55C / 131F
-      Root fs usage : 14%
-          CPU usage : 0%
-    Memory usage    :
-                     total        used        free      shared  buff/cache   available
-      Mem:           3.7Gi       698Mi       268Mi       120Mi       2.8Gi       2.7Gi
-      Swap:          1.0Gi        11Mi       1.0Gi
-    tmpfs filesystem?
-                          /var/log       Linux logs : no
-              /home/pi/minimy/logs      Minimy logs : no
-               /home/pi/minimy/tmp  Minimy temp dir : no
+    lsenv
     ```
     
-The output shows that:
+The output should show: 
 
 - Processes with ``minimy`` in their name are not running.
 - The Music Playing Daemon, **``mpd``** is not running.
@@ -402,42 +370,16 @@ Some of the changes made by **``install1``** will not be realized until boot tim
 
 - Reboot your system
 
-    **``$ sudo reboot``**
+    ```
+    sudo reboot
+    ```
     
 - Restart your SSH session when it comes back up.
 - Run the same script again to see how the environment has changed.
 
-    **``$ lsenv``**
-    
-    ````
-    Status of minimy:
-     -) WARNING: minimy is not running as a service ... checking for processes ...
-        WARNING: minimy does not appear to be running
-    ---------------------------------------------------------------------------------
-    Status of mpd:
-     -) mpd is running as a service:
-        Active: active (running) since Sat 2023-06-10 10:13:24 EDT; 56s ago
-    ---------------------------------------------------------------------------------
-    Status of pulseaudio:
-     -) pulseaudio is running as a service:
-        Active: active (running) since Sat 2023-06-10 10:13:22 EDT; 58s ago
-        pulseaudio processes:
-        pulse        850       1  0 10:13 ?        00:00:00 /usr/bin/pulseaudio --system --disallow-exit --disallow-module-loading --disable-shm --exit-idle-time=-1
-    ---------------------------------------------------------------------------------
-         IP address : 192.168.1.148
-    CPU temperature : 63C / 145F
-      Root fs usage : 14%
-          CPU usage : 91%
-    Memory usage    :
-                     total        used        free      shared  buff/cache   available
-      Mem:           3.7Gi       707Mi       2.3Gi        13Mi       685Mi       2.8Gi
-      Swap:          1.0Gi          0B       1.0Gi
-    tmpfs filesystem?
-                          /var/log       Linux logs : yes
-              /home/pi/minimy/logs      Minimy logs : no
-               /home/pi/minimy/tmp  Minimy temp dir : no
-
-    ````
+    ```
+    lsenv
+    ```
     
 You should see three changes:
 
@@ -453,14 +395,15 @@ They are wrappers around the **``arecord``** and **``aplay``** commands designed
 
 - To test your microphone and speakers, issue the following command then speak for up to five seconds. 
 
-    **``$ testrecord``**
+    ```
+    testrecord
+    ```
     
     ```
     Testing your microphone for 5 seconds - SAY SOMETHING!
     INFO: running command: arecord -r 44100  -f S24_LE -d 5 /tmp/test-mic.wav
     Recording WAVE '/tmp/test-mic.wav' : Signed 24 bit Little Endian, Rate 44100 Hz, Mono
-    Calling testplay to play back the recording ...
-    Playing WAVE '/tmp/test-mic.wav' : Signed 24 bit Little Endian, Rate 44100 Hz, Mono
+    ...
     ```
     
 You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speaker(s).
@@ -485,25 +428,29 @@ To download and copy Minimy, perform the following steps:
 
 - Change to your home directory and clone the repo from github.
 
-    **``$ cd``**
+    ```
+    cd
+    ```
     
-    **``$ git clone https://github.com/mike99mac/minimy-mike99mac``**
+    ```
+    git clone https://github.com/mike99mac/minimy-mike99mac
+    ```
 
-    ```
-    Cloning into 'minimy-mike99mac'...
-    ...
-    Resolving deltas: 100% (450/450), done.
-    ```
-    
 - Copy the directory recursively from ``minimy-mike99mac`` to ``minimy``.
 
-    **``$ cp -a minimy-mike99mac minimy``**
+    ```
+    cp -a minimy-mike99mac minimy
+    ```
     
 - Remove the ``.git`` directory from the copy.
 
-    **``$ cd minimy``**
+    ```
+    cd minimy
+    ```
     
-    **``$ rm -fr .git``**
+    ```
+    rm -fr .git
+    ```
     
     Now the code will run and you can work in ``minimy`` and keep ``minimy-mike99mac`` as a reference copy.
     
@@ -511,26 +458,19 @@ To download and copy Minimy, perform the following steps:
     
 - Run the following script to install Minimy and direct ``stdout`` and ``stderr`` to a file. **TAKE A BREAK?** This step can take up to 15 minutes.
     
-    **``$ ./install/linux_install.sh 2>&1 | tee linux_install.out``**
-    
     ```
-    ...
-    Install Complete
+    ./install/linux_install.sh 
     ```
     
     It is recommended that you review the output file, checking for warnings or errors.
     
-- Confirm that **``venv``** is an alias which should have been set in your ``.bash_profile`` after the reboot.
-
-    **``alias venv``**
-    
-    ``alias venv='source /home/pi/minimy/venv_ngv/bin/activate'``
-    
 - Open a virtual environment.
 
-    **``$ venv``**
+    ```
+    source $HOME/minimy/venv_ngv/bin/activate
+    ```
     
-    You should notice a new ``(venv_ngv)`` prefix on the command line.
+    You should see a new ``(venv_ngv)`` prefix on the command line.
     
 ### Configure Minimy
 
@@ -554,26 +494,12 @@ connection. Devices with decent connectivity should use remote for both.
 You will also be asked for operating environment.  Currently the options are (p) for piOS, (l) for 
 Ubuntu or (m) for the Mycroft MarkII.
 
-During configuration you will be asked to provide one or more words to act as wake words. You will
-enter them separated by commas with no punctuation.  For example, 
-```
-hey Bubba, bubba
-```
-or
-```
-computer
-```
-
-Wake words work best when you choose multi-syllable words. Longer names like 'Esmerelda' or  words like
-'computer' or words with distinct sounds like 'expression' (the 'x') or 'kamakazi' (two hard
-'k's) will always work better than words like 'hey' or 'Joe'. You can use the ``test_recognition.sh`` 
-script to see how well your recognition is working.  Just using the word 'computer' should work adequately.
+Three syllable or more wake words are best. Words like 'computer' or words with distinct sounds like 'expression' (the 'x') or 'kamakazi' (two hard
+'k's) will always work better than words like 'hey' or 'Joe'. 
 
 You will also be asked to provide an input device index. If you do not know what this means enter the
 value 0. If you would like to see your options you can run 'python framework/tests/list_input_devices.py'.
 Remember, if you do not source your virtual environment first, things will not go well for you. 
-
-Always source the virtual environment before you run anything. 
 
 The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properly in your ``~/.bash_profile``.
 
@@ -606,47 +532,6 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
         ('WakeWords', ['hey computer', 'computer'])
     ```
 
-### Get a Google API key
-
-You need a Google Speech API key in order to be able to convert speech to text.  A template file is in the ``install/`` directory.
-
-An alternative is to use a different STT engine, but that has not been tested.
-
-To get a Google API key file, perform the following steps:
-
-- Change to the install directory.
-
-    **``$ cd /home/pi/minimy/install``**
-    
-- Copy the GPG key template file to the file that will be populated.
-
-    **``$ cp my-google-key.json.template my-google-key.json``**
-
-- Show the file.
-
-    **``$ cat my-google-key.json``**
-    
-    ```
-    (venv_ngv) pi@johnsbox:~/minimy-mike99mac$ cat my-google-key.json.template
-    {
-      "type": "service_account",
-      "project_id": "PROJECT_ID",
-      "private_key_id": "KEY_ID",
-      "private_key": "-----BEGIN PRIVATE KEY-----\nPRIVATE_KEY\n-----END PRIVATE KEY-----\n",
-      "client_email": "SERVICE_ACCOUNT_EMAIL",
-      "client_id": "CLIENT_ID",
-      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-      "token_uri": "https://accounts.google.com/o/oauth2/token",
-      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-      "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/SERVICE_ACCOUNT_EMAIL"
-    }
-    ```
-
-- You will need to obtain your own ``PROJECT_ID``, ``KEY_ID``, ``PRIVATE_KEY``, ``SERVICE_ACCOUNT_EMAIL`` and ``CLIENT_ID``. 
-- Go to https://console.cloud.google.com/freetrial/signup/tos and obtain these values.
-- Click on **IAM & Admin** => **Service Accounts** => **ADD KEY** ==> **Create new key**.
-- Populate them in the file.
-
 ## Run Minimy
 The scripts **``startminimy``** and **``stopminimy``** are used to start and stop processes. 
 Each skill and service run as process and use the message bus or file system to synchronize. 
@@ -663,15 +548,15 @@ with this code:
 
 - Start Minimy, ensuring it is run from the base directory, as follows.
 
-    **``(venv_ngv) $ cd $HOME/minimy``**
+    ``` 
+    startminimy
+    ```
     
-    **``(venv_ngv) $ ./startminimy``**
-    
-    ``...``
     
 - Run **``lsenv``** again to see how your environment has changed.    
 
-    **``$ lsenv``**
+    ```
+    lsenv
 
     ```
     Status of minimy:
@@ -734,9 +619,10 @@ Following are some debugging resources.
 - Log files are in ``$HOME/minimy/logs``.  
     - Show the log files.
    
-        **``$ cd $HOME/minimy/logs``**
-        
-        **``$ ls``**
+        ```
+        cd $HOME/minimy/logs
+        ls
+        ```
         
         ``intent.log  media_player.log  skills.log  stt.log  tts.log``
    
@@ -750,30 +636,11 @@ Following are some debugging resources.
       
 - The **``sortlogs``** script - merges and sorts all the log files by timestamp and saves them to ``/tmp``. The merged output is often easier to peruse than the individual files.
 
-    ```
-    $ cat sortlogs
-    #!/bin/bash
-    #
-    # sortlogs - merge and sort all log files
-    #
-    tmpFile="all.logs"
-    cd $HOME/minimy/logs
-    if [ -f $tmpFile ]; then                   # old one exists
-      rm $tmpFile
-    fi
-    for i in *.log; do                         # copy all log files
-      cat $i >> $tmpFile
-    done
-    outFile="/tmp/logs-`date +\"%F-%T\"`"
-    sort $tmpFile > $outFile                   # sort by timestamp
-    echo "sorted logs saved to: $outFile"
-    ```
-	
 - The **``stopminimy``** script calls **``sortlogs``** so every time you stop Minimy, there is a new log file copied to ``/tmp/`` which persists across the starting and stopping of Minimy, unlike ``$HOME/minimy/tmp/``.
 
     ```
-	$ stopminimy
-	...
+    $ stopminimy
+    ...
     killing process: pi        952424       1 10 16:25 pts/3    00:00:11 python3 framework/services/input/buttons.py ...
     killing process: pi        952425       1  7 16:25 pts/3    00:00:08 python3 framework/services/input/mic.py ...
     sorted logs saved to: /tmp/logs-2023-07-01-16:27:34
