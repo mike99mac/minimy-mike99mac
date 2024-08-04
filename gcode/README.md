@@ -51,9 +51,9 @@ To build the boombox, perform the following steps:
 ## Obtain all parts and components 
 Obtain the follow parts and components:
 
+- [Electronic components](#components)
 - [Plywood panels](plywood-panels)
 - [Hardwood pieces](#hardwood-pieces)
-- [Components](#components)
 
 ### Components  
 Following are the components needed, the cost (in Jan 2024) and the source where they were purchased.
@@ -97,12 +97,16 @@ The 6 main panels are cut on the CNC machine. Below is a sketch of the cuts.
 ![](main-panel-sketch.jpg)
 
 ## G-code
-G-code is to a CNC machine what object code is to a computer. Because the panel is over 30" (max of test CNC machines), it must be cut twice, rotated 180 degrees between jobs. The following G-code are used on a CNC machine to cut out all the pieces.
+G-code is to a CNC machine what object code is to a computer. Because the panel is over 30" (max of CNC machine), it must be cut twice, rotated 180 degrees between jobs. 
+
+The left and right sides must be assembled 
+
+The following G-code are used on a CNC machine to cut out all the pieces.
 
 | G-code file     | Size   | Description |
 | -----------     | ----   | -----------
-| PanelsJob1.nc   | 19.875" wide x 32.295" high | Most cuts on the main panel  |
-| PanelsJob2.nc   |   "             "           | Remaining with main panel rotated 180 degrees |
+| PanelsJob1.nc   | 19.875" wide x 43.68" high | Most cuts on the main panel  |
+| PanelsJob2.nc   |   "             "           | Remaining cuts with panel rotated 180 degrees |
 | leftSide.nc     | 7.386" wide x 11.875" high  | Cuts on the assembled left side |
 | righttSide.nc   |   "             "           | Cuts on the assembled right side |
 
@@ -111,7 +115,7 @@ Following are the 1/2" Baltic birch plywood pieces. The nominal thickness is 0.4
 
 | Description                 | Qty | Size |
 | -----------                 | --- | ---- |
-| Main panel                  | 1   | 19.875" x 32.295" |
+| Main panel                  | 1   | 19.875" x 43.68" |
 | Side panels                 | 2   | 6.005" x 11.875" |
 | Internal enclosure dividers | 2   | 6.375" x 6.875" **TODO** verify numbers |
 
