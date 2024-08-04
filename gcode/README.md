@@ -58,35 +58,6 @@ Obtain the follow parts and components:
 - [Hardwood pieces](#hardwood-pieces)
 - [Components](#components)
 
-### Plywood panels
-Following are the 1/2" Baltic birch plywood pieces. The nominal thickness is 0.480". 
-
-| Description                 | Qty | Size |
-| -----------                 | --- | ---- |
-| Main panel                  | 1   | 19.875" x 32.295" |
-| Side panels                 | 2   | 6.005" x 11.875" |
-| Internal enclosure dividers | 2   | 6.375" x 6.875" **TODO** verify numbers |
-
-The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of 30".
-Later it is cut into four panels: the front, the bottom, the lower back and the internal horizontal divider.
-
-### Hardwood pieces 
-All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One other piece of wood is needed.
-
-| Description               | Qty | Size |
-| -----------               | --- | ---- |
-| Side tops and bottoms     | 4   | 7.385" |
-| Side fronts and backs     | 4   | 11.875" |
-| Front and back L moldings | 4   | ~20" (each will be cut to size later) |
-| Raspberry Pi platform     | 1   | 2.75" x 3.625" |
-
-One other piece is a *platform* used to elevate the Raspberry Pi. The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports. Usually 1-1/4" thick is enough, but not always - measure the big power supply you have.
-
-Following is a diagram of the side moldings (*Double dado*) and the L-shaped moldings
-
-![](molding-dimensions.jpg)
-*Cross section of the two moldings*
-
 ### Components  
 Following are the components needed, the cost (in Jan 2024) and the source where they were purchased.
 
@@ -121,8 +92,12 @@ Following are the components needed, the cost (in Jan 2024) and the source where
 | 1/2", 3/4" and 1" black pan-head screws      | ?    | for speakers |
 | Double stick tape                            | ?    | for crossover networks |
 
+The components are about $400. With the wood and expendibles it is close to $500.
 
-The components are about $400. Adding in wood and expendibles moves it close to $500.
+## Main panels
+The 6 main panels are cut on the CNC machine. Below is a sketch of the cuts.
+
+![](main-panel-sketch.jpg)
 
 ## Download the G-code
 G-code is to a CNC machine what object code is to a computer. It tells the machine what to do, and the machine (hopefully) does it.  
@@ -133,12 +108,41 @@ After is the main panel jobs, it is cut on the tablesaw to create four pieces: t
 
 The following G-code files in this repo are used on a CNC machine to cut out all the pieces.
 
-| G-code file       | Size   | Description |
-| -----------       | ----   | -----------
-| 10PanelsJob1.nc   | 19.875" wide x 32.295" high | Most cuts on the main panel  |
-| 10PanelsJob2.nc   |   "             "           | Remaining cuts on the top face with panel rotated 180 degrees |
-| leftSide.nc       | 7.386" wide x 11.875" high  | Cuts on the assembled left side |
-| righttSide.nc     |   "             "           | Cuts on the assembled right side |
+| G-code file     | Size   | Description |
+| -----------     | ----   | -----------
+| PanelsJob1.nc   | 19.875" wide x 32.295" high | Most cuts on the main panel  |
+| PanelsJob2.nc   |   "             "           | Remaining with main panel rotated 180 degrees |
+| leftSide.nc     | 7.386" wide x 11.875" high  | Cuts on the assembled left side |
+| righttSide.nc   |   "             "           | Cuts on the assembled right side |
+
+### Plywood panels
+Following are the 1/2" Baltic birch plywood pieces. The nominal thickness is 0.480". 
+
+| Description                 | Qty | Size |
+| -----------                 | --- | ---- |
+| Main panel                  | 1   | 19.875" x 32.295" |
+| Side panels                 | 2   | 6.005" x 11.875" |
+| Internal enclosure dividers | 2   | 6.375" x 6.875" **TODO** verify numbers |
+
+The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of 30".
+Later it is cut into four panels: the front, the bottom, the lower back and the internal horizontal divider.
+
+### Hardwood pieces 
+All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One other piece of wood is needed.
+
+| Description               | Qty | Size |
+| -----------               | --- | ---- |
+| Side tops and bottoms     | 4   | 7.385" |
+| Side fronts and backs     | 4   | 11.875" |
+| Front and back L moldings | 4   | ~20" (each will be cut to size later) |
+| Raspberry Pi platform     | 1   | 2.75" x 3.625" |
+
+One other piece is a *platform* used to elevate the Raspberry Pi. The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports. Usually 1-1/4" thick is enough, but not always - measure the big power supply you have.
+
+Following is a diagram of the side moldings (*Double dado*) and the L-shaped moldings
+
+![](molding-dimensions.jpg)
+*Cross section of the two moldings*
 
 ## Prepare for assembly 
 Final assembly of the carcass can take place when you have:
