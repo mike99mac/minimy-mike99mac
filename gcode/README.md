@@ -44,7 +44,7 @@ To build the boombox, perform the following steps:
 
 - [Obtain parts and components](#obtain-all-parts-and-components)
 - [Prepare for assembly](#prepare-for-assembly)
-- [Perform final assembly](#perform-final-assembly)
+- [Glue enclosure](#glue-enclosure)
 - [Install components](#install-components)
 - [Stand up the software stack](#stand-up-the-software-stack)
 
@@ -129,7 +129,7 @@ All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One 
 | Front and back L moldings | 4   | ~20" (each will be cut to size later) |
 | Raspberry Pi platform     | 1   | 2.75" x 3.625" x 1.25" tall |
 
-One other piece is a *platform* used to elevate the Raspberry Pi. The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports. Usually 1-1/4" thick is enough, but not always - measure the big power supply you have.
+One other piece is a *platform* used to elevate the Raspberry Pi. The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports. Usually 1-1/4" thick is enough, but not always - measure the height of your power supply.
 
 Following is a diagram of the side moldings (*Double dado*) and the L-shaped moldings
 
@@ -209,7 +209,7 @@ To construct the sides, perform the following tasks:
 
 **TODO** get a picture
  
-## Perform final assembly 
+## Glue enclosure 
 To perform the final assembly of all wood pieces, perform the following tasks:
 - [Glue carcass](#glue-carcass)
 - [Glue sides to carcass](#glue-sides-to-carcass)
@@ -386,13 +386,9 @@ To install , perform the following tasks:
 - Attach the USB-C end of the power supply to the left side of the Raspberry Pi. 
 **TODO:** Add picture.
 
-## Stand up the software stack 
-Installing the software is outside the scope of this document, but here's a short answer.
-- Plug a monitor, keyboard and mouse into the Raspberry Pi.
-**TODO:** Add picture.
-- Flash a Linux to a micro-SD card and plug it in to the Raspberry Pi.
-- Power on the RasPi with the new on/off button. 
-
+## Install the software  
+Installing the software is described one directory up: https://github.com/mike99mac/minimy-mike99mac
+ 
 # The finished product
 Below is one completed boombox.
 
