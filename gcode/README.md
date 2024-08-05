@@ -53,7 +53,7 @@ Obtain the follow parts and components:
 
 - [Electronic components](#components)
 - [Plywood panels](plywood-panels)
-- [Hardwood pieces](#hardwood-pieces)
+- [Hardwood molding](#hardwood-molding)
 
 ### Electronic components  
 Following are the components needed, the cost (in Jan 2024) and the source where they were purchased.
@@ -97,39 +97,37 @@ The 6 main panels are cut on the CNC machine. Below is a sketch of the cuts.
 ![](main-panel-sketch.jpg)
 
 ## G-code
-G-code is to a CNC machine what object code is to a computer. Because the panel is over 30" (max of CNC machine), it must be cut twice, rotated 180 degrees between jobs. 
+G-code is to a CNC machine what object code is to a computer. Because the main panel is over 30" (maximum travel of CNC machine), it must be cut twice, rotated 180 degrees between jobs. 
 
-The left and right sides must be assembled 
+The following G-code ``.nc`` files are used to cut out all the pieces.
 
-The following G-code are used on a CNC machine to cut out all the pieces.
-
-| G-code file     | Size   | Description |
-| -----------     | ----   | -----------
-| PanelsJob1.nc   | 19.875" wide x 43.68" high | Most cuts on the main panel  |
-| PanelsJob2.nc   |   "             "           | Remaining cuts with panel rotated 180 degrees |
-| leftSide.nc     | 7.386" wide x 11.875" high  | Cuts on the assembled left side |
-| righttSide.nc   |   "             "           | Cuts on the assembled right side |
+| G-code file         | Size   | Description |
+| -----------         | ----   | -----------
+| ``PanelsJob1.nc``   | 19.875" wide x 43.68" high | Most cuts on the main panel |
+| ``PanelsJob2.nc``   |   "             "           | Remaining cuts with panel rotated 180 degrees |
+| ``leftSide.nc``     | 7.386" wide x 11.875" high  | Cuts on the assembled left side |
+| ``rightSide.nc``    |   "             "           | Cuts on the assembled right side |
 
 ### Plywood panels
 Following are the 1/2" Baltic birch plywood pieces. The nominal thickness is 0.480". 
 
 | Description                 | Qty | Size |
 | -----------                 | --- | ---- |
-| Main panel                  | 1   | 19.875" x 43.68" |
+| Six panels to be cut        | 1   | 19.875" x 43.68" |
 | Side panels                 | 2   | 6" x 11.875" |
 | Internal enclosure dividers | 2   | 6.5" x 6.875" | 
 
 The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of 30". 
 
-### Hardwood pieces 
-All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One other piece of wood is needed.
+### Hardwood molding 
+All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One other piece of wood is needed on which to mount the Raspberry Pi.
 
 | Description               | Qty | Size |
 | -----------               | --- | ---- |
 | Side tops and bottoms     | 4   | 7.385" |
 | Side fronts and backs     | 4   | 11.875" |
 | Front and back L moldings | 4   | ~20" (each will be cut to size later) |
-| Raspberry Pi platform     | 1   | 2.75" x 3.625" |
+| Raspberry Pi platform     | 1   | 2.75" x 3.625" x 1.25" tall |
 
 One other piece is a *platform* used to elevate the Raspberry Pi. The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports. Usually 1-1/4" thick is enough, but not always - measure the big power supply you have.
 
@@ -170,16 +168,11 @@ This picture shows the main panel being cut by a CNC machine.
 *Main panel being cut*
 
 ### Prepare all panels
-To prepare the panels, perform the following tasks:
-- Starting from the top of the main panel working down, cut the 4 machined panels:
-  - Top - 11.500"
-  - Bottom and center divider - both 6.500"
-  - Back - 7.460" (ideally that will be exactly what you are left with)
-- Cut the sliding panels, noting the mark to align the boards so the grain is continuous.
-  - Back slider - 4.040" - The two "2" marks should be cut in half.
-  - Top slider - 6.180"
-- Cut the 2 enclosure dividers - 6.5" x 6.875" 
-- Cut the 2 sides - 6.005" x 11.875". 
+You should have six panels ~20" wide cut from the two CNC jobs.
+
+You will need four more 1/2" baltic birch panels:
+- 2 enclosure dividers - 6.5" x 6.875" 
+- 2 sides - 6.005" x 11.875". 
 
 You should now have 10 pieces of plywood:
 - 4 milled panels to be glued together
