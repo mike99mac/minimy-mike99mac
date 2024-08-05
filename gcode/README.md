@@ -153,8 +153,8 @@ The distance between each of the 5 knobs on the amplifier is 0.720" in the CNC j
 
 Following are the steps to cut the main panel.
 - Cut a sheet of Baltic birch into thirds - 19.875" x ~60"
-- Mark a "1" and a "2" at 32.395" and 36.56: (32.395" + 0.125" + 4.04").  This will allow you align the grain properly on all panels. 
-- Cut a piece 43.68". This is the "main panel" which will later be cut into six pieces. The two "1" marks should be cut in half.
+- Mark a "1" and a "2" as shown in the figure above.  This will allow you align the grain properly on all panels. 
+- Cut a piece 43.68". This is the "main panel" which will later be cut into six pieces. 
 - Load the Gcode ``MainPanelsJob1.nc``.
 - Clamp and square the main panel. 
 - Zero XYZ of the main panel.
