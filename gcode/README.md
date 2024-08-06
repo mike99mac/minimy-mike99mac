@@ -114,10 +114,12 @@ Following are the 1/2" Baltic birch plywood pieces. The nominal thickness is 0.4
 | Description                 | Qty | Size |
 | -----------                 | --- | ---- |
 | Six panels to be cut        | 1   | 19.875" x 43.68" |
-| Side panels                 | 2   | 6" x 10.625" |
+| Side panels                 | 2   | 6" x 10.700" |
 | Internal enclosure dividers | 2   | 6.5" x 6.875" | 
 
 The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of 30". 
+
+TODO: relief cuts for center divider are 0.360" x 0.170" - check on the CNC job2
 
 ### Hardwood molding 
 All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One other piece of wood is needed on which to mount the Raspberry Pi.
@@ -153,8 +155,8 @@ The distance between each of the 5 knobs on the amplifier is 0.720" in the CNC j
 
 Following are the steps to cut the main panel.
 - Cut a sheet of Baltic birch into thirds - 19.875" x ~60"
-- Mark a "1" and a "2" as shown in the figure above.  This will allow you align the grain properly on all panels. 
 - Cut a piece 43.68". This is the "main panel" which will later be cut into six pieces. 
+- Mark a "1" and a "2" as shown in the figure above.  This will allow you align the grain properly on all panels. 
 - Load the Gcode ``MainPanelsJob1.nc``.
 - Clamp and square the main panel. 
 - Zero XYZ of the main panel.
@@ -183,7 +185,8 @@ You should now have 10 pieces of plywood:
 Perform the following steps.
 
 - Drill a 1-7/8" hole in each of the sides 3" from the bottom and centered.
-- Sand the face of sides
+- Sand the faces of sides.
+- Sand the insides of the moldings.
 - Since the sander is out, sand the faces of the front, bottom and back.
 - Glue both sides with a strap clamp.
  
