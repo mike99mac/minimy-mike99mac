@@ -170,9 +170,8 @@ This picture shows the main panel being cut by a CNC machine.
 ### Prepare all panels
 You should have six panels ~20" wide cut from the two CNC jobs.
 
-You will need four more 1/2" baltic birch panels:
-- 2 enclosure dividers - 6.5" x 6.875" 
-- 2 sides - 6.005" x 11.875". 
+- Cut the 2 side panels and 2 internal enclosures to the specified sizes
+- Drill a hole in each of the sides 3" from the bottom and centered.
 
 You should now have 10 pieces of plywood:
 - 4 milled panels to be glued together
@@ -180,6 +179,7 @@ You should now have 10 pieces of plywood:
 - 2 panels that will be sliding covers
 - 2 sides 
 
+Cu
 ### Drill holes on face 
 The second CNC job on the main panel prepared 10 holes to be drilled from the front, for the amp, buttons and jacks,
 as well as two cavities for the amplifier and the 3 buttons to go in.
