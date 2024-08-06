@@ -114,7 +114,7 @@ Following are the 1/2" Baltic birch plywood pieces. The nominal thickness is 0.4
 | Description                 | Qty | Size |
 | -----------                 | --- | ---- |
 | Six panels to be cut        | 1   | 19.875" x 43.68" |
-| Side panels                 | 2   | 6" x 11.875" |
+| Side panels                 | 2   | 6" x 10.625" |
 | Internal enclosure dividers | 2   | 6.5" x 6.875" | 
 
 The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of 30". 
