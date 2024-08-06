@@ -170,16 +170,23 @@ This picture shows the main panel being cut by a CNC machine.
 ### Prepare all panels
 You should have six panels ~20" wide cut from the two CNC jobs.
 
-- Cut the 2 side panels and 2 internal enclosures to the specified sizes
-- Drill a hole in each of the sides 3" from the bottom and centered.
+- Cut the 2 side panels and 2 internal enclosures to the specified sizes.
 
 You should now have 10 pieces of plywood:
 - 4 milled panels to be glued together
 - 2 enclosure dividers to be glued inside the carcass
 - 2 panels that will be sliding covers
-- 2 sides 
+- 2 sides with holes drilled
 
-Cu
+### Glue the sides
+
+Perform the following steps.
+
+- Drill a 1-7/8" hole in each of the sides 3" from the bottom and centered.
+- Sand the face of sides
+- Since the sander is out, sand the faces of the front, bottom and back.
+- Glue both sides with a strap clamp.
+ 
 ### Drill holes on face 
 The second CNC job on the main panel prepared 10 holes to be drilled from the front, for the amp, buttons and jacks,
 as well as two cavities for the amplifier and the 3 buttons to go in.
