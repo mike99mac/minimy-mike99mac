@@ -114,7 +114,7 @@ Following are the 1/2" Baltic birch plywood pieces. The nominal thickness is 0.4
 | Description                 | Qty | Size |
 | -----------                 | --- | ---- |
 | Six panels to be cut        | 1   | 19.875" x 43.68" |
-| Side panels                 | 2   | 6" x 10.700" |
+| Side panels                 | 2   | 6" x 10.625" |
 | Internal enclosure dividers | 2   | 6.5" x 6.875" | 
 
 The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of 30". 
@@ -195,8 +195,9 @@ The second CNC job on the main panel prepared 10 holes to be drilled from the fr
 as well as two cavities for the amplifier and the 3 buttons to go in.
 
 Baltic birch plywood is subject to tearout.  To avoid that as much as possible, perform the following steps:
-- Put masking tape on the front covering all 10 holes.
 - Drill 10 pilot holes from the back in the center of each hole with a 1/16" bit.
+- Turn drill press speed up to 2100 RPMs.
+- Set fence to 2.67" to the drill bit (TODO: check this against Easel)
 - Drill holes in the front with sharp Forstner bits:
   - 2 holes for jacks:   11/32 (0.344")
   - 3 holes for buttons:  9/32 (0.281") 
@@ -217,8 +218,6 @@ To construct the sides, perform the following tasks:
 - Run the CNC job ``rightSide.nc`` on the right side.
 - Sand the sides, especially the inside edges which will not be easily accessible after they are glued to the carcass.
 
-**TODO** get a picture
- 
 ## Glue enclosure 
 To perform the final assembly of all wood pieces, perform the following tasks:
 - [Glue carcass](#glue-carcass)
@@ -230,7 +229,7 @@ To perform the final assembly of all wood pieces, perform the following tasks:
 To glue up the main carcass, perform the following tasks:
 - Dry fit the four machined panels and two enclosure dividers.
 - Glue the two enclosure dividers to the bottom and center divider and clamp with 2 clamps.
-- Glue the side with no clamps to the front panel.
+- Glue the sides with no clamps to the front panel.
 - Remove the 2 clamps and glue the back panel on.
 - Add perhaps 4 clamps to lightly clamp all 6 pieces.
 - Use 2 right-angle clamps at the left and right sides to ensure the box is square.
