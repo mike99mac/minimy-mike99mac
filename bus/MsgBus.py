@@ -2,6 +2,8 @@ import asyncio
 import json
 import logging
 import websockets
+#from websockets import WebSocketServerProtocol
+from websockets import serve 
 
 logging.basicConfig(level=logging.INFO)
 
@@ -15,11 +17,11 @@ class Server:
     logging.info('Message Bus Initialized')
 
   async def register(self, ws) -> bool:
-    identifier = ws.path[1:]
+    logging.info(f"Server.register(): ws.skill_remote_address: {ws.remote_address}")
+    identifier = ws.remote_address[1]      # save port number as identifier
     if identifier in self.identifiers:
       logging.warning(f"Identifier {identifier} already registered. Connection rejected.")
       return False
-
     self.clients[ws] = identifier
     self.identifiers.add(identifier)
     logging.info(f'{ws.remote_address} Connected: {identifier}')
@@ -38,10 +40,7 @@ class Server:
         return client
     return None
 
-  async def send_to_clients(self, message):
-    """
-    Handle message distribution
-    """
+  async def send_to_clients(self, message): # Handle message distribution
     if self.clients:
       try:
         msg = json.loads(message)
@@ -51,18 +50,15 @@ class Server:
           logging.error(f"Error - Rejected ill-formed message. source:{source}, target:{target}")
           return False
 
-        if target == '*':  # Broadcast
+        if target == '*':                  # Broadcast
           await asyncio.gather(*[client.send(message) for client in self.clients])
-        else:  # Directed
+        else:                              # Directed
           client = await self.find_client(target)
           if client is None:
             logging.warning(f"Error, target not found! target:{target}, message:{msg}")
             return False
-
           await client.send(message)
-
-          # Optionally notify a system monitor
-          system_monitor = await self.find_client('system_monitor')
+          system_monitor = await self.find_client('system_monitor') # notify a system monitor
           if system_monitor:
             await system_monitor.send(message)
           return True
@@ -70,7 +66,8 @@ class Server:
         logging.error(f"Error during message distribution: {e}")
         return False
 
-  async def ws_handler(self, ws, path):
+  #async def ws_handler(self, ws, path):
+  async def ws_handler(self, ws):
     if await self.register(ws):
       try:
         async for message in ws:
@@ -80,14 +77,13 @@ class Server:
       finally:
         await self.unregister(ws)
     else:
-      logging.warning(f"Cannot register connection for path {path}. Dropping connection.")
+      logging.warning(f"Cannot register connection - dropping connection")
 
 async def main():
   server = Server()
-  start_server = websockets.serve(server.ws_handler, '0.0.0.0', 8181)
-  await start_server  # This sets up the server
-  logging.info("Server is running...")
-  await asyncio.Future()  # Keep the server running indefinitely
+  async with serve(server.ws_handler, '0.0.0.0', 8181):
+    logging.info("Server is running...")
+    await asyncio.Future()  # Keep the server running indefinitely
 
 if __name__ == "__main__":
   asyncio.run(main())
