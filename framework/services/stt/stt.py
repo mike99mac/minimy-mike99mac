@@ -7,7 +7,7 @@ from framework.message_types import MSG_SKILL
 from google.cloud import speech
 from subprocess import Popen, PIPE, STDOUT
 from framework.util.utils import LOG, Config, aplay, get_wake_words
-#from faster_whisper import WhisperModel
+from faster_whisper import WhisperModel
 
 REMOTE_TIMEOUT = 3
 LOCAL_TIMEOUT = 5
@@ -20,27 +20,27 @@ def execute_command(command):
     return stdout, stderr
 
 def _local_transcribe_file(wav_filename, return_dict):
-    # print(f"STTSvc._local_transcribe_file(): wav_filename: {wav_filename}")
     start_time = time.time()
-    cmd = 'curl http://localhost:5002/stt -H "Content-Type: audio/wav" --data-binary @"%s"' % (wav_filename,)
-    out, err = execute_command(cmd)
-    res = out.strip()
-    if res != '':
-        return_dict['service'] = 'local'
-        return_dict['text'] = res
-    # give up on faster-whisper??? -MM
-    # model_size = "tiny.en"
-    # model = WhisperModel(model_size, device="cpu", compute_type="int8") # run on CPU with INT8
-    # segments, info = model.transcribe(wav_filename, beam_size=5)
+    # cmd = 'curl http://localhost:5002/stt -H "Content-Type: audio/wav" --data-binary @"%s"' % (wav_filename,)
+    # out, err = execute_command(cmd)
+    # res = out.strip()
+    # if res != '':
+    #     return_dict['service'] = 'local'
+    #     return_dict['text'] = res
+    # print(f"wav_filename = {wav_filename}")
+    # replace local STT with faster-whisper   -MM
+    model_size = "tiny.en"
+    model = WhisperModel(model_size, device="cpu", compute_type="int8") # run on CPU with INT8
+    segments, info = model.transcribe(wav_filename, beam_size=5)
     # print("Detected language '%s' with probability %f" % (info.language, info.language_probability))
-    # all_text = ""
-    # for segment in segments:
+    all_text = ""
+    for segment in segments:
         # print("[%.2fs -> %.2fs] %s" % (segment.start, segment.end, segment.text))
-    #     all_text = f"{all_text}{segment.text}"
-    # return_dict['service'] = 'local'
+        all_text = f"{all_text}{segment.text}"
+    return_dict['service'] = 'local'
     # split_text = all_text.split()
     # all_text = " ".join(split_text[1:]) # remove ww "Computer"
-    # return_dict['text'] = all_text  
+    return_dict['text'] = all_text  
     # print(all_text)
     # end -MM
 
