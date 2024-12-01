@@ -58,13 +58,9 @@ function mountUmountDirs
   : SOURCE: ${BASH_SOURCE}
   : STACK:  ${FUNCNAME[@]}
 
-  # unmount and remount a tmpfs over /var/log and $HOME/minimy/logs
-  umountTmpfs /var/log 
-  mountTmpfs var-log.mount Linux log directory
+  # unmount and remount tmpfs's to save life of SD card
   umountTmpfs $HOME/minimy/logs
   mountTmpfs home-$USER-minimy-logs.mount Minimy log directory
-
-  # mount a tmpfs over $HOME/minimy/tmp and create three subdirectories
   echo
   umountTmpfs $HOME/minimy/tmp
   mountTmpfs home-$USER-minimy-tmp.mount Minimy temp directory
