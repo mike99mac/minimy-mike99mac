@@ -851,12 +851,42 @@ Now Ubuntu 22.04 is running which has a Python version of 3.10.12. However,  mor
 ## Creating virtual environments
 Python virtual environments (venvs) are highly recommended for testing and to maintain the integrity of your development environment.
 
-A script to create a venv for the Raspberry Pis is here: (mksttvenv)
+A script to create a venv for the Raspberry Pis is here: (mksttvenv) It creates the venv ``stt_venv`` in your home directory. It must be enabled with:
 
-In order to utilize the 
+```
+cd
+. stt_env/bin/activate
+```
+You should see a prefix of ``(stt_venv)`` on your command prompt (PS1).
 
-A script to create a venv for the Nvidia GPU is here: (mksttvenvgpu)
+The file ``jfk.wav``, hard-coded in the above code, is an 11 second audio clip of John F Kennedy's famous words at his inaguration: 
+"And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
 
+The first two tests were the Raspberry Pi 4 and the Nvidia GPU.  The GPU was only 7 or 8 percent faster.  It seems the 1024 GPU cores were not being utilized.
+
+This code tests whether the GPU cores are working:
+
+```
+#!/usr/bin/env python3
+import torch
+print("CUDA available:", torch.cuda.is_available())
+if torch.cuda.is_available():
+    print("CUDA device:", torch.cuda.get_device_name(0))
+```
+Many, many different ways of getting the GPUs enabled were tried. Every time the results were:
+
+```
+CUDA available: False
+```
+
+Finally a script was written to create a venv for the Nvidia GPU. It is here: (mksttvenvgpu)
+
+This script downloads *wheel files* for Python torch, torchaudio and torchvision, then installs them in the venv. Finally the output was good: 
+
+```
+CUDA available: True
+CUDA device: Orin
+```
 ## Getting STT running locally <a name="localstt"></a> 
 
 The code used to test the performance is below. I believe tracking the elapsed time of just the ``transcribe()`` function is correct. Here's the code
@@ -889,25 +919,6 @@ def main():                                # do the work
 
 if __name__ == "__main__":
   main()
-```
-
-### Creating a virtual environment
-A virtual environment is utilized to avoid damaging other components of the system.
-```
-The file ``jfk.wav``, hard-coded in the above code, is an 11 second audio clip of John F Kennedy's famous words at his inaguration: 
-"And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
-
-The first two tests were the Raspberry Pi 4 and the Nvidia GPU.  The GPU was only 7 or 8 percent faster.  It seems the 1024 GPU cores were not being utilized.
-
-This code tests that:
-
-```
-#!/usr/bin/env python3
-import torch
-print("CUDA available:", torch.cuda.is_available())
-if torch.cuda.is_available():
-    print("CUDA device:", torch.cuda.get_device_name(0))
-
 ```
 
 ### The results
