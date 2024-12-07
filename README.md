@@ -815,7 +815,7 @@ The Wiki skill is a fallback skill. As such it does not have a vocabulary
 
 There is more documentation, by the original author Ken Smith, here: https://github.com/ken-mycroft/minimy/tree/main/doc
 
-# Local Speech to Text
+# Local Speech to Text <a name="localstt"></a> 
 In late 2024 there was work done on running Speech to Text (STT) locally.
 Three SoC platforms are tested:
 - Raspberry Pi 4
@@ -823,10 +823,9 @@ Three SoC platforms are tested:
 - Nvidia Jetson GPU
 
 ## Preparing the Nvidia GPU
-Getting the Nvidia Jetson Orin Nano was quite a bit of work.
+Getting the Nvidia Jetson Orin Nano working took quite a bit of time.
 
-It does not appear possible to boot conventional ARM Linux images on it.  Rather, the Nvidia *JetPack* has to be used.
-I tried Jetpack 6 which was the latest, but it would not boot.  I downgraded as follows:
+It does not appear possible to boot conventional ARM Linux images on it.  Rather, the Nvidia *JetPack* has to be used.  I tried Jetpack 6 which was the latest, but it would not boot.  I downgraded and installed it as follows:
 
 - Download Jetpack 5.1.3 from https://developer.nvidia.com/downloads/embedded/l4t/r35\_release\_v5.0/jp513-orin-nano-sd-card-image.zip
 - Uncompress it to a ``.img`` file
@@ -834,22 +833,31 @@ I tried Jetpack 6 which was the latest, but it would not boot.  I downgraded as 
 - Plug the card in the GPU
 - Boot the GPU
 
-Now the box finally booted.  However, it was running Ubuntu 20.04 which was 4.5 years old at the time.  The Python version was 3.8 which was too old for some packages. The solution was to upgrade the firmware with the following command
+Now the box finally booted.  However, it was running Ubuntu 20.04 which was 4.5 years old at the time.  The Python version was 3.8 which was too old for some packages. The solution was to upgrade the firmware with the following command:
 
 ```
 sudo apt-get install nvidia-l4t-jetson-orin-nano-qspi-updater
 ```
 
-With the firmware upgraded, it was finally able to boot Jetpack 6. Here are the steps:
-- Shutdown existing Linux
+With the firmware upgraded, it was finally able to boot Jetpack 6. Here are the steps to upgrade to Jetpack 6:
+- Shutdown Linux
 - Download Jetpack 6.1 from https://developer.nvidia.com/downloads/embedded/l4t/r36\_release\_v4.0/jp61-orin-nano-sd-card-image.zip
 - Uncompress it
 - Flash the ``.img`` file to a micro SD card 
 - Boot the GPU from the card
 
-Now Ubuntu 22.04 is running which has a Python version of 3.10.12. However, more care and feeding will be needed to utilize the GPUs.
+Now Ubuntu 22.04 is running which has a Python version of 3.10.12. However,  more care and feeding will be needed to utilize the GPUs.
 
-## Getting STT running locally (#localSTT) <a name="localstt"></a> 
+## Creating virtual environments
+Python virtual environments (venvs) are highly recommended for testing and to maintain the integrity of your development environment.
+
+A script to create a venv for the Raspberry Pis is here: (mksttvenv)
+
+In order to utilize the 
+
+A script to create a venv for the Nvidia GPU is here: (mksttvenvgpu)
+
+## Getting STT running locally <a name="localstt"></a> 
 
 The code used to test the performance is below. I believe tracking the elapsed time of just the ``transcribe()`` function is correct. Here's the code
 
@@ -881,6 +889,8 @@ def main():                                # do the work
 
 if __name__ == "__main__":
   main()
+```
+
 ### Creating a virtual environment
 A virtual environment is utilized to avoid damaging other components of the system.
 ```
@@ -915,6 +925,6 @@ Comparison of local STT performance:
 - Nvidia GPU is 6 times faster than Raspberry Pi 4.
 - Nvidia GPU is 2.8 times faster than Raspberry Pi 5.
 
-Here's a picture of the three boxes.  Raspberry Pi 4 on the left and 5 on the right are both in boomboxes for superior sound.  The home for the GPU is coming soon.
+Here's a picture of the three boxes.  The Raspberry Pi 4 on the left and Pi 5 on the right are both in boomboxes for superior sound.  The GPU is to the right of the keyboard. A boombox carcass for it is coming soon...
 
 ![](STT-3-box-shootout.png)

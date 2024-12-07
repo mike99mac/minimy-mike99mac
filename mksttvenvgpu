@@ -1,0 +1,114 @@
+#!/bin/bash
+#
+# mksttvenvgpu - make a virtual environment for speech to text (STT) on a GPU 
+# The GPU suffix adds installing Nvidia wheel files for torch, torchaudio and torchvision
+# It requires a functioning /usr/bin/python3.10 
+#
+#+--------------------------------------------------------------------------+
+function runCmd
+# run a command and exit if it fails
+#+--------------------------------------------------------------------------+
+ {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+
+  cmd="$@"                                 # all args
+
+  echo " "
+  echo "Running: $cmd" | tee -a $logFile
+  eval $cmd 2>&1 | tee -a $logFile
+  rc=$?
+  if [ "$rc" != 0 ]; then                  # it failed
+    echo "ERROR: $cmd returned $rc" | tee -a $logFile
+    exit 1
+  else
+    echo "Command was successful!" | tee -a $logFile
+  fi
+ }                                         # runCmd()
+
+function makeVenv                          # make the virtual environment
+ {
+  set -e
+  if [ ! -d $HOME ]; then 
+    echo "ERROR: no home directory found at $HOME"
+    exit 1
+  fi
+  theVenv="$HOME/stt_venv"
+  if [ -d $theVenv ]; then                 # virtual environment exists
+    echo "ERROR: virtual environment already exists - to delete it run:"
+    echo "rm -fr $theVenv"
+    exit 2
+  fi
+  if [ -d $theVenv ]; then                 # virtual environment exists
+    echo "ERROR: virtual environment already exists - to delete it run:"
+    echo "rm -fr $theVenv"
+    exit 2
+  fi
+  cd $HOME                                 # build in home directory
+  
+  echo "Installing co-reqs for a virtual environment..."
+  runCmd sudo apt-get -qq install -y python3.10-venv
+  runCmd sudo apt-get -qq install -y python3.10-dev
+  runCmd sudo apt-get -qq install -y build-essential
+  runCmd sudo apt-get -qq install -y portaudio19-dev
+  
+  torchWheel="torch-2.5.0-cp310-cp310-linux_aarch64.whl"
+  torchWheelURL="http://jetson.webredirect.org/jp6/cu126/+f/5cf/9ed17e35cb752/torch-2.5.0-cp310-cp310-linux_aarch64.whl#sha256=5cf9ed17e35cb7523812aeda9e7d6353c437048c5a6df1dc6617650333049092"
+  torchAudioWheel="torchaudio-2.5.0-cp310-cp310-linux_aarch64.whl"
+  torchAudioWheelURL="http://jetson.webredirect.org/jp6/cu126/+f/812/4fbc4ba6df0a3/torchaudio-2.5.0-cp310-cp310-linux_aarch64.whl#sha256=8124fbc4ba6df0a30b1d8176aa5ce6f571c2dd5263e6401109d2e29708352c97"
+  torchVisionWheel="torchvision-0.20.0-cp310-cp310-linux_aarch64.whl"
+  torchVisionWheelURL="http://jetson.webredirect.org/jp6/cu126/+f/5f9/67f920de3953f/torchvision-0.20.0-cp310-cp310-linux_aarch64.whl#sha256=5f967f920de3953f2a39d95154b1feffd5ccc06b4589e51540dc070021a9adb9"
+  if [ ! -f $torchWheel ]; then            # torch wheel does not exist
+    echo "Getting torch wheel files from Nvidia ..."
+    runCmd wget -O $torchWheel $torchWheelURL
+  else
+    echo "Using existing wheel: $torchWheel"
+  fi
+  if [ ! -f $torchAudioWheel ]; then       # torchaudio wheel does not exist
+    echo "Getting torchaudio wheel ..."
+    runCmd wget -O $torchAudioWheel $torchAudioWheelURL
+  else
+    echo "Using existing wheel: $torchAudioWheel"
+  fi
+  if [ ! -f $torchVisionWheel ]; then      # torchvision wheel does not exist
+    echo "Getting torchvision wheel ..."
+    runCmd wget -O $torchVisionWheel $torchVisionWheelURL
+  else
+    echo "Using existing wheel: $torchVisionWheel"
+  fi  
+  echo "Creating virtual environment at $theVenv"
+  runCmd /usr/bin/python3.10 -m venv $theVenv     # create a 3.10 venv
+  source $theVenv/bin/activate             # activate venv
+  local pipCmd="$theVenv/bin/pip"          # use the newly created pip
+  echo "Installing STT requirements ..."
+  runCmd $pipCmd install --upgrade pip wheel
+  echo "Installing numpy 1.x ..."          # numpy 2.x conflicts with other libraries
+  $pipCmd install "numpy<2.0" | tee -a $logFile 
+  echo "Installing numpy ..."
+  runCmd $pipCmd install pyaudio 
+  echo "Installing Torch wheel ..."
+  runCmd $pipCmd install $torchWheel
+  echo "Installing Torchaudio wheel ..."
+  runCmd $pipCmd install $torchAudioWheel
+  echo "Installing Torchvision wheel ..."
+  runCmd $pipCmd install $torchVisionWheel
+  echo "Installing whisper ..."
+  runCmd $pipCmd install git+https://github.com/openai/whisper.git
+  runCmd $pipCmd install whisper 
+  
+  echo ""
+  echo "You can set this up as a long-running service with:"
+  echo "********************************************************************************"
+  echo "sudo cp ~/stt-server.service /etc/systemd/system/stt-server.service"
+  echo "sudo systemctl daemon-reload"
+  echo "sudo systemctl enable stt-server.service"
+  echo "sudo systemctl start stt-server.service"
+  echo "********************************************************************************"
+ }
+
+# main 
+timeStamp=`date +"%y-%m-%d-%H-%M-%S"`
+logFile="$HOME/$timeStamp-install1.out"    # output file
+echo "Running $0 on $timeStamp to make venv ..." > $logFile # create a new log file
+makeVenv
+
