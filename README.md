@@ -815,3 +815,89 @@ The Wiki skill is a fallback skill. As such it does not have a vocabulary
 
 There is more documentation, by the original author Ken Smith, here: https://github.com/ken-mycroft/minimy/tree/main/doc
 
+# Local Speech to Text
+In late 2024 there was work done on running Speech to Text (STT) locally.
+Three platforms are test, Raspberry Pi's 4 and 5, and a Nvidia GPU.
+
+## Preparing the Nvidia GPU
+Getting the Nvidia Jetson Orin Nano was quite a bit of work.
+
+It does not appear possible to boot conventional ARM Linux images on it.  Rather, the Nvidia *JetPack* has to be used.
+I tried Jetpack 6 which was the latest, but it would not boot.  I downgraded as follows:
+
+- Download Jetpack 5.1.3 from https://developer.nvidia.com/downloads/embedded/l4t/r35\_release\_v5.0/jp513-orin-nano-sd-card-image.zip
+- Uncompress it to a ``.img`` file
+- Copy the ``.img`` file to a micro SD card
+- Plug the card in the GPU
+- Boot the GPU
+
+Now the box finally booted.  However, it was running Ubuntu 20.04 which was 4.5 years old at the time.  The Python version was 3.8 which was too old for some packages. The solution was to upgrade the firmware with the following command
+
+```
+sudo apt-get install nvidia-l4t-jetson-orin-nano-qspi-updater
+```
+
+Now the firmware was able to boot Jetpack 6. So a newer Linux was now possible
+- Shutdown Linux
+- Download Jetpack 6.1 from https://developer.nvidia.com/downloads/embedded/l4t/r36\_release\_v4.0/jp61-orin-nano-sd-card-image.zip
+- Uncompress it
+- Flash to micro SD card 
+- Boot the GPU from the card
+
+Now Ubuntu 22.04 is running which has a Python version of 3.10.12
+
+The GPU is now running, but more care and feeding will be needed to utilize the GPUs
+
+## Getting STT running locally 
+
+
+The code used to test the performance is below. I believe tracking the elapsed time of just the ``transcribe()`` function is correct.
+
+```
+#!/usr/bin/env python3
+import pyaudio
+import time
+import whisper
+import wave
+import numpy as np
+
+#model = whisper.load_model("large")
+model = whisper.load_model("tiny.en")      # Load the tiny quantized whisper model
+def transcribe_audio(filename="/home/pi/jfk.wav"): # transcribe audio file using Whisper
+  print("transcribe_audio(): loading audio ...")
+  audio = whisper.load_audio(filename)     # load audio file
+  print("transcribe_audio(): pad or trim audio ...")
+  audio = whisper.pad_or_trim(audio)
+  print("transcribe_audio(): transcribing audio ...")
+  start_time = time.time()
+  result = model.transcribe(audio, fp16=False) # transcribe to text
+  end_time = time.time()
+  et = end_time - start_time
+  print("Transcription: ", result["text"])
+  print(f"Elapsed time: {et}")
+
+def main():                                # do the work
+  transcribe_audio()                       # transcribe the recorded audio
+
+if __name__ == "__main__":
+  main()
+```
+The file ``jfk.wav`` is an 11 second audio clip of John F Kennedy's famous words at his inaguration: 
+"And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
+
+### The results
+
+Here are the performance times on three different boxes.  
+
+| Platform                | Memory | Python | Elapsed Time    |
+|-------------------------|--------|--------|-----------------|
+| Raspberry Pi 4          |  4 GB  |  3.11  |     8.07s       |
+| Raspberry Pi 5          |  8 GB  |  3.11  |     3.83s       |
+| Nvidia Jetson Orin Nano |  8 GB  |  3.10  |     1.35s       |
+
+Comparison
+- Raspberry Pi 5 is 2.1 times faster than Raspberry Pi 4.
+- Nvidia Jetson Orin Nano is 6 times faster than Raspberry Pi 4.
+- Nvidia Jetson Orin Nano is 2.8 times faster than Raspberry Pi 5.
+
+
