@@ -851,7 +851,8 @@ Now Ubuntu 22.04 is running which has a Python version of 3.10.12. However,  mor
 ## Creating virtual environments
 Python virtual environments (venvs) are highly recommended for testing and to maintain the integrity of your development environment.
 
-A script to create a venv for the Raspberry Pis is here: (mksttvenv) It creates the venv ``stt_venv`` in your home directory. It must be enabled with:
+A script to create a venv for the Raspberry Pis is here: https://github.com/mike99mac/minimy-mike99mac/blob/main/mksttvenv 
+It creates the venv ``stt_venv`` in your home directory. It must be enabled with:
 
 ```
 cd
@@ -879,7 +880,7 @@ Many, many different ways of getting the GPUs enabled were tried. Every time the
 CUDA available: False
 ```
 
-Finally a script was written to create a venv for the Nvidia GPU. It is here: (mksttvenvgpu)
+Finally a script was written to create a venv for the Nvidia GPU here: https://github.com/mike99mac/minimy-mike99mac/blob/main/mksttvenvgpu 
 
 This script downloads *wheel files* for Python torch, torchaudio and torchvision, then installs them in the venv. Finally the output was good: 
 
