@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# mksttvenv - make a virtual environment for speech to text (STT)
+#
+function makeVenv
+ {
+  set -e
+  IP=$(hostname -I | cut -d' ' -f1)
+  if [ ! -d $HOME ]; then 
+    echo "No home directory found at $HOME"
+    exit 1
+  fi
+   
+  theVenv="$HOME/stt_venv"
+  if [ -d $theVenv ]; then                   # the virtual environment exists
+    echo "Virtual environment alread exists - to delete it run:"
+    echo "rm -fr $theVenv"
+    exit 1
+  fi
+  cd $HOME
+  
+  echo "Installing coreqs for a virtual environment..."
+  sudo apt-get install -y python3.11-venv
+  sudo apt-get install -y python3.11-dev
+  sudo apt-get install -y build-essential
+  sudo apt-get install -y portaudio19-dev
+  
+  echo "Creating virtual environment at $theVenv"
+  python3.11 -m venv $theVenv 
+  source $theVenv/bin/activate
+  local pipCmd="$theVenv/bin/pip"
+  
+  echo "Installing STT requirements"
+  pip install --upgrade pip wheel
+  pip install git+https://github.com/openai/whisper.git
+  pip install whisper 
+  pip install numpy 
+  pip install pyaudio 
+ }
+
+# main 
+makeVenv
+
