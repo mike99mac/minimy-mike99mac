@@ -817,7 +817,10 @@ There is more documentation, by the original author Ken Smith, here: https://git
 
 # Local Speech to Text
 In late 2024 there was work done on running Speech to Text (STT) locally.
-Three platforms are test, Raspberry Pi's 4 and 5, and a Nvidia GPU.
+Three SoC platforms are tested:
+- Raspberry Pi 4
+- Raspberry Pi 5 
+- Nvidia Jetson GPU
 
 ## Preparing the Nvidia GPU
 Getting the Nvidia Jetson Orin Nano was quite a bit of work.
@@ -837,21 +840,19 @@ Now the box finally booted.  However, it was running Ubuntu 20.04 which was 4.5 
 sudo apt-get install nvidia-l4t-jetson-orin-nano-qspi-updater
 ```
 
-Now the firmware was able to boot Jetpack 6. So a newer Linux was now possible
-- Shutdown Linux
+With the firmware upgraded, it was finally able to boot Jetpack 6. Here are the steps:
+- Shutdown existing Linux
 - Download Jetpack 6.1 from https://developer.nvidia.com/downloads/embedded/l4t/r36\_release\_v4.0/jp61-orin-nano-sd-card-image.zip
 - Uncompress it
-- Flash to micro SD card 
+- Flash the ``.img`` file to a micro SD card 
 - Boot the GPU from the card
 
-Now Ubuntu 22.04 is running which has a Python version of 3.10.12
-
-The GPU is now running, but more care and feeding will be needed to utilize the GPUs
+Now Ubuntu 22.04 is running which has a Python version of 3.10.12. However, more care and feeding will be needed to utilize the GPUs.
 
 ## Getting STT running locally 
 
 
-The code used to test the performance is below. I believe tracking the elapsed time of just the ``transcribe()`` function is correct.
+The code used to test the performance is below. I believe tracking the elapsed time of just the ``transcribe()`` function is correct. Here's the code
 
 ```
 #!/usr/bin/env python3
@@ -881,13 +882,28 @@ def main():                                # do the work
 
 if __name__ == "__main__":
   main()
+### Creating a virtual environment
+A virtual environment is utilized to avoid damaging other components of the system.
 ```
-The file ``jfk.wav`` is an 11 second audio clip of John F Kennedy's famous words at his inaguration: 
+The file ``jfk.wav``, hard-coded in the above code, is an 11 second audio clip of John F Kennedy's famous words at his inaguration: 
 "And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
+
+The first two tests were the Raspberry Pi 4 and the Nvidia GPU.  The GPU was only 7 or 8 percent faster.  It seems the 1024 GPU cores were not being utilized.
+
+This code tests that:
+
+```
+#!/usr/bin/env python3
+import torch
+print("CUDA available:", torch.cuda.is_available())
+if torch.cuda.is_available():
+    print("CUDA device:", torch.cuda.get_device_name(0))
+
+```
 
 ### The results
 
-Here are the performance times on three different boxes.  
+Here are the performance times on the three boxes.  
 
 | Platform                | Memory | Python | Elapsed Time    |
 |-------------------------|--------|--------|-----------------|
@@ -895,9 +911,11 @@ Here are the performance times on three different boxes.
 | Raspberry Pi 5          |  8 GB  |  3.11  |     3.83s       |
 | Nvidia Jetson Orin Nano |  8 GB  |  3.10  |     1.35s       |
 
-Comparison
+Comparison of local STT performance:
 - Raspberry Pi 5 is 2.1 times faster than Raspberry Pi 4.
-- Nvidia Jetson Orin Nano is 6 times faster than Raspberry Pi 4.
-- Nvidia Jetson Orin Nano is 2.8 times faster than Raspberry Pi 5.
+- Nvidia GPU is 6 times faster than Raspberry Pi 4.
+- Nvidia GPU is 2.8 times faster than Raspberry Pi 5.
 
+Here's a picture of the three boxes.  Raspberry Pi 4 on the left and 5 on the right are both in boomboxes for superior sound.  The home for the GPU is coming soon.
 
+![](STT-3-box-shootout.png)
