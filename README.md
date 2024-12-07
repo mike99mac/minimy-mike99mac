@@ -849,7 +849,7 @@ With the firmware upgraded, it was finally able to boot Jetpack 6. Here are the 
 
 Now Ubuntu 22.04 is running which has a Python version of 3.10.12. However, more care and feeding will be needed to utilize the GPUs.
 
-## Getting STT running locally (#localSTT)
+## Getting STT running locally (#localSTT) <a name="localstt"></a> 
 
 The code used to test the performance is below. I believe tracking the elapsed time of just the ``transcribe()`` function is correct. Here's the code
 
