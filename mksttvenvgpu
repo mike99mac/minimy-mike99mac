@@ -39,11 +39,6 @@ function makeVenv                          # make the virtual environment
     echo "rm -fr $theVenv"
     exit 2
   fi
-  if [ -d $theVenv ]; then                 # virtual environment exists
-    echo "ERROR: virtual environment already exists - to delete it run:"
-    echo "rm -fr $theVenv"
-    exit 2
-  fi
   cd $HOME                                 # build in home directory
   
   echo "Installing co-reqs for a virtual environment..."
@@ -52,6 +47,7 @@ function makeVenv                          # make the virtual environment
   runCmd sudo apt-get -qq install -y build-essential
   runCmd sudo apt-get -qq install -y portaudio19-dev
   
+  echo "Getting and installing Nvidia wheel files for torch ..."
   torchWheel="torch-2.5.0-cp310-cp310-linux_aarch64.whl"
   torchWheelURL="http://jetson.webredirect.org/jp6/cu126/+f/5cf/9ed17e35cb752/torch-2.5.0-cp310-cp310-linux_aarch64.whl#sha256=5cf9ed17e35cb7523812aeda9e7d6353c437048c5a6df1dc6617650333049092"
   torchAudioWheel="torchaudio-2.5.0-cp310-cp310-linux_aarch64.whl"

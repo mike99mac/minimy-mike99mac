@@ -890,7 +890,7 @@ CUDA device: Orin
 ```
 ## Getting STT running locally <a name="localstt"></a> 
 
-The code used to test the performance is below. I believe tracking the elapsed time of just the ``transcribe()`` function is correct. Here's the code
+The code used to test the performance is below. I believe tracking the elapsed time of just the ``transcribe()`` function is correct. Here's the code:
 
 ```
 #!/usr/bin/env python3
@@ -924,18 +924,17 @@ if __name__ == "__main__":
 
 ### The results
 
-Here are the performance times on the three boxes.  
+Here are the performance times on the three "boxes":   
 
-| Platform                | Memory | Python | Elapsed Time    |
-|-------------------------|--------|--------|-----------------|
-| Raspberry Pi 4          |  4 GB  |  3.11  |     8.07s       |
-| Raspberry Pi 5          |  8 GB  |  3.11  |     3.83s       |
-| Nvidia Jetson Orin Nano |  8 GB  |  3.10  |     1.35s       |
+```
+| Platform                | Memory | Python | tiny.en | base.en | small.en |
+|-------------------------|--------|--------|---------|---------|----------|
+| Raspberry Pi 4          |  4 GB  |  3.11  | 8.07s   |  15.1s  |  75s     |
+| Raspberry Pi 5          |  8 GB  |  3.11  | 3.83s   |   6.7s  |  21.3s   |
+| Nvidia Jetson Orin Nano |  8 GB  |  3.10  | 1.35s   |  0.88s  |  1.73s   |
+```
 
-Comparison of local STT performance:
-- Raspberry Pi 5 is 2.1 times faster than Raspberry Pi 4.
-- Nvidia GPU is 6 times faster than Raspberry Pi 4.
-- Nvidia GPU is 2.8 times faster than Raspberry Pi 5.
+The best option seems to be the ``base.en`` model running on the Nvidia GPU.
 
 Here's a picture of the three boxes.  The Raspberry Pi 4 on the left and Pi 5 on the right are both in boomboxes for superior sound.  The GPU is to the right of the keyboard. A boombox carcass for it is coming soon...
 
