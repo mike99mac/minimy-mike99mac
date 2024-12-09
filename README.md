@@ -817,10 +817,19 @@ There is more documentation, by the original author Ken Smith, here: https://git
 
 # Local Speech to Text <a name="localstt"></a> 
 In late 2024 there was work done on running Speech to Text (STT) locally.
-Three SoC platforms are tested:
+
+If it takes more than three or four seconds to translate your speech, the personal voice assistant seems quite slow. People are used to responses in less than two seconds, ideally less than a second.
+
+Internet services, such as Google offer STT transcription. In addition to custom hardware, such as tensor processors, audio streams are split into smaller segments and processed in parallel, significantly speeding up transcription.
+
+However, this greatly reduces people's privacy.  Ideally the STT can be performed locally and nothing goes out on the Ineternet.
+
+Three SoC platforms are tested for speed:
 - Raspberry Pi 4
 - Raspberry Pi 5 
 - Nvidia Jetson GPU
+
+The Raspberry Pi's are less than $100.  The Nvidia GPU is about $500.
 
 ## Preparing the Nvidia GPU
 Getting the Nvidia Jetson Orin Nano working took quite a bit of time.
@@ -838,7 +847,7 @@ Now the box finally booted.  However, it was running Ubuntu 20.04 which was 4.5 
 ```
 sudo apt-get install nvidia-l4t-jetson-orin-nano-qspi-updater
 ```
-
+
 With the firmware upgraded, it was finally able to boot Jetpack 6. Here are the steps to upgrade to Jetpack 6:
 - Shutdown Linux
 - Download Jetpack 6.1 from https://developer.nvidia.com/downloads/embedded/l4t/r36\_release\_v4.0/jp61-orin-nano-sd-card-image.zip
