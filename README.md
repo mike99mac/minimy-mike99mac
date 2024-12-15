@@ -847,7 +847,7 @@ Now the box finally booted.  However, it was running Ubuntu 20.04 which was 4.5 
 ```
 sudo apt-get install nvidia-l4t-jetson-orin-nano-qspi-updater
 ```
-
+
 With the firmware upgraded, it was finally able to boot Jetpack 6. Here are the steps to upgrade to Jetpack 6:
 - Shutdown Linux
 - Download Jetpack 6.1 from https://developer.nvidia.com/downloads/embedded/l4t/r36\_release\_v4.0/jp61-orin-nano-sd-card-image.zip
