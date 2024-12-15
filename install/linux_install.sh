@@ -64,17 +64,13 @@ function doIt                              # do all the work
   runCmd $pipCmd install youtube-search 
   runCmd $pipCmd install pyee 
   echo | tee -a $logFile
-  echo "Installing faster-whisper and downloading model ..." | tee -a $logFile
-  runCmd $pipCmd install faster-whisper
-  echo | tee -a $logFile
-  echo "Playing jfk.wav and converting to text ..." | tee -a $logFile
-  runCmd $pythonCmd $HOME/minimy-mike99mac/fw.py
+  echo "Installing whisper ..." | tee -a $logFile
+  runCmd $pipCmd install git+https://github.com/openai/whisper.git
+  runCmd $pipCmd install whisper
+  runCmd $pipCmd install numpy
+  runCmd $pipCmd install pyaudio
+  runCmd $pipCmd install quart
   runCmd $pipCmd install keyboard 
-  # runCmd $pipCmd install pyyaml
-  # runCmd $pipCmd install pytz
-  # runCmd $pipCmd install inflect
-  # runCmd $pipCmd install websockets --upgrade
-  runCmd $pipCmd install youtube-search-python
   runCmd $pipCmd install torch
   runCmd $pipCmd install torchaudio
   runCmd $pipCmd install transformers
@@ -86,6 +82,7 @@ function doIt                              # do all the work
   echo "Installing local ytplay/ytadd in /usr/local/sbin ..." | tee -a $logFile
   runCmd sudo cp install/ytplay /usr/local/sbin
   runCmd sudo ln -s /usr/local/sbin/ytplay /usr/local/sbin/ytadd
+  runCmd $pipCmd install youtube-search-python
   echo | tee -a $logFile
   echo "Deactivating virtual environment ..." | tee -a $logFile
   deactivate                        # getting error: line 20: deactivate: command not found
@@ -104,27 +101,28 @@ function doIt                              # do all the work
   echo "cd to link-4.1b ..." | tee -a $logFile
   cd link-4.1b
   runCmd make
-  echo | tee -a $logFile
-  nextDir=$HOME/minimy/framework/services/stt/local/CoquiSTT/ds_model
-  echo "cd to $nextDir ..." | tee -a $logFile
-  cd $nextDir
-  echo | tee -a $logFile
-  echo "Installing Local STT ..." | tee -a $logFile
+  #echo | tee -a $logFile
+  #nextDir=$HOME/minimy/framework/services/stt/local/CoquiSTT/ds_model
+  #iecho "cd to $nextDir ..." | tee -a $logFile
+  #cd $nextDir
+  #echo | tee -a $logFile
+  #echo "Installing Local STT ..." | tee -a $logFile
   # don't use runCmd on 1st and 3rd wget - too much stdout
   #runCmd wget https://github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/huge-vocabulary.scorer
-  echo | tee -a $logFile
-  echo "getting github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/huge-vocabulary.scorer ..." | tee -a $logFile
-  wget https://github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/huge-vocabulary.scorer
-  runCmd wget https://github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/alphabet.txt
-  echo | tee -a $logFile
-  echo "getting github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/model.tflite ..." | tee -a $logFile
-  wget https://github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/model.tflite
-  echo | tee -a $logFile
-  echo "Installing Coqui ..."| tee -a $logFile
-  runCmd bash $HOME/minimy/framework/services/stt/local/CoquiSTT/install_linux.sh
+  #echo | tee -a $logFile
+  #echo "getting github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/huge-vocabulary.scorer ..." | tee -a $logFile
+  #wget https://github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/huge-vocabulary.scorer
+  #runCmd wget https://github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/alphabet.txt
+  #echo | tee -a $logFile
+  #echo "getting github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/model.tflite ..." | tee -a $logFile
+  #wget https://github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/model.tflite
+  #echo | tee -a $logFile
+  #echo "Installing Coqui ..."| tee -a $logFile
+  #runCmd bash $HOME/minimy/framework/services/stt/local/CoquiSTT/install_linux.sh
   echo | tee -a $logFile
   echo "Installing Local TTS ..."| tee -a $logFile
   echo | tee -a $logFile
+  nextDir=
   echo "cd to framework/services/tts/local ..." | tee -a $logFile
   cd framework/services/tts/local
   echo | tee -a $logFile
