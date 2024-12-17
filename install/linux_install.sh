@@ -12,27 +12,49 @@ function runCmd
   : SOURCE: ${BASH_SOURCE}
   : STACK:  ${FUNCNAME[@]}
 
-  local timeStamp=`date +"%y-%m-%d-%H:%M:%S"`      # YY-MM-DD-HH:MM:SS
   cmd="$@"                                 # get all args
   let stepNum=$stepNum+1
   echo | tee -a $logFile
-  echo "$timeStamp - Step $stepNum: $cmd ..." 2>&1 | tee -a $logFile # show the command and send to output file
-  eval $cmd 2>&1 | tee -a $logFile         # run command and log output
+  echo "Step $stepNum: $cmd ..." 2>&1 | tee -a $logFile # show the command and send to output file
+  eval $cmd >> $logFile 2>&1               # run command and log output
   rc=$?
   if [ "$rc" != 0 ]; then                  # it failed
     echo "ERROR: $cmd returned $rc" | tee -a $logFile
+    echo "Log file: $logFile"
     exit 1
+  else
+    echo "rc = 0"
   fi
   let curSecs=$SECONDS
   let et=$curSecs-$lastSecs
-  echo "Step took $et seconds" | tee -a $logFile
+  echo "Step $stepNum took $et seconds" | tee -a $logFile
   lastSecs=$curSecs
  }                                         # runCmd()
 
-function doIt                              # do all the work
+#+--------------------------------------------------------------------------+
+function checkEnv
+# Check the environment
+#+--------------------------------------------------------------------------+
  {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+
+  if [ ! -d "$baseDir" ]; then
+    echo "ERROR: base directory $baseDir not found"
+    exit 2
+  fi
+ }                                         # runCmd()
+
+#+--------------------------------------------------------------------------+
+function doIt                              
+# Build the virtual environment
+#+--------------------------------------------------------------------------+
+ {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+
   echo
-  echo "Begin installation of minimy ..." | tee -a $logFile
+  echo "Running $0 ..." > $logFile # create a new log file
   echo | tee -a $logFile
   echo "cd to $HOME/minimy ..." | tee -a $logFile
   cd $HOME/minimy
@@ -40,106 +62,95 @@ function doIt                              # do all the work
   echo "Installing virtual environment ..." | tee -a $logFile
   runCmd sudo apt-get -qq install python3-venv
   runCmd sudo apt-get -qq install python3-dev
-  runCmd python3 -m venv venv
+  runCmd python3 -m venv minimy_venv
   echo | tee -a $logFile
   echo "Upgrading pip ..." | tee -a $logFile
-  local pipCmd="$HOME/minimy/venv/bin/pip"       # use pip from the venv
+  local pipCmd="$HOME/minimy/minimy_venv/bin/pip" # use pip from the venv
   runCmd $pipCmd install --upgrade pip
   echo | tee -a $logFile
   echo "Activating virtual environment ..." | tee -a $logFile
-  runCmd source venv/bin/activate          # start virtual environment
-  # runCmd "echo $VIRTUAL_ENV" - of course it is /home/pi/minimy/venv
+  runCmd source minimy_venv/bin/activate          # start virtual environment
   echo | tee -a $logFile
   echo "Upgrading wheel and setuptools ..." | tee -a $logFile
   runCmd $pipCmd install --upgrade wheel setuptools
   runCmd sudo apt-get -qq install -y python3-dev build-essential portaudio19-dev mpg123 ffmpeg curl wget
-  runCmd sudo apt-get -qq install -y libavcodec-dev libavformat-dev libavdevice-dev libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
+  runCmd sudo apt-get -qq install -y libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
+  runCmd sudo apt-get -qq install -y libavcodec-dev libavformat-dev libavdevice-dev 
   echo | tee -a $logFile
+
   echo "Installing yt-dlp and requirements.txt ..." | tee -a $logFile
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
-  local pythonCmd="$HOME/minimy/venv/bin/python$pythonVer" # use python from the venv
+  local pythonCmd="$HOME/minimy/minimy_venv/bin/python$pythonVer" # use python from the venv
   runCmd $pythonCmd -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
+
+  echo "Installing yt-dlp and requirements.txt ..." | tee -a $logFile
+  cd $baseDir
   runCmd $pipCmd install -r install/requirements.txt
-  runCmd $pipCmd install lingua_franca
-  runCmd $pipCmd install youtube-search 
-  runCmd $pipCmd install pyee 
-  echo | tee -a $logFile
-  echo "Installing whisper ..." | tee -a $logFile
+
+  echo "Installing local STT whisper" | tee -a $logFile
   runCmd $pipCmd install git+https://github.com/openai/whisper.git
-  runCmd $pipCmd install whisper
-  runCmd $pipCmd install numpy
+  runCmd $pipCmd install datasets
+  runCmd $pipCmd install keyboard
+  runCmd $pipCmd install lingua_franca
+  runCmd $pipCmd install optimum
   runCmd $pipCmd install pyaudio
+  runCmd $pipCmd install pyee
+  runCmd $pipCmd install requests
   runCmd $pipCmd install quart
-  runCmd $pipCmd install keyboard 
   runCmd $pipCmd install torch
   runCmd $pipCmd install torchaudio
   runCmd $pipCmd install transformers
-  runCmd $pipCmd install datasets
-  runCmd $pipCmd install optimum
+  runCmd $pipCmd install websockets
+  runCmd $pipCmd install whisper
+  runCmd $pipCmd install youtube-search
+  runCmd $pipCmd install youtube-search-python
   runCmd $pipCmd install --upgrade --upgrade-strategy eager "optimum[neural-compressor]"
-
   echo | tee -a $logFile
+
   echo "Installing local ytplay/ytadd in /usr/local/sbin ..." | tee -a $logFile
   runCmd sudo cp install/ytplay /usr/local/sbin
-  runCmd sudo ln -s /usr/local/sbin/ytplay /usr/local/sbin/ytadd
+  if [ ! -f /usr/local/sbin/ytadd ]; then
+    runCmd sudo ln -s /usr/local/sbin/ytplay /usr/local/sbin/ytadd
+  fi
   runCmd $pipCmd install youtube-search-python
   echo | tee -a $logFile
   echo "Deactivating virtual environment ..." | tee -a $logFile
-  deactivate                        # getting error: line 20: deactivate: command not found
   echo | tee -a $logFile
-  nextDir=$HOME/minimy/framework/services/intent/nlp/local
-  echo "cd to $nextDir ..." | tee -a $logFile
-  cd $nextDir
-  echo "current working directory:" | tee -a $logFile 
-  pwd | tee -a $logFile
-  echo "ls -la cmu*" | tee -a $logFile
-  ls -la cmu* | tee -a $logFile
-  echo | tee -a $logFile
+  cd $HOME/minimy/framework/services/intent/nlp/local
+  #echo "ls -la cmu*" | tee -a $logFile
+  #ls -la cmu* | tee -a $logFile
+  #echo | tee -a $logFile
+
   echo "Building CMU link grammar ..." | tee -a $logFile
   runCmd tar xzf cmu_link-4.1b.tar.gz
   echo | tee -a $logFile
   echo "cd to link-4.1b ..." | tee -a $logFile
   cd link-4.1b
-  runCmd make
+  #runCmd make
   #echo | tee -a $logFile
-  #nextDir=$HOME/minimy/framework/services/stt/local/CoquiSTT/ds_model
-  #iecho "cd to $nextDir ..." | tee -a $logFile
-  #cd $nextDir
-  #echo | tee -a $logFile
-  #echo "Installing Local STT ..." | tee -a $logFile
-  # don't use runCmd on 1st and 3rd wget - too much stdout
-  #runCmd wget https://github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/huge-vocabulary.scorer
-  #echo | tee -a $logFile
-  #echo "getting github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/huge-vocabulary.scorer ..." | tee -a $logFile
-  #wget https://github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/huge-vocabulary.scorer
-  #runCmd wget https://github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/alphabet.txt
-  #echo | tee -a $logFile
-  #echo "getting github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/model.tflite ..." | tee -a $logFile
-  #wget https://github.com/coqui-ai/STT-models/releases/download/english/coqui/v1.0.0-huge-vocab/model.tflite
-  #echo | tee -a $logFile
-  #echo "Installing Coqui ..."| tee -a $logFile
-  #runCmd bash $HOME/minimy/framework/services/stt/local/CoquiSTT/install_linux.sh
+
+  echo "Installing Local STT ..."| tee -a $logFile
   echo | tee -a $logFile
+  cd $baseDir/install
+  echo "Loading the whisper model"
+  source $HOME/minimy/minimy_venv/bin/activate # start the venv
+  runCmd $pythonCmd $baseDir/bldwhisper.py $baseDir/jfk.wav # build the base.en model
+  deactivate                                   # stop the venv
+
   echo "Installing Local TTS ..."| tee -a $logFile
   echo | tee -a $logFile
-  nextDir=
-  echo "cd to framework/services/tts/local ..." | tee -a $logFile
-  cd framework/services/tts/local
-  echo | tee -a $logFile
+  cd $baseDir/framework/services/tts/local
   echo "Running command: wget http://rioespana.com/images/mimic3.tgz" | tee -a $logFile
-  wget http://rioespana.com/images/mimic3.tgz
+  runCmd wget http://rioespana.com/images/mimic3.tgz
   runCmd tar xzf mimic3.tgz
-  echo | tee -a $logFile
-  echo "cd to mimic3 and run make install ..." | tee -a $logFile
   cd mimic3
   runCmd make install
-  echo | tee -a $logFile
-  echo "cd to $HOME/minimy ..." | tee -a $logFile
   cd $HOME/minimy
   runCmd source framework/services/tts/local/mimic3/.venv/bin/activate
   runCmd $pipCmd install importlib-resources
   runCmd deactivate
   echo | tee -a $logFile
+
   echo "Copying and enabling systemd .mount and .service files ..." | tee -a $logFile 
   runCmd sudo cp install/home-pi-minimy-logs.mount /etc/systemd/system 
   runCmd sudo systemctl enable home-pi-minimy-logs.mount 
@@ -161,17 +172,20 @@ function doIt                              # do all the work
   runCmd sudo cp $HOME/minimy/install/great_songs.m3u /var/lib/mpd/playlists
   echo | tee -a $logFile
   echo "Starting virtual environment ..." | tee -a $logFile
-  source $HOME/minimy/venv/bin/activate
+  source $HOME/minimy/minimy_venv/bin/activate
   echo " "
   echo "Install Complete at `date`" | tee -a $logFile
  }                                         # doIt()
 
 # main()
-let stepNum=0
+baseDir="$HOME/minimy"
 let lastSecs=$SECONDS
-timeStamp=`date +"%y-%m-%d-%H-%M-%S"`   
+timeStamp=`date +"%y-%m-%d-%H-%M-%S"`
 logFile="$HOME/$timeStamp-linux_install.out" # output file
-echo "Running linux_install.sh on $timeStamp ..." > $logFile # create a new log file
+let stepNum=0
+timeStamp=`date +"%y-%m-%d-%H-%M-%S"`   
+
+checkEnv                                   # check the environment
 doIt                                       # do the work
 let min=$SECONDS/60
 let sec=$SECONDS%60
