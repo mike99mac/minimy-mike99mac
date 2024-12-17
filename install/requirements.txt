@@ -2,11 +2,9 @@ PyYAML
 requests
 inflect
 pytz
-numpy
 webrtcvad
 scipy
 PyAudio
-lingua-franca
 websockets
 websocket-client
 boto3
