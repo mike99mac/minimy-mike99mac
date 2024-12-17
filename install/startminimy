@@ -3,6 +3,27 @@
 # startminimy - start the minimy personal voice assistant and music player
 # 
 #+--------------------------------------------------------------------------+
+function checkEnv
+# Check the environment 
+#+--------------------------------------------------------------------------+
+ {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+
+  if [ ! -d $baseDir ]; then
+    echo "ERROR: base directory $baseDir not found"
+    echo "To clone Minimy to your home directory: "
+    echo "cd; git clone https://github.com/mike99mac/minimy-mike99mac" 
+    exit 1
+  fi  
+  ps -ef | grep "python3.*minimy" | grep -v grep
+  if [ $? = 0 ]; then                      # minimy is running
+    echo "It appears Minimy is already running!"
+    exit 1
+  fi
+ } 
+ 
+#+--------------------------------------------------------------------------+
 function umountTmpfs
 # Unmount a temporary file system if it is mounted
 # Arg 1: file system to umount
@@ -58,9 +79,11 @@ function mountUmountDirs
   : SOURCE: ${BASH_SOURCE}
   : STACK:  ${FUNCNAME[@]}
 
-  # unmount and remount tmpfs's to save life of SD card
+  # unmount and remount a tmpfs over /var/log and $HOME/minimy/logs
   umountTmpfs $HOME/minimy/logs
   mountTmpfs home-$USER-minimy-logs.mount Minimy log directory
+
+  # mount a tmpfs over $HOME/minimy/tmp and create three subdirectories
   echo
   umountTmpfs $HOME/minimy/tmp
   mountTmpfs home-$USER-minimy-tmp.mount Minimy temp directory
@@ -76,64 +99,41 @@ function startSystem
   : SOURCE: ${BASH_SOURCE}
   : STACK:  ${FUNCNAME[@]}
 
-  if [ ! -d $baseDir ]; then
-    echo "ERROR: base directory $baseDir not found"
-    echo "To clone Minimy to your home directory: "
-    echo "cd; git clone https://github.com/mike99mac/minimy-mike99mac" 
-    exit 1
-  fi  
-
-  # check if minimy is already running
-  ps -ef | grep "python3.*minimy" | grep -v grep
-  if [ $? = 0 ]; then                      # minimy is running
-    echo "It appears Minimy is already running!"
-    exit 1
-  fi
-  echo
-  echo "Starting base components ..."               # start Minimy
   cd $baseDir
-  cat install/mmconfig.yml | grep -v "AWS" | grep -v "Goog"
+  source minimy_venv/bin/activate          # start the minimy virtual environment
   echo
   echo "Starting Local STT Server ..."
-  which deactivate >/dev/null
-  if [ $? = 0 ]; then
+  if [ ${#VIRTUAL_ENV} != 0 ]; then        # a venv is active
     deactivate
   fi
-  cd framework/services/stt/local/CoquiSTT
-  source venv_coqui/bin/activate
-  python3 server.py --model-dir ds_model  > coqui_stt.log 2>&1 &
-  which deactivate >/dev/null
-  if [ $? = 0 ]; then
-    deactivate
-  fi
-  cd ../../../../..
-  echo
+  cd $baseDir/framework/services/stt/local/whisper
+  python3 whisper.py &                     # start whisper local STT
+  echo 
   echo "Starting Local TTS Server ..."
-  cd framework/services/tts/local/mimic3
-  deactivate
-  source .venv/bin/activate
-  bin/mimic3 --model-dir voices/apope  > mimic3_tts.log 2>&1 &
-  which deactivate >/dev/null
-  if [ $? = 0 ]; then
-    deactivate
+  cd $baseDir/framework/services/tts/local/mimic3
+  if [ ! -d .venv ]; then                  # venv not found
+    echo "ERROR: directory $baseDir/framework/services/tts/local/mimic3/.venv not found"
+    exit 4
   fi
-  cd ../../../../..
-  source venv_ngv/bin/activate
-  export PYTHONPATH=`pwd`
+  source .venv/bin/activate                # start the mimic venv
+  bin/mimic3 --model-dir voices/apope  > mimic3_tts.log 2>&1 &
+  deactivate                               # exit mimic venv
+  cd $baseDir
+  source minimy_venv/bin/activate          # start the minimy virtual environment
+  # export PYTHONPATH=`pwd`                not needed?
   export SVA_BASE_DIR=`pwd`
   export GOOGLE_APPLICATION_CREDENTIALS="/home/pi/minimy/install/my-google-key.json"
   echo
   echo "Starting Message Bus ..."
-  cd bus
+  cd $baseDir/bus
   python3 MsgBus.py &
-  cd ..
   sleep 2
   echo
-  echo "Starting System Skill ..."
-  cd skills/system_skills
+  echo "Starting system skills ..."
+  cd $baseDir/skills/system_skills
   python3 skill_system.py &
   sleep 1
-  cd ../../
+  cd $baseDir 
   echo
   echo "Starting Intent Service ..."
   python3 framework/services/intent/intent.py &
@@ -199,48 +199,47 @@ function loadUserSkills
   echo "Starting User Skills ..."
   cd $baseDir/skills/user_skills
   loadOneSkill help Help skill
-  # rfm, youtube and npr_news skills have been incorporated into the mpc skill
+  # do not load these skills for now
   # loadOneSkill ../rfm RFM skill
   # loadOneSkill ../youtube YouTube skill 
   # loadOneSkill ../npr_news NPR News skill 
-  # do not load the Home Assistant skill for now
   # loadOneSkill ../ha_skill Home Assistant skill
-  loadOneSkill ../email Email skill
-  loadOneSkill ../wiki Wiki skill
+  # loadOneSkill ../email Email skill
+  # loadOneSkill ../example1 Example 1 skill 
+  # loadOneSkill ../wiki Wiki skill
   loadOneSkill ../timedate TimeDate skill 
-  loadOneSkill ../example1 Example 1 skill 
   loadOneSkill ../weather Weather skill 
   loadOneSkill ../connectivity Connectivity skill 
-  loadOneSkill ../mpc mpc/mpd music skill  # Mike's music skill
+  loadOneSkill ../mpc music and news skill  
   sleep 3
  }                                         # loadUserSkills()
 
+#+--------------------------------------------------------------------------+
+function loadOtherServices
+# load other processes 
+#+--------------------------------------------------------------------------+
+ {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+  
+  echo "Starting buttons ..."
+  python3 framework/services/input/buttons.py &
+  echo 
+  echo "Starting the mic ..."
+  python3 framework/services/input/mic.py &
+ }                                       # loadOtherServices()
+
 # main()
 baseDir="$HOME/minimy"
-if [ ! -d $baseDir ]; then                 # base dir not found
-  echo "ERROR: directory $baseDir not found"
-  exit 1
-fi
-export PYTHONPATH="$baseDir:$baseDir/venv_ngv/lib/python3.10/site-packages"
+#export PYTHONPATH="$baseDir:$baseDir/venv_ngv/lib/python3.10/site-packages"
 export SVA_BASE_DIR="$baseDir"
 
 echo "Starting Minimy..."
-rmlogs -y                                  # remove old log files
+checkEnv
 mountUmountDirs                            # unmount then remount logs and tmp dirs as tmpfs's
 startSystem
 loadSystemSkills 
 loadUserSkills 
-
-cd $baseDir
-source venv_ngv/bin/activate
-echo "Starting buttons ..."
-python3 framework/services/input/buttons.py &
-
-echo 
-echo "Finally, starting the mic ..."
-python3 framework/services/input/mic.py &
-
+loadOtherServices
 echo "Started Minimy ..."
 
-# tried to convice systemctl minimy is running, but this didn't work
-# sleep infinity
