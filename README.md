@@ -949,13 +949,13 @@ if __name__ == "__main__":
 
 Here are the performance times on the three "boxes":   
 
-```
+
 | Platform                | Memory | Python | tiny.en | base.en | small.en |
 |-------------------------|--------|--------|---------|---------|----------|
-| Raspberry Pi 4          |  4 GB  |  3.11  | 8.07s   |  15.1s  |  75s     |
-| Raspberry Pi 5          |  8 GB  |  3.11  | 3.83s   |   6.7s  |  21.3s   |
-| Nvidia Jetson Orin Nano |  8 GB  |  3.10  | 1.35s   |  0.88s  |  1.73s   |
-```
+| Raspberry Pi 4          |  4 GB  |  3.11  |  8.0s   |  15.1s  |  75.0s   |
+| Raspberry Pi 5          |  8 GB  |  3.11  |  6.5s   |   6.7s  |  21.3s   |
+| Nvidia Jetson Orin Nano |  8 GB  |  3.10  |  1.3s   |   0.9s  |   1.7s   |
+
 
 The best option seems to be the ``base.en`` model running on the Nvidia GPU.
 
