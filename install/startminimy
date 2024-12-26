@@ -103,13 +103,11 @@ function startSystem
   source minimy_venv/bin/activate          # start the minimy virtual environment
   echo
   echo "Starting Local STT Server ..."
-  if [ ${#VIRTUAL_ENV} != 0 ]; then        # a venv is active
-    deactivate
-  fi
-  cd $baseDir/framework/services/stt/local/whisper
-  python3 whisper.py &                     # start whisper local STT
+  cd $baseDir
+  python3 framework/services/stt/local/whisper/local_whisper.py &  
   echo 
   echo "Starting Local TTS Server ..."
+  deactivate                               # minimy_venv
   cd $baseDir/framework/services/tts/local/mimic3
   if [ ! -d .venv ]; then                  # venv not found
     echo "ERROR: directory $baseDir/framework/services/tts/local/mimic3/.venv not found"
@@ -120,7 +118,7 @@ function startSystem
   deactivate                               # exit mimic venv
   cd $baseDir
   source minimy_venv/bin/activate          # start the minimy virtual environment
-  # export PYTHONPATH=`pwd`                not needed?
+  export PYTHONPATH=`pwd`   
   export SVA_BASE_DIR=`pwd`
   export GOOGLE_APPLICATION_CREDENTIALS="/home/pi/minimy/install/my-google-key.json"
   echo
@@ -133,9 +131,9 @@ function startSystem
   cd $baseDir/skills/system_skills
   python3 skill_system.py &
   sleep 1
-  cd $baseDir 
   echo
   echo "Starting Intent Service ..."
+  cd $baseDir 
   python3 framework/services/intent/intent.py &
   sleep 2 
   echo
@@ -148,7 +146,7 @@ function startSystem
 
 #+--------------------------------------------------------------------------+
 function loadOneSkill 
-# load one skill 
+# load one skill from __init__.py
 # Arg 1    : Skill directory 
 # Args 2-n : description of the skill
 #+--------------------------------------------------------------------------+
@@ -222,6 +220,7 @@ function loadOtherServices
   : SOURCE: ${BASH_SOURCE}
   : STACK:  ${FUNCNAME[@]}
   
+  cd $baseDir
   echo "Starting buttons ..."
   python3 framework/services/input/buttons.py &
   echo 
