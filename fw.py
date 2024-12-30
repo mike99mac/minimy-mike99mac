@@ -1,4 +1,4 @@
-#!/usr/bin/env /home/pi/minimy/venv_ngv/lib/python3.11
+#!/usr/bin/env python3 
 #
 # fw.py - build the faster-whisper model
 #
