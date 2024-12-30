@@ -2,7 +2,7 @@
 #
 # should be run from minimy base dir
 # Example:
-#     install/linux_install.sh
+#     install/installminimy
 #
 #+--------------------------------------------------------------------------+
 function runCmd
@@ -126,8 +126,8 @@ function doIt
   echo | tee -a $logFile
   echo "cd to link-4.1b ..." | tee -a $logFile
   cd link-4.1b
-  #runCmd make
-  #echo | tee -a $logFile
+  runCmd make
+  echo | tee -a $logFile
 
   echo "Installing Local STT ..."| tee -a $logFile
   echo | tee -a $logFile
@@ -181,7 +181,7 @@ function doIt
 baseDir="$HOME/minimy"
 let lastSecs=$SECONDS
 timeStamp=`date +"%y-%m-%d-%H-%M-%S"`
-logFile="$HOME/$timeStamp-linux_install.out" # output file
+logFile="$HOME/$timeStamp-install.out"     # output file
 let stepNum=0
 timeStamp=`date +"%y-%m-%d-%H-%M-%S"`   
 

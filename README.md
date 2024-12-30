@@ -464,14 +464,6 @@ To download and copy Minimy, perform the following steps:
     
     It is recommended that you review the output file, checking for warnings or errors.
     
-- Open a virtual environment.
-
-    ```
-    source $HOME/minimy/venv_ngv/bin/activate
-    ```
-    
-    You should see a new ``(venv_ngv)`` prefix on the command line.
-    
 ### Configure Minimy
 
 The system can use local or remote services for speech to text (STT), text to speech (TTS)
@@ -505,7 +497,7 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
 
 - Run the following configuration script. In this example all defaults were accepted by pressing **Enter** for each question (except the log level was set to debug). At the end **y** was entered to save the changes.  
  
-    **``(venv_ngv) $ ./mmconfig.py sa``**
+    **``./mmconfig.py sa``**
     
     ```
     Advanced Options Selected sa
@@ -536,15 +528,6 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
 The scripts **``startminimy``** and **``stopminimy``** are used to start and stop processes. 
 Each skill and service run as process and use the message bus or file system to synchronize. 
 Their output is written to the ``logs/`` directory under the main install directory. 
-
-The system relies on the environment variables ``PYTHONPATH``, ``SVA_BASE_DIR`` and ``GOOGLE_APPLICATION_CREDENTIALS`` which are set in **``startminimy``** 
-with this code:
-
-    ...
-    export PYTHONPATH="$HOME/minimy:$HOME/minimy/venv_ngv/lib/python3.10/site-packages"
-    export SVA_BASE_DIR="$HOME/minimy"
-    export GOOGLE_APPLICATION_CREDENTIALS="$HOME/minimy/install/my-google-key.json"
-    ...
 
 - Start Minimy, ensuring it is run from the base directory, as follows.
 
