@@ -44,6 +44,7 @@ class FallbackSkill(SimpleVoiceAssistant):
     def handle_fallback(self, msg):
         self.log.debug(f"FallbackSkill:handle_fallback(): hit! msg: {msg}") 
         # Just play the 'boing' sound - no wikipedia  -MM
+        # TO DO: get an AI assistant for fallback
         aplay(self.boing_filename)
         return 
 
