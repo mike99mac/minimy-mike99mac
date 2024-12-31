@@ -3,13 +3,26 @@
 # countminimy - count the Lines of Code in Minimy Python files 
 #
 # main() 
-rootDir="$HOME/minimy-mike99mac"
+rootDir="$HOME/minimy"
 if [ ! -d $rootDir ]; then
   echo "ERROR: no directory $rootDir"
   echo "did you: git clone https://github.com/mike99mac/minimy-mike99mac"
   exit 1
 fi
 cd $rootDir
-files=`ls bus/*py framework/*py framework/*/*py framework/*/*/*py framework/*/*/*/*py skills/*py skills/*/*py skills/*/*/*py | xargs`
-loc=`wc -l $files | tail -1 | awk '{print $1}'`
-echo "Lines of code in Minimy: $loc"
+busFiles=`ls bus/*py | xargs`
+fwFiles=`ls framework/*py framework/*/*py framework/*/*/*py framework/*/*/*/*py framework/*/*/*/*/*py | xargs`
+skFiles=`ls skills/*py skills/*/*py skills/*/*/*py | xargs`
+mimicFiles=`ls framework/services/tts/local/mimic3/*py framework/services/tts/local/mimic3/*/*py | xargs`
+busLoc=`wc -l $busFiles | tail -1 | awk '{print $1}'`
+fwLoc=`wc -l $fwFiles | tail -1 | awk '{print $1}'`
+skLoc=`wc -l $skFiles | tail -1 | awk '{print $1}'`
+mimicLoc=`wc -l $mimicFiles | tail -1 | awk '{print $1}'`
+
+echo "Lines of code in Minimy:"
+echo "Msg bus  :   $busLoc"
+echo "framework:  $fwLoc"
+echo "skills   :  $skLoc"
+echo "mimic    :  $mimicLoc"
+let loc=$busLoc+$fwLoc+$skLoc+mimicLoc
+echo "Total    : $loc"
