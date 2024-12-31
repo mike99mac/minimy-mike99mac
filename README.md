@@ -459,7 +459,7 @@ To download and copy Minimy, perform the following steps:
 - Run the following script to install Minimy and direct ``stdout`` and ``stderr`` to a file. **TAKE A BREAK?** This step can take up to 15 minutes.
     
     ```
-    ./install/linux_install.sh 
+    ./install/installminimy 
     ```
     
     It is recommended that you review the output file, checking for warnings or errors.
