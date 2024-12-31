@@ -6,7 +6,7 @@
 #
 #+--------------------------------------------------------------------------+
 function runCmd
-# run a command, report time spent and exit if it failes
+# run a command, report time spent and exit if it fails
 #+--------------------------------------------------------------------------+
  {
   : SOURCE: ${BASH_SOURCE}
@@ -90,7 +90,9 @@ function doIt
   echo "Installing local STT whisper" | tee -a $logFile
   runCmd $pipCmd install git+https://github.com/openai/whisper.git
   runCmd $pipCmd install datasets
+  runCmd $pipCmd install gpiozero
   runCmd $pipCmd install keyboard
+  runCmd $pipCmd install lgpio
   runCmd $pipCmd install lingua_franca
   runCmd $pipCmd install optimum
   runCmd $pipCmd install pyaudio
