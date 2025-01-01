@@ -280,10 +280,6 @@ To install **``ovos-tools``** perform the following steps:
     sudo update-alternatives --install /usr/bin/editor editor /usr/bin/vim 100
     ```
     
-    ```
-    update-alternatives: using /usr/bin/vim to provide /usr/bin/editor (editor) in auto mode
-    ```
-    
 - Allow members of the ``sudo`` group to be able to run **``sudo``** commands without a password, by adding **``NOPASSWD:``** to the line near the bottom of the file.
 
     ```
@@ -541,7 +537,6 @@ Their output is written to the ``logs/`` directory under the main install direct
     ```
     lsenv
 
-    ```
     Status of minimy:
      -) WARNING: minimy is not running as a service ... checking for processes ...
         Minimy user skills: connectivity email example1 help mpc timedate weather wiki
