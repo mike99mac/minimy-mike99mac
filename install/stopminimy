@@ -15,4 +15,7 @@ else
   done 
   sortlogs                                 # create a time sorted file of all logs
   rm -fr /tmp/pymp*                        # clean up socket temp directories
+  cd $HOME
+  cp $HOME/minimy/logs/* $HOME             # copy each log file   
+  sudo umount $HOME/minimy/logs            # unmount log directory - and logs disappear
 fi

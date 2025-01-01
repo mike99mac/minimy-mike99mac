@@ -137,9 +137,13 @@ function startSystem
   python3 framework/services/intent/intent.py &
   sleep 2 
   echo
-  echo "Starting Media Service ..."
+  echo "Starting media player ..."
   python3 framework/services/output/media_player.py &
+  echo
+  echo "Starting TTS service ..."
   python3 framework/services/tts/tts.py &
+  echo
+  echo "Starting STT service ..."
   python3 framework/services/stt/stt.py &
   sleep 1
  }                                         # startSystem() 
@@ -163,7 +167,7 @@ function loadOneSkill
     exit 1
   fi
   cd $theDir
-  echo "Loading $desc ..."
+  echo "Starting $desc from directory $theDir ..."
   python3 __init__.py $PWD &
  }                                         # loadOneSkill{}
 
@@ -230,10 +234,10 @@ function loadOtherServices
 
 # main()
 baseDir="$HOME/minimy"
-#export PYTHONPATH="$baseDir:$baseDir/venv_ngv/lib/python3.10/site-packages"
 export SVA_BASE_DIR="$baseDir"
+# timeStamp=`date +"%y-%m-%d-%H-%M-%S"`
 
-echo "Starting Minimy..."
+echo "Starting Minimy at `date` ..."
 checkEnv
 mountUmountDirs                            # unmount then remount logs and tmp dirs as tmpfs's
 startSystem
