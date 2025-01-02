@@ -14,7 +14,7 @@ async def SendThread(ws, outbound_q, client_id):
 async def RecvThread(ws, callback, client_id):
   while True:
     try:
-      message = await ws.recv()            # Await recv
+      message = await ws.recv()            # await recv
       callback(msg_from_json(json.loads(message)))
     except Exception as e:
       print(f"Error in RecvThread: {e}")
@@ -34,9 +34,9 @@ class MsgBusClient:
     self.outbound_q = Queue()
     self.msg_handlers = {}
     self.client_id = client_id
-    self.ws = None                         # WebSocket connection placeholder
+    self.ws = None                         # webSocket connection placeholder
 
-  async def connect_and_run(self):         # Create WebSocket connection
+  async def connect_and_run(self):         # create webSocket connection
     self.ws = await connect(f"ws://localhost:8181/{self.client_id}")
 
     # Create asyncio tasks

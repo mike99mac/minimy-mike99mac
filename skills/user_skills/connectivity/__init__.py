@@ -18,12 +18,12 @@ class ConnectivitySkill(SimpleVoiceAssistant):
 
   #------------------------------------------------------------------------------
   def run(self):
-  """
-  This is a long running skill. it needs to maintain state because you do not want to keep 
-  bothering the user every 90 seconds because you are still down, but you also want 
-  to periodically retry to establish connectivity. For now audibly notify the user when 
-  you change state in either direction.
-  """
+    """
+    This is a long running skill. it needs to maintain state because you do not want to keep 
+    bothering the user every 90 seconds because you are still down, but you also want 
+    to periodically retry to establish connectivity. For now audibly notify the user when 
+    you change state in either direction.
+    """ #------------------------------------------------------------------------
     self.is_running = True
     while self.is_running:
       MAX_FAILS_ALLOWED = 3

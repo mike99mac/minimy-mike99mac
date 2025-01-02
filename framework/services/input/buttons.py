@@ -15,11 +15,6 @@ Device.pin_factory = LGPIOFactory(chip=4)
 class Buttons:
   """
   trap when GPIO pins 17, 27 and 22 are pressed and call prev_track(), stop() or next_track() in Minimy 
-  prev_button: int 
-  stop_button: int 
-  next_button: int     
-  client:      MessageBusClient 
-  message:     Message
   """
   def __init__(self):
     """
@@ -50,11 +45,10 @@ class Buttons:
     self.base_dir = str(os.getenv('SVA_BASE_DIR'))
     log_filename = self.base_dir + '/logs/buttons.log'
     self.log = LOG(log_filename).log
-    print(f"Buttons: log file: {self.base_dir}/buttons.log")
     self.prev_button = Button(17)      
     self.stop_button = Button(27)     
     self.next_button = Button(22)    
-    self.log.debug("Buttons.__init__(): initializing 3 buttons")
+    self.log.debug(f"Buttons.__init__(): initializing 3 buttons log_filename: {log_filename}")
     
   def monitor_buttons(self):               # wait for button presses     
     while True:                            # loop forever waiting for button presses or holds
