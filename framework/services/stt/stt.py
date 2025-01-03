@@ -12,7 +12,6 @@ from framework.util.utils import LOG, Config, aplay, get_wake_words
 REMOTE_TIMEOUT = 3
 LOCAL_TIMEOUT = 5
 
-#------------------------------------------------------------------------------
 def execute_command(command):
   p = Popen(command, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
   stdout, stderr = p.communicate()
@@ -20,19 +19,16 @@ def execute_command(command):
   stderr = str( stderr.decode('utf-8') )
   return stdout, stderr
 
-#------------------------------------------------------------------------------
 def _local_transcribe_file(wav_filename, return_dict):
   start_time = time.time()
   cmd = 'curl http://localhost:5002/stt -H "Content-Type: audio/wav" --data-binary @"%s"' % (wav_filename,)
   out, err = execute_command(cmd)
   res = out.strip()
-  print(f"_local_transcribe_file(): res = {res}") 
   if res != '':
     return_dict['service'] = 'local'
     return_dict['text'] = res
-  print(f"wav_filename = {wav_filename}")
+  # print(f"STTSvc._local_transcribe_file() wav_filename: {wav_filename} transcribed text: {res}")
 
-#------------------------------------------------------------------------------
 def _remote_transcribe_file(speech_file, return_dict):
   start_time = time.time()
   client = speech.SpeechClient()
@@ -50,7 +46,6 @@ def _remote_transcribe_file(speech_file, return_dict):
     return_dict['text'] = result.alternatives[0].transcript
     break
 
-#------------------------------------------------------------------------------
 def handle_utt(ww, utt, tmp_file_path):
   text_path = tmp_file_path + "save_text"
   entry = "[%s]%s" % (ww,utt)
@@ -61,7 +56,6 @@ def handle_utt(ww, utt, tmp_file_path):
   fh.write(entry)
   fh.close()
 
-#------------------------------------------------------------------------------
 class STTSvc:
   """
   Monitor the wav file input directory and convert wav files to text strings in files in the output directory. 
@@ -69,7 +63,6 @@ class STTSvc:
   This produces two broad categories of input; raw and wake word qualified. 
   These become MSG_RAW and MSG_UTTERANCE
   """
-  #------------------------------------------------------------------------------
   def __init__(self, bus=None, timeout=5, no_bus=False):
     # used for skill type messages
     self.skill_id = 'stt_service'
@@ -114,7 +107,6 @@ class STTSvc:
     # if self.bark:
     # self.log.info(f"STTSvc.__init__(): use_remote_stt {self.use_remote_stt} wws: {self.wws}")
 
-  #------------------------------------------------------------------------------
   def send_message(self, target, subtype):
     # send a standard skill message on the bus. message must be a dict
     if not self.no_bus:
@@ -127,17 +119,14 @@ class STTSvc:
       }
       self.bus.send(MSG_SKILL, target, info)
 
-  #------------------------------------------------------------------------------
   def send_mute(self):
     self.log.debug("STTSvc.send_mute(): sending mute!")
     self.send_message('volume_skill', 'mute_volume')
 
-  #------------------------------------------------------------------------------
   def send_unmute(self):
     self.log.debug("STTSvc.send_unmute(): sending unmute!")
     self.send_message('volume_skill', 'unmute_volume')
 
-  #------------------------------------------------------------------------------
   def process_stt_result(self, utt):
     # we want the wake word but if we don't have it maybe
     # it was the previous utterance so handle that too.
@@ -193,7 +182,6 @@ class STTSvc:
           self.previous_utt_was_ww = False
       self.previous_utterance = utt
 
-  #------------------------------------------------------------------------------
   def run(self):
     self.previous_utterance = ''
     self.previous_utt_was_ww = False

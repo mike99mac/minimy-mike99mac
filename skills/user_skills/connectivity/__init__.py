@@ -3,7 +3,6 @@ from threading import Event
 import requests, time
 from framework.message_types import MSG_SYSTEM
 
-#------------------------------------------------------------------------------
 class ConnectivitySkill(SimpleVoiceAssistant):
   def __init__(self, bus=None, timeout=5):
     self.skill_id = 'connectivity_skill'
@@ -11,19 +10,17 @@ class ConnectivitySkill(SimpleVoiceAssistant):
     self.is_running = False
     self.log.info("ConnectivitySkill.__init__() Connectivity skill activated")
 
-  #------------------------------------------------------------------------------
   def handle_message(self, message):
     data = message.data
     self.log.error("ConnectivitySkill.handle_message() Connectivity Skill got a message")
 
-  #------------------------------------------------------------------------------
   def run(self):
     """
     This is a long running skill. it needs to maintain state because you do not want to keep 
     bothering the user every 90 seconds because you are still down, but you also want 
     to periodically retry to establish connectivity. For now audibly notify the user when 
     you change state in either direction.
-    """ #------------------------------------------------------------------------
+    """ 
     self.is_running = True
     while self.is_running:
       MAX_FAILS_ALLOWED = 3
@@ -43,7 +40,6 @@ class ConnectivitySkill(SimpleVoiceAssistant):
       print("Would you like me to switch to local mode?")
       # if yes, change config file and stop and start 
 
-  #------------------------------------------------------------------------------
   def stop(self):
     self.log.error("ConnectivitySkill.stop() Connectivity skill got a stop request")
     self.is_running = False
