@@ -5,12 +5,10 @@ from bus.Message import Message
 from framework.message_types import MSG_SKILL, MSG_SYSTEM
 from framework.util.utils import aplay
 
-#------------------------------------------------------------------------------
 class SVAMediaSkill(SimpleVoiceAssistant):
   """
   determine who should handle a media request when tell that skill to handle it 
   """
-  #------------------------------------------------------------------------------
   def __init__(self, bus=None, timeout=5):
     super().__init__(msg_handler=self.handle_message, skill_id='media_skill', skill_category='media')
     self.skill_id = 'media_skill'
@@ -34,20 +32,22 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     info['verb'] = 'stop'
     self.bus.send(MSG_SYSTEM, 'system_skill', info)
     self.log.debug("SVAMediaSkill.__init__(): registering OOB intents") 
-    self.register_intent('O', 'next', 'song', self.handle_next)
-    self.register_intent('O', 'next', 'station', self.handle_next)
-    self.register_intent('O', 'next', 'title', self.handle_next)
-    self.register_intent('O', 'next', 'track', self.handle_next)
-    self.register_intent('O', 'previous', 'song', self.handle_prev)
-    self.register_intent('O', 'previous', 'station', self.handle_prev)
-    self.register_intent('O', 'previous', 'title', self.handle_prev)
-    self.register_intent('O', 'previous', 'track', self.handle_prev)
-    self.register_intent('O', 'pause', 'music', self.handle_pause)
-    self.register_intent('O', 'resume', 'music', self.handle_resume)
-    self.register_intent('O', 'stop', 'music', self.handle_stop)
-    self.register_intent('O', 'create', 'playlist', self.create_playlist)
+    self.register_intents()
 
-  #------------------------------------------------------------------------------
+  async def register_intents(self):
+    await self.register_intent('O', 'next', 'song', self.handle_next)
+    await self.register_intent('O', 'next', 'station', self.handle_next)
+    await self.register_intent('O', 'next', 'title', self.handle_next)
+    await self.register_intent('O', 'next', 'track', self.handle_next)
+    await self.register_intent('O', 'previous', 'song', self.handle_prev)
+    await self.register_intent('O', 'previous', 'station', self.handle_prev)
+    await self.register_intent('O', 'previous', 'title', self.handle_prev)
+    await self.register_intent('O', 'previous', 'track', self.handle_prev)
+    await self.register_intent('O', 'pause', 'music', self.handle_pause)
+    await self.register_intent('O', 'resume', 'music', self.handle_resume)
+    await self.register_intent('O', 'stop', 'music', self.handle_stop)
+    await self.register_intent('O', 'create', 'playlist', self.create_playlist)
+
   def handle_oob_detected(self, msg):
     self.log.debug(f"SVAMediaSkill.handle_oob_detected() OOB detected - msg: {msg}")
     if self.active_media_skill == None: # no music playing
@@ -69,7 +69,6 @@ class SVAMediaSkill(SimpleVoiceAssistant):
         case _:
           self.log.error(f"SVAMediaSkill.handle_oob_detected() unexpected OOB: {oob_type}")
 
-  #------------------------------------------------------------------------------
   def handle_register_media(self, msg):
     data = msg.data
     skill_id = data['media_skill_id']
@@ -77,7 +76,6 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     if skill_id not in self.media_skills:
       self.media_skills.append(skill_id)
 
-  #------------------------------------------------------------------------------
   def handle_media_response(self, msg):
     self.log.debug(f"SVAMediaSkill.handle_media_response() msg: {msg.data}")
     # gather responses and decide who will handle the media then send message to that skill_id to play the media
@@ -95,7 +93,6 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     # probably when the media player service tells the skill id the session has ended!
     self.log.info(f"SVAMediaSkill.handle_media_response() media skill {msg.data['from_skill_id']} going active")
 
-  #------------------------------------------------------------------------------
   def handle_query(self, msg):
     self.log.debug("SVAMediaSkill.handle_query() hit!")
     data = msg.data
@@ -112,7 +109,6 @@ class SVAMediaSkill(SimpleVoiceAssistant):
         }
       self.bus.send(MSG_SKILL, skill_id, info)
 
-  #------------------------------------------------------------------------------
   def handle_command(self, msg):
     self.log.debug(f"SVAMediaSkill.handle_command(): active media is {self.active_media_skill}")
     data = msg.data
@@ -120,7 +116,6 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     data['subtype'] = 'media_player_command'
     self.send_message('media_player_service', data)
 
-  #------------------------------------------------------------------------------
   def handle_message(self, msg):
     self.log.debug(f"SVAMediaSkill.handle_message(): active media is {self.active_media_skill}")
     #print("SVA-Media:handle_message() %s" % (msg.data,))
@@ -142,7 +137,6 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     else:
       self.log.warning(f"SVAMediaSkill.handle_message() unrecognized subtype = {msg.data['subtype']}")
 
-  #------------------------------------------------------------------------------
   def handle_prev(self, message):
     """
     Play previous track or station
@@ -150,7 +144,6 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     self.log.debug("SVAMediaSkill.handle_prev() - calling mpc_cmd(prev)")
     self.mpc_cmd("prev")
 
-  #------------------------------------------------------------------------------
   def handle_next(self, message):
     """
     Play next track or station - called by the playback control skill
@@ -158,7 +151,6 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     self.log.debug("SVAMediaSkill.handle_next() - calling mpc_cmd(next)")
     self.mpc_cmd("next")
 
-  #------------------------------------------------------------------------------
   def handle_pause(self, msg):
     """
     Pause what is playing
@@ -166,7 +158,6 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     self.log.info("SVAMediaSkill.handle_pause() - calling mpc_cmd(toggle)")
     self.mpc_cmd("toggle")    # toggle between play and pause
 
-  #------------------------------------------------------------------------------
   def handle_resume(self, msg):
     """
     Resume what was playing
@@ -174,7 +165,6 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     self.log.info("SVAMediaSkill.handle_resume() - calling mpc_cmd(toggle)")
     self.mpc_cmd("toggle")    # toggle between play and pause
 
-  #------------------------------------------------------------------------------
   def handle_stop(self, msg):
     """
     Clear the mpc queue 
@@ -182,15 +172,13 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     self.log.info("SVAMediaSkill.handle_resume() - calling mpc_cmd(clear)")
     self.mpc_cmd("clear") 
 
-  #------------------------------------------------------------------------------
   def stop(self, message):
     self.log.info("SVAMediaSkill.stop() - pausing music")
     self.mpc_cmd("pause")    
 
-  #------------------------------------------------------------------------------
   def create_playlist(self, msg):
     """
-    Create a playlist 
+    Create a playlist - AI should be doing this!!!
     """
     self.log.info("SVAMediaSkill.create_playlist() - what to do?")
     # get_media_confidence(self, msg)
@@ -198,5 +186,5 @@ class SVAMediaSkill(SimpleVoiceAssistant):
 # main()
 if __name__ == '__main__':
   sva_ms = SVAMediaSkill()
-  Event().wait()             # Wait forever
+  Event().wait()                           # wait forever
 

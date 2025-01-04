@@ -38,18 +38,15 @@ class Intent:
     for ww in wws:
       self.log.debug(f"Intent.__init__() registering wakeword {ww}")
       self.wake_words.append(ww.lower())
-    # try hard-coding 'register_intent'
-    # self.bus.on(MSG_REGISTER_INTENT, self.handle_register_intent) # register message handlers
-    self.bus.on('register_intent', self.handle_register_intent) # register message handlers
+    self.bus.on(MSG_REGISTER_INTENT, self.handle_register_intent) # register message handlers
     self.bus.on('system', self.handle_system_message)
 
     # NEW DEBUG LINES:
-    #self.bus.on('*', self.handle_all_messages)  # Add a handler for all messages
-    #self.log.debug("Intent.__init__(): YOOO! - trying to get all messages")
+    self.bus.on('*', self.handle_all_messages)  # Add a handler for all messages
+    self.log.debug("Intent.__init__(): YOOO! - registered handle_all_messages() to get all messages")
 
-  #def handle_all_messages(self, msg):
-    #self.log.debug(f"Intent.handle_all_messages(): YOOOOO! Received message: {msg}")
-    # END NEW DEBUG LINES:
+  def handle_all_messages(self, msg):
+    self.log.debug(f"Intent.handle_all_messages(): YOOOOO! Received message: {msg}")
 
   def handle_system_message(self, message):
     # stay in-sync with the system skill regarding OOBs

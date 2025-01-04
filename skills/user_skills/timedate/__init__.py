@@ -4,12 +4,12 @@ import os
 import datetime
 
 class TimeSkill(SimpleVoiceAssistant):
-  def __init__(self, bus=None, timeout=5):
+  async def __init__(self, bus=None, timeout=5):
     super().__init__(skill_id='time_skill', skill_category='system')
-    self.register_intent('Q', 'what', 'time', self.handle_time_match)
-    self.register_intent('Q', 'what', 'date', self.handle_date_match)
-    self.register_intent('Q', 'what', 'today', self.handle_date_match)
-    self.register_intent('Q', 'what', 'day', self.handle_day_match)
+    await self.register_intent('Q', 'what', 'time', self.handle_time_match)
+    await self.register_intent('Q', 'what', 'date', self.handle_date_match)
+    await self.register_intent('Q', 'what', 'today', self.handle_date_match)
+    await self.register_intent('Q', 'what', 'day', self.handle_day_match)
 
   def handle_date_match(self,msg):
     now = datetime.datetime.now()
