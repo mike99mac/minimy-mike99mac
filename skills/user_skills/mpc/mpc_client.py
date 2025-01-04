@@ -21,7 +21,6 @@ from typing import Union, Optional, List, Iterable
 import urllib.parse
 from youtube_search import YoutubeSearch
 
-#------------------------------------------------------------------------------
 class MpcClient(SimpleVoiceAssistant):
   """ 
   Accept voice commands to communicate with mpd using mpc calls 
@@ -38,7 +37,6 @@ class MpcClient(SimpleVoiceAssistant):
   request_type: str                        # "genre", "country", "language", "random" or "next_station"
   list_lines: list                         # all radio stations in the CSV file
   
-  #------------------------------------------------------------------------------
   def __init__(self, music_dir: Path):
     self.log = logging.getLogger(__name__)
     self.music_dir = music_dir
@@ -54,7 +52,6 @@ class MpcClient(SimpleVoiceAssistant):
     base_dir = str(os.getenv('SVA_BASE_DIR'))
     self.temp_dir = base_dir + "/logs"     # log dir should be a tmpfs so files self-delete at minimy restart
 
-  #------------------------------------------------------------------------------
   def initialize(self, music_dir: Path):  
     """ 
     Turn mpc "single" off so player keeps playing music   
@@ -66,7 +63,6 @@ class MpcClient(SimpleVoiceAssistant):
     # except subprocess.CalledProcessError as e:      
     #   self.log.debug(f"MpcClient.__init__():  mpc single off return code: {e.returncode}") 
 
-  #------------------------------------------------------------------------------
   def mpc_update(self, wait: bool=True):
     """ 
     Update the mpd database by searching for music files 
@@ -77,7 +73,6 @@ class MpcClient(SimpleVoiceAssistant):
     self.log.debug(f"mpc_update() running command: {cmd}")
     subprocess.check_call(cmd)
   
-  #------------------------------------------------------------------------------
   def mpc_play(self):
     """ 
     Start the mpc player   
@@ -87,7 +82,6 @@ class MpcClient(SimpleVoiceAssistant):
     time.sleep(.1)                         # is this really needed?
     self.mpc_cmd("play")
 
-  #------------------------------------------------------------------------------
   def start_music(self, music_info: Music_info):
     """ 
     Start playing the type of music passed in the music_info object   
@@ -108,7 +102,6 @@ class MpcClient(SimpleVoiceAssistant):
       self.mpc_play()
       return True
 
-  #------------------------------------------------------------------------------
   def search_music(self, command: str, type1: Optional[str]=None, name1: Optional[str]=None, type2: Optional[str]=None, name2: Optional[str]=None) -> List[List[str]]:
     """
     search for music by album, artist, title, or genre allowing up to two qualifiers.
@@ -128,7 +121,6 @@ class MpcClient(SimpleVoiceAssistant):
       if line.strip()
     ]
 
-  #------------------------------------------------------------------------------
   def time_to_seconds(self, time_str: str) -> int:
     """ convert HR:MIN:SEC to number of seconds """
     parts = time_str.split(":", maxsplit=2)
@@ -143,7 +135,6 @@ class MpcClient(SimpleVoiceAssistant):
       seconds = int(parts[0])
     return (hours * 60 * 60) + (minutes * 60) + seconds
   
-  #------------------------------------------------------------------------------
   def search_library(self, phrase):
     """
     Perform "brute force" parsing of a music play request
@@ -247,7 +238,6 @@ class MpcClient(SimpleVoiceAssistant):
     self.log.debug(f"MpcClient.search_library() calling get_music with {intent}, {music_name} and {artist_name}")
     return self.get_music(intent, music_name, artist_name) 
 
-  #------------------------------------------------------------------------------
   def get_album(self, album_name, album_id, artist_name):
     """
     return a Music_info object with track file names for one album 
@@ -283,7 +273,6 @@ class MpcClient(SimpleVoiceAssistant):
     self.mpc_cmd("repeat", "off")             # do not keep playing album after last track
     return Music_info("album", mesg_file, mesg_info, tracks_or_urls)
 
-  #------------------------------------------------------------------------------
   def get_artist(self, artist_name):
     """
     return tracks for the requested artist  
@@ -315,7 +304,6 @@ class MpcClient(SimpleVoiceAssistant):
       self.mpc_cmd("repeat", "on")         # keep playing artist after last track
       return Music_info("artist", "playing_artist", mesg_info, tracks_or_urls)
  
-  #------------------------------------------------------------------------------
   def get_music_info(self, match_type, mesg_file, mesg_info, results): 
     """
     Given the results of an mpc search. return a Music_info object 
@@ -328,7 +316,6 @@ class MpcClient(SimpleVoiceAssistant):
       tracks_or_urls.append(next_track)    # add track to queue  
     return Music_info(match_type, mesg_file, mesg_info, tracks_or_urls) 
 
-  #------------------------------------------------------------------------------
   def get_all_music(self):
     """
     Return up to max_queued random tracks from all music in the library
@@ -347,7 +334,6 @@ class MpcClient(SimpleVoiceAssistant):
     self.mpc_cmd("repeat", "on")           # keep playing random tracks 
     return self.get_music_info("random", "playing_random", mesg_info, results)
     
-  #------------------------------------------------------------------------------
   def get_genre(self, genre_name):
     """
     Return up to max_queued tracks for a requested genre 
@@ -363,7 +349,6 @@ class MpcClient(SimpleVoiceAssistant):
     self.mpc_cmd("repeat", "on")              # keep playing genre
     return self.get_music_info("song", "playing_genre", mesg_info, results)
     
-  #------------------------------------------------------------------------------
   def get_track(self, track_name, artist_name):
     """
     Get track by name, optionally by a specific artist
@@ -415,7 +400,6 @@ class MpcClient(SimpleVoiceAssistant):
       mesg_info = {'track_name': track_name, 'num_hits': num_hits}
     return Music_info("song", mesg_file, mesg_info, tracks_or_urls) 
 
-  #------------------------------------------------------------------------------
   def get_unknown_music(self, music_name, artist_name):
     """
     Search on a music search term - could be album, artist or track
@@ -457,7 +441,6 @@ class MpcClient(SimpleVoiceAssistant):
     self.log.debug(f"MpcClient.get_unknown_music(): did not find music matching {music_name}") 
     return Music_info("none", "music_not_found", {"music_name": music_name}, None)
     
-  #------------------------------------------------------------------------------
   def get_music(self, intent, music_name, artist_name):
     """
     Search for tracks_or_urls with one search terms and an optional artist name
@@ -499,7 +482,6 @@ class MpcClient(SimpleVoiceAssistant):
         music_info = Music_info("none", None, None, None)      
     return music_info
 
-  #------------------------------------------------------------------------------
   def manipulate_playlists(self, utterance):
     """
     List, create, add to, remove from and delete playlists
@@ -540,7 +522,6 @@ class MpcClient(SimpleVoiceAssistant):
     self.log.debug(f"MpcClient.manipulate_playlists() returned mesg_file: {mesg_file} and mesg_info: {mesg_info}")
     return Music_info("playlist_op", mesg_file, mesg_info, [])
 
-  #------------------------------------------------------------------------------
   def get_playlist(self, playlist_name):
     """
     Load file names of tracks in playlist and return a Music_info object
@@ -589,7 +570,6 @@ class MpcClient(SimpleVoiceAssistant):
       mesg_info = {"playlist_name": playlist_name}  
     return Music_info("playlist", mesg_file, mesg_info, tracks_or_urls)  
 
-  #------------------------------------------------------------------------------
   def create_playlist(self, phrase): 
     """
     Create requires a playlist name and music name as Mpc playlists cannot be empty
@@ -620,7 +600,6 @@ class MpcClient(SimpleVoiceAssistant):
     mesg_file = "created_playlist"
     return mesg_file, mesg_info
 
-  #------------------------------------------------------------------------------
   def delete_playlist(self, playlist_name):
     """
     Delete a playlist
@@ -640,7 +619,6 @@ class MpcClient(SimpleVoiceAssistant):
     self.mpc_cmd("clear")                  # clear playlist in memory
     return "deleted_playlist", mesg_info
 
-  #------------------------------------------------------------------------------
   def add_to_playlist(self, phrase):
     """
     Add a track or an album to an existing playlist
@@ -714,7 +692,6 @@ class MpcClient(SimpleVoiceAssistant):
     mesg_info = {'music_name': music_name, 'playlist_name': playlist_name}
     return mesg_file, mesg_info
     
-  #------------------------------------------------------------------------------
   def delete_from_playlist(self, phrase):
     """
     Delete a track from a playlist
@@ -752,7 +729,6 @@ class MpcClient(SimpleVoiceAssistant):
     # TODO: finish code
     return "ok_its_done", {}
 
-  #------------------------------------------------------------------------------
   def list_playlists(self):
     """
     Speak all saved playlists
@@ -786,7 +762,6 @@ class MpcClient(SimpleVoiceAssistant):
       mesg_info = {"playlists": playlists}  
     return mesg_file, mesg_info 
 
-  #------------------------------------------------------------------------------
   def get_matching_stations(self, field_index, search_name):
     """
     Search for radio stations by genre, country, or language
@@ -822,7 +797,6 @@ class MpcClient(SimpleVoiceAssistant):
     random.shuffle(station_urls)           # shuffle URLs
     return station_urls                    # list of matching station URLs
 
-  #------------------------------------------------------------------------------
   def get_stations(self, search_name):
     """
     Return radio station URLs by genre, country, language, station name, or a random one
@@ -900,7 +874,6 @@ class MpcClient(SimpleVoiceAssistant):
         mesg_file = "internal_error"
     return Music_info("radio", mesg_file, mesg_info, tracks_or_urls)  
 
-  #------------------------------------------------------------------------------
   def parse_radio(self, utterance):
     """
     Parse the request to play a radio station
@@ -975,7 +948,6 @@ class MpcClient(SimpleVoiceAssistant):
     music_info = self.get_stations(search_name) 
     return music_info
      
-  #------------------------------------------------------------------------------
   def search_internet(self, utterance):
     """
     Search for music on the internet and if found, return all URLs in Music_info object 
@@ -1017,7 +989,6 @@ class MpcClient(SimpleVoiceAssistant):
       mesg_info = None 
     return Music_info("internet", mesg_file, mesg_info, tracks_or_urls)
 
-  #------------------------------------------------------------------------------
   def stream_internet_music(self, music_info):
     """
     Stream music from the Internet using mpc 
@@ -1038,7 +1009,6 @@ class MpcClient(SimpleVoiceAssistant):
         self.log.debug("MpcClient.start_music(): mpc_cmd(play) failed")
         return False 
 
-  #------------------------------------------------------------------------------
   def search_news(self, utterance):
     """
     search for NPR news 

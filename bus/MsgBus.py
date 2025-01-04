@@ -70,8 +70,10 @@ class Server:
   #async def ws_handler(self, ws, path):
   async def ws_handler(self, ws):
     if await self.register(ws):
+      self.log.debug(f"Server.ws_handler() Client registered")
       try:
         async for message in ws:
+          self.log.debug(f"Server.ws_handler() Received message: {message}")
           await self.send_to_clients(message)
       except websockets.ConnectionClosed as e:
         self.log.warning(f"Server.ws_handler() connection closed with exception: {e}")

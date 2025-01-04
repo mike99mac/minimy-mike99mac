@@ -344,7 +344,7 @@ class SimpleVoiceAssistant:
     self.log.debug(f"SimpleVoiceAssistant.speak_lang() speaking message: {text}")
     self.speak(text, wait_callback)        # speak the message 
 
-  def register_intent(self, intent_type, verb, subject, callback):
+  async def register_intent(self, intent_type, verb, subject, callback):
     """
     bind a sentence type, subject and verb to a callback and send on message bus to intent service.
     """ 
@@ -369,7 +369,7 @@ class SimpleVoiceAssistant:
                  'skill_id':self.skill_control.skill_id
                  }
           self.log.debug(f"SimpleVoiceAssistant.register_intent() calling self.bus.send('register_intent', 'intent_service', {info}") 
-          self.bus.send('register_intent', 'intent_service', info)
+          await self.bus.send('register_intent', 'intent_service', info)
 
   def handle_utterance(self, message):
     self.log.debug(f"SimpleVoiceAssistant.handle_utterance() category = {self.skill_control.category} skill_id = {self.skill_control.skill_id}")

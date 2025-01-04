@@ -5,7 +5,6 @@ import os, requests, time
 from skills.sva_media_skill_base import MediaSkill
 from threading import Event
 
-#------------------------------------------------------------------------------
 class MpcSkill(MediaSkill):  
   """
   Play music skill for minimy.  It uses mpc and mpd to play music from:
@@ -13,7 +12,6 @@ class MpcSkill(MediaSkill):
   - Internet radio stations stored in the file radio.stations.csv
   - Internet music searches 
   """
-  #------------------------------------------------------------------------------
   def __init__(self, bus=None, timeout=5):
     self.skill_id = 'mpc_skill'
     super().__init__(skill_id=self.skill_id, skill_category='media')
@@ -24,7 +22,6 @@ class MpcSkill(MediaSkill):
     self.music_info = Music_info("none", "", {}, []) # music to play
     self.sentence = None 
 
-  #------------------------------------------------------------------------------
   def fallback_internet(self):
     """
     Requested music was not found in library - fallback to Internet search
@@ -32,7 +29,6 @@ class MpcSkill(MediaSkill):
     self.log.debug(f"MpcSkill.fallback_internet(): calling mpc_client.search_internet({self.sentence})")
     self.music_info = self.mpc_client.search_internet(self.sentence)
 
-  #------------------------------------------------------------------------------
   def get_media_confidence(self, msg):
     """
     Determine if the music requested can be played
@@ -94,7 +90,6 @@ class MpcSkill(MediaSkill):
       self.log.debug(f"MpcSkill.get_media_confidence() did not find music: mesg_file = {self.music_info.mesg_file} mesg_info = {self.music_info.mesg_info}")
     return {'confidence':100, 'correlator':0, 'sentence':sentence, 'url':self.url}
 
-  #------------------------------------------------------------------------------
   def media_play(self, msg):
     """
     Either music has been found, a playlist operation finished, or an error message has to be spoken
@@ -121,7 +116,6 @@ class MpcSkill(MediaSkill):
     else:                                  # speak message and pass callback  
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.start_music)
     
-  #------------------------------------------------------------------------------
   def start_music(self):
     """
     callback to start music after media_play() speaks informational message
