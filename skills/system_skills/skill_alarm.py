@@ -139,10 +139,8 @@ class AlarmSkill(SimpleVoiceAssistant):
                 'from_skill_id':self.skill_id,
                 'verb':'stop'
                 }
-        #self.bus.emit(Message(MSG_SYSTEM, info))
         self.bus.send(MSG_SYSTEM, 'system_skill', info)
         info['verb'] = 'snooze'
-        #self.bus.emit(Message(MSG_SYSTEM, info))
         self.bus.send(MSG_SYSTEM, 'system_skill', info)
 
 
@@ -154,10 +152,8 @@ class AlarmSkill(SimpleVoiceAssistant):
                 'from_skill_id':self.skill_id,
                 'verb':'stop'
                 }
-        #self.bus.emit(Message(MSG_SYSTEM, info))
         self.bus.send(MSG_SYSTEM, 'system_skill', info)
         info['verb'] = 'snooze'
-        #self.bus.emit(Message(MSG_SYSTEM, info))
         self.bus.send(MSG_SYSTEM, 'system_skill', info)
 
 

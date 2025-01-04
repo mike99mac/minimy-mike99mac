@@ -16,10 +16,14 @@ function checkEnv
     echo "cd; git clone https://github.com/mike99mac/minimy-mike99mac" 
     exit 1
   fi  
+  if [ ! -d $logDir ]; then
+    echo "ERROR: log directory $logDir not found"
+    exit 2
+  fi  
   ps -ef | grep "python3.*minimy" | grep -v grep
   if [ $? = 0 ]; then                      # minimy is running
     echo "It appears Minimy is already running!"
-    exit 1
+    exit 3
   fi
  } 
  
@@ -104,7 +108,7 @@ function startSystem
   echo
   echo "Starting Local STT Server ..."
   cd $baseDir
-  python3 framework/services/stt/local/whisper/local_whisper.py &  
+  python3 framework/services/stt/local/whisper/local_whisper.py >$logDir/whisper.log 2>&1 &
   echo 
   echo "Starting Local TTS Server ..."
   deactivate                               # minimy_venv
@@ -114,7 +118,7 @@ function startSystem
     exit 4
   fi
   source .venv/bin/activate                # start the mimic venv
-  bin/mimic3 --model-dir voices/apope  > mimic3_tts.log 2>&1 &
+  bin/mimic3 --model-dir voices/apope  > $logDir/mimic3_tts.log 2>&1 &
   deactivate                               # exit mimic venv
   cd $baseDir
   source minimy_venv/bin/activate          # start the minimy virtual environment
@@ -164,7 +168,7 @@ function loadOneSkill
 
   if [ ! -d $theDir ]; then 
     echo "ERROR: Directory $theDir not found"
-    exit 1
+    exit 5
   fi
   cd $theDir
   echo "Starting $desc from directory $theDir ..."
@@ -199,20 +203,20 @@ function loadUserSkills
 
   echo " "
   echo "Starting User Skills ..."
-  cd $baseDir/skills/user_skills
-  loadOneSkill help Help skill
   # do not load these skills for now
-  # loadOneSkill ../rfm RFM skill
-  # loadOneSkill ../youtube YouTube skill 
-  # loadOneSkill ../npr_news NPR News skill 
+  # cd $baseDir/skills/user_skills
+  # loadOneSkill ../connectivity Connectivity skill 
   # loadOneSkill ../ha_skill Home Assistant skill
   # loadOneSkill ../email Email skill
   # loadOneSkill ../example1 Example 1 skill 
+  # loadOneSkill ../npr_news NPR News skill 
+  # loadOneSkill ../rfm RFM skill
   # loadOneSkill ../wiki Wiki skill
-  loadOneSkill ../timedate TimeDate skill 
-  loadOneSkill ../weather Weather skill 
-  loadOneSkill ../connectivity Connectivity skill 
-  loadOneSkill ../mpc music and news skill  
+  # loadOneSkill ../youtube YouTube skill 
+  loadOneSkill $baseDir/skills/user_skills/help Help skill
+  loadOneSkill $baseDir/skills/user_skills/timedate TimeDate skill 
+  loadOneSkill $baseDir/skills/user_skills/weather Weather skill 
+  loadOneSkill $baseDir/skills/user_skills/mpc music and news skill  
   sleep 3
  }                                         # loadUserSkills()
 
@@ -234,8 +238,8 @@ function loadOtherServices
 
 # main()
 baseDir="$HOME/minimy"
+logDir="$HOME/minimy/logs"
 export SVA_BASE_DIR="$baseDir"
-# timeStamp=`date +"%y-%m-%d-%H-%M-%S"`
 
 echo "Starting Minimy at `date` ..."
 checkEnv

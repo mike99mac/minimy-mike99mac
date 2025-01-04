@@ -83,7 +83,7 @@ class Server:
 async def main():
   server = Server()
   async with serve(server.ws_handler, '0.0.0.0', 8181):
-    await asyncio.Future()  # Keep the server running indefinitely
+    await asyncio.Future()                 # server run indefinitely
 
 if __name__ == "__main__":
   asyncio.run(main())

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# stopminimy - kill processes with 'minimy' in them 
+# stopminimy - kill processes with 'minimy' in them, sort log files, copy to $HOME and unmount tmpfs
 #
 # main() 
 echo "Stopping Minimy ..." 
@@ -17,5 +17,6 @@ else
   rm -fr /tmp/pymp*                        # clean up socket temp directories
   cd $HOME
   cp $HOME/minimy/logs/* $HOME             # copy each log file   
+  sleep 3                                  # wait for processes to die before unmounting tmpfs
   sudo umount $HOME/minimy/logs            # unmount log directory - and logs disappear
 fi
