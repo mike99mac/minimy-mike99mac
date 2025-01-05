@@ -1,14 +1,17 @@
-import re, time, datetime
+import asyncio
+from bus.Message import Message
+import datetime
+from datetime import timedelta
+from framework.util.utils import get_raw, get_hour_min, get_ampm, get_time_from_utterance
+from framework.message_types import MSG_SYSTEM
 import lingua_franca
 import inflect
 import pytz
 import os
+import re 
 from skills.sva_base import SimpleVoiceAssistant
 from threading import Thread, Event
-from datetime import timedelta
-from framework.util.utils import get_raw, get_hour_min, get_ampm, get_time_from_utterance
-from bus.Message import Message
-from framework.message_types import MSG_SYSTEM
+import time
 
 class AlarmActiveThread(Thread):
   def __init__(self, cb):
@@ -52,7 +55,7 @@ class AlarmDetectThread(Thread):
           self.cb(alarm)
 
 class AlarmSkill(SimpleVoiceAssistant):
-  async def __init__(self, bus=None, timeout=5):
+  def __init__(self, bus=None, timeout=5):
     self.skill_id = 'alarm_skill'
     super().__init__(msg_handler=self.handle_message, skill_id='alarm_skill', skill_category='system')
     lingua_franca.load_language('en')
@@ -65,20 +68,6 @@ class AlarmSkill(SimpleVoiceAssistant):
         'nevermind',
         'forget it',
         ]
-    await self.register_intent('C', 'set', 'alarm', self.handle_create)
-    await self.register_intent('C', 'create', 'alarm', self.handle_create)
-    await self.register_intent('C', 'new', 'alarm', self.handle_create)
-    await self.register_intent('C', 'show', 'alarms', self.handle_show)
-    await self.register_intent('C', 'display', 'alarms', self.handle_show)
-    await self.register_intent('C', 'list', 'alarms', self.handle_show)
-    await self.register_intent('C', 'delete', 'alarm', self.handle_delete)
-    await self.register_intent('C', 'delete', 'alarms', self.handle_delete)
-    await self.register_intent('C', 'remove', 'alarm', self.handle_delete)
-    await self.register_intent('C', 'remove', 'alarms', self.handle_delete)
-    await self.register_intent('C', 'stop', 'alarm', self.handle_stop)
-    await self.register_intent('C', 'stop', 'alarms', self.handle_stop)
-    await self.register_intent('C', 'cancel', 'alarm', self.handle_stop)
-    await self.register_intent('C', 'cancel', 'alarms', self.handle_stop)
     base_dir = os.getenv('SVA_BASE_DIR')
     self.db_filename = base_dir + '/skills/system_skills/' + 'alarms.db'
     self.alarms = []
@@ -102,6 +91,22 @@ class AlarmSkill(SimpleVoiceAssistant):
     self.alarm_active = AlarmActiveThread(self.play_beep)
     self.alarm_active.start()
     self.log.info("Alarm Skill Initialized\n%s" % (self.alarms,))
+
+  async def register_intents(self):
+    await self.register_intent('C', 'set', 'alarm', self.handle_create)
+    await self.register_intent('C', 'create', 'alarm', self.handle_create)
+    await self.register_intent('C', 'new', 'alarm', self.handle_create)
+    await self.register_intent('C', 'show', 'alarms', self.handle_show)
+    await self.register_intent('C', 'display', 'alarms', self.handle_show)
+    await self.register_intent('C', 'list', 'alarms', self.handle_show)
+    await self.register_intent('C', 'delete', 'alarm', self.handle_delete)
+    await self.register_intent('C', 'delete', 'alarms', self.handle_delete)
+    await self.register_intent('C', 'remove', 'alarm', self.handle_delete)
+    await self.register_intent('C', 'remove', 'alarms', self.handle_delete)
+    await self.register_intent('C', 'stop', 'alarm', self.handle_stop)
+    await self.register_intent('C', 'stop', 'alarms', self.handle_stop)
+    await self.register_intent('C', 'cancel', 'alarm', self.handle_stop)
+    await self.register_intent('C', 'cancel', 'alarms', self.handle_stop)
 
   def handle_message(self, msg):
     if msg.data['subtype'] == 'oob_detect' and msg.data['verb'] == 'snooze':
@@ -162,9 +167,7 @@ class AlarmSkill(SimpleVoiceAssistant):
     return ''
 
   def handle_expired_alarm(self, alarm):
-    # we have an expired alarm. we need to 
-    # set up a recurring timer to play our
-    # alarm sound until told to stop.
+    # we have an expired alarm. we need to set up a recurring timer to play our alarm sound until told to stop.
     self.alarms.remove(alarm)
     self.update_alarm_db()
     self.alarm_active.active = True
@@ -377,16 +380,17 @@ class AlarmSkill(SimpleVoiceAssistant):
     return False
 
   def stop(self,msg=None):
-    self.log.debug("Do Nothing Alarm stop() hit !, alarm_active=%s, alarms=%s" % (self.alarm_active.active,self.alarms))
+    self.log.debug(f"AlarmSkill.handle_stop() with message - alarm_active: {self.alarm_active.active} alarms: {self.alarms}")
     self.alarm_active.active = False
 
   def handle_stop(self, msg):
-    self.log.debug("Alarm handle_stop() hit !, alarm_active=%s, sending release msg, alarms=%s" % (self.alarm_active.active,self.alarms))
+    self.log.debug(f"AlarmSkill.handle_stop() alarm_active: {self.alarm_active.active} alarms: {self.alarms}")
     self.alarm_active.active = False
     self.send_release_message()
 
 # main()
 if __name__ == '__main__':
-  my_alarm_skill = AlarmSkill()
+  alarm_skill = AlarmSkill()
+  asyncio.run(alarm_skill.register_intents())
   Event().wait()                           # wait forever
 

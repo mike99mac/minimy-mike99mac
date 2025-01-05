@@ -1,3 +1,4 @@
+import asyncio
 from framework.message_types import MSG_MEDIA
 from mpc_client import MpcClient
 from music_info import Music_info
@@ -126,5 +127,6 @@ class MpcSkill(MediaSkill):
 # main()
 if __name__ == '__main__':
   mpc = MpcSkill()
+  asyncio.run(mpc.register_media(mpc.skill_id))
   Event().wait()                         # wait forever
 

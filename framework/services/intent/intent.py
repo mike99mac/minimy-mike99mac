@@ -1,10 +1,11 @@
-import requests, time, glob, os
+import asyncio
 from bus.Message import Message
 from bus.MsgBusClient import MsgBusClient
 from framework.util.utils import LOG, Config, get_wake_words, aplay, normalize_sentence, remove_pleasantries
 from framework.services.intent.nlp.shallow_parse.nlu import SentenceInfo
 from framework.services.intent.nlp.shallow_parse.shallow_utils import scrub_sentence, remove_articles
 from framework.message_types import (MSG_UTTERANCE, MSG_MEDIA, MSG_RAW, MSG_REGISTER_INTENT, MSG_SYSTEM)
+import requests, time, glob, os
 
 class Intent:
   """
@@ -116,7 +117,7 @@ class Intent:
     self.log.info(f"Intent.get_sentence_type() resp = {resp}")    
     return resp
 
-  def send_utt(self, utt):
+  async def send_utt(self, utt):
     # sends an utterance to a target and handles edge cases
     target = utt.get('skill_id','*')
     if target == '':
@@ -124,7 +125,7 @@ class Intent:
     if utt == 'stop':
       target = 'system_skill'
     self.log.debug(f"Intent.send_utt() sending MSG_UTTERANCE  target = {target}")    
-    self.bus.send(MSG_UTTERANCE, target, {'utt': utt,'subtype':'utt'})
+    await self.bus.send(MSG_UTTERANCE, target, {'utt': utt,'subtype':'utt'})
 
   def send_media(self, info):
     self.log.debug(f"Intent.send_media() sending message info: {info}")
