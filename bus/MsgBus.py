@@ -3,7 +3,7 @@ from framework.util.utils import LOG, Config
 import json
 import os
 import websockets
-from websockets import serve 
+from websockets.asyncio.server import serve 
 
 class Server:
   """ Simple WebSocket server """
@@ -67,6 +67,9 @@ class Server:
         self.log.error(f"Server.send_to_clients() message distribution error: {e}")
         return False
 
+  def stop(self):
+    self.log.info(f"Server.stop(): stopping message bus")
+
   #async def ws_handler(self, ws, path):
   async def ws_handler(self, ws):
     if await self.register(ws):
@@ -82,11 +85,12 @@ class Server:
     else:
       self.log.warning(f"Server.ws_handler() cannot register connection - dropping it")
 
-async def main():
-  server = Server()
-  async with serve(server.ws_handler, '0.0.0.0', 8181):
-    await asyncio.Future()                 # server run indefinitely
+  async def main(self):
+    async with serve(server.ws_handler, '0.0.0.0', 8181):
+      await self.stop 
 
+# main()
 if __name__ == "__main__":
-  asyncio.run(main())
+  server = Server()
+  asyncio.run(server.main())
 

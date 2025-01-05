@@ -47,6 +47,8 @@ class MsgBusClient:
     try:
       self.ws = await connect(f"ws://localhost:8181/{self.client_id}")
       self.log.debug(f"MsgBusClient.connect_and_run(): Connected to client_id: {self.client_id}")
+
+      # create asyncio tasks
       asyncio.create_task(RecvThread(self.ws, self.rcv_client_msg, self.client_id))
       asyncio.create_task(SendThread(self.ws, self.outbound_q, self.client_id))
       asyncio.create_task(process_inbound_messages(self.inbound_q, self.msg_handlers, self.client_id))
@@ -57,8 +59,8 @@ class MsgBusClient:
     self.msg_handlers[msg_type] = callback
     self.log.debug(f"MsgBusClient.on(): Registered handler for msg_type: {msg_type}")
 
-  async def rcv_client_msg(self, msg):
-    await self.inbound_q.put(msg)
+  def rcv_client_msg(self, msg):
+    self.inbound_q.put(msg)
 
   async def send(self, msg_type, target, msg):
     await self.outbound_q.put(json.dumps(Message(msg_type, self.client_id, target, msg)))

@@ -18,6 +18,7 @@ class HelpSkill(SimpleVoiceAssistant):
 
   async def send_message(self):
     await self.bus.send(MSG_SYSTEM, 'system_skill', self.info)
+    # self.bus.send(MSG_SYSTEM, 'system_skill', self.info)
 
   def handle_message(self, message):
     data = message.data
