@@ -30,13 +30,13 @@ class SVAMediaPlayerSkill:
         self.hal = get_hal_obj('l')
         self.bus.on(MSG_MEDIA, self.handle_message)
 
-    def send_message(self, target, message):
+    async def send_message(self, target, message):
         """
         send a standard skill message on the bus 
         """
         self.log.debug(f"SVAMediaPlayerSkill.send_message() message = {message}")
         message['from_skill_id'] = self.skill_id
-        self.bus.send(MSG_SKILL, target, message)
+        await self.bus.send(MSG_SKILL, target, message)
 
     def pause(self, message):
         self.log.info(f"SVAMediaPlayerSkill.pause() state: {self.state} message: {message}")

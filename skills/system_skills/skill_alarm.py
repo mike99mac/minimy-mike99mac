@@ -117,7 +117,7 @@ class AlarmSkill(SimpleVoiceAssistant):
       self.alarm_active.active = False
       self.send_release_message()
 
-  def send_reserve_message(self):
+  async def send_reserve_message(self):
     # acquire the oob verbs 'stop' and 'snooze'
     info = {
         'subtype':'reserve_oob',
@@ -125,11 +125,11 @@ class AlarmSkill(SimpleVoiceAssistant):
         'from_skill_id':self.skill_id,
         'verb':'stop'
         }
-    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
     info['verb'] = 'snooze'
-    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
 
-  def send_release_message(self):
+  async def send_release_message(self):
     # release the oob verbs 'stop' and 'snooze'
     info = {
         'subtype':'release_oob',
@@ -137,9 +137,9 @@ class AlarmSkill(SimpleVoiceAssistant):
         'from_skill_id':self.skill_id,
         'verb':'stop'
         }
-    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
     info['verb'] = 'snooze'
-    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
 
   def play_beep(self):
     self.play_media(self.beep_filename, delete_on_complete=False)

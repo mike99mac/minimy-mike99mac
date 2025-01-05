@@ -67,7 +67,7 @@ class Server:
         self.log.error(f"Server.send_to_clients() message distribution error: {e}")
         return False
 
-  def stop(self):
+  async def stop(self):
     self.log.info(f"Server.stop(): stopping message bus")
 
   #async def ws_handler(self, ws, path):
@@ -85,12 +85,14 @@ class Server:
     else:
       self.log.warning(f"Server.ws_handler() cannot register connection - dropping it")
 
-  async def main(self):
-    async with serve(server.ws_handler, '0.0.0.0', 8181):
-      await self.stop 
+async def main():
+  server = Server()
+  print(f"Server.main() server created")
+  async with websockets.serve(Server.ws_handler, '0.0.0.0', 8181):
+    print(f"Server.main() server started")
+    await asyncio.Future()               # run forever
 
 # main()
 if __name__ == "__main__":
-  server = Server()
-  asyncio.run(server.main())
+  asyncio.run(main())
 

@@ -94,7 +94,7 @@ class TTSEngine:
 
   # TTS session messages. these are ecxchanged between
   # the TTS Engine and the user/skill 
-  def send_paused_confirmed_message(self, target, tts_sid):
+  async def send_paused_confirmed_message(self, target, tts_sid):
     self.log.debug(f"TTSEngine.send_paused_confirmed_message() target: {target} tts_sid: {tts_sid}")
     info = {
         'error':'',
@@ -104,9 +104,9 @@ class TTSEngine:
         'skill_id':target,
         'from_skill_id':self.skill_id,
         }
-    self.bus.send(MSG_SKILL, target, info)
+    await self.bus.send(MSG_SKILL, target, info)
 
-  def send_session_confirm(self, target, sid):
+  async def send_session_confirm(self, target, sid):
     self.log.debug(f"TTSEngine.send_session_confirm() target: {target} sid: {sid}")
     info = {
         'error':'',
@@ -116,9 +116,9 @@ class TTSEngine:
         'skill_id':target,
         'from_skill_id':self.skill_id,
         }
-    self.bus.send(MSG_SKILL, target, info)
+    await self.bus.send(MSG_SKILL, target, info)
 
-  def send_session_reject(self,reason,target):
+  async def send_session_reject(self,reason,target):
     info = {
         'error':reason,
         'subtype':'tts_service_command_response',
@@ -126,9 +126,9 @@ class TTSEngine:
         'skill_id':target,
         'from_skill_id':self.skill_id,
         }
-    self.bus.send(MSG_SKILL, target, info)
+    await self.bus.send(MSG_SKILL, target, info)
 
-  def send_session_end_notify(self, skill_id):
+  async def send_session_end_notify(self, skill_id):
     self.log.debug(f"TTSEngine.send_session_end_notify() skill_id: {skill_id}")
     info = {
         'error':'',
@@ -139,7 +139,7 @@ class TTSEngine:
         'from_skill_id':self.skill_id,
         }
     self.current_session.owner = None
-    self.bus.send(MSG_SKILL, skill_id, info)
+    await self.bus.send(MSG_SKILL, skill_id, info)
 
   # state/event handlers
   def _idle_start(self, msg):
@@ -243,7 +243,7 @@ class TTSEngine:
   def _wp_ended(self, msg):
     self.__change_state(STATE_IDLE)
 
-  def _paused_reset(self, msg):
+  async def _paused_reset(self, msg):
     # clear tts session
     self.current_session.handle_event(SESSION_EVENT_RESUME, msg)
     self.current_session.session_data = []
@@ -257,7 +257,7 @@ class TTSEngine:
         'skill_id':'media_player_service',
         'from_skill_id':self.current_session.owner
         }
-    self.bus.send(MSG_MEDIA, 'media_player_service', info)
+    await self.bus.send(MSG_MEDIA, 'media_player_service', info)
 
   def _paused_resume(self, msg):
     self.__change_state(STATE_ACTIVE)

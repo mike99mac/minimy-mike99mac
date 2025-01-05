@@ -113,7 +113,7 @@ class SimpleVoiceAssistant:
       callback()
     self.log.debug("SimpleVoiceAssistant.start_watchdog() watchdog ended")
 
-  def watchdog_timeout(self):
+  async def watchdog_timeout(self):
     self.log.debug("SimpleVoiceAssistant.watchdog_timeout() starting")
     self.i_am_conversed = False
     info = {
@@ -123,7 +123,7 @@ class SimpleVoiceAssistant:
         'skill_id':'system_skill',
         'from_skill_id':self.skill_control.skill_id,
          }
-    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
     if self.user_timeout_callback:
       self.user_timeout_callback()
 
@@ -179,7 +179,7 @@ class SimpleVoiceAssistant:
     else:
       self.prompt_callback()
 
-  def handle_raw_msg(self, message):
+  async def handle_raw_msg(self, message):
     self.log.debug(f"SimpleVoiceAssistant.handle_raw_msg() message: {message.data}")
     if self.skill_control.skill_id == 'system_skill': # special handling for the system skill 
       self.handle_message(message)
@@ -204,16 +204,16 @@ class SimpleVoiceAssistant:
            'skill_id':'system_skill',
            'from_skill_id':self.skill_control.skill_id,
            }
-      self.bus.send(MSG_SYSTEM, 'system_skill', info)
+      await self.bus.send(MSG_SYSTEM, 'system_skill', info)
       self._converse_callback(message.data['utterance'])
 
-  def send_message(self, target, message):
+  async def send_message(self, target, message):
     self.log.debug(f"SimpleVoiceAssistant.send_message() target: {target} message: {message}")
     from_skill_id = self.skill_control.skill_id
     message['from_skill_id'] = from_skill_id
-    self.bus.send(MSG_SKILL, target, message)
+    await self.bus.send(MSG_SKILL, target, message)
 
-  def play_media(self, file_uri, delete_on_complete='false', media_type=None):
+  async def play_media(self, file_uri, delete_on_complete='false', media_type=None):
     self.log.debug(f"SimpleVoiceAssistant.play_media() file_uri: {file_uri} delete_on_complete: {delete_on_complete}")
 
     # try to acquire a media player session and play a media file
@@ -232,7 +232,7 @@ class SimpleVoiceAssistant:
              'skill_id':'media_player_service',
              'from_skill_id':from_skill_id
              }
-        self.bus.send(MSG_MEDIA, 'media_player_service', info)
+        await self.bus.send(MSG_MEDIA, 'media_player_service', info)
         self.i_am_paused = False
         self.media_player_session_id = 0
         time.sleep(0.1)
@@ -251,7 +251,7 @@ class SimpleVoiceAssistant:
            'media_type':media_type,
            'delete_on_complete':delete_on_complete
            }
-      self.bus.send(MSG_MEDIA, 'media_player_service', info)
+      await self.bus.send(MSG_MEDIA, 'media_player_service', info)
       return True
 
     # else we need to acquire a media session
@@ -269,10 +269,10 @@ class SimpleVoiceAssistant:
         'from_skill_id':from_skill_id,
         'skill_category':from_skill_category,
         }
-    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
     return True
 
-  def speak(self, text, wait_callback=None):
+  async def speak(self, text, wait_callback=None):
     self.log.debug(f"SimpleVoiceAssistant.speak() text = {text} wait_callback = {wait_callback} i_am_paused = {self.i_am_paused}")
 
     # send the text to the tts service
@@ -302,7 +302,7 @@ class SimpleVoiceAssistant:
         time.sleep(0.1)
         info = {'text': text, 'skill_id': self.skill_control.skill_id}
         self.log.debug(f"SimpleVoiceAssistant.speak() calling bus.send({info})")
-        self.bus.send(MSG_SPEAK, 'tts_service', info)
+        await self.bus.send(MSG_SPEAK, 'tts_service', info)
         self.i_am_paused = False
         return True
 
@@ -317,7 +317,7 @@ class SimpleVoiceAssistant:
          }
     self.speak_callback = wait_callback
     self.log.debug(f"SimpleVoiceAssistant.speak() sending message to speak with info = {info}")
-    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
     return True
 
   def speak_lang(self, base_dir: str, mesg_file: str, mesg_info: dict, wait_callback=None):
@@ -370,7 +370,6 @@ class SimpleVoiceAssistant:
                  }
           self.log.debug(f"SimpleVoiceAssistant.register_intent() calling self.bus.send('register_intent', 'intent_service', {info}") 
           await self.bus.send('register_intent', 'intent_service', info)
-          # self.bus.send('register_intent', 'intent_service', info)
 
   def handle_utterance(self, message):
     self.log.debug(f"SimpleVoiceAssistant.handle_utterance() category = {self.skill_control.category} skill_id = {self.skill_control.skill_id}")
@@ -407,7 +406,7 @@ class SimpleVoiceAssistant:
           self.log.debug(f"SimpleVoiceAssistant.handle_utterance() skill base class intent match: {key}")
           (self.intents[key](message))
 
-  def converse(self, callback):
+  async def converse(self, callback):
     """
     a skill in the conversant state will get a single raw utterance and then exit the 
     conversant state. the raw utterance is returned to the caller
@@ -423,10 +422,10 @@ class SimpleVoiceAssistant:
         'skill_category':self.skill_control.category,
         'from_skill_id':self.skill_control.skill_id,
         }
-    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
     return True
 
-  def send_release_output_focus(self):
+  async def send_release_output_focus(self):
     self.log.debug("SimpleVoiceAssistant.send_release_output_focus() starting")
     self.media_player_session_id = 0
     self.i_am_active = False
@@ -436,10 +435,10 @@ class SimpleVoiceAssistant:
         'skill_id':'system_skill',
         'from_skill_id':self.skill_control.skill_id,
         }
-    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
 
   ## message bus handlers ##
-  def handle_skill_msg(self, message):
+  async def handle_skill_msg(self, message):
     self.log.debug(f"SimpleVoiceAssistant.handle_skill_msg() self.skill_control.skill_id: {self.skill_control.skill_id} message: {message}")
     if message.data['skill_id'] == self.skill_control.skill_id:
       if message.data['subtype'] == 'media_player_command_response':
@@ -453,7 +452,7 @@ class SimpleVoiceAssistant:
               'skill_id':'system_skill',
               'from_skill_id':self.skill_control.skill_id,
                }
-          self.bus.send(MSG_SYSTEM, 'system_skill', info)
+          await self.bus.send(MSG_SYSTEM, 'system_skill', info)
         elif self.media_session_response == 'session_confirm':
           self.media_player_session_id = message.data['session_id']
           # otherwise we are good to go
@@ -470,7 +469,7 @@ class SimpleVoiceAssistant:
               'media_type':self.media_type,
               'delete_on_complete':self.delete_on_complete
                }
-          self.bus.send(MSG_MEDIA, 'media_player_service', info)
+          await self.bus.send(MSG_MEDIA, 'media_player_service', info)
       if message.data['subtype'] == 'tts_service_command_response':
         self.tts_session_response = message.data['response']
         if self.tts_session_response == 'session_ended':
@@ -485,7 +484,7 @@ class SimpleVoiceAssistant:
               'skill_id':'system_skill',
               'from_skill_id':self.skill_control.skill_id,
               }
-          self.bus.send(MSG_SYSTEM, 'system_skill', info)
+          await self.bus.send(MSG_SYSTEM, 'system_skill', info)
           self.done_speaking = True
           if self.speak_callback:
             self.speak_callback()
@@ -497,13 +496,13 @@ class SimpleVoiceAssistant:
               'skill_id':'system_skill',
               'from_skill_id':self.skill_control.skill_id,
               }
-          self.bus.send(MSG_SYSTEM, 'system_skill', info)
+          await self.bus.send(MSG_SYSTEM, 'system_skill', info)
         elif self.tts_session_response == 'session_confirm':
           if self.tts_service_session_id != message.data['session_id'] and self.tts_service_session_id != 0:
             self.tts_service_session_ids.append( self.tts_service_session_id )
           self.tts_service_session_id = message.data['session_id']
           info = {'text': self.text,'skill_id':self.skill_control.skill_id}
-          self.bus.send(MSG_SPEAK, 'tts_service', info)
+          await self.bus.send(MSG_SPEAK, 'tts_service', info)
       if self.handle_message is not None:
         self.handle_message(message)
     else:
@@ -519,7 +518,7 @@ class SimpleVoiceAssistant:
       if self.handle_message is not None:
         self.handle_message(message)
 
-  def pause_sessions(self):
+  async def pause_sessions(self):
     # pause any active media sessions
     self.log.debug(f"SimpleVoiceAssistant.pause_sessions() media_player_session_id = {self.media_player_session_id}")
     if self.media_player_session_id != 0:
@@ -531,7 +530,7 @@ class SimpleVoiceAssistant:
           'skill_id':'media_player_service',
           'from_skill_id':self.skill_control.skill_id,
            }
-      self.bus.send(MSG_MEDIA, 'media_player_service', info)
+      await self.bus.send(MSG_MEDIA, 'media_player_service', info)
       self.i_am_paused = True
 
     # pause any active tts sessions
@@ -547,7 +546,7 @@ class SimpleVoiceAssistant:
       self.send_message('tts_service', info)
       self.i_am_paused = True
 
-  def handle_system_msg(self, message):
+  async def handle_system_msg(self, message):
     self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() self.skill_id = {self.skill_control.skill_id} message: {message}")
     if message.data['skill_id'] == self.skill_control.skill_id:
       match message.data['subtype']:
@@ -580,7 +579,7 @@ class SimpleVoiceAssistant:
                   'skill_id':'media_player_service',
                   'from_skill_id':self.skill_control.skill_id
                   }
-              self.bus.send(MSG_MEDIA, 'media_player_service', info)
+              await self.bus.send(MSG_MEDIA, 'media_player_service', info)
           else:
             self.log.warning(f"SimpleVoiceAssistant.handle_system_msg() {self.skill_control.skill_id} cannot acquire output focus!")
         case "pause":
@@ -601,7 +600,7 @@ class SimpleVoiceAssistant:
                 'skill_id':'media_player_service',
                 'from_skill_id':self.skill_control.skill_id,
                  }
-            self.bus.send(MSG_MEDIA, 'media_player_service', info)
+            await self.bus.send(MSG_MEDIA, 'media_player_service', info)
             self.i_am_paused = False
             if self.tts_service_session_id != 0:  # resume any active tts sessions
               info = {

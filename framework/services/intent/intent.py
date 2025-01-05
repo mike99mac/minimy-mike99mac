@@ -39,15 +39,9 @@ class Intent:
     for ww in wws:
       self.log.debug(f"Intent.__init__() registering wakeword {ww}")
       self.wake_words.append(ww.lower())
+    self.log.debug(f"Intent.__init__() registering handle_register_intent")
     self.bus.on(MSG_REGISTER_INTENT, self.handle_register_intent) # register message handlers
     self.bus.on('system', self.handle_system_message)
-
-    # NEW DEBUG LINES:
-    self.bus.on('*', self.handle_all_messages)  # Add a handler for all messages
-    self.log.debug("Intent.__init__(): YOOO! - registered handle_all_messages() to get all messages")
-
-  def handle_all_messages(self, msg):
-    self.log.debug(f"Intent.handle_all_messages(): YOOOOO! Received message: {msg}")
 
   def handle_system_message(self, message):
     # stay in-sync with the system skill regarding OOBs
@@ -201,8 +195,10 @@ class Intent:
       self.log.info(f"Intent.handle_register_intent() key {key} is in intent match")
       self.intents[key] = {'skill_id':data['skill_id'], 'state':'enabled'}
 
-  # async def run(self):
-  def run(self):
+  async def await_run(self):
+    await self.run()
+
+  async def run(self):
     self.log.debug(f"Intent.run() Intent processor started - is_running = {self.is_running}")
     si = SentenceInfo(self.base_dir)
 
@@ -230,7 +226,7 @@ class Intent:
           res = self.send_oob_to_system('stop', contents) 
         elif utt_type == 'RAW':  # send raw messages to the system skill and let it figure out what to do with them
           if contents:
-            self.bus.send(MSG_RAW, 'system_skill', {'utterance': contents[5:]})
+            await self.bus.send(MSG_RAW, 'system_skill', {'utterance': contents[5:]})
         else:
           sentence_type = si.get_sentence_type(utt)
           self.log.debug(f"Intent.run() sentence_type: {sentence_type} utt: {utt}")
@@ -299,5 +295,5 @@ class Intent:
 if __name__ == '__main__':
   intent = Intent()
   intent.is_running = True
-  intent.run()
+  intent.await_run()
 
