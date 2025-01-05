@@ -195,9 +195,6 @@ class Intent:
       self.log.info(f"Intent.handle_register_intent() key {key} is in intent match")
       self.intents[key] = {'skill_id':data['skill_id'], 'state':'enabled'}
 
-  async def await_run(self):
-    await self.run()
-
   async def run(self):
     self.log.debug(f"Intent.run() Intent processor started - is_running = {self.is_running}")
     si = SentenceInfo(self.base_dir)
@@ -295,5 +292,5 @@ class Intent:
 if __name__ == '__main__':
   intent = Intent()
   intent.is_running = True
-  intent.await_run()
+  asyncio.run(intent.run())
 
