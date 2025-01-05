@@ -127,11 +127,11 @@ class Intent:
     self.log.debug(f"Intent.send_utt() sending MSG_UTTERANCE  target = {target}")    
     await self.bus.send(MSG_UTTERANCE, target, {'utt': utt,'subtype':'utt'})
 
-  def send_media(self, info):
+  async def send_media(self, info):
     self.log.debug(f"Intent.send_media() sending message info: {info}")
-    self.bus.send(MSG_MEDIA, 'media_skill', info)
+    await self.bus.send(MSG_MEDIA, 'media_skill', info)
 
-  def send_oob_to_system(self, utt, contents):
+  async def send_oob_to_system(self, utt, contents):
     info = {
         'error':'', 
         'subtype':'oob', 
@@ -143,7 +143,7 @@ class Intent:
         'intent_match':''
          }
     self.log.debug(f"Intent.send_oob_to_system() info = {info}")     
-    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
 
   def get_question_intent_match(self, info):
     self.log.debug(f"Intent.get_question_intent_match(): info: {info}")
@@ -201,6 +201,7 @@ class Intent:
       self.log.info(f"Intent.handle_register_intent() key {key} is in intent match")
       self.intents[key] = {'skill_id':data['skill_id'], 'state':'enabled'}
 
+  # async def run(self):
   def run(self):
     self.log.debug(f"Intent.run() Intent processor started - is_running = {self.is_running}")
     si = SentenceInfo(self.base_dir)

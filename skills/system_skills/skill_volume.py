@@ -174,6 +174,7 @@ class VolumeSkill(SimpleVoiceAssistant):
 
   async def initialize(self):
     await self.register_intents()
+    # self.register_intents()
 
 # main()
 if __name__ == '__main__':
