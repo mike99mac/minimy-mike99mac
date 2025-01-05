@@ -1,10 +1,12 @@
-from skills.sva_base import SimpleVoiceAssistant
-from threading import Event
-import lingua_franca
-from lingua_franca import parse
-import os
+import asyncio
+from framework.message_types import MSG_SYSTEM
 from framework.util.utils import execute_command, Config
 from framework.hal.hal import Hal
+import lingua_franca
+from skills.sva_base import SimpleVoiceAssistant
+from threading import Event
+from lingua_franca import parse
+import os
 
 class VolumeSkill(SimpleVoiceAssistant):
   def __init__(self, bus=None, timeout=5):
@@ -16,7 +18,7 @@ class VolumeSkill(SimpleVoiceAssistant):
     input_level_control_name = cfg.get_cfg_val('Advanced.InputLevelControlName')
     output_device_name = cfg.get_cfg_val('Advanced.OutputDeviceName')
     output_level_control_name = cfg.get_cfg_val('Advanced.OutputLevelControlName')
-    cfg_platform = cfg.get_cfg_val('Advanced.Platform') # workaround until we fix the config file to hold the actual module name
+    cfg_platform = cfg.get_cfg_val('Advanced.Platform') # workaround until config file can hold the actual module name
     if cfg_platform == 'p':
       from framework.hal.executables.pios import Platform
     else:   
@@ -30,14 +32,12 @@ class VolumeSkill(SimpleVoiceAssistant):
     self.mic_level = 67
     self.set_mic_level(self.mic_level)
 
-    # register intents. an intent is a subject:verb combo
-    inactive_state_intents = []
-    questions = ['what', 'how']
-    commands = ['set', 'change', 'modify']
-    subjects = ['microphone', 'mic', 'input']
-    self.register_intents
-
   async def register_intents(self):
+    subjects = ['microphone', 'mic', 'input']
+    commands = ['set', 'change', 'modify']
+    questions = ['what', 'how']
+    inactive_state_intents = []            # register intents - subject:verb pairs
+
     # input volume
     for subject in subjects:
       for command in commands:
@@ -78,8 +78,7 @@ class VolumeSkill(SimpleVoiceAssistant):
         num = parse.extract_number(v3)
     return num
 
-  ## microphone ##
-  def get_mic_level(self):
+  def get_mic_level(self):                 # microphone
     self.mic_level = self.hal.get_intput_level()
     return self.mic_level
 
@@ -95,17 +94,15 @@ class VolumeSkill(SimpleVoiceAssistant):
     num = self.get_num(val, subject, squal)
     text = "No value given, level not changed"
     if num:
-      text = "mic level changed to %s percent" % (num,)
+      text = f"mic level changed to {num} percent"
       self.set_mic_level(num)
       self.speak(text)
 
   def handle_query_mic(self, message):
-    # for questions only right now
-    text = "the microphone is currently set to %s percent" % (self.mic_level,)
+    text = f"the microphone is currently set to {self.mic_level} percent"
     self.speak(text)
 
-  ## speaker ##
-  def set_volume(self, new_volume):
+  def set_volume(self, new_volume):        # speaker 
     self.volume_level = new_volume
     self.hal.set_output_level(self.volume_level)
     return self.volume_level
@@ -113,63 +110,74 @@ class VolumeSkill(SimpleVoiceAssistant):
   def get_volume(self):
     return self.hal.get_output_level()
 
+  # handle volume mute and volume unmute messages
   def handle_message(self, message):
-    # we also handle volume mute and volume unmute messages
-    self.log.debug("VolumeSkill got a message --->%s" % (message.data,))
+    self.log.debug(f"VolumeSkill.handle_message() data: {message.data}")
     data = message.data
     if data['subtype'] == 'mute_volume':
       self.handle_mute(None)
-
     if data['subtype'] == 'unmute_volume':
       self.handle_unmute(None)
 
-  def handle_intent_match(self,msg):       # for questions only right now
-    text = "the volume is currently set to %s percent" % (self.get_volume(),)
+  def handle_intent_match(self, message):       # for questions only right now
+    self.log.debug(f"VolumeSkill.handle_intent_match() data: {message.data}")
+    text = f"the volume is currently set to {self.get_volume()} percent" 
     self.speak(text)
 
-  def handle_change(self,msg):
+  def handle_change(self, message):
+    self.log.debug(f"VolumeSkill.handle_change() data: {message.data}")
     val = msg.data['utt']['value']
     subject = msg.data['utt']['subject']
     squal = msg.data['utt']['squal']
     num = self.get_num(val, subject, squal)
     text = "No value given, volume not changed"
     if num:
-      text = "volume changed to %s percent" % (num,)
+      text = f"volume changed to {new_volume} percent" 
       self.set_volume(num)
       self.speak(text)
 
-  def handle_increase(self,msg):
+  def handle_increase(self, message):
+    self.log.debug(f"VolumeSkill.handle_increase() data: {message.data}")
     if self.volume_level < 91:
       new_volume = self.volume_level + 10
-      self.set_volume(new_volume)
-      text = "volume changed to %s percent" % (new_volume,)
-      self.speak(text)
+      text = f"volume changed to {new_volume} percent" 
+    else:
+      new_volume = 100
+      text = f"volume is maxed out at {new_volume} percent" 
+    self.set_volume(new_volume)
+    self.speak(text)
 
   def handle_decrease(self,msg):
+    self.log.debug(f"VolumeSkill.handle_increase() data: {message.data}")
     if self.volume_level > 9:
       new_volume = self.volume_level - 10
-      self.set_volume(new_volume)
-      text = "volume changed to %s percent" % (new_volume,)
-      self.speak(text)
+      text = f"volume changed to {new_volume} percent" 
+    else: 
+      new_volume = 0
+      text = f"volume is minimum at {new_volume} percent" 
+    self.set_volume(new_volume)
+    self.speak(text)
 
-  def handle_mute(self,msg):
-    self.log.debug("Inside handle mute!")
+  def handle_mute(self, message):
     self.muted_volume = self.volume_level
-    self.log.debug("** handle_mute() saving volume is %s**" % (self.muted_volume,))
+    self.log.debug(f"VolumeSkill.handle_mute() saving volume: {self.muted_volume} then muting")
     self.volume_level = 0
     self.set_volume(self.volume_level)
 
-  def handle_unmute(self,msg):
-    self.log.debug("Inside handle unmute!")
+  def handle_unmute(self, message):
     self.volume_level = self.muted_volume
-    self.log.debug("** handle_unmute() restoring volume is %s**" % (self.muted_volume,))
+    self.log.debug(f"VolumeSkill.handle_unmute() restoring volume: {self.volume_level}")
     self.set_volume(self.volume_level)
 
-  def stop(self,msg=None):
-    self.log.debug("Volume skill stop() method called WITH message %s" % (msg,))
+  def stop(self, message = None):
+    self.log.debug(f"VolumeSkill.stop() message: {message}")
+
+  async def initialize(self):
+    await self.register_intents()
 
 # main()
 if __name__ == '__main__':
   vs = VolumeSkill()
+  asyncio.run(vs.initialize())
   Event().wait()                           # wait forever
 

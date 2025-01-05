@@ -1,9 +1,9 @@
-
-from threading import Event
-from skills.sva_base import SimpleVoiceAssistant
+import asyncio
 from bus.Message import Message
 from framework.message_types import MSG_SKILL, MSG_SYSTEM
 from framework.util.utils import aplay
+from skills.sva_base import SimpleVoiceAssistant
+from threading import Event
 
 class SVAMediaSkill(SimpleVoiceAssistant):
   """
@@ -22,17 +22,18 @@ class SVAMediaSkill(SimpleVoiceAssistant):
         'from_skill_id':self.skill_id, 
         'verb':'pause'
          }
-    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+
+  async def send_messages(self):
+    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
     info['verb'] = 'resume'
-    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
     info['verb'] = 'previous'
-    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
     info['verb'] = 'next'
-    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
     info['verb'] = 'stop'
-    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
     self.log.debug("SVAMediaSkill.__init__(): registering OOB intents") 
-    self.register_intents()
 
   async def register_intents(self):
     await self.register_intent('O', 'next', 'song', self.handle_next)
@@ -183,8 +184,12 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     self.log.info("SVAMediaSkill.create_playlist() - what to do?")
     # get_media_confidence(self, msg)
    
+  async def initialize(self):
+    await self.register_intents()
+
 # main()
 if __name__ == '__main__':
   sva_ms = SVAMediaSkill()
+  asyncio.run(sva_ms.initialize())
   Event().wait()                           # wait forever
 

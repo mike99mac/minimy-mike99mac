@@ -1,3 +1,4 @@
+import asyncio
 from skills.sva_base import SimpleVoiceAssistant
 from framework.util.utils import us_abbrev_to_state 
 from framework.util.utils import execute_command
@@ -5,14 +6,9 @@ from threading import Event
 import requests, time, json
 
 class WeatherSkill(SimpleVoiceAssistant):
-  async def __init__(self, bus=None, timeout=5):
+  def __init__(self, bus=None, timeout=5):
     super().__init__(skill_id='weather_skill', skill_category='user')
     self.busy = False
-
-    # register intents
-    await self.register_intent('Q', 'what', 'weather', self.handle_msg)
-    await self.register_intent('Q', 'what', 'forecast', self.handle_msg)
-    await self.register_intent('Q', ['is', 'will', 'did', 'what'], 'temperature', self.handle_msg)
 
     # get your public IP address and associated geographic data
     response = execute_command('curl ifconfig.me')
@@ -33,8 +29,14 @@ class WeatherSkill(SimpleVoiceAssistant):
       self.my_zip = self.geo_info['postal']
     except:
       self.log.warning("Weather skill exception in init()!")
+    self.log.debug(f"WeatherSkill.__init__(): my_public_ip {self.my_public_ip} my_city: {self.my_city}")
+    self.log.debug(f"WeatherSkill.__init__(): my_state: {self.my_state} my_zip: {self.my_zip}")
 
-    self.log.debug("WeatherSkill: My Public IP:%s, My City:%s, My State:%s My Zip:%s" % (self.my_public_ip, self.my_city, self.my_state, self.my_zip))
+  async def register_intents(self):
+    self.log.debug("WeatherSkill.register_intents()")
+    await self.register_intent('Q', 'what', 'weather', self.handle_msg)
+    await self.register_intent('Q', 'what', 'forecast', self.handle_msg)
+    await self.register_intent('Q', ['is', 'will', 'did', 'what'], 'temperature', self.handle_msg)
 
   def handle_msg(self, message):
     if self.busy:
@@ -128,5 +130,6 @@ class WeatherSkill(SimpleVoiceAssistant):
 # main()
 if __name__ == '__main__':
   ws = WeatherSkill()
+  asyncio.run(ws.register_intents())
   Event().wait()                           # wait forever
 
