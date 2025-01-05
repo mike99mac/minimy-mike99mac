@@ -47,8 +47,6 @@ class MsgBusClient:
     try:
       self.ws = await connect(f"ws://localhost:8181/{self.client_id}")
       self.log.debug(f"MsgBusClient.connect_and_run(): Connected to client_id: {self.client_id}")
-
-      # create asyncio tasks
       asyncio.create_task(RecvThread(self.ws, self.rcv_client_msg, self.client_id))
       asyncio.create_task(SendThread(self.ws, self.outbound_q, self.client_id))
       asyncio.create_task(process_inbound_messages(self.inbound_q, self.msg_handlers, self.client_id))
@@ -68,4 +66,6 @@ class MsgBusClient:
 
   async def close(self):
     await self.ws.close()
+
+# main() - nothing to do
 

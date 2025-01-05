@@ -88,7 +88,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
         self.send_session_pause()          #  tell media player too
         self.pause_ack = True              # this will cause an internal event to fire once
 
-    def play_file(self, file_name):
+    async def play_file(self, file_name):
         self.log.debug(f"TTSSession.play_file() state: {self.state} self.msid: {self.msid} file_name: {file_name}")
         if self.state == se_tts_constants.STATE_ACTIVE:
             if self.msid == 0:
@@ -108,7 +108,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
                         # 'delete_on_complete':'true'
                         'delete_on_complete':'false'
                        }
-                self.bus.send(MSG_MEDIA, 'media_player_service', info)
+                await self.bus.send(MSG_MEDIA, 'media_player_service', info)
                 self.log.debug(f"TTSSession play_file() exit - play state: {self.state} file_name: {file_name}")
         else:
             self.log.warning(f"TTSSession play_file() cannot play file because state is not active: {self.state}")
@@ -160,7 +160,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
         self.log.debug(f"TTSSession.get_remote_tts() result: {result}, chunk: {chunk} file_name: {file_name}")
         return file_name
 
-    def send_media_session_request(self):
+    async def send_media_session_request(self):
         self.log.debug("TTSSession.send_media_session_request()") 
         info = {
                 'error':'',
@@ -170,9 +170,9 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
                 'skill_id':'media_player_service',
                 'from_skill_id':self.skill_id
                }
-        self.bus.send(MSG_MEDIA, 'media_player_service', info)
+        await self.bus.send(MSG_MEDIA, 'media_player_service', info)
 
-    def stop_media_session(self):
+    async def stop_media_session(self):
         self.log.debug(f"TTSSession.stop_media_session() state: {self.state} msid: {self.msid}")
         self.paused = True
         if self.msid != 0:
@@ -185,14 +185,14 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
                     'skill_id':'media_player_service',
                     'from_skill_id':self.skill_id,
                    }
-            self.bus.send(MSG_MEDIA, 'media_player_service', info)
+            await self.bus.send(MSG_MEDIA, 'media_player_service', info)
             self.msid = 0
         else:                              # else no active media session to stop
             self.log.warning(f"TTSSession no media player session to stop msid: {self.msid}")
         self.session_data = []
         self.index = 0
 
-    def send_session_pause(self):
+    async def send_session_pause(self):
         self.log.debug("TTSSession.send_session_pause()") 
         info = {
                 'error':'',
@@ -203,9 +203,9 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
                 'skill_id':'media_player_service',
                 'from_skill_id':self.skill_id,
                 }
-        self.bus.send(MSG_MEDIA, 'media_player_service', info)
+        await self.bus.send(MSG_MEDIA, 'media_player_service', info)
 
-    def send_session_resume(self):
+    async def send_session_resume(self):
         self.log.debug("TTSSession.send_session_resume()") 
         info = {
                 'error':'',
@@ -216,7 +216,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
                 'skill_id':'media_player_service',
                 'from_skill_id':self.skill_id,
                 }
-        self.bus.send(MSG_MEDIA, 'media_player_service', info)
+        await self.bus.send(MSG_MEDIA, 'media_player_service', info)
 
     def add(self, i):
         self.log.debug("TTSSession.add()") 

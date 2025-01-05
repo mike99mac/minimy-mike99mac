@@ -107,7 +107,7 @@ class STTSvc:
     # if self.bark:
     # self.log.info(f"STTSvc.__init__(): use_remote_stt {self.use_remote_stt} wws: {self.wws}")
 
-  def send_message(self, target, subtype):
+  async def send_message(self, target, subtype):
     # send a standard skill message on the bus. message must be a dict
     if not self.no_bus:
       info = {
@@ -117,7 +117,7 @@ class STTSvc:
           'target': target,
           'subtype': subtype
       }
-      self.bus.send(MSG_SKILL, target, info)
+      await self.bus.send(MSG_SKILL, target, info)
 
   def send_mute(self):
     self.log.debug("STTSvc.send_mute(): sending mute!")

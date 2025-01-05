@@ -94,7 +94,7 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     # probably when the media player service tells the skill id the session has ended!
     self.log.info(f"SVAMediaSkill.handle_media_response() media skill {msg.data['from_skill_id']} going active")
 
-  def handle_query(self, msg):
+  async def handle_query(self, msg):
     self.log.debug("SVAMediaSkill.handle_query() hit!")
     data = msg.data
     # send out message to all media skills saying you got 3 seconds to give me 
@@ -108,7 +108,7 @@ class SVAMediaSkill(SimpleVoiceAssistant):
         'from_skill_id':self.skill_id,
         'msg_sentence':data['sentence']
         }
-      self.bus.send(MSG_SKILL, skill_id, info)
+      await self.bus.send(MSG_SKILL, skill_id, info)
 
   def handle_command(self, msg):
     self.log.debug(f"SVAMediaSkill.handle_command(): active media is {self.active_media_skill}")
