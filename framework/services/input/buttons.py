@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import asyncio
 from bus.Message import Message
 from bus.MsgBusClient import MsgBusClient
 from framework.message_types import (MSG_UTTERANCE, MSG_SPEAK, MSG_REGISTER_INTENT, MSG_MEDIA, MSG_SYSTEM, MSG_RAW, MSG_SKILL)
@@ -42,6 +43,7 @@ class Buttons:
        GND (39)  (40) GPIO21
     """
     self.bus = MsgBusClient("buttons")
+    asyncio.run(self.bus.connect_and_run())
     self.base_dir = str(os.getenv('SVA_BASE_DIR'))
     log_filename = self.base_dir + '/logs/buttons.log'
     self.log = LOG(log_filename).log

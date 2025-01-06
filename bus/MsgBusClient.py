@@ -4,7 +4,8 @@ from bus.Message import Message, msg_from_json
 import os
 from asyncio import Queue
 from framework.util.utils import LOG, Config
-from websockets import connect
+import websockets.asyncio
+from websockets.asyncio.client import connect
 
 async def SendThread(ws, outbound_q, client_id):
   while True:
@@ -36,17 +37,16 @@ class MsgBusClient:
     self.base_dir = str(os.getenv('SVA_BASE_DIR'))
     log_filename = self.base_dir + '/logs/bus.log'
     self.log = LOG(log_filename).log
-    self.log.debug(f"MsgBusClient.__init__(): Initialized for client_id: {self.client_id}")
-
+    self.log.debug(f"MsgBusClient.__init__(): Initialized for client_id: {self.client_id} log_filename: {log_filename}")
     self.inbound_q = Queue()
     self.outbound_q = Queue()
     self.msg_handlers = {}
     self.ws = None                         # webSocket connection placeholder
 
   async def connect_and_run(self):         # create webSocket connection
+    self.log.debug(f"MsgBusClient.connect_and_run(): Connecting to client_id: {self.client_id}")
     try:
       self.ws = await connect(f"ws://localhost:8181/{self.client_id}")
-      self.log.debug(f"MsgBusClient.connect_and_run(): Connected to client_id: {self.client_id}")
       asyncio.create_task(RecvThread(self.ws, self.rcv_client_msg, self.client_id))
       asyncio.create_task(SendThread(self.ws, self.outbound_q, self.client_id))
       asyncio.create_task(process_inbound_messages(self.inbound_q, self.msg_handlers, self.client_id))
@@ -67,5 +67,9 @@ class MsgBusClient:
   async def close(self):
     await self.ws.close()
 
-# main() - nothing to do
+# main() 
+#print("MsgBusClient.main()")
+#mbc = MsgBusClient()
+#print("MsgBusClient.main() - calling connect_and_run()")
+#asyncio.run(mbc.connect_and_run())
 

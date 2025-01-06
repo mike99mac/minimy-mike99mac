@@ -1,11 +1,12 @@
-import os, time
-from skills.sva_control import SkillControl
+import asyncio
 from bus.Message import Message
 from bus.MsgBusClient import MsgBusClient
+from framework.message_types import (MSG_UTTERANCE, MSG_SPEAK, MSG_REGISTER_INTENT, MSG_MEDIA, MSG_SYSTEM, MSG_RAW, MSG_SKILL)
 from framework.util.utils import LOG, Config
 from threading import Event, Thread
+import os, time
+from skills.sva_control import SkillControl
 import subprocess
-from framework.message_types import (MSG_UTTERANCE, MSG_SPEAK, MSG_REGISTER_INTENT, MSG_MEDIA, MSG_SYSTEM, MSG_RAW, MSG_SKILL)
 
 class SimpleVoiceAssistant:
   def __init__(self, msg_handler=None, skill_id=None, skill_category=None, bus=None, timeout=5):
@@ -40,12 +41,13 @@ class SimpleVoiceAssistant:
     if bus is None:
       bus = MsgBusClient(self.skill_control.skill_id)
     self.bus = bus
+    asyncio.run(self.bus.connect_and_run())
     self.base_dir = str(os.getenv('SVA_BASE_DIR'))
     log_filename = self.base_dir + '/logs/skills.log'
     self.log = LOG(log_filename).log
     self.skill_base_dir = os.getcwd()
     self.handle_message = msg_handler
-    self.log.debug(f"SimpleVoiceAssistant.__init__() skill_id = {skill_id} skill_category = {skill_category}")
+    self.log.debug(f"SimpleVoiceAssistant.__init__() skill_id: {skill_id} skill_category: {skill_category} log_filename: {log_filename}")
     self.focus_mode = 'speech'
     self.user_callback = None
     self.speak_callback = None
@@ -369,7 +371,7 @@ class SimpleVoiceAssistant:
                  'skill_id':self.skill_control.skill_id
                  }
           self.log.debug(f"SimpleVoiceAssistant.register_intent() calling self.bus.send('register_intent', 'intent_service', {info}") 
-          await self.bus.send('register_intent', 'intent_service', info)
+          await self.bus.send(MSG_REGISTER_INTENT, 'intent_service', info)
 
   def handle_utterance(self, message):
     self.log.debug(f"SimpleVoiceAssistant.handle_utterance() category = {self.skill_control.category} skill_id = {self.skill_control.skill_id}")

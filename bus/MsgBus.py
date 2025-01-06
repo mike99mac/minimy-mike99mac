@@ -1,8 +1,9 @@
 import asyncio
 from framework.util.utils import LOG, Config
+import functools
 import json
 import os
-import websockets
+import websockets.asyncio
 from websockets.asyncio.server import serve 
 
 class Server:
@@ -14,7 +15,7 @@ class Server:
     self.base_dir = str(os.getenv('SVA_BASE_DIR'))
     log_filename = self.base_dir + '/logs/bus.log'
     self.log = LOG(log_filename).log
-    self.log.debug(f"Server.__init__(): Message Bus started - log file: {self.base_dir}/bus.log")
+    self.log.debug(f"Server.__init__(): Message Bus started - log_filename: {log_filename}")
 
   async def register(self, ws) -> bool:
     self.log.info(f"Server.register(): ws.skill_remote_address: {ws.remote_address}")
@@ -70,8 +71,10 @@ class Server:
   async def stop(self):
     self.log.info(f"Server.stop(): stopping message bus")
 
-  #async def ws_handler(self, ws, path):
+  # path has been removed from the new asyncio websockets handler
+  # async def ws_handler(self, ws, path):
   async def ws_handler(self, ws):
+    print(f"Server.ws_handler() ws: {ws}")
     if await self.register(ws):
       self.log.debug(f"Server.ws_handler() Client registered")
       try:
@@ -79,18 +82,20 @@ class Server:
           self.log.debug(f"Server.ws_handler() Received message: {message}")
           await self.send_to_clients(message)
       except websockets.ConnectionClosed as e:
-        self.log.warning(f"Server.ws_handler() connection closed with exception: {e}")
+        print(f"Connection closed: {e}")
+      except Exception as e:
+        self.log.warning(f"Server.ws_handler() unhandled exception: {e}")
       finally:
         await self.unregister(ws)
     else:
-      self.log.warning(f"Server.ws_handler() cannot register connection - dropping it")
+      self.log.error(f"Server.ws_handler() cannot register connection - dropping it")
 
 async def main():
   server = Server()
   print(f"Server.main() server created")
-  async with websockets.serve(Server.ws_handler, '0.0.0.0', 8181):
-    print(f"Server.main() server started")
-    await asyncio.Future()               # run forever
+  async with websockets.serve(server.ws_handler, '0.0.0.0', 8181):   
+    print(f"Server.main() Websocket server started on port 8181")
+    await asyncio.Future()                 # run forever
 
 # main()
 if __name__ == "__main__":
