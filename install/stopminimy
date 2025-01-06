@@ -13,10 +13,10 @@ else
     echo "killing process: $nextProc ..."
     sudo kill $pid
   done 
-  sortlogs                                 # create a time sorted file of all logs
-  rm -fr /tmp/pymp*                        # clean up socket temp directories
-  cd $HOME
-  cp $HOME/minimy/logs/* $HOME             # copy each log file   
-  sleep 3                                  # wait for processes to die before unmounting tmpfs
-  sudo umount $HOME/minimy/logs            # unmount log directory - and logs disappear
 fi
+sortlogs                                   # create a time sorted file of all logs
+rm -fr /tmp/pymp*                          # clean up socket temp directories
+cd $HOME
+cp $HOME/minimy/logs/* $HOME               # copy each log file   
+sleep 3                                    # wait for processes to die before unmounting tmpfs
+sudo umount $HOME/minimy/logs              # unmount log directory - and logs disappear
