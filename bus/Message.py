@@ -8,6 +8,7 @@ class Message(dict):
     log_filename = self.base_dir + '/logs/bus.log'
     self.log = LOG(log_filename).log
     self.log.debug(f"Message.__init__(): msg_type: {msg_type}, source: {source}, target: {target}, data: {data}")
+    self.log.debug(f"Message.__init__(): log_filename: {log_filename}") 
     self.msg_type = msg_type
     self.source = source
     self.target = target
