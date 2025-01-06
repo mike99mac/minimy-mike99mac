@@ -60,8 +60,8 @@ function doIt
   cd $HOME/minimy
   echo | tee -a $logFile
   echo "Installing virtual environment ..." | tee -a $logFile
-  runCmd sudo apt-get -qq install python3-venv
-  runCmd sudo apt-get -qq install python3-dev
+  runCmd sudo apt-get install python3-venv
+  runCmd sudo apt-get install python3-dev
   runCmd python3 -m venv minimy_venv
   echo | tee -a $logFile
   echo "Upgrading pip ..." | tee -a $logFile
@@ -73,9 +73,9 @@ function doIt
   echo | tee -a $logFile
   echo "Upgrading wheel and setuptools ..." | tee -a $logFile
   runCmd $pipCmd install --upgrade wheel setuptools
-  runCmd sudo apt-get -qq install -y python3-dev build-essential portaudio19-dev mpg123 ffmpeg curl wget
-  runCmd sudo apt-get -qq install -y libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
-  runCmd sudo apt-get -qq install -y libavcodec-dev libavformat-dev libavdevice-dev 
+  runCmd sudo apt-get install -y python3-dev build-essential portaudio19-dev mpg123 ffmpeg curl wget
+  runCmd sudo apt-get install -y libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
+  runCmd sudo apt-get install -y libavcodec-dev libavformat-dev libavdevice-dev 
   echo | tee -a $logFile
 
   echo "Installing yt-dlp and requirements.txt ..." | tee -a $logFile
@@ -95,14 +95,8 @@ function doIt
   runCmd $pipCmd install lgpio
   runCmd $pipCmd install lingua_franca
   runCmd $pipCmd install optimum
-  runCmd $pipCmd install pyaudio
-  runCmd $pipCmd install pyee
   runCmd $pipCmd install requests
   runCmd $pipCmd install quart
-  runCmd $pipCmd install torch
-  runCmd $pipCmd install torchaudio
-  runCmd $pipCmd install transformers
-  runCmd $pipCmd install websockets
   runCmd $pipCmd install whisper
   runCmd $pipCmd install youtube-search
   runCmd $pipCmd install youtube-search-python
