@@ -2,9 +2,8 @@
 #
 # cmpcode - compare code in $HOME/minimy and $HOME/minimy-mike99mac 
 #
-# NOTE: it is hard coded for Minimy - needs to be updated for OVOS
-#
 copyCmds=""                                # copy commands 
+newFiles=""                                # files not in git
 gitCode="$HOME/minimy-mike99mac"           # git code
 srcCode="$HOME/minimy"                     # running code
 
@@ -12,12 +11,21 @@ cd /home/pi/minimy
 sourceFiles=`ls bus/*py framework/*py framework/*/*py framework/*/*/*py framework/*/*/*/*py framework/*/*/*/*/*py skills/*py skills/*/*py skills/*/*/*py | xargs`
 for nextFile in $sourceFiles; do
   echo "comparing $nextFile ..."
-  diff $srcCode/$nextFile $gitCode/$nextFile >/dev/null
-  if [ $? != 0 ]; then                     # file has changed
-    if [ ${#copyCmds} = 0 ]; then          # first copy command
-      copyCmds="cp $srcCode/$nextFile $gitCode/$nextFile"
+  if [ ! -f $gitCode/$nextFile ]; then 
+    echo "$gitCode/$nextFile not found"
+    if [ ${#newFiles} = 0 ]; then
+      newFiles="$nextFile"
     else
-      copyCmds="$copyCmds \ncp $srcCode/$nextFile $gitCode/$nextFile"
+      newFiles="$newFiles \n$nextFile"
+    fi
+  else
+    diff $srcCode/$nextFile $gitCode/$nextFile >/dev/null
+    if [ $? != 0 ]; then                     # file has changed
+      if [ ${#copyCmds} = 0 ]; then          # first copy command
+        copyCmds="cp $srcCode/$nextFile $gitCode/$nextFile"
+      else
+        copyCmds="$copyCmds \ncp $srcCode/$nextFile $gitCode/$nextFile"
+      fi
     fi
   fi
 done
@@ -36,4 +44,8 @@ else                                       # at least one change
   echo
   cat $copycode
 fi 
+if [ ${#newFiles} != 0 ]; then             # at least one new file
+  echo "New files:"
+  echo -e "$newFiles"
+fi
 
