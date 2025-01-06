@@ -26,7 +26,7 @@ class Intent:
     self.use_remote_nlp = True
     if remote_nlp and remote_nlp == 'n':
       self.use_remote_nlp = False
-    self.log.debug(f"Intent.__init__() log_filename: {self.log_filename} use_remote_nlp: {self.use_remote_nlp}")
+    self.log.debug(f"Intent.__init__() log_filename: {log_filename} use_remote_nlp: {self.use_remote_nlp}")
     self.recognized_verbs = []       
     self.stop_aliases = ['stop', 'terminate', 'abort', 'cancel', 'kill', 'exit']
     self.wake_words = []           
