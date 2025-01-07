@@ -34,11 +34,9 @@ class Intent:
     for ww in wws:
       self.log.debug(f"Intent.__init__() registering wakeword {ww}")
       self.wake_words.append(ww.lower())
-    self.log.debug(f"Intent.__init__() registering 'register_intent' and 'system'")
-    # self.bus.on(MSG_REGISTER_INTENT, self.handle_register_intent) # register message handlers
-    # self.bus.on(MSG_SYSTEM, self.handle_system_message)
-    self.bus.on('regiser_intent', self.handle_register_intent) # register message handlers
-    self.bus.on('system', self.handle_system_message)
+    self.log.debug(f"Intent.__init__() registering {MSG_REGISTER_INTENT} and {MSG_SYSTEM}")
+    self.bus.on(MSG_REGISTER_INTENT, self.handle_register_intent) # register message handlers
+    self.bus.on(MSG_SYSTEM, self.handle_system_message)
 
   def handle_system_message(self, message):
     data = message.data
