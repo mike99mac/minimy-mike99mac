@@ -18,14 +18,14 @@ class Server:
     self.log.debug(f"Server.__init__(): Message Bus started - log_filename: {log_filename}")
 
   async def register(self, ws) -> bool:
-    self.log.info(f"Server.register(): ws.skill_remote_address: {ws.remote_address}")
+    self.log.info(f"Server.register() ws.remote_address: {ws.remote_address}")
     identifier = ws.remote_address[1]      # save port number as identifier
     if identifier in self.identifiers:
       self.log.warning(f"Server.register() identifier: {identifier} already registered. Connection rejected.")
       return False
     self.clients[ws] = identifier
     self.identifiers.add(identifier)
-    self.log.info(f"Server.register() remote_address {ws.remote_address} Connected: {identifier}")
+    self.log.info(f"Server.register() Connected identifier: {identifier}")
     return True
 
   async def unregister(self, ws) -> None:
@@ -68,11 +68,27 @@ class Server:
         self.log.error(f"Server.send_to_clients() message distribution error: {e}")
         return False
 
+  #async def ws_handler(self, ws, url: str) -> None:
+  async def ws_handler(self, ws) -> None:
+    self.log.info(f"Server.ws_handler(): ws: {str(ws)}")
+    if (await self.register(ws)):
+      try:
+        await self.distribute(ws)
+      finally:
+        await self.unregister(ws)
+    else:
+      self.log.warning(f"Server.ws_handler():, can't register {ws.path} dropping connection")
+
+  async def distribute(self, ws) -> None:
+    async for message in ws:
+      await self.send_to_clients(message)
+
   async def stop(self):
     self.log.info(f"Server.stop(): stopping message bus")
 
   # path has been removed from the new asyncio websockets handler
   # async def ws_handler(self, ws, path):
+  """
   async def ws_handler(self, ws):
     print(f"Server.ws_handler() ws: {ws}")
     if await self.register(ws):
@@ -89,6 +105,7 @@ class Server:
         await self.unregister(ws)
     else:
       self.log.error(f"Server.ws_handler() cannot register connection - dropping it")
+    """
 
 async def main():
   server = Server()
