@@ -49,6 +49,7 @@ class Server:
         msg = json.loads(message)
         target = msg.get('target', '')
         source = msg.get('source', '')
+        self.log.info(f"Server.send_to_clients() target: {target}, source: {source}")
         if not target or not source:
           self.log.error(f"Server.send_to_clients() ill-formed message source:{source}, target:{target}")
           return False
@@ -80,6 +81,7 @@ class Server:
       self.log.warning(f"Server.ws_handler():, can't register {ws.path} dropping connection")
 
   async def distribute(self, ws) -> None:
+    self.log.info(f"Server.distribute(): ws: {str(ws)}")
     async for message in ws:
       await self.send_to_clients(message)
 
