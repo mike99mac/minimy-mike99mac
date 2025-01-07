@@ -21,4 +21,6 @@
     BaseDir: /home/pi/minimy
     GoogleApiKeyPath: install/my_google_key.json
     Version: 1.0.4
-    WakeWords: computer
+    WakeWords: 
+    - 'computer'
+    - 'hey boom box'

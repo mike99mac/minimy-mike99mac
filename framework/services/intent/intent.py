@@ -34,8 +34,10 @@ class Intent:
     for ww in wws:
       self.log.debug(f"Intent.__init__() registering wakeword {ww}")
       self.wake_words.append(ww.lower())
-    self.log.debug(f"Intent.__init__() registering handle_register_intent")
-    self.bus.on(MSG_REGISTER_INTENT, self.handle_register_intent) 
+    self.log.debug(f"Intent.__init__() registering 'register_intent' and 'system'")
+    # self.bus.on(MSG_REGISTER_INTENT, self.handle_register_intent) # register message handlers
+    # self.bus.on(MSG_SYSTEM, self.handle_system_message)
+    self.bus.on('regiser_intent', self.handle_register_intent) # register message handlers
     self.bus.on('system', self.handle_system_message)
 
   def handle_system_message(self, message):
@@ -115,6 +117,7 @@ class Intent:
 
   def get_question_intent_match(self, info):
     self.log.debug(f"Intent.get_question_intent_match(): info: {info}")
+    self.log.debug(f"Intent.get_question_intent_match(): intents: {self.intents}")
     aplay(self.earcon_filename)
 
     skill_id = ''
@@ -159,7 +162,7 @@ class Intent:
     subject = data['subject'].replace(":", ";")
     verb = data['verb']
     key = data['intent_type'] + ':' + subject.lower() + ':' + verb
-    self.log.warning(f"Intent.handle_register_intent() adding key: {key}")
+    self.log.debug(f"Intent.handle_register_intent() adding key: {key}")
     if key in self.intents:
       self.log.warning(f"Intent.handle_register_intent() Intent clash! key: {key} skill_id: {data['skill_id']}")
     else:
