@@ -55,7 +55,7 @@ class MsgBusClient:
 
   def on(self, msg_type, callback):
     self.msg_handlers[msg_type] = callback
-    self.log.debug(f"MsgBusClient.on(): Registered callback: {callback} for msg_type: {msg_type}")
+    self.log.debug(f"MsgBusClient.on(): Registered callback for msg_type: {msg_type}")
 
   def rcv_client_msg(self, msg):
     self.inbound_q.put(msg)
@@ -68,8 +68,4 @@ class MsgBusClient:
     await self.ws.close()
 
 # main() 
-#print("MsgBusClient.main()")
-#mbc = MsgBusClient()
-#print("MsgBusClient.main() - calling connect_and_run()")
-#asyncio.run(mbc.connect_and_run())
 

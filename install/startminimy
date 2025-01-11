@@ -88,7 +88,6 @@ function mountUmountDirs
   mountTmpfs home-$USER-minimy-logs.mount Minimy log directory
 
   # mount a tmpfs over $HOME/minimy/tmp and create three subdirectories
-  echo
   umountTmpfs $HOME/minimy/tmp
   mountTmpfs home-$USER-minimy-tmp.mount Minimy temp directory
   sleep 1
@@ -105,11 +104,9 @@ function startSystem
 
   cd $baseDir
   source minimy_venv/bin/activate          # start the minimy virtual environment
-  echo
   echo "Starting Local STT Server ..."
   cd $baseDir
   python3 framework/services/stt/local/whisper/local_whisper.py >$logDir/whisper.log 2>&1 &
-  echo 
   echo "Starting Local TTS Server ..."
   deactivate                               # minimy_venv
   cd $baseDir/framework/services/tts/local/mimic3
@@ -125,28 +122,22 @@ function startSystem
   export PYTHONPATH=`pwd`   
   export SVA_BASE_DIR=`pwd`
   export GOOGLE_APPLICATION_CREDENTIALS="/home/pi/minimy/install/my-google-key.json"
-  echo
   echo "Starting Message Bus ..."
   cd $baseDir/bus
   python3 MsgBus.py &
   sleep 2
-  echo
   echo "Starting system skills ..."
   cd $baseDir/skills/system_skills
   python3 skill_system.py &
   sleep 1
-  echo
   echo "Starting Intent Service ..."
   cd $baseDir 
   python3 framework/services/intent/intent.py &
   sleep 2 
-  echo
   echo "Starting media player ..."
   python3 framework/services/output/media_player.py &
-  echo
   echo "Starting TTS service ..."
   python3 framework/services/tts/tts.py &
-  echo
   echo "Starting STT service ..."
   python3 framework/services/stt/stt.py &
   sleep 1
@@ -183,7 +174,6 @@ function loadSystemSkills
   : SOURCE: ${BASH_SOURCE}
   : STACK:  ${FUNCNAME[@]}
 
-  echo 
   echo "Starting System Skills ..."
   cd $baseDir
   python3 skills/system_skills/skill_fallback.py &
@@ -201,7 +191,6 @@ function loadUserSkills
   : SOURCE: ${BASH_SOURCE}
   : STACK:  ${FUNCNAME[@]}
 
-  echo " "
   echo "Starting User Skills ..."
   # do not load these skills for now
   # cd $baseDir/skills/user_skills
@@ -231,7 +220,6 @@ function loadOtherServices
   cd $baseDir
   echo "Starting buttons ..."
   python3 framework/services/input/buttons.py &
-  echo 
   echo "Starting the mic ..."
   python3 framework/services/input/mic.py &
  }                                       # loadOtherServices()

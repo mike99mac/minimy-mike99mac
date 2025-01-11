@@ -156,7 +156,7 @@ function doIt
   runCmd sudo systemctl enable minimy
   echo | tee -a $logFile
   echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile
-  minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver"
+  minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver test_ws.py"
   echo | tee -a $logFile
   echo "cd to $HOME/minimy/install ..." | tee -a $logFile
   cd $HOME/minimy/install
