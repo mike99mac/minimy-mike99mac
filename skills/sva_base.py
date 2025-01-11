@@ -103,12 +103,10 @@ class SimpleVoiceAssistant:
     while timeout > 0:
       time.sleep(0.001)
       timeout -= 1
- 
       if self.bridge.is_set():
         self.log.debug("SimpleVoiceAssistant.start_watchdog() bridge is set - watchdog cancelled")
         self.bridge.clear()
         break
-
     self.log.debug(f"SimpleVoiceAssistant.start_watchdog() timeout {timeout}")
     if timeout == 0:
       self.log.debug("SimpleVoiceAssistant.start_watchdog() watchdog timed out")
@@ -186,17 +184,13 @@ class SimpleVoiceAssistant:
     if self.skill_control.skill_id == 'system_skill': # special handling for the system skill 
       self.handle_message(message)
       return True
-
-    # raw messages are ignored unless in converse mode
-    if self.i_am_conversed:
-      if self.crappy_aec == 'y':
-        # ignore first stt on bad systems because it is probably what you just said
+    if self.i_am_conversed:                # raw messages are ignored unless in converse mode
+      if self.crappy_aec == 'y':           # ignore first stt on bad systems because it is probably what you just said
         self.log.info(f"SimpleVoiceAssistant.handle_raw_msg() skill_id: {self.skill_control.skill_id} ")
         if self.ignore_raw_ctr == 0:
           self.ignore_raw_ctr += 1
           return False
         self.ignore_raw_ctr = 0
-
       self.log.info(f"SimpleVoiceAssistant.handle_raw_msg() message: {message}")
       self.i_am_conversed = False
       info = {

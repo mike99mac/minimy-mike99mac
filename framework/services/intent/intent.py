@@ -5,7 +5,10 @@ from framework.util.utils import LOG, Config, get_wake_words, aplay, normalize_s
 from framework.services.intent.nlp.shallow_parse.nlu import SentenceInfo
 from framework.services.intent.nlp.shallow_parse.shallow_utils import scrub_sentence, remove_articles
 from framework.message_types import (MSG_UTTERANCE, MSG_MEDIA, MSG_RAW, MSG_REGISTER_INTENT, MSG_SYSTEM)
-import requests, time, glob, os
+import glob
+import os 
+import requests
+import time
 
 class Intent:
   def __init__(self, bus=None, timeout=5):
@@ -34,9 +37,22 @@ class Intent:
     for ww in wws:
       self.log.debug(f"Intent.__init__() registering wakeword {ww}")
       self.wake_words.append(ww.lower())
-    self.log.debug(f"Intent.__init__() registering {MSG_REGISTER_INTENT} and {MSG_SYSTEM}")
+    time.sleep(0.5)
+    self.log.debug(f"Intent.__init__() registering {MSG_REGISTER_INTENT} handler")
     self.bus.on(MSG_REGISTER_INTENT, self.handle_register_intent) # register message handlers
-    self.bus.on(MSG_SYSTEM, self.handle_system_message)
+    time.sleep(0.5)
+    self.log.debug(f"Intent.__init__() registering {MSG_SYSTEM} handler")
+    try:
+      self.bus.on(MSG_SYSTEM, self.handle_system_message)
+      self.log.debug(f"Intent.__init__() successfully registed handler")
+    except Exception as e:
+      self.log.error(f"Intent.__init__() exception: {e}")
+
+  async def start(self):
+    """Initialize the service and establish connections"""
+    await asyncio.sleep(1)                 # give websocket connection time to establish
+    self.is_running = True
+    await self.run()
 
   def handle_system_message(self, message):
     data = message.data
@@ -155,8 +171,8 @@ class Intent:
     return skill_id, ''
 
   def handle_register_intent(self, msg):
+    self.log.debug(f"Intent.handle_register_intent() msg: {msg}")
     data = msg.data
-    self.log.debug(f"Intent.handle_register_intent() data: {data}")
     subject = data['subject'].replace(":", ";")
     verb = data['verb']
     key = data['intent_type'] + ':' + subject.lower() + ':' + verb
@@ -164,8 +180,8 @@ class Intent:
     if key in self.intents:
       self.log.warning(f"Intent.handle_register_intent() Intent clash! key: {key} skill_id: {data['skill_id']}")
     else:
-      self.log.info(f"Intent.handle_register_intent() key {key} is in intent match")
       self.intents[key] = {'skill_id': data['skill_id'], 'state': 'enabled'}
+      self.log.info(f"Intent.handle_register_intent() added key: {key}")
 
   async def run(self):
     self.log.debug(f"Intent.run() Intent processor started - is_running = {self.is_running}")
@@ -254,5 +270,5 @@ class Intent:
 if __name__ == '__main__':
   intent = Intent()
   intent.is_running = True
-  asyncio.run(intent.run())
+  asyncio.run(intent.start())
 
