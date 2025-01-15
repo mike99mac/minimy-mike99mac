@@ -37,20 +37,23 @@ class Intent:
     for ww in wws:
       self.log.debug(f"Intent.__init__() registering wakeword {ww}")
       self.wake_words.append(ww.lower())
-    time.sleep(0.5)
-    self.log.debug(f"Intent.__init__() registering {MSG_REGISTER_INTENT} handler")
-    self.bus.on(MSG_REGISTER_INTENT, self.handle_register_intent) # register message handlers
-    time.sleep(0.5)
-    self.log.debug(f"Intent.__init__() registering {MSG_SYSTEM} handler")
-    try:
-      self.bus.on(MSG_SYSTEM, self.handle_system_message)
-      self.log.debug(f"Intent.__init__() successfully registed handler")
-    except Exception as e:
-      self.log.error(f"Intent.__init__() exception: {e}")
 
   async def start(self):
     """Initialize the service and establish connections"""
+    await self.bus.connect_and_run()       # connect message bus
     await asyncio.sleep(1)                 # give websocket connection time to establish
+    self.log.debug(f"Intent.start() registering {MSG_REGISTER_INTENT} handler") # register handlers after connection is established
+    try:
+      self.bus.on(MSG_REGISTER_INTENT, self.handle_register_intent)
+      self.log.debug(f"Intent.start() successfully registered {MSG_REGISTER_INTENT} handler")
+    except Exception as e:
+      self.log.error(f"Intent.start() {MSG_REGISTER_INTENT} exception: {e}")
+    self.log.debug(f"Intent.start() registering {MSG_SYSTEM} handler")
+    try:
+      self.bus.on(MSG_SYSTEM, self.handle_system_message)
+      self.log.debug(f"Intent.start() successfully registered {MSG_SYSTEM} handler")
+    except Exception as e:
+      self.log.error(f"Intent.start() {MSG_SYSTEM} exception: {e}")
     self.is_running = True
     await self.run()
 
