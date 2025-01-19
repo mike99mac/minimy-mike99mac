@@ -19,3 +19,4 @@ def msg_from_json(packet):
   m = Message(packet['msg_type'],packet['source'],packet['target'],packet['data'])
   m.ts = packet['ts']
   return m
+

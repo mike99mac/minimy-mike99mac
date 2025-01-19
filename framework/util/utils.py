@@ -440,7 +440,7 @@ if __name__ == '__main__':
   ## CommandExecutor tests
   # example sync 
   print("Start synchronous")
-  retcode = CommandExecutor('aplay -i /home/ken/Desktop/lincoln.wav').wait()
+  retcode = CommandExecutor('aplay -i /home/pi/minimy/jfk.wav').wait()
   print("End", retcode)
 
   # example async

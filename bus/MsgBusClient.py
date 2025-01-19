@@ -66,11 +66,12 @@ class MsgBusClient:
     self.log.debug(f"MsgBusClient.on(): Registered callback for msg_type: {msg_type}")
 
   async def rcv_client_msg(self, msg):
+    self.log.debug(f"MsgBusClient.rcv_client_msg(): msg: {msg}")
     await self.inbound_q.put(msg)
 
   async def send(self, msg_type, target, msg):
+    self.log.debug(f"MsgBusClient.send(): msg_type: {msg_type} target: {target} msg: {msg} client_id: {self.client_id}")
     await self.outbound_q.put(json.dumps(Message(msg_type, self.client_id, target, msg)))
-    self.log.debug(f"MsgBusClient.send(): Sending message: {msg}")
 
   async def close(self):
     await self.ws.close()
