@@ -46,6 +46,7 @@ class MsgBusServer:
   
   async def send_to_clients(self, message): # Handle message distribution
     self.log.info(f"MsgBusServer.send_to_clients() message: {message}")
+    self.log.debug(f"MsgBusServer.send_to_clients(): Connected clients: {len(self.clients)}")
     if self.clients:
       try:
         msg = json.loads(message)
@@ -68,7 +69,7 @@ class MsgBusServer:
             await system_monitor.send(message)
           return True
       except Exception as e:
-        self.log.error(f"MsgBusServer.send_to_clients() message distribution error: {e}")
+        self.log.error(f"MsgBusServer.send_to_clients(): Exception type: {type(e).__name__}, Details: {e}")
         return False
 
   async def ws_handler(self, ws) -> None:
