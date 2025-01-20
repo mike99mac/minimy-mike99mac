@@ -129,6 +129,7 @@ function doIt
   echo | tee -a $logFile
   cd $baseDir/install
   echo "Loading the whisper model"
+  runCmd $pipCmd install --force-reinstall numpy==1.24 # numpy must be 1.24 for building whisper
   source $HOME/minimy/minimy_venv/bin/activate # start the venv
   runCmd $pythonCmd $baseDir/bldwhisper.py $baseDir/jfk.wav # build the base.en model
   deactivate                                   # stop the venv
