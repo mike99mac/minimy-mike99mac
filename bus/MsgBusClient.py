@@ -14,12 +14,16 @@ async def SendThread(ws, outbound_q, client_id):
     msg = await outbound_q.get()
     await ws.send(msg)
 
+
 async def RecvThread(ws, callback, client_id):
   while True:
     try:
       message = await ws.recv()
-      print(f"RecvThread received message: {message}")  # Debug
+      print(f"RecvThread received message: {message}") 
       await callback(msg_from_json(json.loads(message)))
+    except websockets.exceptions.ConnectionClosed as e:
+      print(f"Connection closed: {e}")
+      break
     except Exception as e:
       print(f"Error in RecvThread: {e}")
       break

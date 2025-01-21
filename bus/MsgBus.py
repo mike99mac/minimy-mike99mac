@@ -114,7 +114,7 @@ async def main():
   server = MsgBusServer()
   print(f"MsgBusServer.main() server created")
   # async with websockets.serve(server.ws_handler, '0.0.0.0', 8181):   
-  async with websockets.serve(server.ws_handler, '0.0.0.0', 8181, ping_interval=20, ping_timeout=20):   
+  async with websockets.serve(server.ws_handler, '0.0.0.0', 8181, ping_interval=60, ping_timeout=60):   
     print(f"MsgBusServer.main() Websocket server started on port 8181")
     await asyncio.Future()                 # run forever
 
