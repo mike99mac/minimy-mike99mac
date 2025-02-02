@@ -19,7 +19,7 @@ async def RecvThread(ws, callback, client_id):
   while True:
     try:
       message = await ws.recv()
-      print(f"RecvThread received message: {message}") 
+      print(f"RecvThread() received message: {message}") 
       await callback(msg_from_json(json.loads(message)))
     except websockets.exceptions.ConnectionClosed as e:
       print(f"Connection closed: {e}")
@@ -33,11 +33,11 @@ async def process_inbound_messages(inbound_q, msg_handlers, client_id):
     while inbound_q.empty():
       await asyncio.sleep(0.001)
     msg = await inbound_q.get()
-    print(f"Processing message: {msg.msg_type} handlers: {msg_handlers.keys()}")  # Debug
+    print(f"iprocess_inbound_messages() msg_type: {msg.msg_type} msg_handlers.keys:: {msg_handlers.keys()}") 
     if msg.msg_type in msg_handlers:
       msg_handlers[msg.msg_type](msg)
     else:
-      print(f"No handler found for message type: {msg.msg_type}")  # Debug
+      print(f"process_inbound_messages(): ERROR No handler found for message type: {msg.msg_type}") 
 
 class MsgBusClient:
   def __init__(self, client_id):
@@ -57,11 +57,8 @@ class MsgBusClient:
       self.ws = await connect(f"ws://localhost:8181/{self.client_id}")
       self.log.debug(f"MsgBusClient.connect_and_run(): WebSocket connected for {self.client_id}")
       recv_task = asyncio.create_task(RecvThread(self.ws, self.rcv_client_msg, self.client_id)) # Create and log each task
-      self.log.debug("MsgBusClient.connect_and_run(): RecvThread task created")
       send_task = asyncio.create_task(SendThread(self.ws, self.outbound_q, self.client_id))
-      self.log.debug("MsgBusClient.connect_and_run(): SendThread task created")
       process_task = asyncio.create_task(process_inbound_messages(self.inbound_q, self.msg_handlers, self.client_id))
-      self.log.debug("MsgBusClient.connect_and_run(): process_inbound_messages task created")
     except Exception as e:
       self.log.error(f"MsgBusClient.connect_and_run(): Connection error: {e}")
   
@@ -79,6 +76,4 @@ class MsgBusClient:
 
   async def close(self):
     await self.ws.close()
-
-# main() 
 

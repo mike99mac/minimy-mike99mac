@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 import io
-import wave
-import whisper
 import numpy as np
 from quart import Quart, request
+import torch
+import wave
+import whisper
 
 app = Quart(__name__)                      # Initialize the Quart app
 model_name = "tiny.en"                     # others to try: tiny.en, small.en
 print(f"Loading Whisper model: {model_name}")
-model = whisper.load_model(model_name)
+original_load = torch.load                 # load Whisper model and override
+torch.load = lambda f, *args, **kwargs: original_load(f, *args, weights_only=True, **kwargs)
+model = whisper.load_model(model_name)     # load model
 
 @app.route("/stt", methods=["POST"])
 async def transcribe():

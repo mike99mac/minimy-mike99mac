@@ -364,9 +364,8 @@ class SimpleVoiceAssistant:
                  'verb': verb,
                  'skill_id':self.skill_control.skill_id
                  }
+          self.log.debug(f"SimpleVoiceAssistant.register_intent() calling self.bus.send({MSG_REGISTER_INTENT}, intent_service {info}") 
           await self.bus.send(MSG_REGISTER_INTENT, 'intent_service', info)
-          # self.bus.send(MSG_REGISTER_INTENT, 'intent_service', info)
-          self.log.debug(f"SimpleVoiceAssistant.register_intent() returned from self.bus.send({MSG_REGISTER_INTENT}, 'intent_service', {info}") 
 
   def handle_utterance(self, message):
     self.log.debug(f"SimpleVoiceAssistant.handle_utterance() category = {self.skill_control.category} skill_id = {self.skill_control.skill_id}")
