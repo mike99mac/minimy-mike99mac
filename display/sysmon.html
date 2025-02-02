@@ -3,10 +3,17 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
     <script>
-var bus_url = 'ws://localhost:4000/system_monitor';
-//var bus_url = 'ws://10.0.0.198:4000/system_monitor';
+var bus_url = 'ws://192.168.40.102:8181/system_monitor';
 var socket = new WebSocket(bus_url);
 
+socket.onmessage = (event) => {
+    console.log("Message received:", event.data);
+    document.getElementById("messages").innerHTML += `<p>${event.data}</p>`;
+};
+
+socket.onopen = () => console.log("WebSocket connected.");
+socket.onerror = (error) => console.error("WebSocket error:", error);
+socket.onclose = () => console.log("WebSocket closed.");
 var msg_colors = {
     'utterance':'orange',
     'register_intent':'gray',
@@ -21,9 +28,9 @@ var msg_history = [];
 
 function reset_connection()
 {
-  let ip_addr = prompt("MiniMy IP Address", "localhost");
+  let ip_addr = prompt("MiniMy IP Address", "192.168.40.102");
   if (ip_addr){
-    bus_url = 'ws://' + ip_addr + ':4000/system_monitor';
+    bus_url = 'ws://' + ip_addr + ':8181/system_monitor';
     alert('Connecting to ' + bus_url);
     socket = new WebSocket(bus_url);
     Init();
