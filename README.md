@@ -1,4 +1,4 @@
-# Minimy
+# Minimy  
 
 This is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
 
@@ -27,7 +27,7 @@ Here is a video of a beta version: https://www.youtube.com/watch?v=WRiqg0b-EPI
 
 ## The build
 
-The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22.04 inside an *enclosure* that is a retro-looking boombox. Later Raspberry Pi OS (aka Raspbian) versions 10 (buster) and 11 (bullseye) were tested. However, this code and these steps should be relatively portable to any hardware that can run any Linux. 
+The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22.10 inside an *enclosure* that is a retro-looking boombox. Later Raspberry Pi OS (aka Raspbian) versions 10 (buster) and 11 (bullseye) were tested. However, this code and these steps should be relatively portable to any hardware that can run any Linux. 
 
 The overall steps to build a *Smart Boombox* are:
 
@@ -56,7 +56,7 @@ You can start with just about any speaker(s) with a 3.5mm jack that will plug in
 The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and copy a Linux distribution to it. 
 
 The following three flavors of two Linux distributions are supported. Note that *Raspbian* has been renamed to *Raspberry Pi OS* but in many places the original name is still used.
-- ``Ubuntu 22.04.2 LTS``
+- ``Ubuntu 22.10S``
     - LTS stands for *Long Term Support* - Canonical promises to support it for at least five years.
 - ``Raspbian GNU/Linux 10 (buster)``
 - ``Raspbian GNU/Linux 11 (bullseye)``
@@ -86,10 +86,9 @@ If you have a Linux box with an SD card port, you can use **``rpi-imager``** to 
 
 - To flash a Linux image to the card, perform the following steps:
 
-    - Select one of three choices from *Operating System*.
-        - Raspberry Pi OS (32-bit) Debian Bullseye with Desktop
-        - Raspberry Pi OS (legacy) => Debian Buster with Desktop
-        - Other General Purpose OS => Ubuntu => Desktop 22.04.2 LTS (64-bit)
+    - Select one of these from *Operating System*.
+        - Raspberry Pi OS (64-bit) Debian Bookworm with Desktop
+        - Other General Purpose OS => Ubuntu => Desktop 24.10 (64-bit)
 
     - Select the *Storage* device. You should see just one micro-SD card in the dropdown menu. If you don't see any entry, your SD card has not been recognized.
 
@@ -98,6 +97,7 @@ If you have a Linux box with an SD card port, you can use **``rpi-imager``** to 
     - If you are challenged for credentials, enter the password of the current user.
 
 You should see a progress indicator as the image is copied to the SD card. It should take around 5 minutes.
+
 
 ### Prepare an SD card on Windows
 If you only have access to a Windows system Install the *Win 32 disk imager* from https://sourceforge.net/projects/win32diskimager/

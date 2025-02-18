@@ -77,16 +77,13 @@ function doIt
   runCmd sudo apt-get install -y libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
   runCmd sudo apt-get install -y libavcodec-dev libavformat-dev libavdevice-dev 
   echo | tee -a $logFile
-
-  echo "Installing yt-dlp and requirements.txt ..." | tee -a $logFile
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
+  echo "Python version: $pythonVer ..." | tee -a $logFile
   local pythonCmd="$HOME/minimy/minimy_venv/bin/python$pythonVer" # use python from the venv
   runCmd $pythonCmd -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
-
   echo "Installing yt-dlp and requirements.txt ..." | tee -a $logFile
   cd $baseDir
   runCmd $pipCmd install -r install/requirements.txt
-
   echo "Installing local STT whisper" | tee -a $logFile
   runCmd $pipCmd install git+https://github.com/openai/whisper.git
   runCmd $pipCmd install datasets
@@ -129,7 +126,9 @@ function doIt
   echo | tee -a $logFile
   cd $baseDir/install
   echo "Loading the whisper model"
-  runCmd $pipCmd install --force-reinstall numpy==1.24 # numpy must be 1.24 for building whisper
+  if [ "$pythonVer" = "3.11" ]; then 
+    runCmd $pipCmd install --force-reinstall numpy==1.24 # numpy must be 1.24 for building whisper
+  fi
   source $HOME/minimy/minimy_venv/bin/activate # start the venv
   runCmd $pythonCmd $baseDir/bldwhisper.py $baseDir/jfk.wav # build the base.en model
   deactivate                                   # stop the venv
