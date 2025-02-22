@@ -27,7 +27,9 @@ Here is a video of a beta version: https://www.youtube.com/watch?v=WRiqg0b-EPI
 
 ## The build
 
-The environment used to develop the code and write this document is a RasPi 4B with 4 GB of memory, running Ubuntu Desktop 22.10 inside an *enclosure* that is a retro-looking boombox. Later Raspberry Pi OS (aka Raspbian) versions 10 (buster) and 11 (bullseye) were tested. However, this code and these steps should be relatively portable to any hardware that can run any Linux. 
+The environment used to develop the code and write this document is a RasPi 4/4GB and 5/8GB. It was tested with
+- Ubuntu Desktop 24.10 
+- Rasperry Pi OS Lite, 19 Nov 2024
 
 The overall steps to build a *Smart Boombox* are:
 
