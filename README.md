@@ -57,13 +57,12 @@ You can start with just about any speaker(s) with a 3.5mm jack that will plug in
 ## Flash Linux to a memory device
 The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and copy a Linux distribution to it. 
 
-The following three flavors of two Linux distributions are supported. Note that *Raspbian* has been renamed to *Raspberry Pi OS* but in many places the original name is still used.
-- ``Ubuntu 22.10S``
-    - LTS stands for *Long Term Support* - Canonical promises to support it for at least five years.
-- ``Raspbian GNU/Linux 10 (buster)``
-- ``Raspbian GNU/Linux 11 (bullseye)``
+The following Linux distributions have been tested: 
+- Ubuntu Desktop 24.10 - https://cdimage.ubuntu.com/releases/24.10/release/ubuntu-24.10-preinstalled-desktop-arm64+raspi.img.xz 
+- Raspberry Pi OS Lite - https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-11-19/2024-11-19-raspios-bookworm-arm64-lite.img.xz
 
 You will need another computer (ideally running Linux) to copy the Linux image to the memory card.
+To use the image, first uncompress it - the ``.img.xz`` file will become much larger and renamed to ``.img``.
 
 ### Prepare on Linux
 
