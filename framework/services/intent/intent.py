@@ -41,23 +41,16 @@ class Intent:
   async def start(self):
     """Initialize the service and establish connections"""
     await self.bus.connect_and_run()       # connect message bus
-    # await asyncio.sleep(0.2)                 # give websocket connection time to establish
     self.log.debug(f"Intent.start() registering {MSG_REGISTER_INTENT} handler") # register handlers after connection is established
     try:
       self.bus.on(MSG_REGISTER_INTENT, self.handle_register_intent)
       self.log.debug(f"Intent.start() successfully registered {MSG_REGISTER_INTENT} handler self.handle_register_intent")
-      # self.bus.on("register_intent", self.handle_register_intent)
-      # self.log.debug(f"Intent.start() successfully registered register_intent handler")
     except Exception as e:
       self.log.error(f"Intent.start() register_intent exception: {e}")
-      # self.log.debug(f"Intent.start() registering {MSG_SYSTEM} handler")
     self.log.debug(f"Intent.start() registering system handler")
-    # await asyncio.sleep(0.2)                 # give websocket connection time to establish
     try:
       self.bus.on(MSG_SYSTEM, self.handle_system_message)
       self.log.debug(f"Intent.start() successfully registered {MSG_SYSTEM} handler")
-      # self.bus.on("system", self.handle_system_message)
-      # self.log.debug(f"Intent.start() successfully registered system handler")
     except Exception as e:
       self.log.error(f"Intent.start() system exception: {e}")
     self.is_running = True
@@ -280,4 +273,3 @@ if __name__ == '__main__':
   intent = Intent()
   intent.is_running = True
   asyncio.run(intent.start())
-
