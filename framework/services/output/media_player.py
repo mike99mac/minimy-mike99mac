@@ -8,40 +8,39 @@ from subprocess import Popen, PIPE, STDOUT
 from threading import Event
 import time
 
-class SVAMediaPlayerSkill:
+class MediaPlayer:
   """
   the media player plays wav and mp3 files. it has several interesting features. first it can pause an active media
   session and play a new one. it stacks these in the paused_sessions queue. 
-  The media player does not have a paused state as such. 
   """
   def __init__(self, bus=None, timeout=5):
     self.skill_id = 'media_player_service'
     if bus is None:
       bus = MsgBusClient(self.skill_id)
     self.bus = bus
-    asyncio.run(self.bus.connect_and_run())
     base_dir = os.getenv('SVA_BASE_DIR')
     log_filename = base_dir + '/logs/media_player.log'
     self.log = LOG(log_filename).log
-    self.log.debug("SVAMediaPlayerSkill.__init__() starting")
+    self.log.debug("MediaPlayer.__init__() starting")
     self.is_running = False
     self.next_session_id = 0
     self.current_session = MediaSession(0, None)
     self.paused_sessions = []
-    self.state = 'idle'        # states = idle, playing or paused
+    self.state = 'idle'                    # states = idle, playing or paused
     self.hal = get_hal_obj('l')
     self.bus.on(MSG_MEDIA, self.handle_message)
+    self.connected_event = asyncio.Event()
 
-  async def send_message(self, target, message):
+  def send_message(self, target, message):
     """
-    send a standard skill message on the bus 
+    send a skill message on the bus 
     """
-    self.log.debug(f"SVAMediaPlayerSkill.send_message() message = {message}")
+    self.log.debug(f"MediaPlayer.send_message() message = {message}")
     message['from_skill_id'] = self.skill_id
-    await self.bus.send(MSG_SKILL, target, message)
+    self.bus.send(MSG_SKILL, target, message)
 
   def pause(self, message):
-    self.log.info(f"SVAMediaPlayerSkill.pause() state: {self.state} message: {message}")
+    self.log.info(f"MediaPlayer.pause() state: {self.state} message: {message}")
     if self.state == 'playing':
       self.current_session.correlator = message.data.get('correlator','')
       self.state = 'paused'      # send signal to run()
@@ -51,7 +50,7 @@ class SVAMediaPlayerSkill:
         self.send_session_paused(tmp.session_id, tmp.owner)
 
   def resume(self,message):
-    self.log.debug(f"SVAMediaPlayerSkill.resume() state = {self.state}")
+    self.log.debug(f"MediaPlayer.resume() state = {self.state}")
     if self.state == 'paused':
       self.state = 'resumed'
       self.current_session = self.paused_sessions.pop()
@@ -64,11 +63,11 @@ class SVAMediaPlayerSkill:
           else:
             os.system("dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.vlc /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause")
       else:
-        self.log.error("SVAMediaPlayerSkill.resume() BUG????? resume but no session.ce.proc!!!!!")
+        self.log.error("MediaPlayer.resume() BUG????? resume but no session.ce.proc!!!!!")
         pass
     elif self.state == 'idle':
       if len(self.paused_sessions) > 0:
-        self.log.debug("SVAMediaPlayerSkill.resume() was idle but there are paused sessions to restart")
+        self.log.debug("MediaPlayer.resume() was idle but there are paused sessions to restart")
         self.current_session = self.paused_sessions.pop()
         if self.current_session.ce.proc is not None: # we have an active process, resume it
           if self.current_session.media_type == 'wav':
@@ -80,18 +79,18 @@ class SVAMediaPlayerSkill:
               os.system("dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.vlc /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause")
         self.state = 'resumed'
     else:
-      self.log.debug(f"SVAMediaPlayerSkill.resume() resume Ignored - state = {self.state}")
+      self.log.debug(f"MediaPlayer.resume() resume Ignored - state = {self.state}")
 
   def clear_q(self, message):
-    self.log.debug(f"SVAMediaPlayerSkill.clear_q() state: {self.state} current_session: {self.current_session}")
+    self.log.debug(f"MediaPlayer.clear_q() state: {self.state} current_session: {self.current_session}")
     self.state = 'idle'
     local_q = self.current_session.media_queue
     for mentry in local_q:
-      self.log.error(f"SVAMediaPlayerSkill.clear_q() BUG! ClearQ must deal with this file: {mentry['file_uri']}")
+      self.log.error(f"MediaPlayer.clear_q() BUG! ClearQ must deal with this file: {mentry['file_uri']}")
     self.current_session.media_queue = []
 
   def reset_session(self, message):
-    self.log.debug(f"SVAMediaPlayerSkill.reset_session(), state: {self.state} current_session is: {self.current_session}")
+    self.log.debug(f"MediaPlayer.reset_session(), state: {self.state} current_session is: {self.current_session}")
     if not self.current_session:
       self.resume(message)
       time.sleep(0.01)
@@ -99,9 +98,9 @@ class SVAMediaPlayerSkill:
       try:
         self.current_session.ce.kill()
       except:
-        self.log.warning("SVAMediaPlayerSkill.reset_session() Exception in media player killing existing proc")
+        self.log.warning("MediaPlayer.reset_session() Exception in media player killing existing proc")
     else:
-      self.log.error("SVAMediaPlayerSkill:reset_session(): no currently executing command!")
+      self.log.error("MediaPlayer:reset_session(): no currently executing command!")
     self.clear_q(message)
     return self.play_file(message)
 
@@ -109,12 +108,12 @@ class SVAMediaPlayerSkill:
     """
     add file to end of queue if not playing change state to playing
     """
-    self.log.debug(f"SVAMediaPlayerSkill.play_file() message: {message}")
+    self.log.debug(f"MediaPlayer.play_file() message: {message}")
     from_skill = message.data['from_skill_id']
     file_uri = message.data['file_uri']
     play_session_id = message.data['session_id']
     media_type = message.data.get('media_type', None)
-    self.log.info(f"SVAMediaPlayerSkill.play_file(): media_type: {media_type} play_session_id: {play_session_id} current.session_id: {self.current_session.session_id} file_uri: {file_uri}")
+    self.log.info(f"MediaPlayer.play_file(): media_type: {media_type} play_session_id: {play_session_id} current.session_id: {self.current_session.session_id} file_uri: {file_uri}")
     if play_session_id == self.current_session.session_id:
       media_entry = {
                'file_uri':file_uri,
@@ -126,10 +125,10 @@ class SVAMediaPlayerSkill:
       if self.state == 'idle':
         self.state = 'playing'
     else:
-      self.log.warning("SVAMediaPlayerSkill.play_file()! Play file request from non active session ignored!!!")
+      self.log.warning("MediaPlayer.play_file()! Play file request from non active session ignored!!!")
 
   def send_session_end_notify(self, reason):
-    self.log.debug(f"SVAMediaPlayerSkill.send_session_end_notify() reason: {reason}")
+    self.log.debug(f"MediaPlayer.send_session_end_notify() reason: {reason}")
     info = {
         'error':'',
         'subtype':'media_player_command_response',
@@ -151,7 +150,7 @@ class SVAMediaPlayerSkill:
     """
     Send session reject message on bus
     """ 
-    self.log.debug(f"SVAMediaPlayerSkill.send_session_reject() reason: {reason} message: {message}")
+    self.log.debug(f"MediaPlayer.send_session_reject() reason: {reason} message: {message}")
     data = message.data
     info = {
         'error':reason,
@@ -164,7 +163,7 @@ class SVAMediaPlayerSkill:
     return self.send_message(data['from_skill_id'], info)
 
   def send_session_paused(self, session_id, target):
-    self.log.debug(f"SVAMediaPlayerSkill.send_session_paused() session_id: {session_id} target: {target}")
+    self.log.debug(f"MediaPlayer.send_session_paused() session_id: {session_id} target: {target}")
     info = {
         'error':'',
         'subtype':'media_player_command_response',
@@ -177,7 +176,7 @@ class SVAMediaPlayerSkill:
     return self.send_message(target, info)
 
   def send_session_confirm(self, message):
-    self.log.debug(f"SVAMediaPlayerSkill.send_session_confirm() message: {message}")
+    self.log.debug(f"MediaPlayer.send_session_confirm() message: {message}")
     info = {
         'error':'',
         'subtype':'media_player_command_response',
@@ -190,14 +189,14 @@ class SVAMediaPlayerSkill:
     return self.send_message(message.data['from_skill_id'], info)
 
   def get_paused_session(self, paused_sid):
-    self.log.debug(f"SVAMediaPlayerSkill.get_paused_session() paused_sid: {paused_sid}")
+    self.log.debug(f"MediaPlayer.get_paused_session() paused_sid: {paused_sid}")
     for session in self.paused_sessions:
       if session.session_id == paused_sid:
         return session
     return None
 
   def remove_paused_entry(self, paused_entry):
-    self.log.debug(f"SVAMediaPlayerSkill.remove_paused_entry() paused_entry: {paused_entry}")
+    self.log.debug(f"MediaPlayer.remove_paused_entry() paused_entry: {paused_entry}")
     tmp_paused_sessions = []
     for session in self.paused_sessions:
       if session.session_id != paused_entry.session_id:
@@ -205,7 +204,7 @@ class SVAMediaPlayerSkill:
     self.paused_sessions = tmp_paused_sessions
 
   def cancel_session(self, message):
-    self.log.debug("SVAMediaPlayerSkill.cancel_session() starting")
+    self.log.debug("MediaPlayer.cancel_session() starting")
     cancel_sid = message.data['session_id']  # could be paused or active
     if self.current_session and self.current_session.session_id == cancel_sid:
       if self.current_session.session_id == cancel_sid:
@@ -213,11 +212,11 @@ class SVAMediaPlayerSkill:
           try:
             self.current_session.ce.kill()
           except:
-            self.log.warning("SVAMediaPlayerSkill.cancel_session() Exception in media player killing wav play")
+            self.log.warning("MediaPlayer.cancel_session() Exception in media player killing wav play")
         else:
-          self.log.warning("SVAMediaPlayerSkill.cancel_session(): no currently executing command!")
+          self.log.warning("MediaPlayer.cancel_session(): no currently executing command!")
       self.current_session.owner = None
-      self.log.info(f"SVAMediaPlayerSkill.cancel_session() setting current_session.sid to 0, it was {self.current_session.session_id}")
+      self.log.info(f"MediaPlayer.cancel_session() setting current_session.sid to 0, it was {self.current_session.session_id}")
       self.current_session.session_id = 0
       self.current_session.time_out_ctr = 0
       return self.clear_q(message)
@@ -227,7 +226,7 @@ class SVAMediaPlayerSkill:
         return 
       local_q = paused_session.media_queue # otherwise remove it from the paused q after draining its q and stopping its process
       for mentry in local_q:
-        self.log.error(f"SVAMediaPlayerSkill.cancel_session(): BUG! ClearQ must deal with file: {mentry['file_uri']}")
+        self.log.error(f"MediaPlayer.cancel_session(): BUG! ClearQ must deal with file: {mentry['file_uri']}")
       paused_session.media_queue = []
       if paused_session.ce.proc is not None:
         try:
@@ -239,7 +238,7 @@ class SVAMediaPlayerSkill:
       self.remove_paused_entry(paused_session)
 
   def stop_session(self,message):
-    self.log.info(f"SVAMediaPlayerSkill.stop_session() state: {self.state} current sess id: {self.current_session.session_id} session_id to stop: {message.data['session_id']} media_type: {self.current_session.media_type}")
+    self.log.info(f"MediaPlayer.stop_session() state: {self.state} current sess id: {self.current_session.session_id} session_id to stop: {message.data['session_id']} media_type: {self.current_session.media_type}")
     data = message.data
     sid_to_stop = data['session_id']
     sid_owner = data['from_skill_id']
@@ -250,9 +249,9 @@ class SVAMediaPlayerSkill:
           self.current_session = paused_session
           self.remove_paused_entry(paused_session)
         else:
-          self.log.error(f"SVAMediaPlayerSkill.stop_session() BUG: session owner is {paused_session_owner} but {sid_owner} is asking to stop session!!!")
+          self.log.error(f"MediaPlayer.stop_session() BUG: session owner is {paused_session_owner} but {sid_owner} is asking to stop session!!!")
       else:              # session not active or paused maybe send a message
-        self.log.warning(f"SVAMediaPlayerSkill.stop_session() cannot find sid to stop: {sid_to_stop}")
+        self.log.warning(f"MediaPlayer.stop_session() cannot find sid to stop: {sid_to_stop}")
     if data['from_skill_id'] != self.current_session.owner:
       # if active session is not owned by peson requesting the stop
       sid = message.data['session_id']
@@ -276,29 +275,29 @@ class SVAMediaPlayerSkill:
           try:
             self.current_session.ce.kill()
           except:
-            self.log.warning("SVAMediaPlayerSkill.stop_session() Exception in media player killing wav play")
+            self.log.warning("MediaPlayer.stop_session() Exception in media player killing wav play")
         else:
           try:
             self.current_session.ce.kill()
           except:
-            self.log.warning("SVAMediaPlayerSkill.stop_session() Exception in media player killing mp3 play")
+            self.log.warning("MediaPlayer.stop_session() Exception in media player killing mp3 play")
       else:
-        self.log.debug("SVAMediaPlayerSkill.stop_session(): no currently executing command!")
+        self.log.debug("MediaPlayer.stop_session(): no currently executing command!")
         pass
       self.send_session_end_notify('killed')
       self.current_session.owner = None
-      self.log.info(f"SVAMediaPlayerSkill.stop_session() setting current_session.sid to 0, it was {self.current_session.session_id}")
+      self.log.info(f"MediaPlayer.stop_session() setting current_session.sid to 0, it was {self.current_session.session_id}")
       self.current_session.session_id = 0
       self.current_session.time_out_ctr = 0
       return self.clear_q(message)
 
   def start_session(self, message):
-    self.log.debug(f"SVAMediaPlayerSkill.stop_session() sid = {self.current_session.session_id} message: {message}")
+    self.log.debug(f"MediaPlayer.stop_session() sid = {self.current_session.session_id} message: {message}")
     data = message.data
     from_skill_id = data['from_skill_id']
     correlator = data.get('correlator','')
     if from_skill_id is None or from_skill_id == '':
-      self.log.warning(f"SVAMediaPlayerSkill.stop_session() Can't start session for unknown source {data}")
+      self.log.warning(f"MediaPlayer.stop_session() Can't start session for unknown source {data}")
       reason = 'session_unknown_source'
       return self.send_session_reject(reason, message)
     if self.current_session.owner is None:
@@ -316,11 +315,11 @@ class SVAMediaPlayerSkill:
       self.current_session_time_out_ctr = 0
       self.current_session.correlator = correlator
       return self.send_session_confirm(message)
-    self.log.info(f"SVAMediaPlayerSkill.stop_session() is busy, owner: {self.current_session.owner} requester: {from_skill_id}")
+    self.log.info(f"MediaPlayer.stop_session() is busy, owner: {self.current_session.owner} requester: {from_skill_id}")
     return self.send_session_reject(reason, message)
 
   def handle_message(self, message):
-    self.log.debug(f"SVAMediaPlayerSkill.handle_message() message: {message}")
+    self.log.debug(f"MediaPlayer.handle_message() message: {message}")
     data = message.data
     if data['subtype'] == 'media_player_command':
       command = data['command']
@@ -341,7 +340,7 @@ class SVAMediaPlayerSkill:
       elif command == 'cancel_session':
         return self.cancel_session(message)
       else:
-        self.log.error(f"SVAMediaPlayerSkill.handle_message() - Unrecognized command: {command}")
+        self.log.error(f"MediaPlayer.handle_message() - Unrecognized command: {command}")
 
   def wait_for_end_play(self, media_entry):
     self.log.debug(f"MediaPlayer:wait_for_end_play() media_entry: {media_entry}")
@@ -398,7 +397,7 @@ class SVAMediaPlayerSkill:
           os.system(cmd)
 
   def run(self):
-    self.log.debug(f"SVAMediaPlayerSkill.run() is_running: {self.is_running}")
+    self.log.debug(f"MediaPlayer.run() is_running: {self.is_running}")
     while self.is_running:
       if self.state == 'playing':  # get next file to play for the current media session
         if self.current_session is None:  # no current session
@@ -409,15 +408,15 @@ class SVAMediaPlayerSkill:
         media_entry = self.current_session.media_queue[0]
         file_uri = media_entry['file_uri']
         media_type = media_entry['media_type']
-        self.log.debug(f"SVAMediaPlayerSkill.run() file_uri = {file_uri} media_type = {media_type}")
+        self.log.debug(f"MediaPlayer.run() file_uri = {file_uri} media_type = {media_type}")
         fa = file_uri.split(".")
         file_ext = fa[len(fa) - 1]
         cfg = Config()
         device_id = cfg.get_cfg_val('Advanced.OutputDeviceName')
-        self.log.debug(f"SVAMediaPlayerSkill.run() device_id = {device_id}")
+        self.log.debug(f"MediaPlayer.run() device_id = {device_id}")
         cmd = ''
         if media_type is None or media_type == '':
-          self.log.warning(f"SVAMediaPlayerSkill.run() invalid media type: {media_type}")
+          self.log.warning(f"MediaPlayer.run() invalid media type: {media_type}")
           self.current_session.media_type = 'mp3'
           cmd = f"mpg123 {file_uri}"  
           if device_id is not None:
@@ -427,18 +426,18 @@ class SVAMediaPlayerSkill:
               if device_id is not None and device_id != '':
                 cmd = "aplay -D {device_id} {file_uri}"
               self.current_session.media_type = 'wav'
-          self.log.warning(f"SVAMediaPlayerSkill.run() derived media type = {media_type} device_id = {device_id}")
+          self.log.warning(f"MediaPlayer.run() derived media type = {media_type} device_id = {device_id}")
         else:            # media type is known so use it to get cmd line from hal cfg file
           self.current_session.media_type = media_type
           media_player_cfg = self.hal.get('play_media', None)
           if media_player_cfg:
             cmd = media_player_cfg.get(self.current_session.media_type,'')
           if cmd == '':
-            self.log.error("SVAMediaPlayerSkill.run() invalid media player command line !")
+            self.log.error("MediaPlayer.run() invalid media player command line !")
             return 
           else:
             cmd = cmd % (file_uri,)
-        self.log.info(f"SVAMediaPlayerSkill.run(): cmd = {cmd}")
+        self.log.info(f"MediaPlayer.run(): cmd = {cmd}")
         self.current_session.ce = CommandExecutor(cmd)
         self.wait_for_end_play(media_entry)
       if self.state == 'resumed':
@@ -447,19 +446,53 @@ class SVAMediaPlayerSkill:
       if self.state == 'paused':   # clear current media entry
         self.current_session.owner = None
         self.current_session.ce = None
-        self.log.info(f"SVAMediaPlayerSkill.run() run() - setting current_session.sid to 0, it was {self.current_session.session_id}")
+        self.log.info(f"MediaPlayer.run() run() - setting current_session.sid to 0, it was {self.current_session.session_id}")
         self.current_session.session_id = 0
         self.current_session.time_out_ctr = 0
         self.current_session.media_queue = []
         self.current_session.state = 'idle'
-        self.log.debug("SVAMediaPlayerSkill.run() - Paused Signal causing me to transition to idle!")
+        self.log.debug("MediaPlayer.run() - Paused Signal causing me to transition to idle!")
         self.state = 'idle'
       time.sleep(0.01)
 
+  async def stop(self):
+    """
+    Stop the media player service
+    """
+    self.log.debug("MediaPlayer.stop() - stopping")
+    self.bus.disconnect()
+
+  async def start(self):
+    """
+    Initialize the service and establish connections
+    """
+    self.log.debug("MediaPlayer.start() - initializing")
+    self.bus.client.on_connect = self.on_connect
+    self.bus.client.loop_start()
+    await self.connected_event.wait()
+    self.log.debug("MediaPlayer.start() - connected to bus")
+
+  def on_connect(self, client, userdata, flags, rc):
+    if rc == 0:
+      self.connected_event.set()
+      print("Connected to MQTT broker")
+    else:
+      print(f"Failed to connect to MQTT broker with result code {rc}")
+
+  async def stop(self):
+    """Stop the media player service"""
+    self.log.debug("MediaPlayer.stop() - stopping")
+    self.bus.disconnect()
+
+  async def run_forever(self):
+    await asyncio.Event().wait()           # wait forever
+
 # main()
 if __name__ == '__main__':
-  sva_mps = SVAMediaPlayerSkill()
-  sva_mps.is_running = True
-  sva_mps.run()
-  Event().wait()                           # wait forever
+  media_player = MediaPlayer()
+  try:
+    asyncio.run(media_player.start())
+    asyncio.run(media_player.run_forever())
+  except KeyboardInterrupt:
+    asyncio.run(media_player.stop())
 

@@ -6,8 +6,8 @@ import time
 
 class QuestionAnswerSkill(SimpleVoiceAssistant):
   def __init__(self, skill_id=None, skill_category=None, bus=None, timeout=5):
-    super().__init__(msg_handler=self.handle_message, skill_id=skill_id, skill_category=skill_category)
-    time.sleep(1) # give fall back skill a chance to initialize
+    super().__init__(skill_id=skill_id, skill_category=skill_category)
+    time.sleep(1)                          # give fall back skill a chance to initialize
     info = {                               # register with the fallback skill
       'subtype': 'qna_register_request',
       'skill_id': 'fallback_skill',
@@ -15,8 +15,8 @@ class QuestionAnswerSkill(SimpleVoiceAssistant):
       }
     self.send_message()
 
-  async def send_message(self):
-    await self.bus.send(MSG_SKILL, 'fallback_skill', info)
+  def send_message(self):
+    self.bus.send(MSG_SKILL, 'fallback_skill', info)
 
   def handle_message(self,msg):
     print(f"Q&A handle_message() {msg.data}")

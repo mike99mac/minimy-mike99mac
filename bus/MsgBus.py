@@ -1,85 +1,44 @@
-import asyncio
+import paho.mqtt.client as mqtt
 import json
-import os
-import websockets.asyncio
-from websockets.asyncio.server import serve
-from framework.util.utils import LOG
+from collections import defaultdict
 
-class MsgBusServer:
-  clients = {}
-  identifiers = set()
+class MsgBus:
+  def __init__(self, broker="localhost", port=1883):
+    self.client = mqtt.Client(protocol=mqtt.MQTTv311, callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
+    self.client.on_connect = self.on_connect
+    self.client.on_msg = self.on_msg
+    self.handlers = defaultdict(list)
+    try:
+      self.client.connect(broker, port, 60)
+      self.client.loop_start()
+    except Exception as e:
+      print(f"An error occurred while connecting to the MQTT broker: {e}")
 
-  def __init__(self):
-    self.base_dir = str(os.getenv('SVA_BASE_DIR', '/tmp'))
-    # log_filename = os.path.join(self.base_dir, 'logs', 'bus.log')
-    # self.log = LOG(log_filename).log
-    # self.log.debug("MsgBusServer.__init__(): Message Bus started")
+  def on_connect(self, client, userdata, flags, rc):
+    if rc == 0:
+      print(f"Connected with result code {rc}")
+      self.client.subscribe("#")
+    else:
+      print(f"Failed to connect to MQTT broker with result code {rc}")
 
-  async def register(self, ws):
-    identifier = ws.request.path.strip("/")
-    if identifier in self.identifiers:
-      # self.log.warning(f"MsgBusServer.register(): identifier {identifier} already registered.")
-      return False
-    self.clients[ws] = identifier
-    self.identifiers.add(identifier)
-    # self.log.info(f"MsgBusServer.register(): registered identifier: {identifier} from {ws.remote_address}")
-    print(f"MsgBusServer.register(): registered identifier: {identifier} from {ws.remote_address}")
-    return True
+  def on_msg(self, client, userdata, msg):
+    message = json.loads(msg.payload.decode())
+    for handler in self.handlers[message['type']]:
+      handler(Message(message['type'], message['data']))
 
-  async def unregister(self, ws):
-    if ws in self.clients:
-      identifier = self.clients[ws]
-      del self.clients[ws]
-      self.identifiers.remove(identifier)
-      # self.log.info(f"MsgBusServer.unregister(): Unregistered {identifier}")
+  def on(self, message_type, handler):
+    self.handlers[message_type].append(handler)
 
-  async def find_client(self, target):
-    for client in self.clients:
-      if self.clients[client] == target:
-        # self.log.info(f"MsgBusServer.find_client(): found client: {client}")
-        return client
-      else:
-        # self.log.info(f"MsgBusServer.find_client(): did not find client: {client}")
-        return None
+  def send(self, message_type, data):
+    message = {"type": message_type, "data": data}
+    self.client.publish(message_type, json.dumps(message))
 
-  async def send_to_clients(self, message):
-    # self.log.info(f"MsgBusServer.send_to_clients(): Sending message: {message}")
-    print(f"MsgBusServer.send_to_clients(): Sending message: {message}")
-    if self.clients:
-      msg = json.loads(message)
-      target = msg.get('target', '')
-      if target == '*':                    # broadcast
-        await asyncio.gather(*[client.send(message) for client in self.clients])
-      else:                                # directed
-        client = next((ws for ws, id in self.clients.items() if id == target), None)
-        if client:
-          await client.send(message)
-        # else:
-        #   self.log.warning(f"MsgBusServer.send_to_clients(): target: {target} not found msg: {msg}")
-        web_ui_clients = [ws for ws, id in self.clients.items() if id.startswith("web_ui")]
-        # await asyncio.gather(*[ws.send(message) for ws in web_ui_clients])
-        await client.send(message)
-        client2 = await self.find_client('system_monitor')
-        if client2 == None:
-          # self.log.debug("Error, system_monitor not found!")
-          return False
-        await client2.send(message)
-        return True
+  def disconnect(self):
+    try:
+      self.client.loop_stop()
+      self.client.disconnect()
+    except Exception as e:
+      print(f"An error occurred while disconnecting from the MQTT broker: {e}")
 
-  async def ws_handler(self, ws):
-    if await self.register(ws):
-      try:
-        async for message in ws:
-          await self.send_to_clients(message)
-      finally:
-        await self.unregister(ws)
-
-async def main():
-  server = MsgBusServer()
-  async with serve(server.ws_handler, '0.0.0.0', 8181, ping_interval=60, ping_timeout=60):
-    print("WebSocket server started on port 8181")
-    await asyncio.Future()
-
-if __name__ == "__main__":
-  asyncio.run(main())
+bus = MsgBus()
 

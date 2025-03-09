@@ -6,7 +6,7 @@ from framework.message_types import MSG_SYSTEM
 class ConnectivitySkill(SimpleVoiceAssistant):
   def __init__(self, bus=None, timeout=5):
     self.skill_id = 'connectivity_skill'
-    super().__init__(msg_handler=self.handle_message, skill_id='connectivity_skill', skill_category='system')
+    super().__init__(skill_id='connectivity_skill', skill_category='system')
     self.is_running = False
     self.log.info("ConnectivitySkill.__init__() Connectivity skill activated")
 

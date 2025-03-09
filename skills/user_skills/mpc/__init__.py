@@ -1,4 +1,3 @@
-import asyncio
 from framework.message_types import MSG_MEDIA
 from mpc_client import MpcClient
 from music_info import Music_info
@@ -19,7 +18,7 @@ class MpcSkill(MediaSkill):
     self.url = ''                          # has to be returned from get_media_confidence()
     self.lang = "en-us"                    # just US English for now
     self.mpc_client = MpcClient("/media/") # search for music under /media
-    self.log.debug(f"MpcSkill.__init__(): skill_base_dir: {self.skill_base_dir}")
+    self.log.debug(f"MpcSkill.__init__()")
     self.music_info = Music_info("none", "", {}, []) # music to play
     self.sentence = None 
 
@@ -127,6 +126,6 @@ class MpcSkill(MediaSkill):
 # main()
 if __name__ == '__main__':
   mpc = MpcSkill()
-  asyncio.run(mpc.register_media(mpc.skill_id))
+  mpc.register_media(mpc.skill_id)
   Event().wait()                         # wait forever
 

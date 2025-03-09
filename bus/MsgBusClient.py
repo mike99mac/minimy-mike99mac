@@ -1,80 +1,49 @@
-import asyncio
-import json
-from bus.Message import Message, msg_from_json
-import os
-from asyncio import Queue
+from collections import defaultdict
 from framework.util.utils import LOG, Config
-import websockets.asyncio
-from websockets.asyncio.client import connect
-
-async def SendThread(ws, outbound_q, client_id):
-  while True:
-    while outbound_q.empty():
-      await asyncio.sleep(0.001)           # asyncio-friendly sleep
-    msg = await outbound_q.get()
-    await ws.send(msg)
-
-
-async def RecvThread(ws, callback, client_id):
-  while True:
-    try:
-      message = await ws.recv()
-      print(f"RecvThread() received message: {message}") 
-      await callback(msg_from_json(json.loads(message)))
-    except websockets.exceptions.ConnectionClosed as e:
-      print(f"Connection closed: {e}")
-      break
-    except Exception as e:
-      print(f"Error in RecvThread: {e}")
-      break
-
-async def process_inbound_messages(inbound_q, msg_handlers, client_id):
-  while True:
-    while inbound_q.empty():
-      await asyncio.sleep(0.001)
-    msg = await inbound_q.get()
-    print(f"iprocess_inbound_messages() msg_type: {msg.msg_type} msg_handlers.keys:: {msg_handlers.keys()}") 
-    if msg.msg_type in msg_handlers:
-      msg_handlers[msg.msg_type](msg)
-    else:
-      print(f"process_inbound_messages(): ERROR No handler found for message type: {msg.msg_type}") 
+import json
+import os
+import paho.mqtt.client as mqtt
 
 class MsgBusClient:
-  def __init__(self, client_id):
+  def __init__(self, client_id, broker="localhost", port=1883):
     self.client_id = client_id
-    self.base_dir = str(os.getenv('SVA_BASE_DIR'))
-    # log_filename = self.base_dir + '/logs/bus.log'
-    # self.log = LOG(log_filename).log
-    # self.log.debug(f"MsgBusClient.__init__(): Initialized for client_id: {self.client_id} log_filename: {log_filename}")
-    self.inbound_q = Queue()
-    self.outbound_q = Queue()
-    self.msg_handlers = {}
-    self.ws = None                         # webSocket connection placeholder
-
-  async def connect_and_run(self):         # create webSocket connection
-    # self.log.debug(f"MsgBusClient.connect_and_run(): Starting connection for client_id: {self.client_id}")
+    self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, client_id)
+    #self.client = mqtt.Client(client_id, protocol=mqtt.MQTTv311, callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
+    #self.client = mqtt.Client(client_id, callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
+    self.client.on_connect = self.on_connect
+    self.client.on_msg = self.on_msg
+    self.handlers = defaultdict(list)
     try:
-      self.ws = await connect(f"ws://localhost:8181/{self.client_id}")
-      # self.log.debug(f"MsgBusClient.connect_and_run(): WebSocket connected for {self.client_id}")
-      recv_task = asyncio.create_task(RecvThread(self.ws, self.rcv_client_msg, self.client_id)) # Create and log each task
-      send_task = asyncio.create_task(SendThread(self.ws, self.outbound_q, self.client_id))
-      process_task = asyncio.create_task(process_inbound_messages(self.inbound_q, self.msg_handlers, self.client_id))
+      self.client.connect(broker, port, 60)
+    except ConnectionRefusedError:
+      print(f"Connection to MQTT broker at {broker}:{port} refused.")
+      return
     except Exception as e:
-      print(f"MsgBusClient.connect_and_run(): Connection error: {e}")
-      # self.log.error(f"MsgBusClient.connect_and_run(): Connection error: {e}")
-  
-  def on(self, msg_type, callback):
-    self.msg_handlers[msg_type] = callback
-    # self.log.debug(f"MsgBusClient.on(): Registered callback for msg_type: {msg_type}")
+      print(f"An error occurred while connecting to the MQTT broker: {e}")
+      return
+    self.client.loop_start()
 
-  async def rcv_client_msg(self, msg):
-    # self.log.debug(f"MsgBusClient.rcv_client_msg(): msg: {msg}")
-    await self.inbound_q.put(msg)
+  def on_connect(self, client, userdata, flags, rc):
+    if rc == 0:
+      print(f"Connected to MQTT broker with result code {rc}")
+      self.client.subscribe("#")
+    else:
+      print(f"Failed to connect to MQTT broker with result code {rc}")
 
-  async def send(self, msg_type, target, msg):
-    # self.log.debug(f"MsgBusClient.send(): msg_type: {msg_type} target: {target} msg: {msg} client_id: {self.client_id}")
-    await self.outbound_q.put(json.dumps(Message(msg_type, self.client_id, target, msg)))
+  def on_msg(self, client, userdata, msg):
+    msg = json.loads(msg.payload.decode())
+    for handler in self.handlers[msg['type']]:
+      handler(Message(msg['type'], msg['data']))
 
-  async def close(self):
-    await self.ws.close()
+  def on(self, msg_type, handler):
+    self.handlers[msg_type].append(handler)
+
+  def send(self, msg_type, target, data):
+    msg = {
+        "type": msg_type,
+        "source": self.client_id,
+        "target": target,
+        "data": data
+    }
+    self.client.publish(msg_type, json.dumps(msg))
 

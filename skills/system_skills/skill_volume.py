@@ -11,7 +11,7 @@ import os
 class VolumeSkill(SimpleVoiceAssistant):
   def __init__(self, bus=None, timeout=5):
     self.skill_id = 'volume_skill'
-    super().__init__(msg_handler=self.handle_message, skill_id=self.skill_id, skill_category='system')
+    super().__init__(skill_id=self.skill_id, skill_category='system')
     lingua_franca.load_language('en')
     cfg = Config()
     input_device_id = cfg.get_cfg_val('Advanced.InputDeviceId')
@@ -32,7 +32,7 @@ class VolumeSkill(SimpleVoiceAssistant):
     self.mic_level = 67
     self.set_mic_level(self.mic_level)
 
-  async def register_intents(self):
+  def register_intents(self):
     subjects = ['microphone', 'mic', 'input']
     commands = ['set', 'change', 'modify']
     questions = ['what', 'how']
@@ -41,33 +41,33 @@ class VolumeSkill(SimpleVoiceAssistant):
     # input volume
     for subject in subjects:
       for command in commands:
-        await self.register_intent('C', command, subject, self.handle_change_mic)
+        self.register_intent('C', command, subject, self.handle_change_mic)
         inactive_state_intents.append( 'C' + ':' + subject + ':' + command )
     for subject in subjects:
       for question in questions:
-        await self.register_intent('Q', question, subject, self.handle_query_mic)
+        self.register_intent('Q', question, subject, self.handle_query_mic)
         inactive_state_intents.append( 'Q' + ':' + subject + ':' + question )
 
     # output volume
     subject = 'volume'
-    await self.register_intent('C', 'turn', subject, self.handle_change)
+    self.register_intent('C', 'turn', subject, self.handle_change)
     inactive_state_intents.append( 'C' + ':' + subject + ':' + 'turn' )
-    await self.register_intent('C', 'set', subject, self.handle_change)
+    self.register_intent('C', 'set', subject, self.handle_change)
     inactive_state_intents.append( 'C' + ':' + subject + ':' + 'set' )
-    await self.register_intent('C', 'change', subject, self.handle_change)
+    self.register_intent('C', 'change', subject, self.handle_change)
     inactive_state_intents.append( 'C' + ':' + subject + ':' + 'change' )
-    await self.register_intent('C', 'increase', subject, self.handle_increase)
+    self.register_intent('C', 'increase', subject, self.handle_increase)
     inactive_state_intents.append( 'C' + ':' + subject + ':' + 'increase' )
-    await self.register_intent('C', 'decrease', subject, self.handle_decrease)
+    self.register_intent('C', 'decrease', subject, self.handle_decrease)
     inactive_state_intents.append( 'C' + ':' + subject + ':' + 'decrease' )
-    await self.register_intent('C', 'mute', subject, self.handle_mute)
+    self.register_intent('C', 'mute', subject, self.handle_mute)
     inactive_state_intents.append( 'C' + ':' + subject + ':' + 'mute' )
-    await self.register_intent('C', 'unmute', subject, self.handle_unmute)
+    self.register_intent('C', 'unmute', subject, self.handle_unmute)
     inactive_state_intents.append( 'C' + ':' + subject + ':' + 'unmute' )
 
     # if we want a single entry point we can set them programmatically
     for question in questions:
-      await self.register_intent('Q', question, subject, self.handle_intent_match)
+      self.register_intent('Q', question, subject, self.handle_intent_match)
       inactive_state_intents.append( 'Q' + ':' + subject + ':' + question )
 
   def get_num(self, v1, v2, v3):
@@ -172,13 +172,9 @@ class VolumeSkill(SimpleVoiceAssistant):
   def stop(self, message = None):
     self.log.debug(f"VolumeSkill.stop() message: {message}")
 
-  async def initialize(self):
-    await self.register_intents()
-    # self.register_intents()
-
 # main()
 if __name__ == '__main__':
   vs = VolumeSkill()
-  asyncio.run(vs.initialize())
+  vs.register_intents()
   Event().wait()                           # wait forever
 

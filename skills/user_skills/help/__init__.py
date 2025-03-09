@@ -1,4 +1,3 @@
-import asyncio
 from bus.Message import Message
 from framework.message_types import MSG_SYSTEM
 from threading import Event
@@ -8,7 +7,7 @@ import time
 class HelpSkill(SimpleVoiceAssistant):
   def __init__(self, bus=None, timeout=5):
     self.skill_id = 'help_skill'
-    super().__init__(msg_handler=self.handle_message, skill_id='help_skill', skill_category='user')
+    super().__init__(skill_id='help_skill', skill_category='user')
     self.info = {                               # register OOBs 
                 'subtype':'reserve_oob',
                 'skill_id':'system_skill',
@@ -16,9 +15,8 @@ class HelpSkill(SimpleVoiceAssistant):
                 'verb':'help'
                 }
 
-  async def send_message(self):
-    await self.bus.send(MSG_SYSTEM, 'system_skill', self.info)
-    # self.bus.send(MSG_SYSTEM, 'system_skill', self.info)
+  def send_message(self):
+    self.bus.send(MSG_SYSTEM, 'system_skill', self.info)
 
   def handle_message(self, message):
     data = message.data
@@ -33,11 +31,11 @@ class HelpSkill(SimpleVoiceAssistant):
   def stop(self):
     pass
 
-  async def initialize(self):
-    await self.send_message()
+  def initialize(self):
+    self.send_message()
 
 # main()
 if __name__ == '__main__':
   hlp = HelpSkill()
-  asyncio.run(hlp.initialize())
+  hlp.initialize()
   Event().wait()                           # wait forever
