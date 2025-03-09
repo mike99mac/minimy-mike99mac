@@ -1,4 +1,3 @@
-import asyncio
 from skills.sva_base import SimpleVoiceAssistant
 from framework.util.utils import us_abbrev_to_state 
 from framework.util.utils import execute_command
@@ -32,11 +31,11 @@ class WeatherSkill(SimpleVoiceAssistant):
     self.log.debug(f"WeatherSkill.__init__(): my_public_ip {self.my_public_ip} my_city: {self.my_city}")
     self.log.debug(f"WeatherSkill.__init__(): my_state: {self.my_state} my_zip: {self.my_zip}")
 
-  async def register_intents(self):
+  def register_intents(self):
     self.log.debug("WeatherSkill.register_intents()")
-    await self.register_intent('Q', 'what', 'weather', self.handle_msg)
-    await self.register_intent('Q', 'what', 'forecast', self.handle_msg)
-    await self.register_intent('Q', ['is', 'will', 'did', 'what'], 'temperature', self.handle_msg)
+    self.register_intent('Q', 'what', 'weather', self.handle_msg)
+    self.register_intent('Q', 'what', 'forecast', self.handle_msg)
+    self.register_intent('Q', ['is', 'will', 'did', 'what'], 'temperature', self.handle_msg)
 
   def handle_msg(self, message):
     if self.busy:
@@ -130,6 +129,6 @@ class WeatherSkill(SimpleVoiceAssistant):
 # main()
 if __name__ == '__main__':
   ws = WeatherSkill()
-  asyncio.run(ws.register_intents())
+  ws.register_intents()
   Event().wait()                           # wait forever
 

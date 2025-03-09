@@ -1,4 +1,3 @@
-import asyncio
 from bus.Message import Message
 from bus.MsgBusClient import MsgBusClient
 from framework.message_types import MSG_SKILL
@@ -14,17 +13,17 @@ class MediaSkill(SimpleVoiceAssistant):
     confidence level it has regarding a media play request. If its 
     confidence is the highest it is later called to play that media. 
     """
-    super().__init__(msg_handler=self.handle_message, skill_id=skill_id, skill_category=skill_category)
+    super().__init__(skill_id=skill_id, skill_category=skill_category)
     time.sleep(1)            # give fall back skill a chance to initialize
     self.log.debug("MediaSkill.__init__()")
 
-  async def register_media(self, skill_id): 
+  def register_media(self, skill_id): 
     info = {               # register with the system media skill
       'subtype': 'media_register_request',
       'skill_id': 'media_skill',
       'media_skill_id': skill_id
       }
-    await self.bus.send(MSG_SKILL, 'media_skill', info)
+    self.bus.send(MSG_SKILL, 'media_skill', info)
 
   def handle_message(self, msg):
     self.log.debug(f"MediaSkill.handle_message() msg: {msg}")
@@ -34,5 +33,4 @@ class MediaSkill(SimpleVoiceAssistant):
       self.send_message('media_skill', message)
     if msg.data['subtype'] == 'media_play':
       self.media_play(msg)
-
 

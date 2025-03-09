@@ -1,4 +1,3 @@
-import asyncio
 import datetime
 import os
 from skills.sva_base import SimpleVoiceAssistant
@@ -8,12 +7,12 @@ class TimeSkill(SimpleVoiceAssistant):
   def __init__(self, bus=None, timeout=5):
     super().__init__(skill_id='time_skill', skill_category='system')
 
-  async def register_intents(self):
+  def register_intents(self):
     self.log.debug("TimeSkill.register_intents()")
-    await self.register_intent('Q', 'what', 'time', self.handle_time_match)
-    await self.register_intent('Q', 'what', 'date', self.handle_date_match)
-    await self.register_intent('Q', 'what', 'today', self.handle_date_match)
-    await self.register_intent('Q', 'what', 'day', self.handle_day_match)
+    self.register_intent('Q', 'what', 'time', self.handle_time_match)
+    self.register_intent('Q', 'what', 'date', self.handle_date_match)
+    self.register_intent('Q', 'what', 'today', self.handle_date_match)
+    self.register_intent('Q', 'what', 'day', self.handle_day_match)
 
   def handle_date_match(self, msg):
     self.log.debug("TimeSkill.handle_date_match()")
@@ -50,12 +49,12 @@ class TimeSkill(SimpleVoiceAssistant):
   def stop(self,msg):
     self.log.info(f"TimeSkill.stop() Do nothing - stop hit")
 
-  async def initialize(self):
-    await self.register_intents()
+  def initialize(self):
+    self.bus.client.loop_start()           # connect to message bus
+    self.register_intents()
 
 # main()
 if __name__ == '__main__':
   ts = TimeSkill()
-  asyncio.run(ts.initialize())
-  Event().wait()                           # wait forever
+  ts.initialize()
 

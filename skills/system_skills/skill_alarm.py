@@ -1,8 +1,9 @@
 import asyncio
+from bus.MsgBusClient import MsgBusClient
 from bus.Message import Message
 import datetime
 from datetime import timedelta
-from framework.util.utils import get_raw, get_hour_min, get_ampm, get_time_from_utterance
+from framework.util.utils import Config, get_raw, get_hour_min, get_ampm, get_time_from_utterance, LOG
 from framework.message_types import MSG_SYSTEM
 import lingua_franca
 import inflect
@@ -22,8 +23,7 @@ class AlarmActiveThread(Thread):
 
   def run(self):
     while not self._terminated:
-      # this value should come from a config file
-      time.sleep(15)
+      time.sleep(15)                       # this value should come from a config file
       if self.active:
         if self.cb is not None:
           self.cb()
@@ -54,10 +54,17 @@ class AlarmDetectThread(Thread):
         if expires_at <= time_now:
           self.cb(alarm)
 
-class AlarmSkill(SimpleVoiceAssistant):
+class Alarm(SimpleVoiceAssistant):
   def __init__(self, bus=None, timeout=5):
     self.skill_id = 'alarm_skill'
-    super().__init__(msg_handler=self.handle_message, skill_id='alarm_skill', skill_category='system')
+    super().__init__(skill_id='alarm_skill', skill_category='system')
+    if bus is None:
+      bus = MsgBusClient(self.skill_id)
+    self.bus = bus
+    self.base_dir = os.getenv('SVA_BASE_DIR')
+    log_filename = self.base_dir + '/logs/alarm.log'
+    self.log = LOG(log_filename).log
+    cfg = Config()
     lingua_franca.load_language('en')
     self.inflect_thing = inflect.engine()
     self.cancel_converse_words = [
@@ -68,8 +75,7 @@ class AlarmSkill(SimpleVoiceAssistant):
         'nevermind',
         'forget it',
         ]
-    base_dir = os.getenv('SVA_BASE_DIR')
-    self.db_filename = base_dir + '/skills/system_skills/' + 'alarms.db'
+    self.db_filename = f"{self.base_dir}/skills/system_skills/alarms.db"
     self.alarms = []
     try:
       fh = open(self.db_filename)
@@ -87,26 +93,27 @@ class AlarmSkill(SimpleVoiceAssistant):
     self.alarm_detect.start()
 
     # spawn expired alarm handler thread
-    self.beep_filename = "%s/framework/assets/alarm_clock.mp3" % (base_dir,)
+    self.beep_filename = f"{self.base_dir}/framework/assets/alarm_clock.mp3"
     self.alarm_active = AlarmActiveThread(self.play_beep)
     self.alarm_active.start()
-    self.log.info("Alarm Skill Initialized\n%s" % (self.alarms,))
+    self.connected_event = asyncio.Event()
+    self.log.info(f"Alarm.__init__(): Skill Initialized {self.alarms}")
 
-  async def register_intents(self):
-    await self.register_intent('C', 'set', 'alarm', self.handle_create)
-    await self.register_intent('C', 'create', 'alarm', self.handle_create)
-    await self.register_intent('C', 'new', 'alarm', self.handle_create)
-    await self.register_intent('C', 'show', 'alarms', self.handle_show)
-    await self.register_intent('C', 'display', 'alarms', self.handle_show)
-    await self.register_intent('C', 'list', 'alarms', self.handle_show)
-    await self.register_intent('C', 'delete', 'alarm', self.handle_delete)
-    await self.register_intent('C', 'delete', 'alarms', self.handle_delete)
-    await self.register_intent('C', 'remove', 'alarm', self.handle_delete)
-    await self.register_intent('C', 'remove', 'alarms', self.handle_delete)
-    await self.register_intent('C', 'stop', 'alarm', self.handle_stop)
-    await self.register_intent('C', 'stop', 'alarms', self.handle_stop)
-    await self.register_intent('C', 'cancel', 'alarm', self.handle_stop)
-    await self.register_intent('C', 'cancel', 'alarms', self.handle_stop)
+  def register_intents(self):
+    self.register_intent('C', 'set', 'alarm', self.handle_create)
+    self.register_intent('C', 'create', 'alarm', self.handle_create)
+    self.register_intent('C', 'new', 'alarm', self.handle_create)
+    self.register_intent('C', 'show', 'alarms', self.handle_show)
+    self.register_intent('C', 'display', 'alarms', self.handle_show)
+    self.register_intent('C', 'list', 'alarms', self.handle_show)
+    self.register_intent('C', 'delete', 'alarm', self.handle_delete)
+    self.register_intent('C', 'delete', 'alarms', self.handle_delete)
+    self.register_intent('C', 'remove', 'alarm', self.handle_delete)
+    self.register_intent('C', 'remove', 'alarms', self.handle_delete)
+    self.register_intent('C', 'stop', 'alarm', self.handle_stop)
+    self.register_intent('C', 'stop', 'alarms', self.handle_stop)
+    self.register_intent('C', 'cancel', 'alarm', self.handle_stop)
+    self.register_intent('C', 'cancel', 'alarms', self.handle_stop)
 
   def handle_message(self, msg):
     if msg.data['subtype'] == 'oob_detect' and msg.data['verb'] == 'snooze':
@@ -117,7 +124,7 @@ class AlarmSkill(SimpleVoiceAssistant):
       self.alarm_active.active = False
       self.send_release_message()
 
-  async def send_reserve_message(self):
+  def send_reserve_message(self):
     # acquire the oob verbs 'stop' and 'snooze'
     info = {
         'subtype':'reserve_oob',
@@ -125,11 +132,11 @@ class AlarmSkill(SimpleVoiceAssistant):
         'from_skill_id':self.skill_id,
         'verb':'stop'
         }
-    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    self.bus.send(MSG_SYSTEM, 'system_skill', info)
     info['verb'] = 'snooze'
-    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    self.bus.send(MSG_SYSTEM, 'system_skill', info)
 
-  async def send_release_message(self):
+  def send_release_message(self):
     # release the oob verbs 'stop' and 'snooze'
     info = {
         'subtype':'release_oob',
@@ -137,18 +144,20 @@ class AlarmSkill(SimpleVoiceAssistant):
         'from_skill_id':self.skill_id,
         'verb':'stop'
         }
-    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    self.bus.send(MSG_SYSTEM, 'system_skill', info)
     info['verb'] = 'snooze'
-    await self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    self.bus.send(MSG_SYSTEM, 'system_skill', info)
 
   def play_beep(self):
     self.play_media(self.beep_filename, delete_on_complete=False)
 
   def get_time(self, sentence):
-    # given an utterance returns ...
-    # '' if can not extract time from sentence
-    # 'abort' if the user spoke a terminate alias
-    # or a valid date time 
+    """
+    given an utterance returns ...
+    '' if can not extract time from sentence
+    'abort' if the user spoke a terminate alias
+    or a valid date time 
+    """
     have_date, have_time, hour, minute, dt = get_time_from_utterance(sentence)
     if have_date:
       if have_time:
@@ -167,12 +176,13 @@ class AlarmSkill(SimpleVoiceAssistant):
     return ''
 
   def handle_expired_alarm(self, alarm):
-    # we have an expired alarm. we need to set up a recurring timer to play our alarm sound until told to stop.
+    """
+    we have an expired alarm. we need to set up a recurring timer to play our alarm sound until told to stop.
+    """
     self.alarms.remove(alarm)
     self.update_alarm_db()
     self.alarm_active.active = True
-    # go live
-    self.send_reserve_message()
+    self.send_reserve_message()            # go live
 
   def remove_expired_alarms(self, alarms):
     now = datetime.datetime.now()
@@ -369,7 +379,7 @@ class AlarmSkill(SimpleVoiceAssistant):
         response = self.add_alarm(new_alarm_time, 'tbd')
         if response:
           speakable_date = self.get_speakable(new_alarm_time)
-          resp = "Alarm created for %s" % (speakable_date,)
+          resp = f"Alarm created for {speakable_date}"
           self.speak(resp)
           return True
         else:
@@ -379,18 +389,32 @@ class AlarmSkill(SimpleVoiceAssistant):
         self.speak("Alarm for when not supported yet.")
     return False
 
-  def stop(self,msg=None):
-    self.log.debug(f"AlarmSkill.handle_stop() with message - alarm_active: {self.alarm_active.active} alarms: {self.alarms}")
-    self.alarm_active.active = False
+  async def start(self):
+    """Initialize the service and establish connections"""
+    self.log.debug("Alarm.start() - initializing")
+    self.bus.client.loop_start()
+    await self.connected_event.wait()
+    self.log.debug("Alarm.start() - connected to bus")
 
-  def handle_stop(self, msg):
-    self.log.debug(f"AlarmSkill.handle_stop() alarm_active: {self.alarm_active.active} alarms: {self.alarms}")
-    self.alarm_active.active = False
-    self.send_release_message()
+  def on_connect(self, client, userdata, flags, rc):
+    if rc == 0:
+      if not self.connected_event.is_set():
+        self.connected_event.set()
+      self.log.info("Connected to MQTT broker with result code 0")
+    else:
+      self.log.error(f"Failed to connect to MQTT broker with result code {rc}")
+
+  async def stop(self):
+    """Stop the TTS service"""
+    self.log.debug("Alarm.stop() - stopping")
+    self.bus.disconnect()
 
 # main()
 if __name__ == '__main__':
-  alarm_skill = AlarmSkill()
-  asyncio.run(alarm_skill.register_intents())
-  Event().wait()                           # wait forever
-
+  alarm = Alarm()
+  try:
+    asyncio.run(alarm.start())
+    asyncio.run(alarm.run_forever())
+  except KeyboardInterrupt:
+    asyncio.run(alarm.stop())
+ 

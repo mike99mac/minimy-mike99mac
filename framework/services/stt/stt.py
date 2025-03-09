@@ -28,7 +28,7 @@ def _local_transcribe_file(wav_filename, return_dict):
   if res != '':
     return_dict['service'] = 'local'
     return_dict['text'] = res
-  # print(f"STTSvc._local_transcribe_file() wav_filename: {wav_filename} transcribed text: {res}")
+  print(f"STT._local_transcribe_file() wav_filename: {wav_filename} transcribed text: {res}")
 
 def _remote_transcribe_file(speech_file, return_dict):
   start_time = time.time()
@@ -57,85 +57,74 @@ def handle_utt(ww, utt, tmp_file_path):
   fh.write(entry)
   fh.close()
 
-class STTSvc:
+class STT:
   """
   Monitor the wav file input directory and convert wav files to text strings in files in the output directory. 
   If someone says 'wake word' brief silence, 'bla bla' stitch them together before intent matching. 
   This produces two broad categories of input; raw and wake word qualified. 
   These become MSG_RAW and MSG_UTTERANCE
   """
-  def __init__(self, bus=None, timeout=5, no_bus=False):
+  def __init__(self, bus=None, timeout=5):
     # used for skill type messages
     self.skill_id = 'stt_service'
     base_dir = os.getenv('SVA_BASE_DIR')
     self.tmp_file_path = base_dir + "/tmp/"
     l2r_path = base_dir + "/framework/services/stt/db/local2remote.db"
     self.local2remote = dbm.open(l2r_path, 'c')
-    self.no_bus = no_bus
-    self.bus = None
-    if not no_bus:
-      if bus is None:
-        bus = MsgBusClient(self.skill_id)
-      self.bus = bus
-    asyncio.run(self.bus.connect_and_run())
+    self.bus = MsgBusClient(self.skill_id)
     base_dir = os.getenv('SVA_BASE_DIR')
     log_filename = base_dir + '/logs/stt.log'
     self.log = LOG(log_filename).log
-    self.log.debug(f"STTSvc.__init__(): log_filename: {log_filename}")
+    self.log.debug(f"STT.__init__(): log_filename: {log_filename}")
     self.waiting_stt = False
     self.manager = multiprocessing.Manager()
     self.goog_return_dict = self.manager.dict()
     self.local_return_dict = self.manager.dict()
     self.goog_proc = None
     self.local_proc = None
-    self.bark = True
-    self.bark = False
     self.previous_utterance = ''
     self.previous_utt_was_ww = False
     self.wav_file = None
     self.mute_start_time = 0
     self.wws = get_wake_words()
-
-    # hard wire wake words - did not work  -MM 
-    # self.wws = ["computer", "hey boom box"] 
-    # self.wws = ["computer"] 
     base_dir = os.getenv('SVA_BASE_DIR')
     self.beep_loc = "%s/framework/assets/what.wav" % (base_dir,)
     cfg = Config()
     self.use_remote_stt = True
     remote_stt = cfg.get_cfg_val('Advanced.STT.UseRemote')
-    self.log.info(f"STTSvc.__init__() use_remote_stt: {self.use_remote_stt} wws: {self.wws}")
+    self.log.info(f"STT.__init__() use_remote_stt: {self.use_remote_stt} wws: {self.wws}")
     if remote_stt and remote_stt == 'n':
       self.use_remote_stt = False
-    # if self.bark:
-    # self.log.info(f"STTSvc.__init__(): use_remote_stt {self.use_remote_stt} wws: {self.wws}")
+    self.log.info(f"STT.__init__(): use_remote_stt {self.use_remote_stt} wws: {self.wws}")
+    self.connected_event = asyncio.Event()
 
-  async def send_message(self, target, subtype):
-    # send a standard skill message on the bus. message must be a dict
-    if not self.no_bus:
-      info = {
-          'from_skill_id': self.skill_id,
-          'skill_id': target,
-          'source': self.skill_id,
-          'target': target,
-          'subtype': subtype
-      }
-      await self.bus.send(MSG_SKILL, target, info)
+  def send_message(self, target, subtype):
+    """
+    send a standard skill message on the bus
+    """
+    info = {
+           'from_skill_id': self.skill_id,
+           'skill_id': target,
+           'source': self.skill_id,
+           'target': target,
+           'subtype': subtype
+           }
+    self.bus.send(MSG_SKILL, target, info)
 
   def send_mute(self):
-    self.log.debug("STTSvc.send_mute(): sending mute!")
+    self.log.debug("STT.send_mute(): sending mute!")
     self.send_message('volume_skill', 'mute_volume')
 
   def send_unmute(self):
-    self.log.debug("STTSvc.send_unmute(): sending unmute!")
+    self.log.debug("STT.send_unmute(): sending unmute!")
     self.send_message('volume_skill', 'unmute_volume')
 
   def process_stt_result(self, utt):
-    # we want the wake word but if we don't have it maybe
-    # it was the previous utterance so handle that too.
-    # already lower case
-    #utt = utt.lower()          # fold to lower case
-    self.log.info(f"STTSvc.process_stt_result() utt: {utt}")
+    """
+    we want the wake word but if we don't have it maybe
+    it was the previous utterance so handle that too.
+    """
+    self.log.info(f"STT.process_stt_result() utt: {utt}")
     if utt:
       utt = utt.strip()
       wake_word = ''
@@ -143,26 +132,24 @@ class STTSvc:
         if utt.lower().find(ww.lower()) > -1:
           wake_word = ww
           break
-      if wake_word == '':      # ww not found in utt
-        self.log.info("STTSvc.process_stt_result(): wake word not found")
+      if wake_word == '':                  # ww not found in utt
+        self.log.info("STT.process_stt_result(): wake word not found")
         if self.muted:
           self.muted = False
           self.send_unmute()
-
         if self.previous_utt_was_ww:
           wake_word = self.previous_utterance
           cmd = utt.replace(wake_word,'').strip()
           if len(cmd) > 2:
             handle_utt(wake_word, cmd, self.tmp_file_path)
           else:
-            if self.bark:
-              self.log.info(f"STTSvc.process_stt_result() cmd too short: {cmd}")
-              print("Too short --->%s" % (cmd,))
-        else:            # ww not found and previous utt not ww => raw statement
+            self.log.info(f"STT.process_stt_result() cmd too short: {cmd}")
+            print("Too short --->%s" % (cmd,))
+        else:                              # ww not found and previous utt not ww => raw statement
           handle_utt('', utt, self.tmp_file_path)
         self.previous_utt_was_ww = False
-      else:              # otherwise utt contains ww
-        if len(utt) == len(wake_word): # it is just the wake word
+      else:                                # otherwise utt contains ww
+        if len(utt) == len(wake_word):     # it is just the wake word
           self.previous_utterance = utt.lower()
           self.previous_utt_was_ww = True
           #os.system(self.beep_cmd)
@@ -171,7 +158,7 @@ class STTSvc:
             self.muted = True
             self.send_mute()
             self.mute_start_time = time.time()
-        else:            # utt contains the wake word and more
+        else:                              # utt contains the wake word and more
           if self.muted:
             self.muted = False
             self.send_unmute()
@@ -179,9 +166,8 @@ class STTSvc:
           if len(cmd) > 2:
             handle_utt(wake_word, cmd, self.tmp_file_path)
           else:
-            if self.bark:
-              self.log.info(f"STTSvc.process_stt_result() cmd too short: {cmd}")
-              print("Too short --->%s" % (cmd,))
+            self.log.info(f"STT.process_stt_result() cmd too short: {cmd}")
+            print("Too short --->%s" % (cmd,))
           self.previous_utt_was_ww = False
       self.previous_utterance = utt
 
@@ -189,15 +175,11 @@ class STTSvc:
     self.previous_utterance = ''
     self.previous_utt_was_ww = False
     loop_ctr = 0
-
-    # 10 seconds at 4 times a second see sleep at bottom of loop
-    clear_utt_time_in_seconds = 5
+    clear_utt_time_in_seconds = 5 # 10 seconds at 4/sec - see sleep at bottom of loop
     clear_utt_time_in_seconds *= 4
-
-    # this is not necessary if you have good echo cancellation like a headset
     self.muted = False
     self.mute_start_time = 0
-    self.log.info(f"STTSvc.run() use_remote_stt: {self.use_remote_stt}") 
+    self.log.info(f"STT.run() use_remote_stt: {self.use_remote_stt}") 
     while True:
       loop_ctr += 1
       if loop_ctr > clear_utt_time_in_seconds:
@@ -215,16 +197,12 @@ class STTSvc:
 
       # get all wav files in the input directory
       mylist = sorted( [f for f in glob.glob(self.tmp_file_path + "save_audio/*.wav")] )
-
-      # if we have at least one
       if len(mylist) > 0:      # take the first
         loop_ctr = 0
         self.wav_file = mylist[0]
-
         # TO DO: reject files too small and maybe too large!
         file_size = os.path.getsize(self.wav_file)
-        self.log.info(f"STTSvc.run() wav_file: {self.wav_file} file_size: {file_size}") 
-        # convert it to text
+        self.log.info(f"STT.run() wav_file: {self.wav_file} file_size: {file_size}") 
         utt = ''
         self.waiting_stt = True
         if self.use_remote_stt:            # remote stt with fail over
@@ -240,24 +218,24 @@ class STTSvc:
           self.local_proc.join(2)
           if self.local_proc:
             self.local_proc.kill()
-        else:            # local stt
+        else:                              # local stt
           self.local_return_dict = self.manager.dict()
           self.local_proc = multiprocessing.Process(target=_local_transcribe_file, args=(self.wav_file, self.local_return_dict))
           self.local_proc.start()
           self.local_proc.join(LOCAL_TIMEOUT)
           if self.local_proc:
             self.local_proc.kill()
-        try:             # to remove input file
+        try:                               # to remove input file
           os.remove(self.wav_file)
         except:
           pass
         self.wav_file = None
-        self.log.debug(f"STTSvc.run(): goog_return_dict: {self.goog_return_dict} local_return_dict: {self.local_return_dict}")
+        self.log.debug(f"STT.run(): goog_return_dict: {self.goog_return_dict} local_return_dict: {self.local_return_dict}")
         if self.goog_return_dict:
           self.process_stt_result(self.goog_return_dict['text'])
         elif self.local_return_dict:       # we only have a local result, BUT we have a cache hit, use that here instead
           if len(self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")) > 0:
-            self.log.error("STTSvc.run() CACHE HIT!!! converted local=%s to remote=%s" % (self.local_return_dict['text'], self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")))
+            self.log.error("STT.run() CACHE HIT!!! converted local=%s to remote=%s" % (self.local_return_dict['text'], self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")))
             self.process_stt_result(self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8"))
           else:                            # no cache hit
             # TO DO: fix this
@@ -266,20 +244,50 @@ class STTSvc:
             inner_text = json.loads(self.local_return_dict['text'])['text'] # kludgy
             self.process_stt_result(inner_text)
         else:
-          self.log.info("STTSvc.run() Can't produce STT from wav")
+          self.log.info("STT.run() Can't produce STT from wav")
         if self.goog_return_dict and self.local_return_dict: # have both responses - create a new cache entry 
-          self.log.error(f"STTSvc.run() new cache entry: local: {self.local_return_dict['text']} remote: {self.goog_return_dict['text']}")
+          self.log.error(f"STT.run() new cache entry: local: {self.local_return_dict['text']} remote: {self.goog_return_dict['text']}")
           self.local2remote[self.local_return_dict['text']] = self.goog_return_dict['text']
       time.sleep(0.025)
 
+  async def start(self):
+    """Initialize the service and establish connections"""
+    self.log.debug("STT.start() - initializing")
+    self.bus.client.on_connect = self.on_connect
+    self.bus.client.loop_start()
+    await self.connected_event.wait()
+    self.log.debug("STT.start(): connected to bus")
+
+  def on_connect(self, client, userdata, flags, rc):
+    if rc == 0:
+      self.connected_event.set()
+      print("STT.on_connect(): Connected to MQTT broker")
+    else:
+      print(f"Failed to connect to MQTT broker with result code {rc}")
+
+    async def stop(self):
+        """Stop the STT service"""
+        self.log.debug("STT.stop() - stopping")
+        self.bus.disconnect()
+
+    async def run_forever(self):
+        await asyncio.Event().wait()  # wait forever
+
+  async def stop(self):
+    """Stop the STT service"""
+    self.log.debug("STT.stop() - stopping")
+    self.bus.disconnect()
+
+  async def run_forever(self):
+    await asyncio.Event().wait()           # wait forever
+
 # main()
 if __name__ == '__main__':
-  no_bus = False
-  if len(sys.argv) > 1:
-    no_bus = sys.argv[1]
-  if no_bus == 'y' or no_bus == 'Y' or no_bus == 'true' or no_bus == 'True':
-    no_bus = True
-  stt_svc = STTSvc(no_bus=no_bus)
-  stt_svc.run()
-  Event().wait()                           # wait forever
+  stt = STT()
+  try:
+    asyncio.run(stt.start())
+    asyncio.run(stt.run_forever())
+  except KeyboardInterrupt:
+    asyncio.run(stt.stop())
+
 

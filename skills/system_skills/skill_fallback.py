@@ -7,7 +7,7 @@ from framework.util.utils import aplay, Config
 
 class FallbackSkill(SimpleVoiceAssistant):
   def __init__(self, bus=None, timeout=5):
-    super().__init__(msg_handler=self.handle_message, skill_id='fallback_skill', skill_category='fallback')
+    super().__init__(skill_id='fallback_skill', skill_category='fallback')
     self.qna_skills = []                   # array of registered qna skill handlers
     cfg = Config()
     base_dir = cfg.get_cfg_val('Basic.BaseDir')
@@ -20,7 +20,7 @@ class FallbackSkill(SimpleVoiceAssistant):
     if skill_id not in self.qna_skills:
       self.qna_skills.append(skill_id)
 
-  async def handle_qna_response(self,msg):
+  def handle_qna_response(self,msg):
     """
     gather responses and decide who to handle the question then send message to that skill_id to play the answer
     if error play default fail earcon.
@@ -28,7 +28,7 @@ class FallbackSkill(SimpleVoiceAssistant):
     message = {'subtype':'qna_answer_question', 
         'skill_id':msg.data['from_skill_id'], 
         'skill_data':msg.data['skill_data']}
-    await self.send_message(msg.data['from_skill_id'], message) # for now assume the only skill to answer gets it
+    self.send_message(msg.data['from_skill_id'], message) # for now assume the only skill to answer gets it
 
   def handle_message(self,msg):
     if msg.data['subtype'] == 'qna_register_request':
