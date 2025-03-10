@@ -6,6 +6,7 @@ class MsgBus:
   def __init__(self, broker="localhost", port=1883):
     self.client = mqtt.Client(protocol=mqtt.MQTTv311, callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
     self.client.on_connect = self.on_connect
+    self.client.on_disconnect = self.on_disconnect
     self.client.on_msg = self.on_msg
     self.handlers = defaultdict(list)
     try:
@@ -33,7 +34,7 @@ class MsgBus:
     message = {"type": message_type, "data": data}
     self.client.publish(message_type, json.dumps(message))
 
-  def disconnect(self):
+  def on_disconnect(self):
     try:
       self.client.loop_stop()
       self.client.disconnect()

@@ -1,5 +1,4 @@
 import asyncio
-from bus.Message import Message
 from bus.MsgBusClient import MsgBusClient
 from datetime import datetime
 from framework.message_types import MSG_SKILL
@@ -92,7 +91,6 @@ class STT:
     cfg = Config()
     self.use_remote_stt = True
     remote_stt = cfg.get_cfg_val('Advanced.STT.UseRemote')
-    self.log.info(f"STT.__init__() use_remote_stt: {self.use_remote_stt} wws: {self.wws}")
     if remote_stt and remote_stt == 'n':
       self.use_remote_stt = False
     self.log.info(f"STT.__init__(): use_remote_stt {self.use_remote_stt} wws: {self.wws}")
@@ -263,15 +261,7 @@ class STT:
       self.connected_event.set()
       print("STT.on_connect(): Connected to MQTT broker")
     else:
-      print(f"Failed to connect to MQTT broker with result code {rc}")
-
-    async def stop(self):
-        """Stop the STT service"""
-        self.log.debug("STT.stop() - stopping")
-        self.bus.disconnect()
-
-    async def run_forever(self):
-        await asyncio.Event().wait()  # wait forever
+      print(f"STT.on_connect(): failed to connect to MQTT broker rc: {rc}")
 
   async def stop(self):
     """Stop the STT service"""

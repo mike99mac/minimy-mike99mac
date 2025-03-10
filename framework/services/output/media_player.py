@@ -1,5 +1,4 @@
 import asyncio
-from bus.Message import Message
 from bus.MsgBusClient import MsgBusClient
 from framework.util.utils import CommandExecutor, LOG, Config, MediaSession, get_hal_obj
 from framework.message_types import MSG_MEDIA, MSG_SKILL
@@ -13,11 +12,10 @@ class MediaPlayer:
   the media player plays wav and mp3 files. it has several interesting features. first it can pause an active media
   session and play a new one. it stacks these in the paused_sessions queue. 
   """
-  def __init__(self, bus=None, timeout=5):
+  def __init__(self, timeout=5):
     self.skill_id = 'media_player_service'
-    if bus is None:
-      bus = MsgBusClient(self.skill_id)
-    self.bus = bus
+    print(f"MediaPlayer.__init__() creating bus")
+    self.bus = MsgBusClient(self.skill_id)
     base_dir = os.getenv('SVA_BASE_DIR')
     log_filename = base_dir + '/logs/media_player.log'
     self.log = LOG(log_filename).log
@@ -475,24 +473,24 @@ class MediaPlayer:
   def on_connect(self, client, userdata, flags, rc):
     if rc == 0:
       self.connected_event.set()
-      print("Connected to MQTT broker")
+      print("MediaPlayer.on_connect(): connected to MQTT broker")
     else:
-      print(f"Failed to connect to MQTT broker with result code {rc}")
+      print(f"MediaPlayer.on_connect(): failed connection - rc: {rc}")
 
   async def stop(self):
     """Stop the media player service"""
     self.log.debug("MediaPlayer.stop() - stopping")
     self.bus.disconnect()
 
-  async def run_forever(self):
-    await asyncio.Event().wait()           # wait forever
+# async def run_forever(self):
+#   await asyncio.Event().wait()           # wait forever
 
 # main()
 if __name__ == '__main__':
   media_player = MediaPlayer()
   try:
     asyncio.run(media_player.start())
-    asyncio.run(media_player.run_forever())
+#   asyncio.run(media_player.run_forever())
   except KeyboardInterrupt:
     asyncio.run(media_player.stop())
 

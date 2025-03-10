@@ -1,6 +1,5 @@
 import asyncio
 from bus.MsgBusClient import MsgBusClient
-from bus.Message import Message
 from framework.util.utils import LOG, Config, get_wake_words, aplay, normalize_sentence, remove_pleasantries
 from framework.services.intent.nlp.shallow_parse.nlu import SentenceInfo
 from framework.services.intent.nlp.shallow_parse.shallow_utils import scrub_sentence, remove_articles
@@ -11,11 +10,10 @@ import requests
 import time
 
 class Intent:
-  def __init__(self, bus=None, timeout=5):
+  def __init__(self, timeout=5):
     self.skill_id = 'intent_service'
-    if bus is None:
-      bus = MsgBusClient(self.skill_id)
-    self.bus = bus
+    print("Intent.__init__: creating bus")
+    self.bus = MsgBusClient(self.skill_id)
     self.intents = {}
     self.base_dir = os.getenv('SVA_BASE_DIR')
     self.tmp_file_path = self.base_dir + '/tmp/'
@@ -62,6 +60,7 @@ class Intent:
     Initialize the service and establish connections
     """
     self.log.debug("Intent.start() - initializing")
+    print("Intent.start() - initializing")
     self.bus.client.on_connect = self.on_connect
     if not self.loop_started:
       self.bus.client.loop_start()
