@@ -1,6 +1,5 @@
 from threading import Event
 from skills.sva_base import SimpleVoiceAssistant
-from bus.Message import Message
 from bus.MsgBusClient import MsgBusClient
 from framework.message_types import MSG_SKILL
 from framework.util.utils import aplay, Config

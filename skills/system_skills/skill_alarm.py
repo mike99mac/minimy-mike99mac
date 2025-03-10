@@ -1,6 +1,5 @@
 import asyncio
 from bus.MsgBusClient import MsgBusClient
-from bus.Message import Message
 import datetime
 from datetime import timedelta
 from framework.util.utils import Config, get_raw, get_hour_min, get_ampm, get_time_from_utterance, LOG
@@ -414,7 +413,6 @@ if __name__ == '__main__':
   alarm = Alarm()
   try:
     asyncio.run(alarm.start())
-    asyncio.run(alarm.run_forever())
   except KeyboardInterrupt:
     asyncio.run(alarm.stop())
  

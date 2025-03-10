@@ -1,5 +1,4 @@
 from skills.sva_base import SimpleVoiceAssistant
-from bus.Message import Message
 from framework.message_types import MSG_SYSTEM, MSG_SKILL, MSG_UTTERANCE, MSG_RAW
 from framework.util.utils import Config, aplay
 from threading import Event
@@ -33,7 +32,8 @@ class SystemSkill(SimpleVoiceAssistant):
   def __init__(self, bus=None, timeout=5):
     self.skill_id = 'system_skill'
     super().__init__(skill_id=self.skill_id, skill_category='system')
-    self.log.debug("SystemSkill:__init__()")
+    print("SystemSkill:__init__() - starting")
+    self.log.debug("SystemSkill:__init__() - starting")
     self.active_skills = []
     self.conversant_skills = []
 
@@ -57,7 +57,7 @@ class SystemSkill(SimpleVoiceAssistant):
     self.play_filename = self.base_dir + '/framework/assets/stop.wav'
 
   def send_pause(self, target_skill):
-    self.log.debug("SystemSkill:send_pause() target_skill: %s" % (target_skill))
+    self.log.debug(f"SystemSkill:send_pause() target_skill: {target_skill}")
     subtype = 'pause'
     if self.pause_reason == INTERNAL_PAUSE:
       subtype = 'pause_internal'
@@ -70,7 +70,7 @@ class SystemSkill(SimpleVoiceAssistant):
     self.bus.send(MSG_SYSTEM, target_skill, info)
 
   def send_resume(self, target_skill):
-    self.log.debug("SystemSkill:send_pause() target_skill: %s" % (target_skill))
+    self.log.debug(f"SystemSkill:send_resume() target_skill: {target_skill}")
     info = {
         'error':'',
         'subtype':'resume',
@@ -107,13 +107,12 @@ class SystemSkill(SimpleVoiceAssistant):
   def release_oob(self, data):
     self.log.debug("SystemSkill.release_oob()")
     oob_verb = data['verb']
-    if oob_verb in self.stop_aliases:
-      # special handling for stop
+    if oob_verb in self.stop_aliases:      # special handling for stop
       self.log.info(f"SystemSkill.release_oob(): The system level stop command has been released by {data['from_skill_id']}")
       self.stop_overide = None
     else:
       if data['verb'] in self.recognized_verbs:
-        del self.recognized_verbs[ data['verb'] ]
+        del self.recognized_verbs[data['verb']]
       else:
         self.log.warning(f"SystemSkill.release_oob(): {data['from_skill_id']} Trying to release unrecognized verb: {data['verb']}")
 
@@ -169,6 +168,7 @@ class SystemSkill(SimpleVoiceAssistant):
     Normally we only handle system messages but we do handle raw messages to manage input focus.
     """
     self.log.debug(f"SystemSkill:handle_message() msg_type = {msg['msg_type']}")
+    print(f"SystemSkill:handle_message() msg_type = {msg['msg_type']}")
     if msg['msg_type'] == 'raw':
       return self.handle_raw(msg)
     if msg['msg_type'] != 'system':        # only handle system messages and the raw exception above
@@ -413,6 +413,8 @@ class SystemSkill(SimpleVoiceAssistant):
       self.log.warning(f"SystemSkill.handle_message(): Unrecognized message: {data}")
 
 if __name__ == '__main__':
+  print("system_skill.py - creating SystemSkill")
   ss = SystemSkill()
+  print("system_skill.py - done creating SystemSkill")
   Event().wait()                           # Wait forever
 

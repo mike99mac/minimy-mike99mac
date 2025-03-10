@@ -4,12 +4,16 @@ import json
 import os
 import paho.mqtt.client as mqtt
 
+class Message:
+  def __init__(self, type, data):
+    self.type = type
+    self.data = data
+
 class MsgBusClient:
   def __init__(self, client_id, broker="localhost", port=1883):
+    print(f"MsgBusClient.__init__(): client_id: {client_id}")
     self.client_id = client_id
     self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, client_id)
-    #self.client = mqtt.Client(client_id, protocol=mqtt.MQTTv311, callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
-    #self.client = mqtt.Client(client_id, callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
     self.client.on_connect = self.on_connect
     self.client.on_msg = self.on_msg
     self.handlers = defaultdict(list)
@@ -25,12 +29,13 @@ class MsgBusClient:
 
   def on_connect(self, client, userdata, flags, rc):
     if rc == 0:
-      print(f"Connected to MQTT broker with result code {rc}")
+      print(f"MsgBusClient.on_connect(): connected to MQTT client_id: {self.client_id}")
       self.client.subscribe("#")
     else:
-      print(f"Failed to connect to MQTT broker with result code {rc}")
+      print(f"MsgBusClient.on_connect(): failed to connect to MQTT rc: {rc}")
 
   def on_msg(self, client, userdata, msg):
+    print(f"MsgBusClient.on_msg(): client: {client} userdata: {userdata}")
     msg = json.loads(msg.payload.decode())
     for handler in self.handlers[msg['type']]:
       handler(Message(msg['type'], msg['data']))

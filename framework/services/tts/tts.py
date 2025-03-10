@@ -452,7 +452,7 @@ class TTS:
       self.connected_event.set()
       print("TTS.on_connect(): Connected to MQTT broker")
     else:
-      print(f"Failed to connect to MQTT broker with result code {rc}")
+      print(f"TTS.on_connect(): failed to connect to MQTT broker rc: {rc}")
 
   async def stop(self):
     """

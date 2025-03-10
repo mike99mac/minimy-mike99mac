@@ -1,4 +1,3 @@
-from bus.Message import Message
 from framework.message_types import MSG_SKILL, MSG_SYSTEM
 from framework.util.utils import aplay
 from skills.sva_base import SimpleVoiceAssistant
