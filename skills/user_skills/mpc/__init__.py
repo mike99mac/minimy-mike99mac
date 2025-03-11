@@ -127,5 +127,8 @@ class MpcSkill(MediaSkill):
 if __name__ == '__main__':
   mpc = MpcSkill()
   mpc.register_media(mpc.skill_id)
-  Event().wait()                         # wait forever
+  try:
+    mpc.bus.client.loop_forever()
+  except KeyboardInterrupt:
+    mpc.bus.client.disconnect()
 

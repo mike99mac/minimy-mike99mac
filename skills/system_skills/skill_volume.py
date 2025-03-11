@@ -1,4 +1,3 @@
-import asyncio
 from framework.message_types import MSG_SYSTEM
 from framework.util.utils import execute_command, Config
 from framework.hal.hal import Hal

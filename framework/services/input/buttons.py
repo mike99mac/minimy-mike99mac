@@ -82,5 +82,10 @@ class Buttons:
     sys.exit(0)
           
 # main()
-buttons = Buttons()                        # create the singleton
-buttons.monitor_buttons()
+if __name__ == '__main__':
+  buttons = Buttons()                        # create the singleton
+  try:
+    buttons.monitor_buttons()                # loops forever
+  except KeyboardInterrupt:
+    ws.bus.client.disconnect()
+

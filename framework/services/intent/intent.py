@@ -1,4 +1,3 @@
-import asyncio
 from bus.MsgBusClient import MsgBusClient
 from framework.util.utils import LOG, Config, get_wake_words, aplay, normalize_sentence, remove_pleasantries
 from framework.services.intent.nlp.shallow_parse.nlu import SentenceInfo
@@ -35,7 +34,6 @@ class Intent:
     for ww in wws:
       self.log.debug(f"Intent.__init__() registering wakeword {ww}")
       self.wake_words.append(ww.lower())
-    self.connected_event = asyncio.Event()
     self.loop_started = False
     self.bus.on("check_intent", self.handle_message) # Register handle_message for 'check_intent'
 
@@ -46,29 +44,6 @@ class Intent:
       self.log.info("Intent.on_connect(): connected to MQTT broker with rc: 0")
     else:
       self.log.error(f"Intent.on_connect(): failed to connect to MQTT broker - rc: {rc}")
-
-  async def stop(self):
-    """
-    Stop the Intent service
-    """
-    self.log.debug("IntentService.stop() - stopping")
-    self.bus.client.loop_stop()
-    self.bus.disconnect()
-
-  async def start(self):
-    """
-    Initialize the service and establish connections
-    """
-    self.log.debug("Intent.start() - initializing")
-    print("Intent.start() - initializing")
-    self.bus.client.on_connect = self.on_connect
-    if not self.loop_started:
-      self.bus.client.loop_start()
-      self.loop_started = True
-    await self.connected_event.wait()
-    self.log.debug("Intent.start() - connected to bus")
-    self.is_running = True
-    # self.run()
 
   def handle_message(self, message):
     if message.type == "check_intent":
@@ -274,19 +249,10 @@ class Intent:
             print(f"Unknown sentence type {si.sentence_type} or Informational sentence")
         os.remove(txt_file)
 
-  async def stop(self):
-    """
-    Stop the Intent service
-    """
-    self.log.debug("Intent.stop() - stopping")
-    self.bus.client.loop_stop()
-    self.bus.disconnect()
-
 if __name__ == '__main__':
   intent = Intent()
   try:
-    asyncio.run(intent.start())
-    asyncio.run(intent.run())
+    intent.bus.client.loop_forever()
   except KeyboardInterrupt:
-    asyncio.run(intent.stop())
+    intent.bus.client.disconnect()
 
