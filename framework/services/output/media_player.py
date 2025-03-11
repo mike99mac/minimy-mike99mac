@@ -1,4 +1,3 @@
-import asyncio
 from bus.MsgBusClient import MsgBusClient
 from framework.util.utils import CommandExecutor, LOG, Config, MediaSession, get_hal_obj
 from framework.message_types import MSG_MEDIA, MSG_SKILL
@@ -27,7 +26,6 @@ class MediaPlayer:
     self.state = 'idle'                    # states = idle, playing or paused
     self.hal = get_hal_obj('l')
     self.bus.on(MSG_MEDIA, self.handle_message)
-    self.connected_event = asyncio.Event()
 
   def send_message(self, target, message):
     """
@@ -453,22 +451,12 @@ class MediaPlayer:
         self.state = 'idle'
       time.sleep(0.01)
 
-  async def stop(self):
+  def stop(self):
     """
     Stop the media player service
     """
     self.log.debug("MediaPlayer.stop() - stopping")
     self.bus.disconnect()
-
-  async def start(self):
-    """
-    Initialize the service and establish connections
-    """
-    self.log.debug("MediaPlayer.start() - initializing")
-    self.bus.client.on_connect = self.on_connect
-    self.bus.client.loop_start()
-    await self.connected_event.wait()
-    self.log.debug("MediaPlayer.start() - connected to bus")
 
   def on_connect(self, client, userdata, flags, rc):
     if rc == 0:
@@ -477,20 +465,11 @@ class MediaPlayer:
     else:
       print(f"MediaPlayer.on_connect(): failed connection - rc: {rc}")
 
-  async def stop(self):
-    """Stop the media player service"""
-    self.log.debug("MediaPlayer.stop() - stopping")
-    self.bus.disconnect()
-
-# async def run_forever(self):
-#   await asyncio.Event().wait()           # wait forever
-
 # main()
 if __name__ == '__main__':
   media_player = MediaPlayer()
   try:
-    asyncio.run(media_player.start())
-#   asyncio.run(media_player.run_forever())
+    media_player.bus.client.loop_forever()
   except KeyboardInterrupt:
-    asyncio.run(media_player.stop())
+    media_player.bus.client.disconnect()
 

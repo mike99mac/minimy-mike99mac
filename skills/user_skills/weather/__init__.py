@@ -130,5 +130,8 @@ class WeatherSkill(SimpleVoiceAssistant):
 if __name__ == '__main__':
   ws = WeatherSkill()
   ws.register_intents()
-  Event().wait()                           # wait forever
+  try:
+    ws.bus.client.loop_forever()
+  except KeyboardInterrupt:
+    ws.bus.client.disconnect()
 

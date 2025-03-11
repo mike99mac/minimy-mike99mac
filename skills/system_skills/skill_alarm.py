@@ -1,4 +1,3 @@
-import asyncio
 from bus.MsgBusClient import MsgBusClient
 import datetime
 from datetime import timedelta
@@ -95,7 +94,6 @@ class Alarm(SimpleVoiceAssistant):
     self.beep_filename = f"{self.base_dir}/framework/assets/alarm_clock.mp3"
     self.alarm_active = AlarmActiveThread(self.play_beep)
     self.alarm_active.start()
-    self.connected_event = asyncio.Event()
     self.log.info(f"Alarm.__init__(): Skill Initialized {self.alarms}")
 
   def register_intents(self):
@@ -388,31 +386,11 @@ class Alarm(SimpleVoiceAssistant):
         self.speak("Alarm for when not supported yet.")
     return False
 
-  async def start(self):
-    """Initialize the service and establish connections"""
-    self.log.debug("Alarm.start() - initializing")
-    self.bus.client.loop_start()
-    await self.connected_event.wait()
-    self.log.debug("Alarm.start() - connected to bus")
-
-  def on_connect(self, client, userdata, flags, rc):
-    if rc == 0:
-      if not self.connected_event.is_set():
-        self.connected_event.set()
-      self.log.info("Connected to MQTT broker with result code 0")
-    else:
-      self.log.error(f"Failed to connect to MQTT broker with result code {rc}")
-
-  async def stop(self):
-    """Stop the TTS service"""
-    self.log.debug("Alarm.stop() - stopping")
-    self.bus.disconnect()
-
 # main()
 if __name__ == '__main__':
   alarm = Alarm()
   try:
-    asyncio.run(alarm.start())
+    alarm.bus.client.loop_forever()
   except KeyboardInterrupt:
-    asyncio.run(alarm.stop())
+    alarm.bus.client.disconnect()
  

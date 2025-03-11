@@ -1,4 +1,3 @@
-import asyncio
 from bus.MsgBusClient import MsgBusClient
 from datetime import datetime
 from framework.message_types import MSG_SKILL
@@ -94,7 +93,6 @@ class STT:
     if remote_stt and remote_stt == 'n':
       self.use_remote_stt = False
     self.log.info(f"STT.__init__(): use_remote_stt {self.use_remote_stt} wws: {self.wws}")
-    self.connected_event = asyncio.Event()
 
   def send_message(self, target, subtype):
     """
@@ -248,36 +246,12 @@ class STT:
           self.local2remote[self.local_return_dict['text']] = self.goog_return_dict['text']
       time.sleep(0.025)
 
-  async def start(self):
-    """Initialize the service and establish connections"""
-    self.log.debug("STT.start() - initializing")
-    self.bus.client.on_connect = self.on_connect
-    self.bus.client.loop_start()
-    await self.connected_event.wait()
-    self.log.debug("STT.start(): connected to bus")
-
-  def on_connect(self, client, userdata, flags, rc):
-    if rc == 0:
-      self.connected_event.set()
-      print("STT.on_connect(): Connected to MQTT broker")
-    else:
-      print(f"STT.on_connect(): failed to connect to MQTT broker rc: {rc}")
-
-  async def stop(self):
-    """Stop the STT service"""
-    self.log.debug("STT.stop() - stopping")
-    self.bus.disconnect()
-
-  async def run_forever(self):
-    await asyncio.Event().wait()           # wait forever
-
 # main()
 if __name__ == '__main__':
   stt = STT()
   try:
-    asyncio.run(stt.start())
-    asyncio.run(stt.run_forever())
+    stt.bus.client.loop_forever()
   except KeyboardInterrupt:
-    asyncio.run(stt.stop())
+    stt.bus.client.disconnect()
 
 

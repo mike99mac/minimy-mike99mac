@@ -1,4 +1,3 @@
-import asyncio
 from se_tts_session import TTSSession
 from threading import Event, Thread
 from framework.util.utils import LOG, Config, chunk_text, aplay
@@ -343,7 +342,6 @@ class TTS:
     self.log.info("Starting TTS Service")
     cfg = Config()
     self.language = cfg.get_cfg_val('TTS.Language')
-    self.connected_event = asyncio.Event()
     self.aplay_filename = base_dir + "/framework/assets/ding.wav"
     self.current_session_id = 0
     self.paused_filename = None
@@ -432,40 +430,13 @@ class TTS:
           return self.handle_event(EVENT_RESUME, data)
         if data['command'] == 'reset_session':
           self.log.warning("handle_skill_msg() TTS ENG NEW RESET HIT!")
-          # TO DO - it is disturbing that the direct call works but the handle_event call does not!!!!
-          # fix it!
-          #return self.handle_event(EVENT_RESET, data)
           return self._paused_reset(data)
-
-  async def start(self):
-    """
-    Initialize TTS and establish connections
-    """
-    self.log.debug("TTS.start() - initializing")
-    self.bus.client.on_connect = self.on_connect
-    self.bus.client.loop_start()
-    await self.connected_event.wait()
-    self.log.debug("TTS.start() - connected to bus")
-
-  def on_connect(self, client, userdata, flags, rc):
-    if rc == 0:
-      self.connected_event.set()
-      print("TTS.on_connect(): Connected to MQTT broker")
-    else:
-      print(f"TTS.on_connect(): failed to connect to MQTT broker rc: {rc}")
-
-  async def stop(self):
-    """
-    Stop the TTS service
-    """
-    self.log.debug("TTS.stop() - stopping")
-    self.bus.disconnect()
 
 # main()
 if __name__ == '__main__':
   tts = TTS()
   try:
-    asyncio.run(tts.start())
-    asyncio.run(tts.run_forever())
+    tts.bus.client.loop_forever()
   except KeyboardInterrupt:
-    asyncio.run(tts.stop())
+    tts.bus.client.disconnect()
+
