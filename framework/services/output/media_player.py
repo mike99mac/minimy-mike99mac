@@ -467,6 +467,12 @@ class MediaPlayer:
 
 # main()
 if __name__ == '__main__':
+  # try:
+  #   logging.debug(f"Received raw data: {self._in_packet['packet']}")
+  #   (slen, packet) = struct.unpack(pack_format, self._in_packet['packet'])
+  # except struct.error as e:
+  #   logging.error(f"Struct error: {e}, data: {self._in_packet['packet']}")
+  # exit
   media_player = MediaPlayer()
   try:
     media_player.bus.client.loop_forever()

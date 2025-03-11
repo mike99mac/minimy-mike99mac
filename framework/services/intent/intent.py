@@ -35,7 +35,7 @@ class Intent:
       self.log.debug(f"Intent.__init__() registering wakeword {ww}")
       self.wake_words.append(ww.lower())
     self.loop_started = False
-    self.bus.on("check_intent", self.handle_message) # Register handle_message for 'check_intent'
+    # self.bus.on("check_intent", self.handle_message) # Register handle_message for 'check_intent'
 
   def on_connect(self, client, userdata, flags, rc):
     if rc == 0:
@@ -248,6 +248,7 @@ class Intent:
           else:
             print(f"Unknown sentence type {si.sentence_type} or Informational sentence")
         os.remove(txt_file)
+      time.sleep(0.125)
 
 if __name__ == '__main__':
   intent = Intent()
