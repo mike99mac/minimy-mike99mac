@@ -38,6 +38,7 @@ class Intent:
     # self.bus.on("check_intent", self.handle_message) # Register handle_message for 'check_intent'
 
   def on_connect(self, client, userdata, flags, rc):
+    print(f"Intent.on_connect(): client: {client}")
     if rc == 0:
       if not self.connected_event.is_set():
         self.connected_event.set()
@@ -46,6 +47,7 @@ class Intent:
       self.log.error(f"Intent.on_connect(): failed to connect to MQTT broker - rc: {rc}")
 
   def handle_message(self, message):
+    print(f"Intent.handle_message(): message: {message}")
     if message.type == "check_intent":
       info = message.data
       self.get_question_intent_match(info)
