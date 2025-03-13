@@ -75,8 +75,8 @@ class MsgBusClient:
 
   def on_connect(self, client, userdata, flags, rc):
     if rc == 0:
-      print(f"MsgBusClient.on_connect(): Connected client: {client} userdata: {userdata} flags: {flags}")
-      self.client.subscribe("test/topic")  
+      print(f"MsgBusClient.on_connect(): userdata: {userdata} flags: {flags} rc: {rc}")
+      self.client.subscribe("test/topic")
     else:
       print(f"Failed to connect to MQTT broker with result code {rc}")
 
@@ -88,7 +88,7 @@ class MsgBusClient:
       print(f"MsgBusClient.on_message(): Error processing message: {e}")
 
   def on(self, msg_type, handler):
-    print(f"MsgBusClient.on(): msg_type: {msg_typee}")
+    print(f"MsgBusClient.on(): msg_type: {msg_type}")
     self.handlers[msg_type].append(handler)
 
   def send(self, msg_type, target, msg):
