@@ -1,9 +1,9 @@
-from bus.MsgBusClient import MsgBusClient
 from datetime import datetime
-from framework.message_types import MSG_SKILL
+from framework.message_types import MSG_SKILL, MSG_RAW, MSG_UTTERANCE
 from framework.util.utils import LOG, Config, aplay, get_wake_words
 from google.cloud import speech
 import json
+from bus.MsgBusClient import MsgBusClient
 import multiprocessing
 from subprocess import Popen, PIPE, STDOUT
 import time, glob, dbm, sys, os, io
@@ -94,7 +94,7 @@ class STT:
       self.use_remote_stt = False
     self.log.info(f"STT.__init__(): use_remote_stt {self.use_remote_stt} wws: {self.wws}")
 
-  def send_message(self, target, subtype):
+  def send_message(self, target, subtype, msg_type, text):
     """
     send a standard skill message on the bus
     """
@@ -103,17 +103,18 @@ class STT:
            'skill_id': target,
            'source': self.skill_id,
            'target': target,
-           'subtype': subtype
+           'subtype': subtype,
+           'text': text
            }
-    self.bus.send(MSG_SKILL, target, info)
+    self.bus.send(msg_type, target, info)
 
   def send_mute(self):
     self.log.debug("STT.send_mute(): sending mute!")
-    self.send_message('volume_skill', 'mute_volume')
+    self.send_message('volume_skill', 'mute_volume', MSG_SKILL, '')
 
   def send_unmute(self):
     self.log.debug("STT.send_unmute(): sending unmute!")
-    self.send_message('volume_skill', 'unmute_volume')
+    self.send_message('volume_skill', 'unmute_volume', MSG_SKILL, '')
 
   def process_stt_result(self, utt):
     """
@@ -138,11 +139,13 @@ class STT:
           cmd = utt.replace(wake_word,'').strip()
           if len(cmd) > 2:
             handle_utt(wake_word, cmd, self.tmp_file_path)
+            self.send_message('intent_service', 'utterance', MSG_UTTERANCE, cmd)
           else:
             self.log.info(f"STT.process_stt_result() cmd too short: {cmd}")
             print("Too short --->%s" % (cmd,))
         else:                              # ww not found and previous utt not ww => raw statement
           handle_utt('', utt, self.tmp_file_path)
+          self.send_message('intent_service', 'utterance', MSG_RAW, utt)
         self.previous_utt_was_ww = False
       else:                                # otherwise utt contains ww
         if len(utt) == len(wake_word):     # it is just the wake word
@@ -161,6 +164,7 @@ class STT:
           cmd = utt.replace(wake_word,'').strip()
           if len(cmd) > 2:
             handle_utt(wake_word, cmd, self.tmp_file_path)
+            self.send_message('intent_service', 'utterance', MSG_UTTERANCE, cmd)
           else:
             self.log.info(f"STT.process_stt_result() cmd too short: {cmd}")
             print("Too short --->%s" % (cmd,))
@@ -253,5 +257,3 @@ if __name__ == '__main__':
     stt.bus.client.loop_forever()
   except KeyboardInterrupt:
     stt.bus.client.disconnect()
-
-

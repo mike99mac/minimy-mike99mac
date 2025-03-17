@@ -39,8 +39,8 @@ class MediaPlayer:
     self.log.info(f"MediaPlayer.pause() state: {self.state} message: {message}")
     if self.state == 'playing':
       self.current_session.correlator = message.data.get('correlator','')
-      self.state = 'paused'      # send signal to run()
-    else:                # must ack pause request or other events won't trigger
+      self.state = 'paused'        # send signal to run()
+    else:                          # must ack pause request or other events won't trigger
       if len(self.paused_sessions) > 0:
         tmp = self.paused_sessions[len(self.paused_sessions) - 1]
         self.send_session_paused(tmp.session_id, tmp.owner)

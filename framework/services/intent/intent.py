@@ -11,14 +11,15 @@ import time
 class Intent:
   def __init__(self, timeout=5):
     self.skill_id = 'intent_service'
-    print("Intent.__init__: creating bus")
-    self.bus = MsgBusClient(self.skill_id)
     self.intents = {}
     self.base_dir = os.getenv('SVA_BASE_DIR')
     self.tmp_file_path = self.base_dir + '/tmp/'
     log_filename = self.base_dir + '/logs/intent.log'
     self.log = LOG(log_filename).log
+    self.log.debug("Intent.__init__(): creating bus - skill_id: {self.skill_id}")
+    self.bus = MsgBusClient(self.skill_id)
     self.earcon_filename = self.base_dir + "/framework/assets/earcon_start.wav"
+    self.log.debug("Intent.__init__(): earcon_filename: {self.earcon_filename}")
     self.is_running = False
     cfg = Config()
     self.crappy_aec = cfg.get_cfg_val('Advanced.CrappyAEC')
@@ -38,7 +39,7 @@ class Intent:
     # self.bus.on("check_intent", self.handle_message) # Register handle_message for 'check_intent'
 
   def on_connect(self, client, userdata, flags, rc):
-    print(f"Intent.on_connect(): client: {client}")
+    self.log.debug(f"Intent.on_connect(): client: {client}")
     if rc == 0:
       if not self.connected_event.is_set():
         self.connected_event.set()
@@ -47,7 +48,7 @@ class Intent:
       self.log.error(f"Intent.on_connect(): failed to connect to MQTT broker - rc: {rc}")
 
   def handle_message(self, message):
-    print(f"Intent.handle_message(): message: {message}")
+    self.log.debug(f"Intent.handle_message(): message: {message}")
     if message.type == "check_intent":
       info = message.data
       self.get_question_intent_match(info)
@@ -226,12 +227,12 @@ class Intent:
             'intent_match': ''
           }
           if si.sentence_type == 'Q':
-            print(f"Intent.run() Match Question. key: {si.insight.question} subject: {si.insight.subject}")
+            self.log.debug(f"Intent.run() Match Question. key: {si.insight.question} subject: {si.insight.subject}")
             info['skill_id'], info['intent_match'] = self.get_question_intent_match({'subject': info['subject'], 'qword': info['question']})
-            print(f"Match Question. skill_id: {info['skill_id']} intent_match: {info['intent_match']}")
+            self.log.debug(f"Match Question. skill_id: {info['skill_id']} intent_match: {info['intent_match']}")
             self.send_utt(info)
           elif si.sentence_type == 'C':
-            print("Match Command")
+            self.log.debug("Match Command")
             info['skill_id'], info['intent_match'] = self.get_intent_match(info)
             self.send_utt(info)
           elif si.sentence_type == 'M':
