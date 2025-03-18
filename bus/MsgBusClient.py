@@ -1,120 +1,97 @@
+#!/usr/bin/python
 import asyncio
 import datetime
 import json
-from framework.util.utils import LOG
-import os 
-import paho.mqtt.client as mqtt
-from queue import Queue
-import threading
 import time
-from collections import defaultdict
+import websockets
+import threading
+from queue import Queue
+from bus.Message import Message, msg_from_json
 
-class Message(dict):
-  def __init__(self, msg_type, source, target, data):
-    self.msg_type = msg_type
-    self.source = source
-    self.target = target
-    self.data = data
-    dict.__init__(self, msg_type=msg_type, source=source, target=target, data=data, ts=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+async def SendThread(ws, outbound_q, client_id):
+  try:
+    while True:
+      while outbound_q.empty():
+        await asyncio.sleep(0.001)
 
-def msg_from_json(packet):
-  m = Message(packet['msg_type'], packet['source'], packet['target'], packet['data'])
-  m.ts = packet['ts']
-  return m
+      msg = outbound_q.get()
+      await ws.send(msg)
+  except websockets.exceptions.ConnectionClosedOK:
+    print(f"SendThread: Connection closed gracefully for {client_id}")
+  except Exception as e:
+    print(f"SendThread: Error in SendThread for {client_id}: {e}")
 
-async def SendThread(mqtt_client, outbound_q, client_id):
-  while True:
-    while outbound_q.empty():
-      time.sleep(0.001)
-    msg = outbound_q.get()
-    mqtt_client.publish(msg['msg_type'], json.dumps(msg))  # Send message to the appropriate topic
-    self.log.debug(f"client_id: {client_id} sent msg: {msg}")
-
-def process_inbound_messages(inbound_q, msg_handlers, client_id):
-  while True:
-    while inbound_q.empty():
-      time.sleep(0.001)
-    msg = inbound_q.get()
-    self.log.debug(f"[{client_id}] received: {msg}")
-    if msg_handlers.get(msg['msg_type'], None) is not None:
-      msg_handlers[msg['msg_type']](msg)
-    else:
-      self.log.debug(f"Warning! No message handler registered for msg: {msg}")
-
-def snd_bridge(mqtt_client, outbound_q, client_id):
-  loop = asyncio.new_event_loop()
-  asyncio.set_event_loop(loop)
-  loop.run_until_complete(SendThread(mqtt_client, outbound_q, client_id))
-  loop.close()
+async def RecvThread(ws, callback, client_id):
+  try:
+    while True:
+      message = await ws.recv()
+      print(f"Received message: {message}")
+      msg = json.loads(message)
+      print(f"msg: {msg}")
+      parsed_msg = msg_from_json(msg)
+      print(f"parsed_msg: {parsed_msg}")
+      callback(parsed_msg)
+  except websockets.ConnectionClosed:
+    print(f"Warning! socket closed. Exiting RecvThread = {client_id}")
+  except json.JSONDecodeError:
+    print(f"Warning! JSON decode error. Exiting RecvThread = {client_id}")
+  except Exception as e:
+    print(f"Warning! Error: {e}. Exiting RecvThread = {client_id}: {e}")
 
 class MsgBusClient:
-  _instances = {}
-
-  def __new__(cls, client_id, *args, **kwargs):
-    if client_id in cls._instances:
-      return cls._instances[client_id]
-    instance = super().__new__(cls)
-    cls._instances[client_id] = instance
-    return instance
-
-  def __init__(self, client_id, broker="localhost", port=1883):
+  def __init__(self, client_id):
+    self.ws = None
     self.inbound_q = Queue()
     self.outbound_q = Queue()
     self.msg_handlers = {}
     self.client_id = client_id
-    self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, client_id)
-    self.client.on_connect = self.on_connect
-    self.client.on_message = self.on_message  # Handle received messages
-    self.client.on_disconnect = self.on_disconnect
-    self.client.on_subscribe = self.on_subscribe
-    self.base_dir = str(os.getenv('SVA_BASE_DIR'))
-    log_filename = self.base_dir + '/logs/skills.log'
-    self.log = LOG(log_filename).log
-    self.log.debug(f"SimpleVoiceAssistant.__init__() skill_id: {skill_id}")
+    self.loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(self.loop)
+    self.connect_task = self.loop.create_task(self.connect())
+    self.loop.run_until_complete(self.connect_task) # wait for connect to finish.
+    self.rcv_thread = threading.Thread(target=self.run_recv_thread)
+    self.process_thread = threading.Thread(target=self.run_process_thread)
+    self.snd_thread = threading.Thread(target=self.run_send_thread)
 
-    self.handlers = defaultdict(list)
-    threading.Thread(target=process_inbound_messages, args=(self.inbound_q, self.msg_handlers, self.client_id)).start()
-    threading.Thread(target=snd_bridge, args=(self.client, self.outbound_q, self.client_id)).start()
-    try:
-      self.client.connect(broker, port, 60)
-      self.client.loop_start()
-    except Exception as e:
-      self.log.debug(f"An error occurred while connecting to the MQTT broker: {e}")
-    self._initialized = True
+    self.rcv_thread.start()
+    self.process_thread.start()
+    self.snd_thread.start()
 
-  def on_connect(self, client, userdata, flags, rc):
-    if rc == 0:
-      self.log.debug(f"MsgBusClient.on_connect(): Connected client: {client} userdata: {userdata} flags: {flags} rc: {rc}")
-      self.client.subscribe("test/topic")
-    else:
-      self.log.debug(f"Failed to connect to MQTT broker with result code {rc}")
+  async def connect(self):
+    self.ws = await websockets.connect(f"ws://localhost:8181/{self.client_id}")
 
-  def on_message(self, client, userdata, msg):
-    self.log.debug(f"MsgBusClient.on_message() msg: {msg}")
-    try:
-      message = msg_from_json(json.loads(msg.payload.decode("utf-8")))
-      self.inbound_q.put(message)  # Push received message to inbound queue
-    except Exception as e:
-      self.log.debug(f"MsgBusClient.on_message(): Error processing message: {e}")
+  def run_recv_thread(self):
+    asyncio.run_coroutine_threadsafe(RecvThread(self.ws, self.rcv_client_msg, self.client_id), self.loop)
 
-  def on_disconnect(self, client, userdata, rc):
-    self.log.debug(f"MsgBusClient.on_disconnect(): client: {client} userdata: {userdata} rc: {rc}")
+  def run_process_thread(self):
+    while True:
+      while self.inbound_q.empty():
+        time.sleep(0.001)
+      msg = self.inbound_q.get()
+      print(f"process_inbount_messages() client_id: {self.client_id} msg: {msg}")
+      if self.msg_handlers.get(msg['msg_type'], None) is not None:
+        self.msg_handlers[msg['msg_type']](msg)
+      else:
+        pass
 
-  def on_subscribe(self, client, userdata, mid, granted_qos):
-    self.log.debug(f"MsgBusClient.on_subscribe(): client: {client} userdata: {userdata} mid: {mid} granted_qos: {granted_qos}")
+  def run_send_thread(self):
+    asyncio.run_coroutine_threadsafe(SendThread(self.ws, self.outbound_q, self.client_id), self.loop)
 
-  def on(self, msg_type, handler):
-    self.log.debug(f"MsgBusClient.on(): msg_type: {msg_type}")
-    self.handlers[msg_type].append(handler)
+  def on(self, msg_type, callback):
+    self.msg_handlers[msg_type] = callback
+
+  def rcv_client_msg(self, msg):
+    self.inbound_q.put(msg)
 
   def send(self, msg_type, target, msg):
-    message = Message(msg_type, self.client_id, target, msg)
-    self.log.debug(f"MsgBusClient.on(): msg: {msg}") 
-    self.client.publish(msg_type, json.dumps(message))  # Publish to the relevant topic
+    self.outbound_q.put(json.dumps(Message(msg_type, self.client_id, target, msg)))
 
-  def disconnect(self):
-    try:
-      self.client.loop_stop()
-      self.client.disconnect()
-    except Exception as e:
-      self.log.debug(f"An error occurred while disconnecting from the MQTT broker: {e}")
+  def close(self):
+    if self.ws:
+      asyncio.run_coroutine_threadsafe(self.ws.close(), self.loop)
+    self.loop.call_soon_threadsafe(self.loop.stop)
+    self.rcv_thread.join()
+    self.process_thread.join()
+    self.snd_thread.join()
+    self.loop.close()
+    

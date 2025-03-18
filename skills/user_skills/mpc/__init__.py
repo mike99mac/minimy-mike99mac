@@ -1,9 +1,13 @@
+#
+# This code is distributed under the Apache License, v2.0 
+#
 from framework.message_types import MSG_MEDIA
 from mpc_client import MpcClient
 from music_info import Music_info
 import os, requests, time
 from skills.sva_media_skill_base import MediaSkill
 from threading import Event
+import subprocess
 
 class MpcSkill(MediaSkill):  
   """
@@ -18,7 +22,7 @@ class MpcSkill(MediaSkill):
     self.url = ''                          # has to be returned from get_media_confidence()
     self.lang = "en-us"                    # just US English for now
     self.mpc_client = MpcClient("/media/") # search for music under /media
-    self.log.debug(f"MpcSkill.__init__()")
+    self.log.debug(f"MpcSkill.__init__(): skill_base_dir: {self.skill_base_dir}")
     self.music_info = Music_info("none", "", {}, []) # music to play
     self.sentence = None 
 
@@ -103,7 +107,7 @@ class MpcSkill(MediaSkill):
       self.log.debug("MpcSkill.media_play() speak results of playlist request")
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info) 
       return None
-    elif self.music_info.match_type != "playlist" and self.music_info.match_type != "internet":
+    elif self.music_info.match_type != "playlist": # playlists are already queued up
       self.mpc_client.mpc_cmd("clear")     # stop any media that might be playing
       for next_url in self.music_info.tracks_or_urls:
         self.log.debug(f"MpcSkill.media_play() adding URL to MPC queue: {next_url}")
@@ -126,9 +130,4 @@ class MpcSkill(MediaSkill):
 # main()
 if __name__ == '__main__':
   mpc = MpcSkill()
-  mpc.register_media(mpc.skill_id)
-  try:
-    mpc.bus.client.loop_forever()
-  except KeyboardInterrupt:
-    mpc.bus.client.disconnect()
-
+  Event().wait()                         # Wait forever

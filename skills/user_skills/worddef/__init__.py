@@ -1,3 +1,4 @@
+from bus.Message import Message
 from framework.message_types import MSG_SYSTEM
 from PyDictionary import PyDictionary
 from skills.sva_base import SimpleVoiceAssistant
@@ -7,7 +8,7 @@ import time
 class WorddefSkill(SimpleVoiceAssistant):
   def __init__(self, bus=None, timeout=5):
     self.skill_id = 'help_skill'
-    super().__init__(skill_id='worddef', skill_category='user')
+    super().__init__(msg_handler=self.handle_message, skill_id='worddef', skill_category='user')
     self.log.debug(f"WorddefSkill.__init__(): skill_base_dir: {self.skill_base_dir}")
     self.register_intent('Q', 'what', 'definition', self.handle_definition)
     self.register_intent('Q', 'what', 'synonym', self.handle_synonyms)
