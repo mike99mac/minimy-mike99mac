@@ -40,7 +40,7 @@ class MpcClient(SimpleVoiceAssistant):
   def __init__(self, music_dir: Path):
     self.log = logging.getLogger(__name__)
     self.music_dir = music_dir
-    self.max_queued = 50                                         
+    self.max_queued = 20                                         
     self.station_name = "unknown"                   
     self.station_genre = "unknown"
     self.station_country = "unknown"
@@ -308,7 +308,7 @@ class MpcClient(SimpleVoiceAssistant):
     """
     Given the results of an mpc search. return a Music_info object 
     """
-    self.log.debug(f"MpcClient.get_artist() match_type: {match_type} mesg_file: {mesg_file} mesg_info: {mesg_info}")
+    self.log.debug(f"MpcClient.get_music_info() match_type: {match_type} mesg_file: {mesg_file} mesg_info: {mesg_info}")
     tracks_or_urls = []   
     for artist_found, album_found, title, time_str, relative_path in results:
       next_track='"'+self.music_dir+relative_path+'"'  # enclose file name in double quotes 
@@ -788,7 +788,7 @@ class MpcClient(SimpleVoiceAssistant):
           self.station_ads = next_line[4].strip()
           self.station_url = next_line[5].strip()
         elif num_hits == self.max_queued:  # that's enough URLs
-          self.log.debug(f"MpcClient.get_matching_stations() reached max_queued: {max_queued}")  
+          self.log.debug(f"MpcClient.get_matching_stations() reached max_queued: {self.max_queued}")  
           break
       index += 1  
     if num_hits == 0:                      # music not found
@@ -812,6 +812,7 @@ class MpcClient(SimpleVoiceAssistant):
       self.log.debug("MpcClient.get_stations() file /home/pi/minimy/skills/user_skills/mpc/radio.stations.csv not found")
       return Music_info("none", "file_not_found", {"file": "radio.stations.csv"}, None) 
 
+    self.mpc_cmd("clear")                  # clear the queue
     input_file = open("/home/pi/minimy/skills/user_skills/mpc/radio.stations.csv", "r+")
     reader_file = csv.reader(input_file)
     self.list_lines = list(reader_file)    # convert to list
@@ -822,9 +823,11 @@ class MpcClient(SimpleVoiceAssistant):
       #  if num_lines <= self.max_queued:   # all stations can be queued 
         indices = random.sample(range(1, num_lines), self.max_queued)
         for next_index in indices:
-          tracks_or_urls.append(self.list_lines[next_index])
+          self.log.debug(f"MpcClient.get_stations() next_index: {next_index}")
+          next_url = self.list_lines[next_index][5].strip()
+          self.log.debug(f"MpcClient.get_stations() random next_url: {next_url}")
+          tracks_or_urls.append(next_url)
         mesg_file = "playing_radio"  
-        mesg_info = {"station_name": self.station_name, "station_genre": self.station_genre.replace("|", " or " )}
       case "genre":
         self.log.debug(f"MpcClient.get_stations() searching for station by genre: {search_name}") 
         tracks_or_urls = self.get_matching_stations(1, search_name)
@@ -953,6 +956,7 @@ class MpcClient(SimpleVoiceAssistant):
     Vocabulary:
       play (track|artist|album|) {music} (from|on) (the|) internet
     """
+    self.mpc_cmd("clear")                  # clear the queue
     mesg_file = "" 
     mesg_info = {}
     tracks_or_urls = []
@@ -968,7 +972,7 @@ class MpcClient(SimpleVoiceAssistant):
     self.log.debug(f"MpcClient.search_internet() searching for phrase: {phrase}")
 
     # the ytadd script takes around 5 seconds to add a URL - so limit results to 3
-    results = YoutubeSearch(phrase, max_results=3).to_dict() # return a dictionary
+    results = YoutubeSearch(phrase, max_results=2).to_dict() # return a dictionary
     num_hits = len(results)
     if num_hits == 0:
       self.log.info("MpcClient.search_internet() did not find any music on the internet")
@@ -1040,3 +1044,4 @@ class MpcClient(SimpleVoiceAssistant):
     file_name = f"{self.temp_dir}/{file_names[0]}" # fully qualify file name
     self.log.debug(f"MpcClient.search_news() news file_name: {file_name}")
     return Music_info("news", mesg_file, mesg_info, [file_name])
+
