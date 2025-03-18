@@ -1,15 +1,16 @@
-#!/usr/bin/env python3
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../..')))
 from framework.util.utils import LOG
 import io
 import numpy as np
-import os 
 from quart import Quart, request
 import torch
 import wave
 import whisper
 
 base_dir = os.getenv('SVA_BASE_DIR')
-log_filename = base_dir + '/logs/local_whisper.log'
+log_filename = base_dir + '/logs/whisper.log'
 log = LOG(log_filename).log
 log.debug("fasterWhisper.__init__() starting")
 app = Quart(__name__)                      # Initialize the Quart app
@@ -32,10 +33,10 @@ async def transcribe():
 
     # fold text to lower case, remove leading spaces, ','s and '?'s
     transcription = result["text"].lower().lstrip().replace(",", "").replace("?", "")
-    log.debug(f"Transcription from whisper: {transcription}")
+    log.debug(f"transcribe: Transcription: {transcription}")
     return {"text": transcription}
   except Exception as e:
-    log.debug(f"Error during transcription: {e}")
+    log.debug(f"transcribe(): Error during transcription: {e}")
     return {"error": str(e)}, 400
 
 @app.route("/stream", methods=["POST"])
