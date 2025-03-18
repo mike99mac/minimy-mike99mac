@@ -94,6 +94,8 @@ function doIt
   runCmd $pipCmd install optimum
   runCmd $pipCmd install requests
   runCmd $pipCmd install quart
+  runCmd $pipCmd install websockets-client
+  runCmd $pipCmd install "websockets==13.0"
   runCmd $pipCmd install whisper
   runCmd $pipCmd install youtube-search
   runCmd $pipCmd install youtube-search-python
