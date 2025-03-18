@@ -1,179 +1,207 @@
-from framework.message_types import MSG_SYSTEM
-from framework.util.utils import execute_command, Config
-from framework.hal.hal import Hal
-import lingua_franca
 from skills.sva_base import SimpleVoiceAssistant
 from threading import Event
+import lingua_franca
 from lingua_franca import parse
 import os
+from framework.util.utils import execute_command, Config
+from framework.hal.hal import Hal
 
 class VolumeSkill(SimpleVoiceAssistant):
-  def __init__(self, bus=None, timeout=5):
-    self.skill_id = 'volume_skill'
-    super().__init__(skill_id=self.skill_id, skill_category='system')
-    lingua_franca.load_language('en')
-    cfg = Config()
-    input_device_id = cfg.get_cfg_val('Advanced.InputDeviceId')
-    input_level_control_name = cfg.get_cfg_val('Advanced.InputLevelControlName')
-    output_device_name = cfg.get_cfg_val('Advanced.OutputDeviceName')
-    output_level_control_name = cfg.get_cfg_val('Advanced.OutputLevelControlName')
-    cfg_platform = cfg.get_cfg_val('Advanced.Platform') # workaround until config file can hold the actual module name
-    if cfg_platform == 'p':
-      from framework.hal.executables.pios import Platform
-    else:   
-      from framework.hal.executables.ubuntu import Platform
-    self.hal = Platform(input_device_id, input_level_control_name, output_device_name, output_level_control_name)
+    def __init__(self, bus=None, timeout=5):
+        self.skill_id = 'volume_skill'
+        super().__init__(msg_handler=self.handle_message, skill_id=self.skill_id, skill_category='system')
+        lingua_franca.load_language('en')
 
-    # we use existing system settings but we could also set them here and overide the system initalization code.
-    self.volume_level = 70
-    self.set_volume(self.volume_level)
-    self.muted_volume = self.volume_level
-    self.mic_level = 67
-    self.set_mic_level(self.mic_level)
+        # don't really know where the actual init belongs!
+        cfg = Config()
+        input_device_id = cfg.get_cfg_val('Advanced.InputDeviceId')
+        input_level_control_name = cfg.get_cfg_val('Advanced.InputLevelControlName')
+        output_device_name = cfg.get_cfg_val('Advanced.OutputDeviceName')
+        output_level_control_name = cfg.get_cfg_val('Advanced.OutputLevelControlName')
 
-  def register_intents(self):
-    subjects = ['microphone', 'mic', 'input']
-    commands = ['set', 'change', 'modify']
-    questions = ['what', 'how']
-    inactive_state_intents = []            # register intents - subject:verb pairs
+        # workaround until we fix the config file to hold the actual module name
+        cfg_platform = cfg.get_cfg_val('Advanced.Platform')
 
-    # input volume
-    for subject in subjects:
-      for command in commands:
-        self.register_intent('C', command, subject, self.handle_change_mic)
-        inactive_state_intents.append( 'C' + ':' + subject + ':' + command )
-    for subject in subjects:
-      for question in questions:
-        self.register_intent('Q', question, subject, self.handle_query_mic)
-        inactive_state_intents.append( 'Q' + ':' + subject + ':' + question )
+        if cfg_platform == 'p':
+            from framework.hal.executables.pios import Platform
+        else:   
+            from framework.hal.executables.ubuntu import Platform
 
-    # output volume
-    subject = 'volume'
-    self.register_intent('C', 'turn', subject, self.handle_change)
-    inactive_state_intents.append( 'C' + ':' + subject + ':' + 'turn' )
-    self.register_intent('C', 'set', subject, self.handle_change)
-    inactive_state_intents.append( 'C' + ':' + subject + ':' + 'set' )
-    self.register_intent('C', 'change', subject, self.handle_change)
-    inactive_state_intents.append( 'C' + ':' + subject + ':' + 'change' )
-    self.register_intent('C', 'increase', subject, self.handle_increase)
-    inactive_state_intents.append( 'C' + ':' + subject + ':' + 'increase' )
-    self.register_intent('C', 'decrease', subject, self.handle_decrease)
-    inactive_state_intents.append( 'C' + ':' + subject + ':' + 'decrease' )
-    self.register_intent('C', 'mute', subject, self.handle_mute)
-    inactive_state_intents.append( 'C' + ':' + subject + ':' + 'mute' )
-    self.register_intent('C', 'unmute', subject, self.handle_unmute)
-    inactive_state_intents.append( 'C' + ':' + subject + ':' + 'unmute' )
+        self.hal = Platform(input_device_id, input_level_control_name, output_device_name, output_level_control_name)
 
-    # if we want a single entry point we can set them programmatically
-    for question in questions:
-      self.register_intent('Q', question, subject, self.handle_intent_match)
-      inactive_state_intents.append( 'Q' + ':' + subject + ':' + question )
+        # note we use existing system settings
+        # but we could also set them here and 
+        # overide the system initalization code.
+        self.volume_level = 70
+        self.set_volume(self.volume_level)
+        self.muted_volume = self.volume_level
 
-  def get_num(self, v1, v2, v3):
-    num = parse.extract_number(v1)
-    if not num:
-      num = parse.extract_number(v2)
-      if not num:
-        num = parse.extract_number(v3)
-    return num
+        self.mic_level = 67
+        self.set_mic_level(self.mic_level)
 
-  def get_mic_level(self):                 # microphone
-    self.mic_level = self.hal.get_intput_level()
-    return self.mic_level
+        # register intents. an intent is a subject:verb combo
+        inactive_state_intents = []
 
-  def set_mic_level(self, new_level):
-    self.mic_level = new_level
-    self.hal.set_input_level(self.mic_level)
-    return self.mic_level
+        questions = ['what', 'how']
+        commands = ['set', 'change', 'modify']
+        subjects = ['microphone', 'mic', 'input']
 
-  def handle_change_mic(self,msg):
-    val = msg.data['utt']['value']
-    subject = msg.data['utt']['subject']
-    squal = msg.data['utt']['squal']
-    num = self.get_num(val, subject, squal)
-    text = "No value given, level not changed"
-    if num:
-      text = f"mic level changed to {num} percent"
-      self.set_mic_level(num)
-      self.speak(text)
+        # input volume
+        for subject in subjects:
+            for command in commands:
+                self.register_intent('C', command, subject, self.handle_change_mic)
+                inactive_state_intents.append( 'C' + ':' + subject + ':' + command )
+        for subject in subjects:
+            for question in questions:
+                self.register_intent('Q', question, subject, self.handle_query_mic)
+                inactive_state_intents.append( 'Q' + ':' + subject + ':' + question )
 
-  def handle_query_mic(self, message):
-    text = f"the microphone is currently set to {self.mic_level} percent"
-    self.speak(text)
+        # output volume
+        subject = 'volume'
+        self.register_intent('C', 'turn', subject, self.handle_change)
+        inactive_state_intents.append( 'C' + ':' + subject + ':' + 'turn' )
 
-  def set_volume(self, new_volume):        # speaker 
-    self.volume_level = new_volume
-    self.hal.set_output_level(self.volume_level)
-    return self.volume_level
+        self.register_intent('C', 'set', subject, self.handle_change)
+        inactive_state_intents.append( 'C' + ':' + subject + ':' + 'set' )
 
-  def get_volume(self):
-    return self.hal.get_output_level()
+        self.register_intent('C', 'change', subject, self.handle_change)
+        inactive_state_intents.append( 'C' + ':' + subject + ':' + 'change' )
 
-  # handle volume mute and volume unmute messages
-  def handle_message(self, message):
-    self.log.debug(f"VolumeSkill.handle_message() data: {message.data}")
-    data = message.data
-    if data['subtype'] == 'mute_volume':
-      self.handle_mute(None)
-    if data['subtype'] == 'unmute_volume':
-      self.handle_unmute(None)
+        # increase 
+        self.register_intent('C', 'increase', subject, self.handle_increase)
+        inactive_state_intents.append( 'C' + ':' + subject + ':' + 'increase' )
 
-  def handle_intent_match(self, message):       # for questions only right now
-    self.log.debug(f"VolumeSkill.handle_intent_match() data: {message.data}")
-    text = f"the volume is currently set to {self.get_volume()} percent" 
-    self.speak(text)
+        # decrease 
+        self.register_intent('C', 'decrease', subject, self.handle_decrease)
+        inactive_state_intents.append( 'C' + ':' + subject + ':' + 'decrease' )
 
-  def handle_change(self, message):
-    self.log.debug(f"VolumeSkill.handle_change() data: {message.data}")
-    val = msg.data['utt']['value']
-    subject = msg.data['utt']['subject']
-    squal = msg.data['utt']['squal']
-    num = self.get_num(val, subject, squal)
-    text = "No value given, volume not changed"
-    if num:
-      text = f"volume changed to {new_volume} percent" 
-      self.set_volume(num)
-      self.speak(text)
+        # mute
+        self.register_intent('C', 'mute', subject, self.handle_mute)
+        inactive_state_intents.append( 'C' + ':' + subject + ':' + 'mute' )
 
-  def handle_increase(self, message):
-    self.log.debug(f"VolumeSkill.handle_increase() data: {message.data}")
-    if self.volume_level < 91:
-      new_volume = self.volume_level + 10
-      text = f"volume changed to {new_volume} percent" 
-    else:
-      new_volume = 100
-      text = f"volume is maxed out at {new_volume} percent" 
-    self.set_volume(new_volume)
-    self.speak(text)
+        # unmute
+        self.register_intent('C', 'unmute', subject, self.handle_unmute)
+        inactive_state_intents.append( 'C' + ':' + subject + ':' + 'unmute' )
 
-  def handle_decrease(self,msg):
-    self.log.debug(f"VolumeSkill.handle_increase() data: {message.data}")
-    if self.volume_level > 9:
-      new_volume = self.volume_level - 10
-      text = f"volume changed to {new_volume} percent" 
-    else: 
-      new_volume = 0
-      text = f"volume is minimum at {new_volume} percent" 
-    self.set_volume(new_volume)
-    self.speak(text)
+        # or if we want a single entry point we can set them programmatically
+        for question in questions:
+            self.register_intent('Q', question, subject, self.handle_intent_match)
+            inactive_state_intents.append( 'Q' + ':' + subject + ':' + question )
 
-  def handle_mute(self, message):
-    self.muted_volume = self.volume_level
-    self.log.debug(f"VolumeSkill.handle_mute() saving volume: {self.muted_volume} then muting")
-    self.volume_level = 0
-    self.set_volume(self.volume_level)
 
-  def handle_unmute(self, message):
-    self.volume_level = self.muted_volume
-    self.log.debug(f"VolumeSkill.handle_unmute() restoring volume: {self.volume_level}")
-    self.set_volume(self.volume_level)
+    def get_num(self,v1, v2, v3):
+        num = parse.extract_number(v1)
+        if not num:
+            num = parse.extract_number(v2)
+            if not num:
+                num = parse.extract_number(v3)
+        return num
 
-  def stop(self, message = None):
-    self.log.debug(f"VolumeSkill.stop() message: {message}")
 
-# main()
+    ## microphone ##
+    def get_mic_level(self):
+        self.mic_level = self.hal.get_intput_level()
+        return self.mic_level
+
+
+    def set_mic_level(self, new_level):
+        self.mic_level = new_level
+        self.hal.set_input_level(self.mic_level)
+        return self.mic_level
+
+
+    def handle_change_mic(self,msg):
+        val = msg.data['utt']['value']
+        subject = msg.data['utt']['subject']
+        squal = msg.data['utt']['squal']
+        num = self.get_num(val, subject, squal)
+        text = "No value given, level not changed"
+        if num:
+            text = "mic level changed to %s percent" % (num,)
+            self.set_mic_level(num)
+            self.speak(text)
+
+
+    def handle_query_mic(self, message):
+        # for questions only right now
+        text = "the microphone is currently set to %s percent" % (self.mic_level,)
+        self.speak(text)
+
+
+    ## speaker ##
+    def set_volume(self, new_volume):
+        self.volume_level = new_volume
+        self.hal.set_output_level(self.volume_level)
+        return self.volume_level
+
+
+    def get_volume(self):
+        return self.hal.get_output_level()
+
+    def handle_message(self, message):
+        # we also handle volume mute and volume unmute messages
+        self.log.debug("VolumeSkill got a message --->%s" % (message.data,))
+        data = message.data
+        if data['subtype'] == 'mute_volume':
+            self.handle_mute(None)
+
+        if data['subtype'] == 'unmute_volume':
+            self.handle_unmute(None)
+
+
+    def handle_intent_match(self,msg):
+        # for questions only right now
+        text = "the volume is currently set to %s percent" % (self.get_volume(),)
+        self.speak(text)
+
+
+    def handle_change(self,msg):
+        val = msg.data['utt']['value']
+        subject = msg.data['utt']['subject']
+        squal = msg.data['utt']['squal']
+        num = self.get_num(val, subject, squal)
+        text = "No value given, volume not changed"
+        if num:
+            text = "volume changed to %s percent" % (num,)
+            self.set_volume(num)
+            self.speak(text)
+
+
+    def handle_increase(self,msg):
+        if self.volume_level < 91:
+            new_volume = self.volume_level + 10
+            self.set_volume(new_volume)
+            text = "volume changed to %s percent" % (new_volume,)
+            self.speak(text)
+
+
+    def handle_decrease(self,msg):
+        if self.volume_level > 9:
+            new_volume = self.volume_level - 10
+            self.set_volume(new_volume)
+            text = "volume changed to %s percent" % (new_volume,)
+            self.speak(text)
+
+
+    def handle_mute(self,msg):
+        self.log.debug("Inside handle mute!")
+        self.muted_volume = self.volume_level
+        self.log.debug("** handle_mute() saving volume is %s**" % (self.muted_volume,))
+        self.volume_level = 0
+        self.set_volume(self.volume_level)
+
+
+    def handle_unmute(self,msg):
+        self.log.debug("Inside handle unmute!")
+        self.volume_level = self.muted_volume
+        self.log.debug("** handle_unmute() restoring volume is %s**" % (self.muted_volume,))
+        self.set_volume(self.volume_level)
+
+    def stop(self,msg=None):
+        self.log.debug("Volume skill stop() method called WITH message %s" % (msg,))
+
+
 if __name__ == '__main__':
-  vs = VolumeSkill()
-  vs.register_intents()
-  Event().wait()                           # wait forever
+    vs = VolumeSkill()
+    Event().wait()  # Wait forever
 

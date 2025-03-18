@@ -22,9 +22,8 @@ class remote_tts:
         except:
             print("TTS Polly Remote request failed on connect!")
         try:
-            # response = polly.synthesize_speech(Text=text, TextType="text", OutputFormat="pcm",VoiceId="Matthew", SampleRate="16000")
-            print(f"remote_tts:remote_speak() text = {text}")
-            response = polly.synthesize_speech(Text=text, TextType="text", OutputFormat="pcm",VoiceId="Amy", SampleRate="16000")
+            response = polly.synthesize_speech(Text=text, TextType="text", OutputFormat="pcm",VoiceId="Matthew", SampleRate="16000")
+            #response = polly.synthesize_speech(Text=text, TextType="text", OutputFormat="pcm",VoiceId="Amy", SampleRate="16000")
             status = 'success'
         except:
             print("TTS Polly Remote request failed on synth!")
