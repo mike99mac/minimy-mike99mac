@@ -2,18 +2,19 @@
 import asyncio
 import datetime
 import json
+import os
 import time
 import websockets
 import threading
 from queue import Queue
 from bus.Message import Message, msg_from_json
+from framework.util.utils import LOG
 
 async def SendThread(ws, outbound_q, client_id):
   try:
     while True:
       while outbound_q.empty():
         await asyncio.sleep(0.001)
-
       msg = outbound_q.get()
       await ws.send(msg)
   except websockets.exceptions.ConnectionClosedOK:
@@ -43,8 +44,12 @@ class MsgBusClient:
     self.ws = None
     self.inbound_q = Queue()
     self.outbound_q = Queue()
-    self.msg_handlers = {}
     self.client_id = client_id
+    self.base_dir = str(os.getenv('SVA_BASE_DIR'))
+    log_filename = self.base_dir + '/logs/messages.log'
+    self.log = LOG(log_filename).log
+    self.log.debug(f"MsgBusClient.__init__() client_id: {self.client_id}")
+    self.msg_handlers = {}
     self.loop = asyncio.new_event_loop()
     asyncio.set_event_loop(self.loop)
     self.connect_task = self.loop.create_task(self.connect())
@@ -52,7 +57,6 @@ class MsgBusClient:
     self.rcv_thread = threading.Thread(target=self.run_recv_thread)
     self.process_thread = threading.Thread(target=self.run_process_thread)
     self.snd_thread = threading.Thread(target=self.run_send_thread)
-
     self.rcv_thread.start()
     self.process_thread.start()
     self.snd_thread.start()
@@ -68,7 +72,7 @@ class MsgBusClient:
       while self.inbound_q.empty():
         time.sleep(0.001)
       msg = self.inbound_q.get()
-      print(f"process_inbount_messages() client_id: {self.client_id} msg: {msg}")
+      self.log.debug(f"MsgBusClient(().run_process_thread() client_id: {self.client_id} msg: {msg}")
       if self.msg_handlers.get(msg['msg_type'], None) is not None:
         self.msg_handlers[msg['msg_type']](msg)
       else:
@@ -81,9 +85,11 @@ class MsgBusClient:
     self.msg_handlers[msg_type] = callback
 
   def rcv_client_msg(self, msg):
+    # print(f"rcv_client_msg() msg: {msg}")
     self.inbound_q.put(msg)
 
   def send(self, msg_type, target, msg):
+    # print(f"send_client_msg() msg_type: {msg_type} target: {target} msg: {msg}")
     self.outbound_q.put(json.dumps(Message(msg_type, self.client_id, target, msg)))
 
   def close(self):
