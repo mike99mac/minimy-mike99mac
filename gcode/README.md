@@ -96,6 +96,11 @@ The 6 main panels are cut on the CNC machine. Below is a sketch of the cuts.
 
 ![](main-panel-sketch.jpg)
 
+## Side panels
+Below is a sketch of the side of the carcase and an assembled side piece. 
+
+![](sidePiecesSketch.jpg)
+
 ## G-code
 G-code is to a CNC machine what object code is to a computer. Because the main panel is over 30" (maximum travel of CNC machine), it must be cut twice, rotated 180 degrees between jobs. 
 
@@ -127,8 +132,8 @@ All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One 
 | Description               | Qty | Size |
 | -----------               | --- | ---- |
 | Side tops and bottoms     | 4   | 7.385" |
-| Side fronts and backs     | 4   | 11.875" |
-| Front and back L moldings | 4   | ~20" (each will be cut to size later) |
+| Side fronts and backs     | 4   | 11.800" |
+| Front and back L moldings | 4   | ~20" (cut to size later) |
 | Raspberry Pi platform     | 1   | 2.75" x 3.625" x 1.25" tall |
 
 One other piece is a *platform* used to elevate the Raspberry Pi. The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports. Usually 1-1/4" thick is enough, but not always - measure the height of your power supply.
