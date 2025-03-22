@@ -119,12 +119,10 @@ Following are the 1/2" Baltic birch plywood pieces. The nominal thickness is 0.4
 | Description                 | Qty | Size |
 | -----------                 | --- | ---- |
 | Six panels to be cut        | 1   | 19.875" x 43.68" |
-| Side panels                 | 2   | 6" x 10.625" |
+| Side panels                 | 2   | 6.105" x 10.520" |
 | Internal enclosure dividers | 2   | 6.5" x 6.875" | 
 
 The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of 30". 
-
-TODO: relief cuts for center divider are 0.360" x 0.170" - check on the CNC job2
 
 ### Hardwood molding 
 All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One other piece of wood is needed on which to mount the Raspberry Pi.
