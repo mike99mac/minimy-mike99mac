@@ -91,10 +91,11 @@ Following are the components needed, the cost (in Jan 2024) and the source where
 
 The components are about $400. With the wood and expendibles it is close to $500.
 
-## Main panels
-The 6 main panels are cut on the CNC machine. Below is a sketch of the cuts.
+## Baltic birch
+A piece of 1/2" x 60" x 60" baltic birch plywood is cut into thirds.
+Below is a sketch of 20" x 60" panel.
 
-![](main-panel-sketch.jpg)
+![](20x60panelLayout.jpg)
 
 ## Side panels
 Below is a sketch of the side of the carcase and an assembled side piece. 
@@ -108,7 +109,7 @@ The following G-code ``.nc`` files are used to cut out all the pieces.
 
 | G-code file         | Size   | Description |
 | -----------         | ----   | -----------
-| ``PanelsJob1.nc``   | 19.875" wide x 43.68" high | Most cuts on the main panel |
+| ``panel1Job1.nc``   | 19.875" wide x 43.68" high | Most cuts on the main panel |
 | ``PanelsJob2.nc``   |   "             "           | Remaining cuts with panel rotated 180 degrees |
 | ``leftSide.nc``     | 7.386" wide x 11.875" high  | Cuts on the assembled left side |
 | ``rightSide.nc``    |   "             "           | Cuts on the assembled right side |
