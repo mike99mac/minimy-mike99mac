@@ -93,6 +93,11 @@ The components are about $400. With the wood and expendibles it is close to $500
 
 ## Baltic birch
 A piece of 1/2" x 60" x 60" baltic birch plywood is cut into thirds.
+The remaining 20" x 60" is cut into three different pieces:
+1. Panel 1 is 27.70"
+1. Panel 2 is 18.02"
+1. Panel 3 is what remains 
+
 Below is a sketch of 20" x 60" panel.
 
 ![](20x60panelLayout.jpg)
@@ -109,8 +114,9 @@ The following G-code ``.nc`` files are used to cut out all the pieces.
 
 | G-code file         | Size   | Description |
 | -----------         | ----   | -----------
-| ``panel1Job1.nc``   | 19.875" wide x 43.68" high | Most cuts on the main panel |
-| ``PanelsJob2.nc``   |   "             "           | Remaining cuts with panel rotated 180 degrees |
+| ``Panel1.nc``       | 19.875" x 24.70" | Top, front and bottom panels |
+| ``Panel2.nc``       | 19.875" x 18.02" | Back, back slider and center panels |
+| ``Panel3.nc``       | 19.875" x 13.26" | Remaining cuts with panel rotated 180 degrees |
 | ``leftSide.nc``     | 7.386" wide x 11.875" high  | Cuts on the assembled left side |
 | ``rightSide.nc``    |   "             "           | Cuts on the assembled right side |
 
