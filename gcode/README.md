@@ -94,7 +94,7 @@ The components are about $400. With the wood and expendibles it is close to $500
 ## Baltic birch
 A piece of 1/2" x 60" x 60" baltic birch plywood is cut into thirds.
 The remaining 20" x 60" is cut into three different pieces:
-1. Panel 1 is 27.70"
+1. Panel 1 is 24.70"
 1. Panel 2 is 18.02"
 1. Panel 3 is what remains 
 
