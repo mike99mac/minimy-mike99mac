@@ -109,12 +109,12 @@ Perform the following steps:
 - Before cutting the three pieces, add pairs of marks of 1, 2, 3 and 4 highlighted in the drawing below in yellow triangles.  This will allow you to maintain the correct grain orientation during assembly.
 
 - Cut the three pieces from one blank:	
-  1. Panel 1 is 26.00"
-  1. Panel 2 is 19.17"
-  1. Panel 3 which reamins, should be exactly 14.56" (assuming 2 kerfs of 0.125")
+  - Panel 1 is 26.00"
+  - Panel 2 is 19.17"
+  - Panel 3 which reamins, should be exactly 14.56" (assuming 2 kerfs of 0.125")
 
 Below is a sketch of an entire panel:
-- Yellow lines show table saw cuts of .125"
+- Yellow lines show table saw cuts of 0.125"
 - Green lines show CNC machine through cuts of 0.260"
 - Pink lines show CNC machine dado cuts of 0.490" wide and 0.1875" deep
 
@@ -123,15 +123,18 @@ Below is a sketch of an entire panel:
 From this sketch, values are entered into the G-Code software.  This example shows screen shots from easel.com.
 
 ![](Panel1.png) 
+
 *Panel 1 in Easel software*
 
 This panel will be cut into the top, the front and the bottom of the carcase.  6 clamps should be used with two at the center of each piece.    
 
 
 ![](Panel1rendering.png) 
+
 *Panel 1 rendering in Easel software*
 
 ![](Panel2.png) 
+
 *Panel 2 in Easel software*    
 This panel will be cut into the lower back, the back sliding panel and the center divider.
 
