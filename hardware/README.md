@@ -1,9 +1,14 @@
+# This directory
+The parent directory has all the software.  This directory is largely a description of how to build a boombox.
+
+Many dozens of prototypes have led up to this model.
+
+Building one is described in excruciating detail, not only for the good of humanity, but because the author forgets all the steps and can never find the right pieces of paper with notes.
+ 
 # Overview of a smart boombox
 The goal of this project is to create a retro-looking boombox that sounds amazing and can play music by voice. 
 
-This section gives an overview and [Building a smart boombox](#building-a-smart-boombox) gives all the detailed steps.
-
-The picture below shows the front of a boombox carcass assembled and finished, but with no components installed. 
+The picture below shows the front of a boombox carcase assembled and finished, but with no components installed. 
 It has three enclosures at the bottom for the left speakers, subwoofer, and right speakers. 
 The top third houses the amp, the Raspberry Pi computer and all other components. 
 Two removable panels allow easy access to the components. 
@@ -27,7 +32,7 @@ about four parts water turned it into an “orange-wash”, which adds color, br
 is not overwhelming. After staining, two or three coats of Tung Oil are applied, with sanding between each coat. 
 
 ![](parts-front-view.jpg)
-*Front view of boombox carcass and parts*
+*Front view of boombox carcase and parts*
 
 The next picture shows an amp on the left, a RasPi 5 and a Hifiberry “DAC HAT” to greatly 
 improve the audio. Two power supplies are needed: 24V for the amp and 5V for the computer; thus 
@@ -37,7 +42,7 @@ on the right, treble and bass controls in the middle, and subwoofer volume and c
 on the left. You can Bluetooth directly to the amp and bypass the computer.
 
 ![](parts-back-view.jpg)
-*Back view of boombox carcass and parts*
+*Back view of boombox carcase and parts*
 
 # Building a smart boombox
 To build the boombox, perform the following steps: 
@@ -177,7 +182,7 @@ Following is a diagram of the side moldings (*Double dado*) and the L-shaped mol
 *Cross section of the two moldings*
 
 ## Prepare for assembly 
-Final assembly of the carcass can take place when you have:
+Final assembly of the carcase can take place when you have:
 - Six panels cut from the two CNC jobs 
 - Two sides and internal dividers cut on the tablesaw 
 - Two sides assembled and cut with CNC jobs
@@ -214,7 +219,7 @@ You should have six panels ~20" wide cut from the two CNC jobs.
 
 You should now have 10 pieces of plywood:
 - 4 milled panels to be glued together
-- 2 enclosure dividers to be glued inside the carcass
+- 2 enclosure dividers to be glued inside the carcase
 - 2 panels that will be sliding covers
 - 2 sides with holes drilled
 
@@ -245,8 +250,8 @@ Baltic birch plywood is subject to tearout.  To avoid that as much as possible, 
 There are CNC jobs for the glued up left and right sides which accomplish this function:
 - Cut a hole for the plastic port.
 - Cut the outside molding so the sliding panels can be inserted.
-- Cut most of the inside thin molding inside the carcass.  
-This step was added because it was extremely difficult to get the sides and carcass to align perfectly.
+- Cut most of the inside thin molding inside the carcase.  
+This step was added because it was extremely difficult to get the sides and carcase to align perfectly.
 
 To construct the sides, perform the following tasks:
 - Cut 4 *double dado* moldings to 11.875" and 4 to 7.385", all with 45 degree angles so they go together like a picture frame.
@@ -254,17 +259,17 @@ To construct the sides, perform the following tasks:
 - Glue each side up without altering the left and right side arrangement.
 - Run the CNC job ``leftSide.nc`` on the left side.
 - Run the CNC job ``rightSide.nc`` on the right side.
-- Sand the sides, especially the inside edges which will not be easily accessible after they are glued to the carcass.
+- Sand the sides, especially the inside edges which will not be easily accessible after they are glued to the carcase.
 
 ## Glue enclosure 
 To perform the final assembly of all wood pieces, perform the following tasks:
-- [Glue carcass](#glue-carcass)
-- [Glue sides to carcass](#glue-sides-to-carcass)
+- [Glue carcase](#glue-carcass)
+- [Glue sides to carcase](#glue-sides-to-carcass)
 - [Glue L-shaped moldings](#glue-l-shaped-moldings)
 - [Finish sliding panels](#finish-sliding-panels)
 
-### Glue carcass 
-To glue up the main carcass, perform the following tasks:
+### Glue carcase 
+To glue up the main carcase, perform the following tasks:
 - Dry fit the four machined panels and two enclosure dividers.
 - Glue the two enclosure dividers to the bottom and center divider and clamp with 2 clamps.
 - Glue the sides with no clamps to the front panel.
@@ -274,12 +279,12 @@ To glue up the main carcass, perform the following tasks:
 - Add many more clamps to ensure tight joints all around.
 - Allow to dry.
 
-### Glue sides to carcass 
-To glue the sides to the main carcass, perform the following tasks:
+### Glue sides to carcase 
+To glue the sides to the main carcase, perform the following tasks:
 - Dry fit the sides on.
 - Glue the sides on, clamping with 5 24" clamps.
 - Allow to dry.
-- Screw 4 1-1/2" stainless steel screws through each side into carcass. 
+- Screw 4 1-1/2" stainless steel screws through each side into carcase. 
 
 **TODO** Get a picture of this
 
@@ -290,7 +295,7 @@ To attach the L-shaped moldings to the box, perform the following tasks:
 - Slide the top slider on, but not the back slider, so it cannot be glued to the top.
 - Cut one piece to the length of the top-back.  This will be the longest piece.
 - Cut the other 3 pieces to size so they fit tightly.
-- Glue the 4 moldings onto the carcass and clamp. The long molding will be glued to the top sliding panel.  
+- Glue the 4 moldings onto the carcase and clamp. The long molding will be glued to the top sliding panel.  
 - Allow to dry.
 - Drill holes and screw 2 1-1/2" stainelss steel screws through the top sliding panel molding into the back sliding panel.  
 This will ensure the boombox stays together when being carried. 
