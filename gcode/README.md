@@ -92,17 +92,30 @@ Following are the components needed, the cost (in Jan 2024) and the source where
 The components are about $400. With the wood and expendibles it is close to $500.
 
 ## Baltic birch
-A piece of 1/2" x 60" x 60" baltic birch plywood is cut into thirds.
+A full sheet of 1/2" x 60" x 60" baltic birch plywood is cut into thirds.
 
-The remaining 20" x 60" is cut into three different pieces:
-Before cutting into three pieces, add pencil marks of 1, 2, 3 and 4 highlighted in the drawing in yellow. 
-1. Panel 1 is 24.70"
-1. Panel 2 is 18.02"
-1. Panel 3 is what remains 
+Before cutting into three pieces, add pencil marks of 1, 2, 3 and 4 highlighted in the drawing in yellow triangles.  This will allow you to maintain the correct grain orientation during final assembly.
 
-Below is a sketch of 20" x 60" panel. The yellow highlights show table saw cuts of .125". The green cuts show CNC machine cuts of 0.260".
+The remaining 20" x 60" is cut into three pieces. 
+**Note**: Maximum capacity of the CNC machine used was 30".  This could be done in one job on a larger machine.
 
-![](20x60panelLayout.jpg)
+1. Panel 1 is 26.00"
+1. Panel 2 is 19.17"
+1. Panel 3 which reamins, should be exactly 14.56" (assuming 2 kerfs of 0.125")
+
+Below is a sketch of an entire panel:
+- Yellow lines show table saw cuts of .125"
+- Green lines show CNC machine through cuts of 0.260"
+- Orange lines show CNC machine dado cuts of 0.490" wide and 0.1875" deep
+
+![](20x60panelLayout.jpg) 3 panel layout before being cut
+
+From this sketch, values are entered into the G-Code software.  This example shows screen shots from easel.com.
+
+![](Panel1.png) Panel 1 in Easel software    
+![](Panel1.png) Panel 1 rendering in Easel software    
+![](Panel2.png) Panel 2 in Easel software    
+![](Panel3.png) Panel 3 in Easel software    
 
 ## Side panels
 Below is a sketch of the side of the carcase and an assembled side piece. 
@@ -247,8 +260,6 @@ To glue up the main carcass, perform the following tasks:
 - Use 2 right-angle clamps at the left and right sides to ensure the box is square.
 - Add many more clamps to ensure tight joints all around.
 - Allow to dry.
-
-**TODO** Get a picture of this
 
 ### Glue sides to carcass 
 To glue the sides to the main carcass, perform the following tasks:
