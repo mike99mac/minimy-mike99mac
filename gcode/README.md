@@ -112,10 +112,21 @@ Below is a sketch of an entire panel:
 
 From this sketch, values are entered into the G-Code software.  This example shows screen shots from easel.com.
 
-![](Panel1.png) Panel 1 in Easel software    
-![](Panel1.png) Panel 1 rendering in Easel software    
-![](Panel2.png) Panel 2 in Easel software    
+![](Panel1.png) 
+*Panel 1 in Easel software*
+
+This panel will be cut into the top, the front and the bottom of the carcase.  6 clamps should be used with two at the center of each piece.    
+
+
+![](Panel1rendering.png) 
+*Panel 1 rendering in Easel software*
+
+![](Panel2.png) 
+*Panel 2 in Easel software*    
+This panel will be cut into the lower back, the back sliding panel and the center divider.
+
 ![](Panel3.png) Panel 3 in Easel software    
+This panel will be cut into two pieces - each with a side and an interior divider.  The final cuts for these are done on the tablesaw.
 
 ## Side panels
 Below is a sketch of the side of the carcase and an assembled side piece. 
