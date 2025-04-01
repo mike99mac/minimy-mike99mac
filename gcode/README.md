@@ -91,13 +91,11 @@ Following are the components needed, the cost (in Jan 2024) and the source where
 
 The components are about $400. With the wood and expendibles it is close to $500.
 
-## Baltic birch
-A full sheet of 1/2" x 60" x 60" baltic birch plywood is cut into thirds.
+## Cutting the wood 
+A full sheet of 1/2" x 60" x 60" baltic birch plywood is cut into thirds so a *blank* is 19.987" x 60".
 
-Before cutting into three pieces, add pencil marks of 1, 2, 3 and 4 highlighted in the drawing in yellow triangles.  This will allow you to maintain the correct grain orientation during final assembly.
-
-The remaining 20" x 60" is cut into three pieces. 
-**Note**: Maximum capacity of the CNC machine used was 30".  This could be done in one job on a larger machine.
+Using a 30" x 30" capacity CNC machine, the blank is cut into three pieces. Therefore, there are 3 CNC jobs.
+Before cutting the three pieces, add pairs of marks of 1, 2, 3 and 4 highlighted in the drawing below in yellow triangles.  This will allow you to maintain the correct grain orientation during assembly.
 
 1. Panel 1 is 26.00"
 1. Panel 2 is 19.17"
@@ -106,7 +104,7 @@ The remaining 20" x 60" is cut into three pieces.
 Below is a sketch of an entire panel:
 - Yellow lines show table saw cuts of .125"
 - Green lines show CNC machine through cuts of 0.260"
-- Orange lines show CNC machine dado cuts of 0.490" wide and 0.1875" deep
+- Pink lines show CNC machine dado cuts of 0.490" wide and 0.1875" deep
 
 ![](20x60panelLayout.jpg) 3 panel layout before being cut
 
