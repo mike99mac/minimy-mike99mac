@@ -3,24 +3,32 @@ The parent directory has all the software.  This directory is largely a descript
 
 Many dozens of prototypes have led up to this model.
 
-Building one is described in excruciating detail, not only for the good of humanity, but because the author forgets all the steps and can never find the right pieces of paper with notes.
+Building one is described in excruciating detail, not only for the good of humanity, but because the author forgets all the steps and can never find the scraps of paper with the right notes.
  
 # Overview of a smart boombox
-The goal of this project is to create a retro-looking boombox that sounds amazing and can play music by voice. 
+The goal of this project is to:
+- Create a retro-looking boombox 
+- That sounds amazing
+- That can play music by voice. 
+- That respects privacy by performing operations without accessing the Internet (still under construction)
 
 The picture below shows the front of a boombox carcase assembled and finished, but with no components installed. 
 It has three enclosures at the bottom for the left speakers, subwoofer, and right speakers. 
-The top third houses the amp, the Raspberry Pi computer and all other components. 
+The top third houses the amp, the computer and other components. 
 Two removable panels allow easy access to the components. 
 
-It is constructed of 1/2" Baltic birch plywood with hardwood edge moldings. 
-The decorative molding in the front is curly maple with cherry inlay. 
-The subwoofer is in a sealed enclosure and  *down firing* while the other 5-1/4" device in front is a *passive radiator* - a 
-speaker with no electronics. There is also a smaller passive radiator on the back, so the subwoofer 
-is driving itself and two other *speakers*. The left and right enclosures are ported. They each have a 4" mid-range speaker 
-and 1" tweeter. *Crossover networks* come with the tweeters, so no soldering is required. 
-The tweeters really do bring out the highs when compared with “full range drivers”, and of course, the subwoofer 
-and friends really bring out the bass.  The left and right enclosures are ported with 1-3/4" diameter ports seen on the sides. 
+It is constructed of 
+- 1/2" Baltic birch plywood, wich is perhaps the best material for speaker enclosures
+- Hardwood edge moldings for contrast and to make the box solid 
+- Decorative molding in the front and sides to give it some character
+
+The subwoofer is in a sealed enclosure and  *down firing* while the other 5-1/4" device in front is a *passive radiator* - a speaker with no electronics. There is also a smaller passive radiator on the back, so the subwoofer 
+is driving itself and two other *speakers*. 
+
+The left and right enclosures are ported. They each have a 4" mid-range speaker and a 1" tweeter. *Crossover networks* come with the tweeters, so no soldering is required.  The tweeters really do bring out the highs when compared with “full range drivers”, and of course, the subwoofer and friends really bring out the bass.  The left and right enclosures are ported with 1-3/4" diameter ports seen on the sides. 
+
+**NOTE:** The left and right enclosures may be changed to passive radiators for a better quality sound ... stand by ...
+
 The subwoofer and mid-ranges are protected with grills, while the passive radiators are unprotected because 
 they’re the cheapest to replace and they look kinda cool naked.
 
@@ -29,7 +37,6 @@ There is a 3.5mm headphone jack on the left, and an *aux in* jack on the right.
 Baltic birch has little grain and color, and it just seemed too plain with clear stain. 
 An orange stain was tested, but it was too bright and gaudy. Mixing the stain with 
 about four parts water turned it into an “orange-wash”, which adds color, brings out the grain, but 
-is not overwhelming. After staining, two or three coats of Tung Oil are applied, with sanding between each coat. 
 
 ![](parts-front-view.jpg)
 *Front view of boombox carcase and parts*
