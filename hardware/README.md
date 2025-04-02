@@ -1,26 +1,25 @@
-# This directory
-The parent directory has all the software.  This directory is largely a description of the hardware and how to build a boombox.
-
-Many dozens of prototypes have led up to this model.
-
-The build is described in excruciating detail, not only for the good of humanity, but because the author forgets all the steps and can never find the scraps of paper with the right notes.
  
 # Overview of a smart boombox
+This directory contains a description of the hardware and how to build a boombox.
+
+Dozens of prototypes have led up to this model.
+
 The goal of this project is to:
 - Create a retro-looking boombox, 
 - that sounds amazing,
 - that can play music by voice, and  
 - that respects privacy by performing operations without accessing the Internet. 
 
-The picture below shows the front of a boombox carcase assembled and finished, but with no components installed. 
+The build is described in excruciating detail, not only for the good of humanity, but because the author forgets all the steps involved and can never find the scraps of paper with the right notes.
+
 It has three enclosures at the bottom for the left speaker, subwoofer, and right speaker. 
 The top third houses the amp, the computer and other components. 
-Two removable panels allow easy access to the components. 
-
-It is constructed of: 
+Two removable panels allow easy access to the components.  It is constructed of: 
 - 1/2" Baltic birch plywood, perhaps the best material for speaker enclosures,
 - hardwood edge moldings for contrast and to make the box solid, and
 - decorative molding in the front and sides to give it some character.
+
+The picture below shows the front of a boombox carcase assembled and finished, but with no components installed. 
 
 The subwoofer in the center is in a sealed enclosure and *down firing* while the other 5-1/4" device in front is a *passive radiator* - a speaker with no electronics. There is also a smaller passive radiator on the back, so the subwoofer 
 is driving itself and two other *speakers*. 
