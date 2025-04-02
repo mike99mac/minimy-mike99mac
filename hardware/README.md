@@ -41,11 +41,11 @@ This picture shows an amp on the left, a RasPi 5 and a Hifiberry “DAC HAT” t
 ![](parts-back-view.jpg)
 *Back view of boombox carcase and parts*
 
-# Building a smart boombox
+# How to Build a smart boombox
 To build the boombox, perform the following steps: 
 
 - [Obtain parts and components](#obtain-all-parts-and-components)
-- [Prepare for assembly](#prepare-for-assembly)
+- [Cut the wood](#cut-the-wood)
 - [Glue the carcase](#glue-carcase)
 - [Install components](#install-components)
 - [Stand up the software stack](#stand-up-the-software-stack)
@@ -93,7 +93,7 @@ Following are the components needed, the cost (in Jan 2024) and the source where
 
 The components are about $400. With the wood and expendibles it is close to $500.
 
-## Cutting the wood 
+## Cut the wood 
 A full sheet of 1/2" x 60" x 60" baltic birch plywood is cut into thirds.  Assuming a 0.125" blade kerf, three *blanks* of 19.875" x 60" will result.  Using a 30" x 30" capacity CNC machine, the blank must be cut into three pieces. Therefore, there are three CNC jobs.
 
 Perform the following steps:
