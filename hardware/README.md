@@ -6,9 +6,9 @@ Dozens of prototypes have led up to this model.
 
 The goal of this project is to:
 - Create a beautiful, solid wood, retro-looking boombox, 
-- that sounds amazing,
-- that can play music by voice, and  
-- that respects privacy by performing operations without accessing the Internet. 
+- That sounds amazing,
+- That can play music by voice, and  
+- That respects privacy by performing operations without accessing the Internet. 
 
 The build is described in excruciating detail, not only for the good of humanity, but because the author forgets all the steps involved and can never find the scraps of paper with the right notes.
 
@@ -16,8 +16,8 @@ It has three enclosures at the bottom for the left speaker, subwoofer, and right
 The top third houses the amp, the computer and other components. 
 Two removable panels allow easy access to the components.  It is constructed of: 
 - 1/2" Baltic birch plywood, perhaps the best material for speaker enclosures,
-- hardwood edge moldings for contrast and to make the box solid, and
-- decorative molding in the front and sides to give it some character.
+- Hardwood edge moldings for contrast and to make the box solid, and
+- Decorative molding in the front and sides to give it some character.
 
 The picture below shows the front of a boombox carcase assembled and finished, but with no components installed. 
 
@@ -26,10 +26,17 @@ is driving itself and two other *speakers*.
 
 The left and right enclosures are ported. They each have a 4" mid-range speaker and a 1" tweeter. *Crossover networks* come with the tweeters, so no soldering is required. 
 
-**NOTE:** The left and right enclosures are being changed to passive radiators for a better quality sound ... stand by ...
-
 The subwoofer and mid-ranges are protected with grills, while the passive radiators are unprotected because 
 they’re the cheapest to replace and they look kinda cool "naked".
+
+The inside dimensions of the enclosures are as follows:
+
+|Enclosure                | Inside dimensions  | Cubic inches | Cubic feet |
+|---------                | -----------------  | ------------ | ---------- |
+|Left and Right enclosures| 6.125 * 6.77 * 6.5 | 269.5        | .155 |
+|Center enclosure         | 6.125 * 6.77 * 5.9 | 244.6        | .142 |
+
+These values are close to that which is recommended by the manufaturers.
 
 There is a 3.5mm headphone jack on the left, and an *aux in* jack on the right. 
 
@@ -54,7 +61,7 @@ To build the boombox, perform the following steps:
 Obtain the follow parts and components:
 
 - [Electronic components](#components)
-- [Plywood panels](plywood-panels)
+- [Plywood panels](#plywood-panels)
 - [Hardwood molding](#hardwood-molding)
 
 ### Electronic components  
@@ -151,14 +158,14 @@ The following G-code ``.nc`` files are used to cut out all the pieces.
 | ``rightSide.nc``    | 8.035" wide x 11.875" high  | Cuts on right side |
 
 ### Plywood panels
-Following are the 1/2" Baltic birch plywood pieces. The nominal thickness is 0.480". 
+Following are the 1/2" plywood pieces 19.875" in width. The nominal thickness is 0.480". 
 
 - Cut three pieces from one blank:	
   - Panel 1: 26.00"
   - Panel 2: 19.17"
   - Panel 3: should be exactly 14.56" (assuming 2 kerfs of 0.125")
 - Cut each panel on the CNC machine. You should have 8 panels each 19.875" wide
-- Cut the sides and dividers from panel 3
+- Cut two sides and dividers from the last panel
   - Side panels: 6.755" x 10.520"
   - Internal dividers 7.15" x 6.875"  
 
