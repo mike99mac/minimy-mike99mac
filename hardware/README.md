@@ -5,7 +5,7 @@ This directory contains a description of the hardware and how to build a boombox
 Dozens of prototypes have led up to this model.
 
 The goal of this project is to:
-- Create a retro-looking boombox, 
+- Create a beautiful, solid wood, retro-looking boombox, 
 - that sounds amazing,
 - that can play music by voice, and  
 - that respects privacy by performing operations without accessing the Internet. 
@@ -26,7 +26,7 @@ is driving itself and two other *speakers*.
 
 The left and right enclosures are ported. They each have a 4" mid-range speaker and a 1" tweeter. *Crossover networks* come with the tweeters, so no soldering is required. 
 
-**NOTE:** The left and right enclosures may be changed to passive radiators for a better quality sound ... stand by ...
+**NOTE:** The left and right enclosures are being changed to passive radiators for a better quality sound ... stand by ...
 
 The subwoofer and mid-ranges are protected with grills, while the passive radiators are unprotected because 
 they’re the cheapest to replace and they look kinda cool "naked".
@@ -46,7 +46,7 @@ To build the boombox, perform the following steps:
 
 - [Obtain parts and components](#obtain-all-parts-and-components)
 - [Prepare for assembly](#prepare-for-assembly)
-- [Glue enclosure](#glue-enclosure)
+- [Glue the carcase](#glue-carcase)
 - [Install components](#install-components)
 - [Stand up the software stack](#stand-up-the-software-stack)
 
@@ -261,15 +261,15 @@ To construct the sides, perform the following tasks:
 - Run the CNC job ``rightSide.nc`` on the right side.
 - Sand the sides, especially the inside edges which will not be easily accessible after they are glued to the carcase.
 
-## Glue enclosure 
+## Glue carcase 
 To perform the final assembly of all wood pieces, perform the following tasks:
-- [Glue carcase](#glue-carcass)
+- [Glue center](#glue-center)
 - [Glue sides to carcase](#glue-sides-to-carcass)
 - [Glue L-shaped moldings](#glue-l-shaped-moldings)
 - [Finish sliding panels](#finish-sliding-panels)
 
-### Glue carcase 
-To glue up the main carcase, perform the following tasks:
+### Glue center 
+To glue up the center of the carcase, perform the following tasks:
 - Dry fit the four machined panels and two enclosure dividers.
 - Glue the two enclosure dividers to the bottom and center divider and clamp with 2 clamps.
 - Glue the sides with no clamps to the front panel.
