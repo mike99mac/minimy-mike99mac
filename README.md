@@ -43,7 +43,7 @@ The overall steps to build a *Smart Boombox* are:
 - Start Minimy and use it!
 
 ## Acquire the hardware
-The recommended hardware is a Raspberry Pi (RasPi) 4B with 4 or 8 GB of memory.  Yes, they're still hard to get, but not impossible. 
+The recommended hardware is a Raspberry Pi (RasPi) 5B with 4 or 8 GB of memory.  
 
 A Rasberry Pi 400 is another option.  It allows the CPU to be *offboard* which frees up space onboard to house batteries. The CPUs also run a lot cooler due to the massive heat sink.
 
