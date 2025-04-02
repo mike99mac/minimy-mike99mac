@@ -10,12 +10,12 @@ The goal of this project is to:
 - That can play music by voice, and  
 - That respects privacy by performing operations without accessing the Internet. 
 
-The build is described in excruciating detail, not only for the good of humanity, but because the author forgets all the steps involved and can never find the scraps of paper with the right notes.
+The build is described in excruciating detail, not only for the good of humanity, but also because the author forgets all the steps involved and can never find the scraps of paper with the right notes.
 
 It has three enclosures at the bottom for the left speaker, subwoofer, and right speaker. 
 The top third houses the amp, the computer and other components. 
 Two removable panels allow easy access to the components.  It is constructed of: 
-- 1/2" Baltic birch plywood, perhaps the best material for speaker enclosures,
+- 1/2" Baltic birch plywood, perhaps the best material on earth for speaker enclosures,
 - Hardwood edge moldings for contrast and to make the box solid, and
 - Decorative molding in the front and sides to give it some character.
 
@@ -145,8 +145,6 @@ Below is a sketch of the side of the carcase and an assembled side piece.
 ![](sidePiecesSketch.jpg)
 
 ## G-code
-G-code is to a CNC machine what object code is to a computer. 
-
 The following G-code ``.nc`` files are used to cut out all the pieces.
 
 | G-code file         | Size   | Description |
@@ -158,7 +156,7 @@ The following G-code ``.nc`` files are used to cut out all the pieces.
 | ``rightSide.nc``    | 8.035" wide x 11.875" high  | Cuts on right side |
 
 ### Plywood panels
-Following are the 1/2" plywood pieces 19.875" in width. The nominal thickness is 0.480". 
+Following are the 1/2" plywood pieces 19.875" x 0.480":  
 
 - Cut three pieces from one blank:	
   - Panel 1: 26.00"
