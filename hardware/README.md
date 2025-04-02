@@ -102,12 +102,7 @@ Perform the following steps:
 
 - Before cutting the three pieces, add pairs of marks of 1, 2, 3 and 4 highlighted in the drawing below in yellow triangles.  This will allow you to maintain the correct grain orientation during assembly.
 
-- Cut the three pieces from one blank:	
-  - Panel 1 is 26.00"
-  - Panel 2 is 19.17"
-  - Panel 3 which reamins, should be exactly 14.56" (assuming 2 kerfs of 0.125")
-
-Below is a sketch of an entire panel:
+Below is a sketch of a blank:
 - Yellow lines show table saw cuts of 0.125"
 - Green lines show CNC machine through cuts of 0.260"
 - Pink lines show CNC machine dado cuts of 0.490" wide and 0.1875" deep
@@ -132,7 +127,9 @@ This panel will be cut into the top, the front and the bottom of the carcase.  6
 *Panel 2 in Easel software*    
 This panel will be cut into the lower back, the back sliding panel and the center divider.
 
-![](Panel3.png) Panel 3 in Easel software    
+![](Panel3.png) 
+
+*Panel 3 in Easel software*
 This panel will be cut into two pieces - each with a side and an interior divider.  The final cuts for these are done on the tablesaw.
 
 ## Side panels
@@ -141,28 +138,29 @@ Below is a sketch of the side of the carcase and an assembled side piece.
 ![](sidePiecesSketch.jpg)
 
 ## G-code
-G-code is to a CNC machine what object code is to a computer. Because the main panel is over 30" (maximum travel of CNC machine), it must be cut twice, rotated 180 degrees between jobs. 
+G-code is to a CNC machine what object code is to a computer. 
 
 The following G-code ``.nc`` files are used to cut out all the pieces.
 
 | G-code file         | Size   | Description |
 | -----------         | ----   | -----------
-| ``Panel1.nc``       | 19.875" x 24.70" | Top, front and bottom panels |
-| ``Panel2.nc``       | 19.875" x 18.02" | Back, back slider and center panels |
-| ``Panel3.nc``       | 19.875" x 13.26" | Remaining cuts with panel rotated 180 degrees |
-| ``leftSide.nc``     | 7.386" wide x 11.875" high  | Cuts on the assembled left side |
-| ``rightSide.nc``    |   "             "           | Cuts on the assembled right side |
+| ``Panel1.nc``       | 19.875" x 26.00" | Top, front and bottom panels |
+| ``Panel2.nc``       | 19.875" x 19.17" | Back, back slider and center panels |
+| ``Panel3.nc``       | 19.875" x 14.56" | Two sides and two interior dividers |
+| ``leftSide.nc``     | 8.035" wide x 11.875" high  | Cuts on left side |
+| ``rightSide.nc``    | 8.035" wide x 11.875" high  | Cuts on right side |
 
 ### Plywood panels
 Following are the 1/2" Baltic birch plywood pieces. The nominal thickness is 0.480". 
 
-| Description                 | Qty | Size |
-| -----------                 | --- | ---- |
-| Six panels to be cut        | 1   | 19.875" x 43.68" |
-| Side panels                 | 2   | 6.105" x 10.520" |
-| Internal enclosure dividers | 2   | 6.5" x 6.875" | 
-
-The main panel is cut on the CNC machine using two different jobs because the panel is longer than the maximum capacity of 30". 
+- Cut three pieces from one blank:	
+  - Panel 1: 26.00"
+  - Panel 2: 19.17"
+  - Panel 3: should be exactly 14.56" (assuming 2 kerfs of 0.125")
+- Cut each panel on the CNC machine. You should have 8 panels each 19.875" wide
+- Cut the sides and dividers from panel 3
+  - Side panels: 6.755" x 10.520"
+  - Internal dividers 7.15" x 6.875"  
 
 ### Hardwood molding 
 All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One other piece of wood is needed on which to mount the Raspberry Pi.
