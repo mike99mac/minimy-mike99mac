@@ -22,7 +22,7 @@ It is constructed of:
 - hardwood edge moldings for contrast and to make the box solid, and
 - decorative molding in the front and sides to give it some character.
 
-The subwoofer is in a sealed enclosure and  *down firing* while the other 5-1/4" device in front is a *passive radiator* - a speaker with no electronics. There is also a smaller passive radiator on the back, so the subwoofer 
+The subwoofer in the center is in a sealed enclosure and *down firing* while the other 5-1/4" device in front is a *passive radiator* - a speaker with no electronics. There is also a smaller passive radiator on the back, so the subwoofer 
 is driving itself and two other *speakers*. 
 
 The left and right enclosures are ported. They each have a 4" mid-range speaker and a 1" tweeter. *Crossover networks* come with the tweeters, so no soldering is required. 
@@ -30,19 +30,14 @@ The left and right enclosures are ported. They each have a 4" mid-range speaker 
 **NOTE:** The left and right enclosures may be changed to passive radiators for a better quality sound ... stand by ...
 
 The subwoofer and mid-ranges are protected with grills, while the passive radiators are unprotected because 
-they’re the cheapest to replace and they look kinda cool naked.
+they’re the cheapest to replace and they look kinda cool "naked".
 
 There is a 3.5mm headphone jack on the left, and an *aux in* jack on the right. 
 
 ![](parts-front-view.jpg)
 *Front view of boombox carcase and parts*
 
-The next picture shows an amp on the left, a RasPi 5 and a Hifiberry “DAC HAT” to greatly 
-improve the audio. Two power supplies are needed: 24V for the amp and 5V for the computer; thus 
-the need for an electrical outlet. On the left is a USB microphone. In the center are three 
-pushbuttons for previous track, stop/pause, and next track. The amp has an on/off/volume control 
-on the right, treble and bass controls in the middle, and subwoofer volume and cutoff frequency 
-on the left. You can Bluetooth directly to the amp and bypass the computer.
+This picture shows an amp on the left, a RasPi 5 and a Hifiberry “DAC HAT” to greatly improve the audio in the center.  Two power supplies are needed: 24V for the amp and 5V for the computer; thus the need for an electrical outlet. On the left is a USB microphone. In the center are three pushbuttons for previous track, stop/pause, and next track. The amp has an on/off/volume control on the right, treble and bass controls in the middle, and subwoofer volume and cutoff frequency on the left. You can Bluetooth directly to the amp and bypass the computer.
 
 ![](parts-back-view.jpg)
 *Back view of boombox carcase and parts*
