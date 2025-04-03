@@ -127,14 +127,10 @@ This panel will be cut into the lower back, the back sliding panel and the cente
 ![](Panel3.png) 
 
 *Panel 3 in Easel software*
+
 This panel will be cut into two pieces - each with a side and an interior divider.  The final cuts for these are done on the table saw.
+
 A full sheet of 1/2" x 60" x 60" baltic birch plywood is cut into thirds.  Assuming a 0.125" blade kerf, three *blanks* of 19.875" x 60" will result.  Using a 30" x 30" capacity CNC machine, the blank must be cut into three pieces. Therefore, there are three CNC jobs.
-
-Perform the following steps:
-
-- Cut a sheet into three blanks
-
-- Before cutting the three pieces, add pairs of marks of 1, 2, 3 and 4 highlighted in the drawing below in yellow triangles.  This will allow you to maintain the correct grain orientation during assembly.
 
 ## Side panels
 Below is a sketch of the side of the carcase and an assembled side. 
@@ -154,6 +150,10 @@ The following G-code ``.nc`` files are used to cut out all the pieces.
 
 ### Plywood panels
 Perform the following steps:
+
+- Cut a full sheet of baltic birch into three blanks.
+
+- Before cutting the three pieces, add pairs of marks of 1, 2, 3 and 4 highlighted in the drawing below in yellow triangles.  This will allow you to maintain the correct grain orientation during assembly.
 
 - Cut three panels from one blank:	
   - Panel 1: 26.00"
