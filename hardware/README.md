@@ -109,7 +109,7 @@ Below is a sketch of a blank:
 
 From this sketch, values are entered into the G-Code software.  
 
-The figures below show show screen shots from the G-Code entered in at easel.com.
+The figures below show screen shots from the G-Code entered in at easel.com.
 
 ![](Panel1.png) 
 
@@ -124,6 +124,7 @@ This panel will be cut into the top, the front and the bottom of the carcase.  6
 ![](Panel2.png) 
 
 *Panel 2 in Easel software*    
+
 This panel will be cut into the lower back, the back sliding panel and the center divider.
 
 ![](Panel3.png) 
@@ -132,8 +133,6 @@ This panel will be cut into the lower back, the back sliding panel and the cente
 
 This panel will be cut into two pieces - each with a side and an interior divider.  The final cuts for these are done on the table saw.
 
-
-## Side panels
 Below is a sketch of the side of the carcase and an assembled side. 
 
 ![](sidePiecesSketch.jpg)
@@ -151,7 +150,7 @@ The following G-code ``.nc`` files are used to cut out all the pieces.
 | ``leftSide.nc``     | 8.035" wide x 11.875" high  | Cuts on assembled left side |
 | ``rightSide.nc``    | 8.035" wide x 11.875" high  | Cuts on assembled right side |
 
-### Plywood panels
+## Cut the panels
 Perform the following steps:
 
 - Cut a full sheet of baltic birch into three blanks.
@@ -172,6 +171,12 @@ Perform the following steps:
 ### Hardwood molding 
 All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One other piece of wood is needed on which to mount the Raspberry Pi.
 
+Following is a diagram of the side moldings (*Double dado*) and the L-shaped moldings:
+
+![](molding-dimensions.jpg)
+
+*Cross section of the two moldings*
+
 | Description               | Qty | Size |
 | -----------               | --- | ---- |
 | Side tops and bottoms     | 4   | 7.385" |
@@ -180,33 +185,6 @@ All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One 
 | Raspberry Pi platform     | 1   | 2.75" x 3.625" x 1.25" tall |
 
 One other piece is a *platform* used to elevate the Raspberry Pi. The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports. Usually 1-1/4" thick is enough, but not always - measure the height of your power supply.
-
-Following is a diagram of the side moldings (*Double dado*) and the L-shaped moldings
-
-![](molding-dimensions.jpg)
-*Cross section of the two moldings*
-
-## Prepare for assembly 
-Final assembly of the carcase can take place when you have:
-- Six panels cut from the two CNC jobs 
-- Two sides and internal dividers cut on the table saw 
-- Two sides assembled and cut with CNC jobs
-
-To accomplish this, perform the following tasks:
-- [Prepare all panels](*prepare-all-panels)
-- [Drill holes on face](*drill-holes-on-face)
-- [Construct two sides](*construct-two-sides)
-
-### Prepare all panels
-You should have six panels ~20" wide cut from the two CNC jobs.
-
-- Cut the 2 side panels and 2 internal enclosures to the specified sizes.
-
-You should now have 10 pieces of plywood:
-- 4 milled panels to be glued together
-- 2 enclosure dividers to be glued inside the carcase
-- 2 panels that will be sliding covers
-- 2 sides with holes drilled
 
 ### Glue the sides
 
@@ -218,6 +196,16 @@ Perform the following steps.
 - Since the sander is out, sand the faces of the front, bottom and back.
 - Glue both sides with a strap clamp.
  
+## Prepare for assembly 
+Final assembly of the carcase can take place when you have:
+- Six panels cut from the two CNC jobs 
+- Two sides and internal dividers cut on the table saw 
+- Two sides assembled and cut with CNC jobs
+
+To accomplish this, perform the following tasks:
+- [Drill holes on face](*drill-holes-on-face)
+- [Construct two sides](*construct-two-sides)
+
 ### Drill holes on face 
 The second CNC job on the main panel prepared 10 holes to be drilled from the front, for the amp, buttons and jacks,
 as well as two cavities for the amplifier and the 3 buttons to go in.
