@@ -166,9 +166,6 @@ Perform the following steps:
   - Side panels: 6.755" x 10.520"
   - Internal dividers 7.15" x 6.875"  
 
-![](main-panel-being-cut.jpg)
-*Main panel being cut*
-
 ### Hardwood molding 
 All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One other piece of wood is needed on which to mount the Raspberry Pi.
 
