@@ -1,14 +1,12 @@
- 
+
 # Overview of a smart boombox
-This directory contains a description of the hardware and how to build a boombox.
-
-Dozens of prototypes have led up to this model.
-
 The goal of this project is to:
 - Create a beautiful, solid wood, retro-looking boombox, 
 - That sounds amazing,
 - That can play music by voice, and  
 - That respects privacy by performing operations without accessing the Internet. 
+
+Dozens of prototypes have led up to this model.
 
 The build is described in excruciating detail, not only for the good of humanity, but also because the author forgets all the steps involved and can never find the scraps of paper with the right notes.
 
@@ -51,7 +49,7 @@ This picture shows an amp on the left, a RasPi 5 and a Hifiberry “DAC HAT” t
 # How to Build a smart boombox
 To build the boombox, perform the following steps: 
 
-- [Obtain parts and components](#obtain-all-parts-and-components)
+- [Obtain parts and components](#obtain-parts-and-components)
 - [Cut the wood](#cut-the-wood)
 - [Glue the carcase](#glue-carcase)
 - [Install components](#install-components)
@@ -137,10 +135,10 @@ This panel will be cut into the lower back, the back sliding panel and the cente
 ![](Panel3.png) 
 
 *Panel 3 in Easel software*
-This panel will be cut into two pieces - each with a side and an interior divider.  The final cuts for these are done on the tablesaw.
+This panel will be cut into two pieces - each with a side and an interior divider.  The final cuts for these are done on the table saw.
 
 ## Side panels
-Below is a sketch of the side of the carcase and an assembled side piece. 
+Below is a sketch of the side of the carcase and an assembled side. 
 
 ![](sidePiecesSketch.jpg)
 
@@ -152,20 +150,25 @@ The following G-code ``.nc`` files are used to cut out all the pieces.
 | ``Panel1.nc``       | 19.875" x 26.00" | Top, front and bottom panels |
 | ``Panel2.nc``       | 19.875" x 19.17" | Back, back slider and center panels |
 | ``Panel3.nc``       | 19.875" x 14.56" | Two sides and two interior dividers |
-| ``leftSide.nc``     | 8.035" wide x 11.875" high  | Cuts on left side |
-| ``rightSide.nc``    | 8.035" wide x 11.875" high  | Cuts on right side |
+| ``leftSide.nc``     | 8.035" wide x 11.875" high  | Cuts on assembled left side |
+| ``rightSide.nc``    | 8.035" wide x 11.875" high  | Cuts on assembled right side |
 
 ### Plywood panels
-Following are the 1/2" plywood pieces 19.875" x 0.480":  
+Perform the following steps:
 
-- Cut three pieces from one blank:	
+- Cut three panels from one blank:	
   - Panel 1: 26.00"
   - Panel 2: 19.17"
   - Panel 3: should be exactly 14.56" (assuming 2 kerfs of 0.125")
-- Cut each panel on the CNC machine. You should have 8 panels each 19.875" wide
-- Cut two sides and dividers from the last panel
+- Cut each panel on the CNC machine. 
+  - **Before removing the panel from the clamps**, verify the dados are wide enough to fit the plywood!
+  - When completed, there should be 8 panels each 19.875" wide
+- Cut two sides and dividers from the last panel on the table saw
   - Side panels: 6.755" x 10.520"
   - Internal dividers 7.15" x 6.875"  
+
+![](main-panel-being-cut.jpg)
+*Main panel being cut*
 
 ### Hardwood molding 
 All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One other piece of wood is needed on which to mount the Raspberry Pi.
@@ -187,33 +190,13 @@ Following is a diagram of the side moldings (*Double dado*) and the L-shaped mol
 ## Prepare for assembly 
 Final assembly of the carcase can take place when you have:
 - Six panels cut from the two CNC jobs 
-- Two sides and internal dividers cut on the tablesaw 
+- Two sides and internal dividers cut on the table saw 
 - Two sides assembled and cut with CNC jobs
 
 To accomplish this, perform the following tasks:
-- [Cut the main panels](*cut-the-main-panels)
 - [Prepare all panels](*prepare-all-panels)
 - [Drill holes on face](*drill-holes-on-face)
 - [Construct two sides](*construct-two-sides)
-
-### Cut the main panels
-The distance between each of the 5 knobs on the amplifier is 0.720" in the CNC job.  Before running the job, verify that is true on the amp in hand.
-
-Following are the steps to cut the main panel.
-- Cut a sheet of Baltic birch into thirds - 19.875" x ~60"
-- Cut a piece 43.68". This is the "main panel" which will later be cut into six pieces. 
-- Mark a "1" and a "2" as shown in the figure above.  This will allow you align the grain properly on all panels. 
-- Load the Gcode ``MainPanelsJob1.nc``.
-- Clamp and square the main panel. 
-- Zero XYZ of the main panel.
-- Load and run the job to cut the majority of the main panel.
-- **Before removing the panel from the clamps**, verify the dados are wide enough to fit the plywood!
-- Rotate the piece 180 degrees and run the job ``10panelsJob2.nc``, again squaring and zeroing the piece.  This will cut the holes and recesses at the top of the front panel. 
-
-This picture shows the main panel being cut by a CNC machine.
-
-![](main-panel-being-cut.jpg)
-*Main panel being cut*
 
 ### Prepare all panels
 You should have six panels ~20" wide cut from the two CNC jobs.
@@ -243,7 +226,7 @@ as well as two cavities for the amplifier and the 3 buttons to go in.
 Baltic birch plywood is subject to tearout.  To avoid that as much as possible, perform the following steps:
 - Drill 10 pilot holes from the back in the center of each hole with a 1/16" bit.
 - Turn drill press speed up to 2100 RPMs.
-- Set fence to 2.67" to the drill bit (TODO: check this against Easel)
+- Use the template which fits above the decorative molding.
 - Drill holes in the front with sharp Forstner bits:
   - 2 holes for jacks:   11/32 (0.344")
   - 3 holes for buttons:  9/32 (0.281") 
@@ -286,10 +269,7 @@ To glue up the center of the carcase, perform the following tasks:
 To glue the sides to the main carcase, perform the following tasks:
 - Dry fit the sides on.
 - Glue the sides on, clamping with 5 24" clamps.
-- Allow to dry.
 - Screw 4 1-1/2" stainless steel screws through each side into carcase. 
-
-**TODO** Get a picture of this
 
 ### Glue L-shaped moldings
 You should have four L-shaped moldings, each greater than 20".
@@ -299,11 +279,8 @@ To attach the L-shaped moldings to the box, perform the following tasks:
 - Cut one piece to the length of the top-back.  This will be the longest piece.
 - Cut the other 3 pieces to size so they fit tightly.
 - Glue the 4 moldings onto the carcase and clamp. The long molding will be glued to the top sliding panel.  
-- Allow to dry.
 - Drill holes and screw 2 1-1/2" stainelss steel screws through the top sliding panel molding into the back sliding panel.  
 This will ensure the boombox stays together when being carried. 
-
-**TODO** Get a picture of this
 
 ### Finish sliding panels 
 Ideally, the sliding panels will fit and slide perfectly.  
