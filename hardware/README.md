@@ -22,7 +22,7 @@ The picture below shows the front of a boombox carcase assembled and finished, b
 The subwoofer in the center is in a sealed enclosure and *down firing* while the other 5-1/4" device in front is a *passive radiator* - a speaker with no electronics. There is also a smaller passive radiator on the back, so the subwoofer 
 is driving itself and two other *speakers*. 
 
-The left and right enclosures are ported. They each have a 4" mid-range speaker and a 1" tweeter. *Crossover networks* come with the tweeters, so no soldering is required. 
+The left and right enclosures are ported. They each have a 4" mid-range speaker, a 1" tweeter and a 1-3/4" x 4" plastic port on the sides. *Crossover networks* come with the tweeters, so no soldering is required. 
 
 The subwoofer and mid-ranges are protected with grills, while the passive radiators are unprotected because 
 they’re the cheapest to replace and they look kinda cool "naked".
@@ -107,7 +107,9 @@ Below is a sketch of a blank:
 
 ![](20x60panelLayout.jpg) 3 panel layout before being cut
 
-From this sketch, values are entered into the G-Code software.  This example shows screen shots from easel.com.
+From this sketch, values are entered into the G-Code software.  
+
+The figures below show show screen shots from the G-Code entered in at easel.com.
 
 ![](Panel1.png) 
 
@@ -130,7 +132,6 @@ This panel will be cut into the lower back, the back sliding panel and the cente
 
 This panel will be cut into two pieces - each with a side and an interior divider.  The final cuts for these are done on the table saw.
 
-A full sheet of 1/2" x 60" x 60" baltic birch plywood is cut into thirds.  Assuming a 0.125" blade kerf, three *blanks* of 19.875" x 60" will result.  Using a 30" x 30" capacity CNC machine, the blank must be cut into three pieces. Therefore, there are three CNC jobs.
 
 ## Side panels
 Below is a sketch of the side of the carcase and an assembled side. 
@@ -138,6 +139,8 @@ Below is a sketch of the side of the carcase and an assembled side.
 ![](sidePiecesSketch.jpg)
 
 ## G-code
+A full sheet of 1/2" x 60" x 60" baltic birch plywood is cut into thirds.  Assuming a 0.125" blade kerf, three *blanks* of 19.875" x 60" will result.  Using a 30" x 30" capacity CNC machine, the blank must be cut into three pieces. Therefore, there are three CNC jobs.
+
 The following G-code ``.nc`` files are used to cut out all the pieces.
 
 | G-code file         | Size   | Description |
