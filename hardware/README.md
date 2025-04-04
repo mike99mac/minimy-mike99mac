@@ -194,12 +194,6 @@ Perform the following steps.
 - Since the sander is out, sand the faces of all other panels. 
 - Glue both sides with a strap clamp.
  
-## Prepare for assembly 
-Final assembly of the carcase can take place when you have:
-- Six panels cut from the two CNC jobs 
-- Two sides and internal dividers cut on the table saw 
-- Two sides assembled and cut with CNC jobs
-
 ## Glue carcase 
 To perform the final assembly of all wood pieces, perform the following tasks:
 - [Glue center](#glue-center-of-carcase)
