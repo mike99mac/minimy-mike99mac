@@ -25,10 +25,10 @@ The left and right enclosures are ported. They each have a 4" mid-range speaker,
 
 The inside dimensions of the enclosures are as follows:
 
-|Enclosure                | Inside dimensions  | Cubic inches | Cubic feet |
-|---------                | -----------------  | ------------ | ---------- |
-|Left and Right enclosures| 6.125 * 6.77 * 6.5 | 269.5        | .155 |
-|Center enclosure         | 6.125 * 6.77 * 5.9 | 244.6        | .142 |
+|Enclosure                | Inside dimensions     | Cubic in | Cubic ft |
+|---------                | -----------------     | -------- | -------- |
+|Left and Right enclosures| 6.125" x 6.77" x 6.5" | 269.5    | .155 |
+|Center enclosure         | 6.125" x 6.77" x 5.9" | 244.6    | .142 |
 
 These values are close to that which is recommended by the manufaturers.
 
@@ -142,16 +142,14 @@ Using a 30" x 30" capacity CNC machine, the blank must be cut into three pieces.
 | ``Panel1.nc``       | 19.875" x 26.00" | Top, front and bottom panels |
 | ``Panel2.nc``       | 19.875" x 19.17" | Back, back slider and center panels |
 | ``Panel3.nc``       | 19.875" x 14.56" | Two sides and two interior dividers |
-| ``leftSide.nc``     | 8.035" wide x 11.875" high  | Cuts on assembled left side |
-| ``rightSide.nc``    | 8.035" wide x 11.875" high  | Cuts on assembled right side |
+| ``leftSide.nc``     | 8.035" wide x 11.80" high  | Cuts on assembled left side |
+| ``rightSide.nc``    | 8.035" wide x 11.80" high  | Cuts on assembled right side |
 
 ### Cut the panels
 Perform the following steps:
 
 - Cut a full sheet of baltic birch into three blanks.
-
 - Before cutting a blank, add pairs of marks of 1, 2, 3 and 4 highlighted in the drawing below in yellow triangles.  This will allow you to maintain the correct grain orientation during assembly.
-
 - Cut three panels from one blank:	
   - Panel 1: 26.00"
   - Panel 2: 19.17"
@@ -197,7 +195,7 @@ Perform the following steps.
  
 ## Glue carcase 
 To perform the final assembly of all wood pieces, perform the following tasks:
-- [Glue center](#glue-center-of-carcase)
+- [Glue center of carcase](#glue-center-of-carcase)
 - [Glue sides to carcase](#glue-sides-to-carcass)
 - [Glue L-shaped moldings](#glue-l-shaped-moldings)
 - [Finish sliding panels](#finish-sliding-panels)
@@ -206,12 +204,11 @@ To perform the final assembly of all wood pieces, perform the following tasks:
 To glue up the center of the carcase, perform the following tasks:
 - Dry fit the four machined panels and two enclosure dividers.
 - Glue the two enclosure dividers to the bottom and center divider and clamp with 2 clamps.
-- Glue the sides with no clamps to the front panel.
-- Remove the 2 clamps and glue the back panel on.
-- Add perhaps 4 clamps to lightly clamp all 6 pieces.
+- Glue this assembly to the front panel without adding clamps.
+- Remove the 2 clamps so as to glue the back panel on.
+- Add 4 clamps to lightly clamp all 6 pieces.
 - Use 2 right-angle clamps at the left and right sides to ensure the box is square.
 - Add many more clamps to ensure tight joints all around.
-- Allow to dry.
 
 ### Glue sides to carcase 
 To glue the sides to the main carcase, perform the following tasks:
