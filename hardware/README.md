@@ -220,9 +220,7 @@ To glue the sides to the main carcase, perform the following tasks:
 - Screw 4 1-1/2" stainless steel screws through each side into carcase. 
 
 ### Glue L-shaped moldings
-You should have four L-shaped moldings, each greater than 20".
-
-To attach the L-shaped moldings to the box, perform the following tasks:
+You should have four L-shaped moldings, each greater than 20".  To attach them, perform the following tasks:
 - Slide the top slider on, but not the back slider, so it cannot be glued to the top.
 - Cut one piece to the length of the top-back.  This will be the longest piece.
 - Cut the other 3 pieces to size so they fit tightly.
@@ -231,8 +229,7 @@ To attach the L-shaped moldings to the box, perform the following tasks:
 This will ensure the boombox stays together when being carried. 
 
 ### Drill holes on face 
-Baltic birch plywood is subject to tearout.  To avoid that as much as possible, perform the following steps:
-- Using a template, drill holes in the front with sharp Forstner bits:
+Baltic birch plywood is subject to tearout. Use a template to avoid that and drill the following holes:
   - 2 holes for jacks:   11/32 (0.344")
   - 3 holes for buttons:  9/32 (0.281") 
   - 5 holes for amp:     19/64 (0.297") 
