@@ -25,10 +25,10 @@ The left and right enclosures are ported. They each have a 4" mid-range speaker,
 
 The inside dimensions of the enclosures are as follows:
 
-|Enclosure                | Inside dimensions     | Cubic in | Cubic ft |
-|---------                | -----------------     | -------- | -------- |
-|Left and Right enclosures| 6.125" x 6.77" x 6.5" | 269.5    | .155 |
-|Center enclosure         | 6.125" x 6.77" x 5.9" | 244.6    | .142 |
+|Enclosure        | Inside dimensions     | Cubic in | Cubic ft |
+|---------        | -----------------     | -------- | -------- |
+|Left and Right   | 6.125" x 6.77" x 6.5" | 269.5    | 0.155 |
+|Center           | 6.125" x 6.77" x 5.9" | 244.6    | 0.142 |
 
 These values are close to that which is recommended by the manufaturers.
 
@@ -154,7 +154,7 @@ Perform the following steps:
   - Panel 1: 26.00"
   - Panel 2: 19.17"
   - Panel 3: should be exactly 14.56" (assuming 2 kerfs of 0.125")
-- Cut each panel on the CNC machine. 
+- Run jobs Panel1, Panel2 and Panel3 on the CNC machine.
   - **Before removing the panel from the clamps**, verify the dados are wide enough to fit the plywood!
   - When completed, there should be 8 panels each 19.875" wide
 - Cut two sides and dividers from the last panel on the table saw
@@ -182,18 +182,21 @@ The last piece is a *platform* used to elevate the Raspberry Pi. The thickness m
 
 ### Construct the sides
 
-Perform the following steps.
+To construct the sides, perform the following steps: 
 - Make 45 degree cuts on all 8 side pieces so they go together like a picture frame.
 - Arrange the two sides **ensuring there are left and right sides**. Leave the pieces in those positions. 
-- Sand the faces of sides.
+- Sand the faces of sides panels.
 - Sand the insides of the moldings.
-- Glue the two sides.
+- Glue both sides with a strap clamp.
+- Since the sander is out, sand the faces of all other panels. 
+
+When the sides are dry, run the CNC jobs:
 - Run the CNC job ``leftSide.nc`` on the left side.
 - Run the CNC job ``rightSide.nc`` on the right side.
-- Since the sander is out, sand the faces of all other panels. 
-- Glue both sides with a strap clamp.
  
 ## Glue carcase 
+You should now have 6 wide panels, 2 interior dividers, and two assembled and machined sides.  It is recommended you do a *monolithic glue* - that is, continue all steps until the box is assembled. 
+
 To perform the final assembly of all wood pieces, perform the following tasks:
 - [Glue center of carcase](#glue-center-of-carcase)
 - [Glue sides to carcase](#glue-sides-to-carcass)
