@@ -54,11 +54,13 @@ To build the boombox, perform the following steps:
 - [Install components](#install-components)
 - [Stand up the software stack](#stand-up-the-software-stack)
 
-## Obtain parts and components 
-For wood, you need 1/2" Baltic birch and some solid hardwood.
+## Obtain wood parts and components 
+For wood, obtain: 
+- A sheet of 1/2" x 60" x 60" Baltic birch
+- 1" hardwood planed to between 0.830" and 0.840" 
 
 ### Electronic components  
-Following are the components needed, the cost and source.
+Following are the components and parts needed, the cost and source.
 
 | Description                                  | Cost | Source |
 | -----------                                  | ---- | ------ |
@@ -133,7 +135,7 @@ Below is a sketch of the side of the carcase and an assembled side.
 ![](sidePiecesSketch.jpg)
 
 ### G-code to cut panels
-A full sheet of 1/2" x 60" x 60" baltic birch plywood is cut into thirds.  Assuming a 0.125" blade kerf, three *blanks* of 19.875" x 60" will result.  Using a 30" x 30" capacity CNC machine, the blank must be cut into three pieces. The following G-code ``.nc`` files are used to cut out all the pieces.
+Using a 30" x 30" capacity CNC machine, the blank must be cut into three pieces. Then the sides are assembled and a job is performed on them.  The following G-code ``.nc`` files are used to cut out all the pieces.
 
 | G-code file         | Size   | Description |
 | -----------         | ----   | -----------
@@ -148,7 +150,7 @@ Perform the following steps:
 
 - Cut a full sheet of baltic birch into three blanks.
 
-- Before cutting the three pieces, add pairs of marks of 1, 2, 3 and 4 highlighted in the drawing below in yellow triangles.  This will allow you to maintain the correct grain orientation during assembly.
+- Before cutting a blank, add pairs of marks of 1, 2, 3 and 4 highlighted in the drawing below in yellow triangles.  This will allow you to maintain the correct grain orientation during assembly.
 
 - Cut three panels from one blank:	
   - Panel 1: 26.00"
