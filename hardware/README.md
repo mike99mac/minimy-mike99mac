@@ -4,14 +4,14 @@ The goal of this project is to:
 - Create a beautiful, solid wood, retro-looking boombox, 
 - That sounds amazing,
 - That can play music by voice, and  
-- That respects privacy by performing operations without accessing the Internet. 
+- That respects privacy. 
 
 Dozens of prototypes have led up to this model.
 
 The build is described in excruciating detail, not only for the good of humanity, but also because the author forgets all the steps involved and can never find the scraps of paper with the right notes.
 
 It has three enclosures at the bottom for the left speaker, subwoofer, and right speaker. 
-The top third houses the amp, the computer and other components. 
+The top is an enclosure for the computer, amplifier and peripherals. 
 Two removable panels allow easy access to the components.  It is constructed of: 
 - 1/2" Baltic birch plywood, perhaps the best material on earth for speaker enclosures,
 - Hardwood edge moldings for contrast and to make the box solid, and
@@ -19,13 +19,9 @@ Two removable panels allow easy access to the components.  It is constructed of:
 
 The picture below shows the front of a boombox carcase assembled and finished, but with no components installed. 
 
-The subwoofer in the center is in a sealed enclosure and *down firing* while the other 5-1/4" device in front is a *passive radiator* - a speaker with no electronics. There is also a smaller passive radiator on the back, so the subwoofer 
-is driving itself and two other *speakers*. 
+The subwoofer in the center is in a sealed enclosure and *down firing* while *passive radiators* (speakers with no electronics) are on the front and back. So the subwoofer is effectively driving three speakers. 
 
 The left and right enclosures are ported. They each have a 4" mid-range speaker, a 1" tweeter and a 1-3/4" x 4" plastic port on the sides. *Crossover networks* come with the tweeters, so no soldering is required. 
-
-The subwoofer and mid-ranges are protected with grills, while the passive radiators are unprotected because 
-they’re the cheapest to replace and they look kinda cool "naked".
 
 The inside dimensions of the enclosures are as follows:
 
@@ -35,6 +31,9 @@ The inside dimensions of the enclosures are as follows:
 |Center enclosure         | 6.125 * 6.77 * 5.9 | 244.6        | .142 |
 
 These values are close to that which is recommended by the manufaturers.
+
+The subwoofer and mid-ranges are protected with grills, while the passive radiators are unprotected because 
+they’re the cheapest to replace and they look kinda cool "naked".
 
 There is a 3.5mm headphone jack on the left, and an *aux in* jack on the right. 
 
