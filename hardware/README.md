@@ -59,10 +59,10 @@ To build the boombox, perform the following steps:
 For wood, you need 1/2" Baltic birch and some solid hardwood.
 
 ### Electronic components  
-Following are the components needed, the cost (in Jan 2024) and the source where they were purchased.
+Following are the components needed, the cost and source.
 
-| Description                                  | Cost | Source/use |
-| -----------                                  | ---- | ---------- |
+| Description                                  | Cost | Source |
+| -----------                                  | ---- | ------ |
 | Raspberry Pi 5: 8GB RAM                      | $80  | www.seeedstudio.com/Raspberry-Pi-5-8GB-p-5810.html |
 | RasPi power supply: CanaKit 5V, 3.5A         | $10  | www.amazon.com/gp/product/B01DID1TG4 |
 | DAC HAT: Hifiberry DAC2 Pro                  | $45  | www.hifiberry.com/shop/boards/hifiberry-dac2-pro/ |
@@ -133,7 +133,7 @@ Below is a sketch of the side of the carcase and an assembled side.
 
 ![](sidePiecesSketch.jpg)
 
-## G-code
+### G-code to cut panels
 A full sheet of 1/2" x 60" x 60" baltic birch plywood is cut into thirds.  Assuming a 0.125" blade kerf, three *blanks* of 19.875" x 60" will result.  Using a 30" x 30" capacity CNC machine, the blank must be cut into three pieces. The following G-code ``.nc`` files are used to cut out all the pieces.
 
 | G-code file         | Size   | Description |
@@ -144,7 +144,7 @@ A full sheet of 1/2" x 60" x 60" baltic birch plywood is cut into thirds.  Assum
 | ``leftSide.nc``     | 8.035" wide x 11.875" high  | Cuts on assembled left side |
 | ``rightSide.nc``    | 8.035" wide x 11.875" high  | Cuts on assembled right side |
 
-## Cut the panels
+### Cut the panels
 Perform the following steps:
 
 - Cut a full sheet of baltic birch into three blanks.
@@ -162,7 +162,7 @@ Perform the following steps:
   - Side panels: 6.755" x 10.520"
   - Internal dividers 7.15" x 6.875"  
 
-### Hardwood molding 
+### Cut the moldings 
 All hardwood moldings are 0.830" x 0.830". Almost any hardwood can be used. One other piece of wood is needed on which to mount the Raspberry Pi.
 
 Following is a diagram of the side moldings (*Double dado*) and the L-shaped moldings:
@@ -202,12 +202,12 @@ Final assembly of the carcase can take place when you have:
 
 ## Glue carcase 
 To perform the final assembly of all wood pieces, perform the following tasks:
-- [Glue center](#glue-center)
+- [Glue center](#glue-center-of-carcase)
 - [Glue sides to carcase](#glue-sides-to-carcass)
 - [Glue L-shaped moldings](#glue-l-shaped-moldings)
 - [Finish sliding panels](#finish-sliding-panels)
 
-### Glue center 
+### Glue center of carcase
 To glue up the center of the carcase, perform the following tasks:
 - Dry fit the four machined panels and two enclosure dividers.
 - Glue the two enclosure dividers to the bottom and center divider and clamp with 2 clamps.
