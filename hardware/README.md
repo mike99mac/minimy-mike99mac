@@ -56,11 +56,7 @@ To build the boombox, perform the following steps:
 - [Stand up the software stack](#stand-up-the-software-stack)
 
 ## Obtain parts and components 
-Obtain the follow parts and components:
-
-- [Electronic components](#components)
-- [Plywood panels](#plywood-panels)
-- [Hardwood molding](#hardwood-molding)
+For wood, you need 1/2" Baltic birch and some solid hardwood.
 
 ### Electronic components  
 Following are the components needed, the cost (in Jan 2024) and the source where they were purchased.
@@ -138,9 +134,7 @@ Below is a sketch of the side of the carcase and an assembled side.
 ![](sidePiecesSketch.jpg)
 
 ## G-code
-A full sheet of 1/2" x 60" x 60" baltic birch plywood is cut into thirds.  Assuming a 0.125" blade kerf, three *blanks* of 19.875" x 60" will result.  Using a 30" x 30" capacity CNC machine, the blank must be cut into three pieces. Therefore, there are three CNC jobs.
-
-The following G-code ``.nc`` files are used to cut out all the pieces.
+A full sheet of 1/2" x 60" x 60" baltic birch plywood is cut into thirds.  Assuming a 0.125" blade kerf, three *blanks* of 19.875" x 60" will result.  Using a 30" x 30" capacity CNC machine, the blank must be cut into three pieces. The following G-code ``.nc`` files are used to cut out all the pieces.
 
 | G-code file         | Size   | Description |
 | -----------         | ----   | -----------
@@ -184,16 +178,20 @@ Following is a diagram of the side moldings (*Double dado*) and the L-shaped mol
 | Front and back L moldings | 4   | ~20" (cut to size later) |
 | Raspberry Pi platform     | 1   | 2.75" x 3.625" x 1.25" tall |
 
-One other piece is a *platform* used to elevate the Raspberry Pi. The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports. Usually 1-1/4" thick is enough, but not always - measure the height of your power supply.
 
-### Glue the sides
+The last piece is a *platform* used to elevate the Raspberry Pi. The thickness must be slightly taller than the power supply for proper access to the Raspberry Pi's power and display ports. Usually 1-1/4" thick is enough, but not always - measure the height of your power supply.
+
+### Construct the sides
 
 Perform the following steps.
-
-- Drill a 1-7/8" hole in each of the sides 3" from the bottom and centered.
+- Make 45 degree cuts on all 8 side pieces so they go together like a picture frame.
+- Arrange the two sides **ensuring there are left and right sides**. Leave the pieces in those positions. 
 - Sand the faces of sides.
 - Sand the insides of the moldings.
-- Since the sander is out, sand the faces of the front, bottom and back.
+- Glue the two sides.
+- Run the CNC job ``leftSide.nc`` on the left side.
+- Run the CNC job ``rightSide.nc`` on the right side.
+- Since the sander is out, sand the faces of all other panels. 
 - Glue both sides with a strap clamp.
  
 ## Prepare for assembly 
@@ -201,38 +199,6 @@ Final assembly of the carcase can take place when you have:
 - Six panels cut from the two CNC jobs 
 - Two sides and internal dividers cut on the table saw 
 - Two sides assembled and cut with CNC jobs
-
-To accomplish this, perform the following tasks:
-- [Drill holes on face](*drill-holes-on-face)
-- [Construct two sides](*construct-two-sides)
-
-### Drill holes on face 
-The second CNC job on the main panel prepared 10 holes to be drilled from the front, for the amp, buttons and jacks,
-as well as two cavities for the amplifier and the 3 buttons to go in.
-
-Baltic birch plywood is subject to tearout.  To avoid that as much as possible, perform the following steps:
-- Drill 10 pilot holes from the back in the center of each hole with a 1/16" bit.
-- Turn drill press speed up to 2100 RPMs.
-- Use the template which fits above the decorative molding.
-- Drill holes in the front with sharp Forstner bits:
-  - 2 holes for jacks:   11/32 (0.344")
-  - 3 holes for buttons:  9/32 (0.281") 
-  - 5 holes for amp:     19/64 (0.297") 
-
-### Construct two sides
-There are CNC jobs for the glued up left and right sides which accomplish this function:
-- Cut a hole for the plastic port.
-- Cut the outside molding so the sliding panels can be inserted.
-- Cut most of the inside thin molding inside the carcase.  
-This step was added because it was extremely difficult to get the sides and carcase to align perfectly.
-
-To construct the sides, perform the following tasks:
-- Cut 4 *double dado* moldings to 11.875" and 4 to 7.385", all with 45 degree angles so they go together like a picture frame.
-- Arrange the two sides **ensuring there are left and right sides**. Leave the pieces in those positions. 
-- Glue each side up without altering the left and right side arrangement.
-- Run the CNC job ``leftSide.nc`` on the left side.
-- Run the CNC job ``rightSide.nc`` on the right side.
-- Sand the sides, especially the inside edges which will not be easily accessible after they are glued to the carcase.
 
 ## Glue carcase 
 To perform the final assembly of all wood pieces, perform the following tasks:
@@ -268,6 +234,13 @@ To attach the L-shaped moldings to the box, perform the following tasks:
 - Glue the 4 moldings onto the carcase and clamp. The long molding will be glued to the top sliding panel.  
 - Drill holes and screw 2 1-1/2" stainelss steel screws through the top sliding panel molding into the back sliding panel.  
 This will ensure the boombox stays together when being carried. 
+
+### Drill holes on face 
+Baltic birch plywood is subject to tearout.  To avoid that as much as possible, perform the following steps:
+- Using a template, drill holes in the front with sharp Forstner bits:
+  - 2 holes for jacks:   11/32 (0.344")
+  - 3 holes for buttons:  9/32 (0.281") 
+  - 5 holes for amp:     19/64 (0.297") 
 
 ### Finish sliding panels 
 Ideally, the sliding panels will fit and slide perfectly.  
