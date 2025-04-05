@@ -150,6 +150,7 @@ Perform the following steps:
 
 - Cut a full sheet of baltic birch into three blanks.
 - Before cutting a blank, add 7 pairs of marks so you can maintain the correct grain orientation during assembly:
+
 | Number | Distance from top  |
 | ------ | -----------------  |
 | 1      |  6.8"    |
@@ -159,6 +160,7 @@ Perform the following steps:
 | 5      |  36.8"   |
 | 6      |  45.17"  |
 | 7      |  52.32"  |
+
 - Cut three panels from one blank:	
   - Panel 1: 26.00"
   - Panel 2: 19.17"
