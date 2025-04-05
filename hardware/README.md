@@ -149,7 +149,16 @@ Using a 30" x 30" capacity CNC machine, the blank must be cut into three pieces.
 Perform the following steps:
 
 - Cut a full sheet of baltic birch into three blanks.
-- Before cutting a blank, add pairs of marks of 1, 2, 3 and 4 highlighted in the drawing below in yellow triangles.  This will allow you to maintain the correct grain orientation during assembly.
+- Before cutting a blank, add 7 pairs of marks so you can maintain the correct grain orientation during assembly:
+| Number | Distance from top  |
+| ------ | -----------------  |
+| 1      |  6.8"    |
+| 2      |  18.3"   |
+| 3      |  26.0"   |
+| 4      |  32.76"  |
+| 5      |  36.8"   |
+| 6      |  45.17"  |
+| 7      |  52.32"  |
 - Cut three panels from one blank:	
   - Panel 1: 26.00"
   - Panel 2: 19.17"
