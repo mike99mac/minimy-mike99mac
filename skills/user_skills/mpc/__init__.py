@@ -25,6 +25,8 @@ class MpcSkill(MediaSkill):
     self.log.debug(f"MpcSkill.__init__(): skill_base_dir: {self.skill_base_dir}")
     self.music_info = Music_info("none", "", {}, []) # music to play
     self.sentence = None 
+    self.music_info.mesg_file = "mpc_initialized"
+    self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.fallback_internet) 
 
   def fallback_internet(self):
     """
