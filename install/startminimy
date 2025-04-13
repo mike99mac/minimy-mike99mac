@@ -107,17 +107,18 @@ function startSystem
   echo "Starting Local STT Server ..."
   cd $baseDir
   python3 framework/services/stt/local/whisper/local_whisper.py >$logDir/whisper.log 2>&1 &
-  echo "Starting Local TTS Server ..."
-  deactivate                               # minimy_venv
-  cd $baseDir/framework/services/tts/local/mimic3
-  if [ ! -d .venv ]; then                  # venv not found
-    echo "ERROR: directory $baseDir/framework/services/tts/local/mimic3/.venv not found"
-    exit 4
-  fi
-  source .venv/bin/activate                # start the mimic venv
-  bin/mimic3 --model-dir voices/apope  > $logDir/mimic3_tts.log 2>&1 &
-  deactivate                               # exit mimic venv
-  cd $baseDir
+  # 
+  #echo "Starting Local TTS Server ..."
+  #deactivate                               # minimy_venv
+  #cd $baseDir/framework/services/tts/local/mimic3
+  #if [ ! -d .venv ]; then                  # venv not found
+  #  echo "ERROR: directory $baseDir/framework/services/tts/local/mimic3/.venv not found"
+  #  exit 4
+  #fi
+  #source .venv/bin/activate                # start the mimic venv
+  #bin/mimic3 --model-dir voices/apope  > $logDir/mimic3_tts.log 2>&1 &
+  #deactivate                               # exit mimic venv
+  #cd $baseDir
   source minimy_venv/bin/activate          # start the minimy virtual environment
   export PYTHONPATH=`pwd`   
   export SVA_BASE_DIR=`pwd`

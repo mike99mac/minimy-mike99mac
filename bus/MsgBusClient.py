@@ -2,6 +2,7 @@
 import asyncio
 import datetime
 import json
+import logging
 import os
 import time
 import websockets
@@ -49,6 +50,7 @@ class MsgBusClient:
     log_filename = self.base_dir + '/logs/messages.log'
     self.log = LOG(log_filename).log
     self.log.debug(f"MsgBusClient.__init__() client_id: {self.client_id}")
+    logging.getLogger('websockets').setLevel(logging.WARNING) # suppress DEBUG logs from websockets
     self.msg_handlers = {}
     self.loop = asyncio.new_event_loop()
     asyncio.set_event_loop(self.loop)
