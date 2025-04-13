@@ -46,7 +46,7 @@ function checkEnv
  }                                         # runCmd()
 
 #+--------------------------------------------------------------------------+
-function doIt                              
+function buildVenv                              
 # Build the virtual environment
 #+--------------------------------------------------------------------------+
  {
@@ -54,7 +54,7 @@ function doIt
   : STACK:  ${FUNCNAME[@]}
 
   echo
-  echo "Running $0 ..." > $logFile # create a new log file
+  echo "Running $0 at `date` ..." > $logFile # create a new log file
   echo | tee -a $logFile
   echo "cd to $HOME/minimy ..." | tee -a $logFile
   cd $HOME/minimy
@@ -69,7 +69,7 @@ function doIt
   runCmd $pipCmd install --upgrade pip
   echo | tee -a $logFile
   echo "Activating virtual environment ..." | tee -a $logFile
-  runCmd source minimy_venv/bin/activate          # start virtual environment
+  runCmd source minimy_venv/bin/activate   # start virtual environment
   echo | tee -a $logFile
   echo "Upgrading wheel and setuptools ..." | tee -a $logFile
   runCmd $pipCmd install --upgrade wheel setuptools
@@ -83,6 +83,8 @@ function doIt
   runCmd $pythonCmd -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
   echo "Installing yt-dlp and requirements.txt ..." | tee -a $logFile
   cd $baseDir
+  runCmd pip install --no-binary :all: regex # force pip to ignore old wheels and build fresh
+  runCmd $pipCmd install lingua_franca
   runCmd $pipCmd install -r install/requirements.txt
   echo "Installing local STT whisper" | tee -a $logFile
   runCmd $pipCmd install git+https://github.com/openai/whisper.git
@@ -90,15 +92,10 @@ function doIt
   runCmd $pipCmd install gpiozero
   runCmd $pipCmd install keyboard
   runCmd $pipCmd install lgpio
-  runCmd $pipCmd install lingua_franca
   runCmd $pipCmd install optimum
-  runCmd $pipCmd install requests
   runCmd $pipCmd install quart
-  runCmd $pipCmd install websocket-client
-  runCmd $pipCmd install "websockets==13.0"
   runCmd $pipCmd install whisper
   runCmd $pipCmd install youtube-search
-  runCmd $pipCmd install youtube-search-python
   runCmd $pipCmd install --upgrade --upgrade-strategy eager "optimum[neural-compressor]"
   echo | tee -a $logFile
 
@@ -109,12 +106,7 @@ function doIt
   fi
   runCmd $pipCmd install youtube-search-python
   echo | tee -a $logFile
-  echo "Deactivating virtual environment ..." | tee -a $logFile
-  echo | tee -a $logFile
   cd $HOME/minimy/framework/services/intent/nlp/local
-  #echo "ls -la cmu*" | tee -a $logFile
-  #ls -la cmu* | tee -a $logFile
-  #echo | tee -a $logFile
 
   echo "Building CMU link grammar ..." | tee -a $logFile
   runCmd tar xzf cmu_link-4.1b.tar.gz
@@ -122,7 +114,6 @@ function doIt
   echo "cd to link-4.1b ..." | tee -a $logFile
   cd link-4.1b
   runCmd make
-  echo | tee -a $logFile
 
   echo "Installing Local STT ..."| tee -a $logFile
   echo | tee -a $logFile
@@ -131,24 +122,33 @@ function doIt
   if [ "$pythonVer" = "3.11" ]; then 
     runCmd $pipCmd install --force-reinstall numpy==1.24 # numpy must be 1.24 for building whisper
   fi
-  source $HOME/minimy/minimy_venv/bin/activate # start the venv
+  #source $HOME/minimy/minimy_venv/bin/activate # start the venv
   runCmd $pythonCmd $baseDir/bldwhisper.py $baseDir/jfk.wav # build the base.en model
-  deactivate                                   # stop the venv
+  #deactivate                                   # stop the venv
 
   echo "Installing Local TTS ..."| tee -a $logFile
   echo | tee -a $logFile
   cd $baseDir/framework/services/tts/local
-  echo "Running command: wget http://rioespana.com/images/mimic3.tgz" | tee -a $logFile
-  runCmd wget http://rioespana.com/images/mimic3.tgz
-  runCmd tar xzf mimic3.tgz
-  cd mimic3
-  runCmd make install
-  cd $HOME/minimy
-  runCmd source framework/services/tts/local/mimic3/.venv/bin/activate
-  runCmd $pipCmd install importlib-resources
-  runCmd deactivate
-  echo | tee -a $logFile
+  if [ ! -d piper ]; then                  # not downloaded yet
+    runCmd wget -q https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_arm64.tar.gz
+    runCmd tar xzf piper_arm64.tar.gz
+    cd piper
+    runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx
+    runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx.json
+    runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_male/medium/en_US-hfc_male-medium.onnx
+    runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_male/medium/en_US-hfc_male-medium.onnx.json
+    echo "Piper has been installed!" | ./piper --model en_US-hfc_male-medium.onnx --output_file testpiper.wav
+    rc=$?
+    if [ "$rc" != 0 ]; then
+      echo "ERROR: piper config command returned $rc" | tee -a $logFile
+      exit 1
+    fi
+    runCmd aplay testpiper.wav             # play audio file
+  else
+    echo "Skipping piper - already installed ..."| tee -a $logFile
+  fi
 
+  cd $baseDir
   echo "Copying and enabling systemd .mount and .service files ..." | tee -a $logFile 
   runCmd sudo cp install/home-pi-minimy-logs.mount /etc/systemd/system 
   runCmd sudo systemctl enable home-pi-minimy-logs.mount 
@@ -168,12 +168,12 @@ function doIt
   cd /usr/local/sbin
   runCmd sudo chown $USER:$USER $minimyScripts
   runCmd sudo cp $HOME/minimy/install/great_songs.m3u /var/lib/mpd/playlists
-  echo | tee -a $logFile
-  echo "Starting virtual environment ..." | tee -a $logFile
-  source $HOME/minimy/minimy_venv/bin/activate
+  #echo | tee -a $logFile
+  #echo "Starting virtual environment ..." | tee -a $logFile
+  #source $HOME/minimy/minimy_venv/bin/activate
   echo " "
   echo "Install Complete at `date`" | tee -a $logFile
- }                                         # doIt()
+ }                                         # buildVenv()
 
 # main()
 baseDir="$HOME/minimy"
@@ -184,7 +184,7 @@ let stepNum=0
 timeStamp=`date +"%y-%m-%d-%H-%M-%S"`   
 
 checkEnv                                   # check the environment
-doIt                                       # do the work
+buildVenv                                       # do the work
 let min=$SECONDS/60
 let sec=$SECONDS%60
 if [ $sec -lt 10 ]; then                   # add a leading 0

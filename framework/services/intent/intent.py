@@ -141,40 +141,35 @@ class UttProc:
 
   def get_question_intent_match(self, info):
     self.log.debug(f"UttProc:get_question_intent_match() intents: {intents} ")
-    aplay(self.earcon_filename)  # should be configurable
-
-    # see if a quation matches an intent.
-    skill_id = ''
+    aplay(self.earcon_filename)            # should be configurable
+    skill_id = ''                          # see if a quation matches an intent.
     for intent in self.intents:
       stype, subject, verb = intent.split(":") 
       if stype == 'Q' and subject in info['subject'] and verb == info['qword']:
-        # fuzzy match - TODO please improve upon this
-        info['subject'] = subject
+        info['subject'] = subject          # fuzzy match - improve upon this
         skill_id = self.intents[intent]['skill_id']
         intent_state = self.intents[intent]['state']
         return skill_id, intent
     return skill_id, ''
 
   def get_intent_match(self, info):
+  """
+  for utterances of type command an intent match is a subject:verb and we don't fuzzy match
+  """
     self.log.debug("UttProc:get_intent_match() ")  
     aplay(self.earcon_filename)  # should be configurable
-
-    # for utterances of type command an intent match is a subject:verb and we don't fuzzy match
     skill_id = ''
     intent_type = 'C'
     if info['sentence_type'] == 'I':
       self.log.warning(f"Intent trying to match an informational statement which it is not designed to do! {info}")
       # info['sentence_type'] == 'C'  -MM
       info['sentence_type'] = 'C'
-
     subject = remove_articles(info['subject'])
     if subject:
       subject = subject.replace(":",";")
       subject = subject.strip()
-
     key = intent_type + ':' + subject.lower() + ':' + info['verb'].lower().strip()
     self.log.debug(f"Intent match key = {key}")
-
     if key in self.intents:
       skill_id = self.intents[key]['skill_id']
       intent_state = self.intents[key]['state']
@@ -192,7 +187,6 @@ class UttProc:
     # if verb not in self.recognized_verbs:
     #   self.recognized_verbs.append(data['verb'])
     # end -MM  
-
     if key in self.intents:
       self.log.warning(f"UttProc:handle_register_intent() Intent clash! key={key} skill_id=%{data['skill_id']}")
     else:
@@ -202,21 +196,18 @@ class UttProc:
   def run(self):
     self.log.debug(f"UttProc.run() Intent processor started - is_running = {self.is_running}")
     si = SentenceInfo(self.base_dir)
-
-    while self.is_running:       # get all text files in the input directory
+    while self.is_running:                 # get all text files in the input directory
       mylist = sorted( [f for f in glob.glob(self.tmp_file_path + "save_text/*.txt")] )
-      if len(mylist) > 0:      # we have at least one 
-        txt_file = mylist[0]     # take the first
-        fh = open(txt_file)    # grab contents
+      if len(mylist) > 0:                  # we have at least one 
+        txt_file = mylist[0]               # take first
+        fh = open(txt_file)                # grab contents
         contents = fh.read()
         fh.close()
-        start = contents.find("]") # clean up input
+        start = contents.find("]")         # clean up input
         utt_type = contents[1:start]
         utt = contents[start+1:]
         utt = scrub_sentence(utt)
-
-        # we special case OOBs here
-        oob_type = self.is_oob(utt)
+        oob_type = self.is_oob(utt)        # special case OOBs 
         self.log.debug(f"UttProc.run() oob_type: {oob_type} utt_type: {utt_type} utt: {utt}")
         if oob_type == 't':
           res = self.send_oob_to_system(utt, contents) 
