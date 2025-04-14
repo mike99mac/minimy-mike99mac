@@ -189,7 +189,7 @@ class STTSvc:
     # this is not necessary if you have good echo cancellation like a headset
     self.muted = False
     self.mute_start_time = 0
-    self.log.info("STT.run() Service is running **")
+    self.log.info("STT.run() started")
     while True:
       loop_ctr += 1
       if loop_ctr > clear_utt_time_in_seconds:

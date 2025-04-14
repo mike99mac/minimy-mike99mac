@@ -22,7 +22,9 @@ model = whisper.load_model(model_name)     # load model
 
 @app.route("/stt", methods=["POST"])
 async def transcribe():
-  """ STT transcription - expects raw WAV file data in the request body """
+  """ 
+  STT transcription - expects raw WAV file data in the request body 
+  """
   wav_bytes = await request.data
   try:                                     # to load WAV data
     with io.BytesIO(wav_bytes) as wav_io:
@@ -33,7 +35,7 @@ async def transcribe():
 
     # fold text to lower case, remove leading spaces, ','s and '?'s
     transcription = result["text"].lower().lstrip().replace(",", "").replace("?", "")
-    log.debug(f"transcribe: Transcription: {transcription}")
+    log.debug(f"transcribe() Transcription: {transcription}")
     return {"text": transcription}
   except Exception as e:
     log.debug(f"transcribe(): Error during transcription: {e}")
@@ -41,7 +43,9 @@ async def transcribe():
 
 @app.route("/stream", methods=["POST"])
 async def stream_transcription():
-  """ Handle streaming audio transcription.  Expects raw audio chunks in the request body. """
+  """ 
+  Handle streaming audio transcription.  Expects raw audio chunks in the request body. 
+  """
   model_stream = model.create_stream()
   try:
     async for chunk in request.body:       # convert chunk to NumPy array and feed into model
