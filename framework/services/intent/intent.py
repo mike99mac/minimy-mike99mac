@@ -153,9 +153,9 @@ class UttProc:
     return skill_id, ''
 
   def get_intent_match(self, info):
-  """
-  for utterances of type command an intent match is a subject:verb and we don't fuzzy match
-  """
+    """
+    for utterances of type command an intent match is a subject:verb and we don't fuzzy match
+    """
     self.log.debug("UttProc:get_intent_match() ")  
     aplay(self.earcon_filename)  # should be configurable
     skill_id = ''
@@ -213,12 +213,12 @@ class UttProc:
           res = self.send_oob_to_system(utt, contents) 
         elif oob_type == 'o':
           res = self.send_oob_to_system('stop', contents) 
-        elif utt_type == 'RAW':  # send raw messages to the system skill and let it figure out what to do with them
+        elif utt_type == 'RAW':            # send raw messages to system skill 
           if contents:
             self.bus.send(MSG_RAW, 'system_skill', {'utterance': contents[5:]})
         else:
           sentence_type = si.get_sentence_type(utt)
-          self.log.debug(f"UttProc.run() sentence_type = {sentence_type} utt = {utt}")
+          self.log.debug(f"UttProc.run() sentence_type: {sentence_type} utt = {utt}")
           utt = normalize_sentence(utt)
           if sentence_type != 'Q':
             utt = remove_pleasantries(utt)
@@ -274,7 +274,7 @@ class UttProc:
             if utt in self.recognized_verbs:
               self.send_oob_to_system(utt, contents)
             else:
-              self.log.warning(f"UttProc.run() Ignoring not recognized OOB in intent_service {utt} not found in {self.recognized_verbs}")
+              self.log.warning(f"UttProc.run() Ignoring unrecognized OOB si.sentence_type {si.sentence_type} not found in {self.recognized_verbs}")
           else:
             print(f"Unknown sentence type {si.sentence_type} or Informational sentence")
         os.remove(txt_file)    # remove input file from file system
