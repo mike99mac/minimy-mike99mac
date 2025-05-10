@@ -1,13 +1,11 @@
 import time, glob, dbm, sys, os, io
 import multiprocessing
 from datetime import datetime
-from bus.Message import Message
-from bus.MsgBusClient import MsgBusClient
+from bus.MsgBus import MsgBus
 from framework.message_types import MSG_SKILL
 from google.cloud import speech
 from subprocess import Popen, PIPE, STDOUT
 from framework.util.utils import LOG, Config, aplay, get_wake_words
-
 REMOTE_TIMEOUT = 3
 LOCAL_TIMEOUT = 5
 
@@ -71,7 +69,7 @@ class STTSvc:
     self.bus = None
     if not no_bus:
       if bus is None:
-        bus = MsgBusClient(self.skill_id)
+        bus = MsgBus(self.skill_id)
       self.bus = bus
     base_dir = os.getenv('SVA_BASE_DIR')
     log_filename = base_dir + '/logs/stt.log'

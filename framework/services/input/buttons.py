@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from bus.MsgBusClient import MsgBusClient
+from bus.MsgBus import MsgBus
 from framework.message_types import (MSG_UTTERANCE, MSG_SPEAK, MSG_REGISTER_INTENT, MSG_MEDIA, MSG_SYSTEM, MSG_RAW, MSG_SKILL)
 from framework.util.utils import LOG, Config
 import os
@@ -40,7 +40,7 @@ class Buttons:
     GPIO26 (37)  (38) GPIO20
        GND (39)  (40) GPIO21
     """
-    self.bus = MsgBusClient("buttons")
+    self.bus = MsgBus("buttons")
     self.base_dir = str(os.getenv('SVA_BASE_DIR'))
     log_filename = self.base_dir + '/logs/buttons.log'
     self.log = LOG(log_filename).log

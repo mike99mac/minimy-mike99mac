@@ -1,7 +1,5 @@
 from threading import Event
-#from sva_base import SimpleVoiceAssistant
-from bus.Message import Message
-from bus.MsgBusClient import MsgBusClient
+from bus.MsgBus import MsgBus
 import time, os
 from subprocess import Popen, PIPE, STDOUT
 from framework.util.utils import CommandExecutor, LOG, Config, MediaSession, get_hal_obj
@@ -16,7 +14,7 @@ class SVAMediaPlayerSkill:
     def __init__(self, bus=None, timeout=5):
         self.skill_id = 'media_player_service'
         if bus is None:
-            bus = MsgBusClient(self.skill_id)
+            bus = MsgBus(self.skill_id)
         self.bus = bus
         base_dir = os.getenv('SVA_BASE_DIR')
         log_filename = base_dir + '/logs/media_player.log'

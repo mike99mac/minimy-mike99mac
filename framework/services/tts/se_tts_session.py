@@ -4,7 +4,7 @@ import se_tts_constants
 from datetime import datetime
 from queue import Queue
 from framework.util.utils import Config, chunk_text
-from bus.MsgBusClient import MsgBusClient
+from bus.MsgBus import MsgBus
 from framework.message_types import MSG_MEDIA, MSG_SKILL
 from se_tts_session_table import TTSSessionTable
 from se_tts_session_methods import TTSSessionMethods
@@ -20,7 +20,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
     super(TTSSession, self).__init__()
     threading.Thread.__init__(self)
     self.skill_id = "tts_session"
-    self.bus = MsgBusClient(self.skill_id)
+    self.bus = MsgBus(self.skill_id)
     self.state = 'idle'
     self.exit_flag = False
     self.paused = False

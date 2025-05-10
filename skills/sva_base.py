@@ -1,7 +1,6 @@
 import os, time
 from skills.sva_control import SkillControl
-from bus.Message import Message
-from bus.MsgBusClient import MsgBusClient
+from bus.MsgBus import MsgBus
 from framework.util.utils import LOG, Config
 from threading import Event, Thread
 import subprocess
@@ -47,7 +46,7 @@ class SimpleVoiceAssistant:
         self.skill_control.skill_id = skill_id
         self.skill_control.category = skill_category
         if bus is None:
-            bus = MsgBusClient(self.skill_control.skill_id)
+            bus = MsgBus(self.skill_control.skill_id)
         self.bus = bus
         self.base_dir = str(os.getenv('SVA_BASE_DIR'))
         log_filename = self.base_dir + '/logs/skills.log'
