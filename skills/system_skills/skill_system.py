@@ -1,5 +1,5 @@
 from skills.sva_base import SimpleVoiceAssistant
-from bus.Message import Message
+# from bus.Message import Message
 from framework.message_types import MSG_SYSTEM, MSG_SKILL, MSG_UTTERANCE, MSG_RAW
 from framework.util.utils import Config, aplay
 from threading import Event

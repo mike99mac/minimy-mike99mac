@@ -1,7 +1,6 @@
 from threading import Event
 from skills.sva_base import SimpleVoiceAssistant
-from bus.Message import Message
-from bus.MsgBusClient import MsgBusClient
+#from bus.MsgBus import MsgBus
 from framework.message_types import MSG_SKILL
 from framework.util.utils import aplay, Config
 
@@ -15,7 +14,6 @@ class FallbackSkill(SimpleVoiceAssistant):
         base_dir = cfg.get_cfg_val('Basic.BaseDir')
         self.boing_filename = base_dir + '/framework/assets/boing.wav'
 
-
     def handle_register_qna(self,msg):
         data = msg.data
         skill_id = data['qna_skill_id']
@@ -23,18 +21,15 @@ class FallbackSkill(SimpleVoiceAssistant):
         if skill_id not in self.qna_skills:
             self.qna_skills.append(skill_id)
 
-
     def handle_qna_response(self,msg):
         # gather responses and decide who to handle the question
         # then send message to that skill_id to play the answer
         # if error play default fail earcon.
-
         message = {'subtype':'qna_answer_question', 
                 'skill_id':msg.data['from_skill_id'], 
                 'skill_data':msg.data['skill_data']}
         # for now assume the only skill to answer gets it
         self.send_message(msg.data['from_skill_id'], message)
-
 
     def handle_message(self,msg):
         if msg.data['subtype'] == 'qna_register_request':
@@ -81,13 +76,8 @@ class FallbackSkill(SimpleVoiceAssistant):
             self.send_message('system_monitor_skill', message)
             #aplay(self.boing_filename)
 
-            # TODO send message to monitor skill
-            # lol, while this seems like a good idea, on systems 
-            # with poor aec this can cause an infinite feedback loop 
-            #self.speak("Sorry I do not understand %s" % (data['sentence'],))
-
 # main()
 if __name__ == '__main__':
     fs = FallbackSkill()
-    Event().wait()  # Wait forever
+    Event().wait()                         # Wait forever
 

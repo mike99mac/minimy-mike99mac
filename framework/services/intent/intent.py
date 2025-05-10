@@ -1,6 +1,5 @@
 import requests, time, glob, os
-from bus.Message import Message
-from bus.MsgBusClient import MsgBusClient
+from bus.MsgBus import MsgBus
 from framework.util.utils import LOG, Config, get_wake_words, aplay, normalize_sentence, remove_pleasantries
 from framework.services.intent.nlp.shallow_parse.nlu import SentenceInfo
 from framework.services.intent.nlp.shallow_parse.shallow_utils import scrub_sentence, remove_articles
@@ -19,7 +18,7 @@ class UttProc:
   """
   def __init__(self, bus=None, timeout=5):
     self.skill_id = 'intent_service'
-    self.bus = MsgBusClient(self.skill_id)
+    self.bus = MsgBus(self.skill_id)
     self.intents = {}
     self.base_dir = os.getenv('SVA_BASE_DIR') # set up logging into intent.log
     self.tmp_file_path = self.base_dir + '/tmp/'
