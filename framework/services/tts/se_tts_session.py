@@ -261,7 +261,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
 
   def handle_skill_msg(self, msg):
     self.log.debug(f"TTSSession.handle_skill_msg() msg: {msg}") 
-    data = msg.data
+    data = msg.payload
     msg_correlator = data.get("correlator","")
     if data['skill_id'] == self.skill_id:
       if data['subtype'] == 'media_player_command_response':
