@@ -138,7 +138,6 @@ class STTSvc:
         if self.muted:
           self.muted = False
           self.send_unmute()
-
         if self.previous_utt_was_ww:
           wake_word = self.previous_utterance
           cmd = utt.replace(wake_word,'').strip()
@@ -232,7 +231,7 @@ class STTSvc:
           self.local_proc.join(2)
           if self.local_proc:
             self.local_proc.kill()
-        else:            # local stt
+        else:                              # local stt
           self.local_return_dict = self.manager.dict()
           self.local_proc = multiprocessing.Process(target=_local_transcribe_file, args=(self.wav_file, self.local_return_dict))
           self.local_proc.start()
@@ -240,7 +239,7 @@ class STTSvc:
           if self.local_proc:
             self.local_proc.kill()
 
-        try:             # to remove input file
+        try:                               # to remove input file
           os.remove(self.wav_file)
         except:
           pass
@@ -249,7 +248,7 @@ class STTSvc:
         self.log.debug(f"STT.run(): goog_return_dict: {self.goog_return_dict} local_return_dict: {self.local_return_dict}")
         if self.goog_return_dict:
           self.process_stt_result(self.goog_return_dict['text'])
-        elif self.local_return_dict: # we only have a local result, BUT we have a cache hit, use that here instead
+        elif self.local_return_dict:       # only have a local result BUT we have a cache hit to use 
           if len( self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8") ) > 0:
             self.log.error("STT.run() CACHE HIT!!! converted local=%s  to remote=%s" % (self.local_return_dict['text'], self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")))
             self.process_stt_result( self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8") )
@@ -268,5 +267,5 @@ class STTSvc:
 if __name__ == '__main__':
   stt_svc = STTSvc()
   stt_svc.run()
-  Event().wait()             # wait forever
+  Event().wait()                           # wait forever
 
