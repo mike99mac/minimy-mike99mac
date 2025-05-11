@@ -3,23 +3,9 @@
 This is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
 
 ## Overview
-**From Ken Smith - the original author:**
-
-"The goal of this project is to provide a run-time environment which facilitates the development of 
-voice enabled applications. These voice enabled applications take the form of a 'skill' and are
-simply python programs which may do normal python things as well as call speak() and listen() and
-get called asynchronously when an utterance is matched to an intent the skill has previously registered."  
-
-**From Mike Mac - author of this fork:**
-
 This code enables a device to play music by voice. 
 
 I worked with Mycroft since 2019, and was able to get a prototype music skill, based on mpc/mpd, working. But the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard work the Mycroft employees and contributors did to get us this far.
-
-OVOS is a fork of Mycroft and Neon is another layer on top. I tried OVOS but was not able to get my music skill working after a couple weeks.  I still haven't given up on it - no doubt it will only get better and easier to install.
-
-Then I found Minimy, and was able to get it running in a few hours. Apparently, it was a project that hoped to save Mycroft from the fire but wasn't well received. Thankfully, Ken Smith put it on github, it was forked, and here we are.  Ken has been a great help in answering my many questions - **Thanks Dude!** 
-So I continue to try to *give back to the community* while *standing on the shoulders* of so many others.
 
 This document describes how to get the solution running, and starts from the very beginning.
 
@@ -789,10 +775,6 @@ Following are examples of Weather skill requests:
 ### Wiki skill
 
 The Wiki skill is a fallback skill. As such it does not have a vocabulary
-
-## More documentation
-
-There is more documentation, by the original author Ken Smith, here: https://github.com/ken-mycroft/minimy/tree/main/doc
 
 # Local Speech to Text <a name="localstt"></a> 
 In late 2024 there was work done on running Speech to Text (STT) locally.
