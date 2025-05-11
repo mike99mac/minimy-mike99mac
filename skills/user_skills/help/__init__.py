@@ -2,7 +2,6 @@ from skills.sva_base import SimpleVoiceAssistant
 # from bus.Message import Message
 from threading import Event
 import time
-from framework.message_types import MSG_SYSTEM
 
 class HelpSkill(SimpleVoiceAssistant):
     def __init__(self, bus=None, timeout=5):
@@ -16,7 +15,7 @@ class HelpSkill(SimpleVoiceAssistant):
                 'from_skill_id':self.skill_id,
                 'verb':'help'
                 }
-        self.bus.send(MSG_SYSTEM, 'system_skill', info)
+        self.bus.send("system", 'system_skill', info)
 
     def handle_message(self, message):
         data = message.data

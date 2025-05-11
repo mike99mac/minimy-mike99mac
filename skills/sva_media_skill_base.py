@@ -1,6 +1,5 @@
 from skills.sva_base import SimpleVoiceAssistant
 from bus.MsgBus import MsgBus
-from framework.message_types import MSG_SKILL
 import time
 
 class MediaSkill(SimpleVoiceAssistant):
@@ -20,7 +19,7 @@ class MediaSkill(SimpleVoiceAssistant):
             'skill_id': 'media_skill',
             'media_skill_id': skill_id
             }
-        self.bus.send(MSG_SKILL, 'media_skill', info)
+        self.bus.send("skill", 'media_skill', info)
 
     def handle_message(self, msg):
         self.log.debug(f"MediaSkill.handle_message() msg: {msg}")

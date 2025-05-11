@@ -7,8 +7,6 @@ from skills.sva_base import SimpleVoiceAssistant
 from threading import Thread, Event
 from datetime import timedelta
 from framework.util.utils import get_raw, get_hour_min, get_ampm, get_time_from_utterance
-# from bus.Message import Message
-from framework.message_types import MSG_SYSTEM
 
 
 class AlarmActiveThread(Thread):
@@ -139,11 +137,11 @@ class AlarmSkill(SimpleVoiceAssistant):
                 'from_skill_id':self.skill_id,
                 'verb':'stop'
                 }
-        #self.bus.emit(Message(MSG_SYSTEM, info))
-        self.bus.send(MSG_SYSTEM, 'system_skill', info)
+        #self.bus.emit(Message("system", info))
+        self.bus.send("system", 'system_skill', info)
         info['verb'] = 'snooze'
-        #self.bus.emit(Message(MSG_SYSTEM, info))
-        self.bus.send(MSG_SYSTEM, 'system_skill', info)
+        #self.bus.emit(Message("system", info))
+        self.bus.send("system", 'system_skill', info)
 
 
     def send_release_message(self):
@@ -154,11 +152,11 @@ class AlarmSkill(SimpleVoiceAssistant):
                 'from_skill_id':self.skill_id,
                 'verb':'stop'
                 }
-        #self.bus.emit(Message(MSG_SYSTEM, info))
-        self.bus.send(MSG_SYSTEM, 'system_skill', info)
+        #self.bus.emit(Message("system", info))
+        self.bus.send("system", 'system_skill', info)
         info['verb'] = 'snooze'
-        #self.bus.emit(Message(MSG_SYSTEM, info))
-        self.bus.send(MSG_SYSTEM, 'system_skill', info)
+        #self.bus.emit(Message("system", info))
+        self.bus.send("system", 'system_skill', info)
 
 
     def play_beep(self):

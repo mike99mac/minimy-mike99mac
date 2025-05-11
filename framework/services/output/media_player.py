@@ -3,7 +3,6 @@ from bus.MsgBus import MsgBus
 import time, os
 from subprocess import Popen, PIPE, STDOUT
 from framework.util.utils import CommandExecutor, LOG, Config, MediaSession, get_hal_obj
-from framework.message_types import MSG_MEDIA, MSG_SKILL
 
 class SVAMediaPlayerSkill:
     """
@@ -26,7 +25,7 @@ class SVAMediaPlayerSkill:
         self.paused_sessions = []
         self.state = 'idle'                # states = idle, playing or paused
         self.hal = get_hal_obj('l')
-        self.bus.on(MSG_MEDIA, self.handle_message)
+        self.bus.on("media", self.handle_message)
 
     def send_message(self, target, message):
         """
@@ -34,7 +33,7 @@ class SVAMediaPlayerSkill:
         """
         self.log.debug(f"SVAMediaPlayerSkill.send_message() message = {message}")
         message['from_skill_id'] = self.skill_id
-        self.bus.send(MSG_SKILL, target, message)
+        self.bus.send("skill", target, message)
 
     def pause(self, message):
         self.log.info(f"SVAMediaPlayerSkill.pause() state: {self.state} message: {message}")

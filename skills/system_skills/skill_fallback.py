@@ -1,7 +1,5 @@
 from threading import Event
 from skills.sva_base import SimpleVoiceAssistant
-#from bus.MsgBus import MsgBus
-from framework.message_types import MSG_SKILL
 from framework.util.utils import aplay, Config
 
 class FallbackSkill(SimpleVoiceAssistant):
@@ -64,7 +62,7 @@ class FallbackSkill(SimpleVoiceAssistant):
                         'msg_tree':data['tree'],
                         'msg_sentence':data['sentence']
                        }
-                self.bus.send(MSG_SKILL, skill_id, info)
+                self.bus.send("skill", skill_id, info)
         else:
             self.log.info("** Fallback Skill only handles sentences of type Question for now!, Utterance ignored! **")
 

@@ -1,8 +1,6 @@
 
 from threading import Event
 from skills.sva_base import SimpleVoiceAssistant
-# from bus.Message import Message
-from framework.message_types import MSG_SKILL, MSG_SYSTEM
 from framework.util.utils import aplay
 
 class SVAMediaSkill(SimpleVoiceAssistant):
@@ -22,15 +20,15 @@ class SVAMediaSkill(SimpleVoiceAssistant):
                 'from_skill_id':self.skill_id, 
                 'verb':'pause'
                }
-        self.bus.send(MSG_SYSTEM, 'system_skill', info)
+        self.bus.send("system", 'system_skill', info)
         info['verb'] = 'resume'
-        self.bus.send(MSG_SYSTEM, 'system_skill', info)
+        self.bus.send("system", 'system_skill', info)
         info['verb'] = 'previous'
-        self.bus.send(MSG_SYSTEM, 'system_skill', info)
+        self.bus.send("system", 'system_skill', info)
         info['verb'] = 'next'
-        self.bus.send(MSG_SYSTEM, 'system_skill', info)
+        self.bus.send("system", 'system_skill', info)
         info['verb'] = 'stop'
-        self.bus.send(MSG_SYSTEM, 'system_skill', info)
+        self.bus.send("system", 'system_skill', info)
         self.log.debug("SVAMediaSkill.__init__(): registering OOB intents") 
         self.register_intent('O', 'next', 'song', self.handle_next)
         self.register_intent('O', 'next', 'station', self.handle_next)
@@ -103,7 +101,7 @@ class SVAMediaSkill(SimpleVoiceAssistant):
                 'from_skill_id':self.skill_id,
                 'msg_sentence':data['sentence']
                 }
-            self.bus.send(MSG_SKILL, skill_id, info)
+            self.bus.send("skill", skill_id, info)
 
     def handle_command(self, msg):
         self.log.debug(f"SVAMediaSkill.handle_command(): active media is {self.active_media_skill}")

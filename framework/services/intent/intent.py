@@ -3,7 +3,6 @@ from bus.MsgBus import MsgBus
 from framework.util.utils import LOG, Config, get_wake_words, aplay, normalize_sentence, remove_pleasantries
 from framework.services.intent.nlp.shallow_parse.nlu import SentenceInfo
 from framework.services.intent.nlp.shallow_parse.shallow_utils import scrub_sentence, remove_articles
-from framework.message_types import (MSG_UTTERANCE, MSG_MEDIA, MSG_RAW, MSG_SYSTEM)
 
 class Intent:
   """
@@ -114,11 +113,11 @@ class Intent:
       target = '*'
     if utt == 'stop':
       target = 'system_skill'
-    self.bus.send(MSG_UTTERANCE, target, {'utt': utt,'subtype':'utt'})
+    self.bus.send("utterance", target, {'utt': utt,'subtype':'utt'})
 
   def send_media(self, info):
     self.log.debug("Intent:send_media()")
-    self.bus.send(MSG_MEDIA, 'media_skill', info)
+    self.bus.send("media", 'media_skill', info)
 
   def send_oob_to_system(self, utt, contents):
     info = {
@@ -132,7 +131,7 @@ class Intent:
         'intent_match':''
          }
     self.log.debug(f"Intent:send_oob_to_system() info = {info}")     
-    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+    self.bus.send("system", 'system_skill', info)
 
   def get_question_intent_match(self, info):
     self.log.debug(f"Intent:get_question_intent_match() intents: {intents}")
@@ -172,7 +171,7 @@ class Intent:
 
   def handle_register_intent(self, msg):
     #data = msg.data
-    data = msg.payload
+    data = msg["payload"]
     subject = data['subject'].replace(":", ";") # convert colons to semicolons
     verb = data['verb']
     key = data['intent_type'] + ':' + subject.lower() + ':' + verb
@@ -210,7 +209,7 @@ class Intent:
           res = self.send_oob_to_system('stop', contents) 
         elif utt_type == 'RAW':            # send raw messages to system skill 
           if contents:
-            self.bus.send(MSG_RAW, 'system_skill', {'utterance': contents[5:]})
+            self.bus.send("raw", 'system_skill', {'utterance': contents[5:]})
         else:
           sentence_type = si.get_sentence_type(utt)
           self.log.debug(f"Intent.run() sentence_type: {sentence_type} utt = {utt}")

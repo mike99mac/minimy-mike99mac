@@ -5,16 +5,6 @@ from framework.util.utils import LOG, Config
 from threading import Event, Thread
 import subprocess
 
-from framework.message_types import (
-        MSG_UTTERANCE, 
-        MSG_SPEAK, 
-        MSG_REGISTER_INTENT, 
-        MSG_MEDIA,
-        MSG_SYSTEM,
-        MSG_RAW,
-        MSG_SKILL
-        )
-
 class SimpleVoiceAssistant:
     def __init__(self, msg_handler=None, skill_id=None, skill_category=None, bus=None, timeout=5):
         """
@@ -76,13 +66,13 @@ class SimpleVoiceAssistant:
         self.stt_is_active = False
         self.waiting_for_input_focus = False
         self.intents = {}
-        self.bus.on(MSG_UTTERANCE, self.handle_utterance)
-        self.bus.on(MSG_SKILL, self.handle_skill_msg)
-        self.bus.on(MSG_SYSTEM, self.handle_system_msg)
-        self.bus.on(MSG_RAW, self.handle_raw_msg)
+        self.bus.on("utterance", self.handle_utterance)
+        self.bus.on("skill", self.handle_skill_msg)
+        self.bus.on("system", self.handle_system_msg)
+        self.bus.on("raw", self.handle_raw_msg)
 
         # need a special handler for media but not Q&A because media handles system level single verb utterances but Q&A does not.
-        self.bus.on(MSG_MEDIA, self.handle_media_msg)
+        self.bus.on("media", self.handle_media_msg)
         self.lang = "en-us"
 
     def mpc_cmd(self, arg1, arg2=None):
@@ -131,7 +121,7 @@ class SimpleVoiceAssistant:
                 'skill_id':'system_skill',
                 'from_skill_id':self.skill_control.skill_id,
                }
-        self.bus.send(MSG_SYSTEM, 'system_skill', info)
+        self.bus.send("system", 'system_skill', info)
         if self.user_timeout_callback:
             self.user_timeout_callback()
 
@@ -212,14 +202,14 @@ class SimpleVoiceAssistant:
                    'skill_id':'system_skill',
                    'from_skill_id':self.skill_control.skill_id,
                    }
-            self.bus.send(MSG_SYSTEM, 'system_skill', info)
+            self.bus.send("system", 'system_skill', info)
             self._converse_callback(message.data['utterance'])
 
     def send_message(self, target, message):
         self.log.debug(f"SimpleVoiceAssistant.send_message() target: {target} message: {message}")
         from_skill_id = self.skill_control.skill_id
         message['from_skill_id'] = from_skill_id
-        self.bus.send(MSG_SKILL, target, message)
+        self.bus.send("skill", target, message)
 
     def play_media(self, file_uri, delete_on_complete='false', media_type=None):
         self.log.debug(f"SimpleVoiceAssistant.play_media() file_uri: {file_uri} delete_on_complete: {delete_on_complete}")
@@ -240,7 +230,7 @@ class SimpleVoiceAssistant:
                        'skill_id':'media_player_service',
                        'from_skill_id':from_skill_id
                        }
-                self.bus.send(MSG_MEDIA, 'media_player_service', info)
+                self.bus.send("media", 'media_player_service', info)
                 self.i_am_paused = False
                 self.media_player_session_id = 0
                 time.sleep(0.1)
@@ -259,7 +249,7 @@ class SimpleVoiceAssistant:
                    'media_type':media_type,
                    'delete_on_complete':delete_on_complete
                    }
-            self.bus.send(MSG_MEDIA, 'media_player_service', info)
+            self.bus.send("media", 'media_player_service', info)
             return True
 
         # else we need to acquire a media session
@@ -277,7 +267,7 @@ class SimpleVoiceAssistant:
                 'from_skill_id':from_skill_id,
                 'skill_category':from_skill_category,
                 }
-        self.bus.send(MSG_SYSTEM, 'system_skill', info)
+        self.bus.send("system", 'system_skill', info)
         return True
 
     def speak(self, text, wait_callback=None):
@@ -310,7 +300,7 @@ class SimpleVoiceAssistant:
                 time.sleep(0.1)
                 info = {'text': text, 'skill_id': self.skill_control.skill_id}
                 self.log.debug(f"SimpleVoiceAssistant.speak() calling bus.send({info})")
-                self.bus.send(MSG_SPEAK, 'tts_service', info)
+                self.bus.send("speak", 'tts_service', info)
                 self.i_am_paused = False
                 return True
 
@@ -325,7 +315,7 @@ class SimpleVoiceAssistant:
                }
         self.speak_callback = wait_callback
         self.log.debug(f"SimpleVoiceAssistant.speak() sending message to speak with info = {info}")
-        self.bus.send(MSG_SYSTEM, 'system_skill', info)
+        self.bus.send("system", 'system_skill', info)
         return True
 
     def speak_lang(self, base_dir: str, mesg_file: str, mesg_info: dict, wait_callback=None):
@@ -376,7 +366,7 @@ class SimpleVoiceAssistant:
                             'verb': verb,
                             'skill_id':self.skill_control.skill_id
                            }
-                    self.bus.send(MSG_REGISTER_INTENT, 'intent_service', info)
+                    self.bus.send("register_intent", 'intent_service', info)
 
     def handle_utterance(self, message):
         self.log.debug(f"SimpleVoiceAssistant.handle_utterance() message = {message} skill_control.category = {self.skill_control.category}")
@@ -427,7 +417,7 @@ class SimpleVoiceAssistant:
                 'skill_category':self.skill_control.category,
                 'from_skill_id':self.skill_control.skill_id,
                 }
-        self.bus.send(MSG_SYSTEM, 'system_skill', info)
+        self.bus.send("system", 'system_skill', info)
         return True
 
     def send_release_output_focus(self):
@@ -440,7 +430,7 @@ class SimpleVoiceAssistant:
                 'skill_id':'system_skill',
                 'from_skill_id':self.skill_control.skill_id,
                 }
-        self.bus.send(MSG_SYSTEM, 'system_skill', info)
+        self.bus.send("system", 'system_skill', info)
 
     ## message bus handlers ##
     def handle_skill_msg(self, message):
@@ -457,7 +447,7 @@ class SimpleVoiceAssistant:
                             'skill_id':'system_skill',
                             'from_skill_id':self.skill_control.skill_id,
                            }
-                    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+                    self.bus.send("system", 'system_skill', info)
                 elif self.media_session_response == 'session_confirm':
                     self.media_player_session_id = message.data['session_id']
                     # otherwise we are good to go
@@ -474,7 +464,7 @@ class SimpleVoiceAssistant:
                             'media_type':self.media_type,
                             'delete_on_complete':self.delete_on_complete
                            }
-                    self.bus.send(MSG_MEDIA, 'media_player_service', info)
+                    self.bus.send("media", 'media_player_service', info)
             if message.data['subtype'] == 'tts_service_command_response':
                 self.tts_session_response = message.data['response']
                 if self.tts_session_response == 'session_ended':
@@ -489,7 +479,7 @@ class SimpleVoiceAssistant:
                             'skill_id':'system_skill',
                             'from_skill_id':self.skill_control.skill_id,
                             }
-                    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+                    self.bus.send("system", 'system_skill', info)
                     self.done_speaking = True
                     if self.speak_callback:
                         self.speak_callback()
@@ -501,13 +491,13 @@ class SimpleVoiceAssistant:
                             'skill_id':'system_skill',
                             'from_skill_id':self.skill_control.skill_id,
                             }
-                    self.bus.send(MSG_SYSTEM, 'system_skill', info)
+                    self.bus.send("system", 'system_skill', info)
                 elif self.tts_session_response == 'session_confirm':
                     if self.tts_service_session_id != message.data['session_id'] and self.tts_service_session_id != 0:
                         self.tts_service_session_ids.append( self.tts_service_session_id )
                     self.tts_service_session_id = message.data['session_id']
                     info = {'text': self.text,'skill_id':self.skill_control.skill_id}
-                    self.bus.send(MSG_SPEAK, 'tts_service', info)
+                    self.bus.send("speak", 'tts_service', info)
             if self.handle_message is not None:
                 self.handle_message(message)
         else:
@@ -535,7 +525,7 @@ class SimpleVoiceAssistant:
                     'skill_id':'media_player_service',
                     'from_skill_id':self.skill_control.skill_id,
                    }
-            self.bus.send(MSG_MEDIA, 'media_player_service', info)
+            self.bus.send("media", 'media_player_service', info)
             self.i_am_paused = True
 
         # pause any active tts sessions
@@ -584,7 +574,7 @@ class SimpleVoiceAssistant:
                                     'skill_id':'media_player_service',
                                     'from_skill_id':self.skill_control.skill_id
                                     }
-                            self.bus.send(MSG_MEDIA, 'media_player_service', info)
+                            self.bus.send("media", 'media_player_service', info)
                     else:
                         self.log.warning(f"SimpleVoiceAssistant.handle_system_msg() {self.skill_control.skill_id} cannot acquire output focus!")
                 case "pause":
@@ -605,7 +595,7 @@ class SimpleVoiceAssistant:
                                 'skill_id':'media_player_service',
                                 'from_skill_id':self.skill_control.skill_id,
                                }
-                        self.bus.send(MSG_MEDIA, 'media_player_service', info)
+                        self.bus.send("media", 'media_player_service', info)
                         self.i_am_paused = False
                         if self.tts_service_session_id != 0:  # resume any active tts sessions
                             info = {

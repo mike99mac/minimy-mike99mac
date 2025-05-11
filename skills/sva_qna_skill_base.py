@@ -1,6 +1,4 @@
 from skills.sva_base import SimpleVoiceAssistant
-# from bus.MsgBus import MsgBus
-from framework.message_types import MSG_SKILL
 import time
 
 class QuestionAnswerSkill(SimpleVoiceAssistant):
@@ -14,7 +12,7 @@ class QuestionAnswerSkill(SimpleVoiceAssistant):
             'skill_id': 'fallback_skill',
             'qna_skill_id': skill_id
             }
-        self.bus.send(MSG_SKILL, 'fallback_skill', info)
+        self.bus.send("skill", 'fallback_skill', info)
 
     def handle_message(self,msg):
         #print("Q&A handle_message() %s" % (msg.data,))

@@ -1,6 +1,4 @@
 from skills.sva_base import SimpleVoiceAssistant
-# from bus.Message import Message
-from framework.message_types import MSG_SYSTEM, MSG_SKILL, MSG_UTTERANCE, MSG_RAW
 from framework.util.utils import Config, aplay
 from threading import Event
 import os
@@ -66,7 +64,7 @@ class SystemSkill(SimpleVoiceAssistant):
                 'skill_id':target_skill,
                 'from_skill_id':self.skill_id,
                }
-        self.bus.send(MSG_SYSTEM, target_skill, info)
+        self.bus.send("system", target_skill, info)
 
     def send_resume(self, target_skill):
         self.log.debug("SystemSkill:send_pause() target_skill: %s" % (target_skill))
@@ -76,7 +74,7 @@ class SystemSkill(SimpleVoiceAssistant):
                 'skill_id':target_skill,
                 'from_skill_id':self.skill_id,
                }
-        self.bus.send(MSG_SYSTEM, target_skill, info)
+        self.bus.send("system", target_skill, info)
 
     def respond_sys_info(self, data):
         self.log.debug("SystemSkill:respond_sys_info()")
@@ -91,7 +89,7 @@ class SystemSkill(SimpleVoiceAssistant):
                 'platform':self.cfg_platform,
                 'wake_words':self.cfg_wake_words,
                }
-        self.bus.send(MSG_SKILL, data['from_skill_id'], info)
+        self.bus.send("skill", data['from_skill_id'], info)
 
     def reserve_oob(self, data):
         self.log.debug("SystemSkill:reserve_oob()")
@@ -160,7 +158,7 @@ class SystemSkill(SimpleVoiceAssistant):
             tmp_obj = self.conversant_skills[len(self.conversant_skills)-1]
             target_skill = tmp_obj['skill_id']
             # forward message onto apprpriate skill
-            self.bus.send(MSG_RAW, target_skill, msg['data'])
+            self.bus.send("raw", target_skill, msg['data'])
         else:
             self.log.warning("SystemSkill:handle_raw(): ignoring raw with no converse active! %s" % (msg,))
 
@@ -205,7 +203,7 @@ class SystemSkill(SimpleVoiceAssistant):
                             'skill_id':skill_id,
                             'from_skill_id':self.skill_id,
                             }
-                    self.bus.send(MSG_SYSTEM, skill_id, info)
+                    self.bus.send("system", skill_id, info)
                     # and consume the event
                     return
 
@@ -219,7 +217,7 @@ class SystemSkill(SimpleVoiceAssistant):
                             'skill_id':skill_id,
                             'from_skill_id':self.skill_id,
                             }
-                    self.bus.send(MSG_SYSTEM, skill_id, info)
+                    self.bus.send("system", skill_id, info)
                 else:                      # otherwise ignore stop oob
                     self.log.info("SystemSkill.handle_message() Stop Ignored Because active_skills array empty")
             elif verb in self.recognized_verbs: # if oob recognized
@@ -232,7 +230,7 @@ class SystemSkill(SimpleVoiceAssistant):
                         'verb':verb,
                         }
                 self.log.debug(f"SystemSkill.handle_message(): skill_id = {skill_id} sending: {info}")
-                self.bus.send(MSG_SKILL, skill_id, info)
+                self.bus.send("skill", skill_id, info)
             else:                          # we special case pause and resume
                 if verb == 'pause':
                     if len(self.active_skills) > 0:
@@ -261,7 +259,7 @@ class SystemSkill(SimpleVoiceAssistant):
                             "skill_id": "???????????", 
                             "intent_match": ""
                             }
-                    self.bus.send(MSG_UTTERANCE, '*', {'utt': utt,'subtype':'utt'})
+                    self.bus.send("utterance", '*', {'utt': utt,'subtype':'utt'})
         elif data['subtype'] == 'request_output_focus':
             from_skill_id = data['from_skill_id']
             requesting_skill_category = data['skill_category']
@@ -286,7 +284,7 @@ class SystemSkill(SimpleVoiceAssistant):
                             'skill_id':last_active_skill_id,
                             'from_skill_id':self.skill_id,
                             }
-                    self.bus.send(MSG_SYSTEM, last_active_skill_id, info)
+                    self.bus.send("system", last_active_skill_id, info)
 
                     # remove from active skills array
                     self.active_skills = self.active_skills[:-1]
@@ -322,7 +320,7 @@ class SystemSkill(SimpleVoiceAssistant):
                         'skill_id':from_skill_id,
                         'from_skill_id':self.skill_id,
                         }
-                self.bus.send(MSG_SYSTEM, from_skill_id, info)
+                self.bus.send("system", from_skill_id, info)
             else:    
                 info = {
                         'error':'',
@@ -332,7 +330,7 @@ class SystemSkill(SimpleVoiceAssistant):
                         'from_skill_id':self.skill_id,
                         }
                 self.log.debug("SystemSkill.handle_message(): Sending positive activate_response to %s --->%s" % (from_skill_id,info))
-                self.bus.send(MSG_SYSTEM, from_skill_id, info)
+                self.bus.send("system", from_skill_id, info)
                 active_skill_entry = self.find_active_skill(from_skill_id)
                 if active_skill_entry is None:
                     self.active_skills.append( {'skill_id':from_skill_id, 'skill_category':requesting_skill_category} )
@@ -354,7 +352,7 @@ class SystemSkill(SimpleVoiceAssistant):
                         'from_skill_id':self.skill_id,
                         }
                 time.sleep(3) # give media a chance to pause (it sux for aplay especially)
-                self.bus.send(MSG_SYSTEM, self.pause_requestor, info)
+                self.bus.send("system", self.pause_requestor, info)
 
             elif self.pause_reason == EXTERNAL_PAUSE:
                 self.pause_reason = None
@@ -392,7 +390,7 @@ class SystemSkill(SimpleVoiceAssistant):
                         }
                 self.log.debug("SystemSkill.handle_message(): Sending positive input focus_response to %s --->%s" % (data['from_skill_id'],info))
                 time.sleep(1) # nasty hack for inferior audio input devices
-                self.bus.send(MSG_SYSTEM, data['from_skill_id'], info)
+                self.bus.send("system", data['from_skill_id'], info)
             else:
                 info = {
                         'error':'focus denied',
@@ -402,7 +400,7 @@ class SystemSkill(SimpleVoiceAssistant):
                         'from_skill_id':self.skill_id,
                         }
                 self.log.warning("SystemSkill.handle_message(): Sending negative input focus_response to %s --->%s" % (data['from_skill_id'],info))
-                self.bus.send(MSG_SYSTEM, data['from_skill_id'], info)
+                self.bus.send("system", data['from_skill_id'], info)
         elif data['subtype'] == 'release_input_focus':
             # remove skill from converse array
             if len(self.conversant_skills) == 0:
