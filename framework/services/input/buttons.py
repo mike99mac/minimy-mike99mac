@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from bus.MsgBus import MsgBus
-from framework.message_types import (MSG_UTTERANCE, MSG_SPEAK, MSG_REGISTER_INTENT, MSG_MEDIA, MSG_SYSTEM, MSG_RAW, MSG_SKILL)
 from framework.util.utils import LOG, Config
 import os
 from signal import pause
@@ -63,17 +62,17 @@ class Buttons:
         sleep(1)
       elif self.prev_button.is_pressed:
         self.log.debug("prev button pressed")
-        self.bus.on(MSG_MEDIA, "mycroft.audio.service.prev")
+        self.bus.on("media", "mycroft.audio.service.prev")
         print("prev button pressed")
         sleep(1)
       elif self.stop_button.is_pressed:
         self.log.debug("stop button pressed")
         print("stop button pressed")
-        self.bus.on(MSG_MEDIA, "mycroft.audio.service.toggle") # toggle between pause and resume
+        self.bus.on("media", "mycroft.audio.service.toggle") # toggle between pause and resume
         sleep(1)
       elif self.next_button.is_pressed:
         self.log.debug("next button pressed")
-        self.bus.on(MSG_MEDIA, "mycroft.audio.service.next")
+        self.bus.on("media", "mycroft.audio.service.next")
         print("next button pressed")
         sleep(1) 
       sleep(.1)                            # cool it?  

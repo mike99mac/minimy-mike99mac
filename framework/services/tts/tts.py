@@ -3,7 +3,6 @@ from se_tts_session import TTSSession
 from threading import Event, Thread
 from framework.util.utils import LOG, chunk_text, aplay
 from bus.MsgBus import MsgBus
-from framework.message_types import MSG_SPEAK, MSG_SKILL, MSG_MEDIA
 from se_tts_constants import (
     INTERNAL_EVENT_PAUSED,
     INTERNAL_EVENT_ACTIVATED,
@@ -99,7 +98,7 @@ class TTSEngine:
         'skill_id':target,
         'from_skill_id':self.skill_id,
         }
-    self.bus.send(MSG_SKILL, target, info)
+    self.bus.send("skill", target, info)
 
   def send_session_confirm(self, target, sid):
     self.log.debug("TTS Engine Sending confirm to %s, sid=%s" % (target, sid))
@@ -111,7 +110,7 @@ class TTSEngine:
         'skill_id':target,
         'from_skill_id':self.skill_id,
         }
-    self.bus.send(MSG_SKILL, target, info)
+    self.bus.send("skill", target, info)
 
   def send_session_reject(self,reason,target):
     info = {
@@ -121,7 +120,7 @@ class TTSEngine:
         'skill_id':target,
         'from_skill_id':self.skill_id,
         }
-    self.bus.send(MSG_SKILL, target, info)
+    self.bus.send("skill", target, info)
 
   def send_session_end_notify(self, skill_id):
     self.log.debug("TTS Engine send_session_end_notify to %s" % (skill_id, ))
@@ -134,7 +133,7 @@ class TTSEngine:
         'from_skill_id':self.skill_id,
         }
     self.current_session.owner = None
-    self.bus.send(MSG_SKILL, skill_id, info)
+    self.bus.send("skill", skill_id, info)
 
   # state/event handlers D##
   def _idle_start(self, msg):
@@ -252,7 +251,7 @@ class TTSEngine:
         'skill_id':'media_player_service',
         'from_skill_id':self.current_session.owner
         }
-    self.bus.send(MSG_MEDIA, 'media_player_service', info)
+    self.bus.send("media", 'media_player_service', info)
 
 
   def _paused_resume(self, msg):
@@ -414,17 +413,17 @@ class TTSEngine:
         STATE_WAIT_PAUSED_START  + ':' + INTERNAL_EVENT_CANCELLED: self._wps_done,
         STATE_WAIT_PAUSED_START  + ':' + INTERNAL_EVENT_PAUSED:  self._wps_paused,
         }
-    self.bus.on(MSG_SKILL, self.handle_skill_msg)
-    self.bus.on(MSG_SPEAK, self.handle_speak_msg)
+    self.bus.on("skill", self.handle_skill_msg)
+    self.bus.on("speak", self.handle_speak_msg)
 
     self.log.info("TTS Engine Initialized")
 
   def handle_speak_msg(self, msg):
-    self.log.debug(f"TTSEngine.handle_speak_msg() data: {msg.data} payload: {msg.payload}")
+    self.log.debug(f"TTSEngine.handle_speak_msg() data: {msg.data}")
     self.handle_event(EVENT_SPEAK, msg.data)
 
   def handle_skill_msg(self, msg):
-    data = msg.payload
+    data = msg["payload"]
     self.log.debug(f"TTSEngine.handle_skill_msg() state: {self.state} current_session.msid: {self.current_session.msid}")
     if data['skill_id'] == self.skill_id:
       if data['subtype'] == 'tts_service_command':

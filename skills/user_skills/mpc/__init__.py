@@ -1,7 +1,3 @@
-#
-# This code is distributed under the Apache License, v2.0 
-#
-from framework.message_types import MSG_MEDIA
 from mpc_client import MpcClient
 from music_info import Music_info
 import os, requests, time

@@ -2,7 +2,6 @@ import time, glob, dbm, sys, os, io
 import multiprocessing
 from datetime import datetime
 from bus.MsgBus import MsgBus
-from framework.message_types import MSG_SKILL
 from google.cloud import speech
 from subprocess import Popen, PIPE, STDOUT
 from framework.util.utils import LOG, Config, aplay, get_wake_words
@@ -56,7 +55,7 @@ class STTSvc:
   """
   Monitor the wav file input directory and convert wav files to text strings in files in the output directory. we stitch so if
   someone says 'wake word' brief silence, 'bla bla' we stitch them together before intent matching. this produces two broad 
-  categories of input; raw and wake word qualified. these become MSG_RAW and MSG_UTTERANCE
+  categories of input; raw and wake word qualified. these become "raw" and "utterance"
   """
   def __init__(self, bus=None, timeout=5, no_bus=False):
     # used for skill type messages
@@ -113,7 +112,7 @@ class STTSvc:
           'target': target,
           'subtype': subtype
       }
-      self.bus.send(MSG_SKILL, target, info)
+      self.bus.send("skill", target, info)
 
   def send_mute(self):
     self.log.debug("STT: sending mute!")

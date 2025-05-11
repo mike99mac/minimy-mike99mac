@@ -1,7 +1,6 @@
 from skills.sva_base import SimpleVoiceAssistant
 from threading import Event
 import requests, time
-from framework.message_types import MSG_SYSTEM
 
 class ConnectivitySkill(SimpleVoiceAssistant):
     def __init__(self, bus=None, timeout=5):
