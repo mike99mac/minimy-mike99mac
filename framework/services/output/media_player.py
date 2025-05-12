@@ -10,11 +10,9 @@ class SVAMediaPlayerSkill:
     session and play a new one. it stacks these in the paused_sessions queue. 
     The media player does not have a paused state as such. 
     """
-    def __init__(self, bus=None, timeout=5):
+    def __init__(self, timeout=5):
         self.skill_id = 'media_player_service'
-        if bus is None:
-            bus = MsgBus(self.skill_id)
-        self.bus = bus
+        self.bus = MsgBus(self.skill_id)
         base_dir = os.getenv('SVA_BASE_DIR')
         log_filename = base_dir + '/logs/media_player.log'
         self.log = LOG(log_filename).log

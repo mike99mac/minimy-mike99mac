@@ -128,4 +128,4 @@ class MpcSkill(MediaSkill):
 # main()
 if __name__ == '__main__':
   mpc = MpcSkill()
-  Event().wait()                         # Wait forever
+  Event().wait()                           # wait forever

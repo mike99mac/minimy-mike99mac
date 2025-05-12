@@ -77,7 +77,7 @@ class MsgBus:
   def _run_event_loop(self):
     asyncio.set_event_loop(self.loop)
     try:
-      print("MsgBus._run_event_loop(): Event loop started.")
+      # print("MsgBus._run_event_loop(): Event loop started.")
       self.loop.run_forever()
     except Exception as e:
       print(f"MsgBus._run_event_loop(): Event loop crashed: {e}")
@@ -86,17 +86,17 @@ class MsgBus:
       if not self.shutdown_event.is_set(): # loop stopped unexpectedly
         pending = [task for task in asyncio.all_tasks(loop=self.loop) if task is not asyncio.current_task()]
         if pending:
-          print(f"MsgBus._run_event_loop(): Cancelling {len(pending)} outstanding tasks.")
+          # print(f"MsgBus._run_event_loop(): Cancelling {len(pending)} outstanding tasks.")
           for task in pending:
             task.cancel()
           # self.loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True)) # This might be tricky here
       # Ensure loop is closed if it's still running due to run_until_complete calls in finally
       # This part is complex, primarily `loop.stop()` should be called from another thread or `call_soon_threadsafe`
       # And `loop.close()` after `run_forever` completes.
-      print("MsgBus._run_event_loop(): Event loop finished.")
+      # print("MsgBus._run_event_loop(): Event loop finished.")
 
   async def init_core_tasks(self):
-    print("MsgBus.init_core_tasks(): Connecting to Redis...")
+    # print("MsgBus.init_core_tasks(): Connecting to Redis...")
     self.redis_conn = redis.Redis(
       host=self.redis_host,
       port=self.redis_port,
@@ -109,17 +109,11 @@ class MsgBus:
       if self.redis_conn:
         await self.redis_conn.close()      # Clean up connection if ping fails
       raise
-
-    # Start the Pub/Sub listener
-    self.pubsub_client = self.redis_conn.pubsub()
+    self.pubsub_client = self.redis_conn.pubsub() # Start the Pub/Sub listener
     await self.pubsub_client.subscribe(self._get_client_channel())
     self.listener_task = self.loop.create_task(self._subscriber_loop())
-    print("MsgBus.init_core_tasks(): Subscriber loop task created.")
-
-    # Start other core tasks
     self._core_tasks.append(self.loop.create_task(self._publisher_loop()))
     self._core_tasks.append(self.loop.create_task(self._processor_loop()))
-    print("MsgBus.init_core_tasks(): Publisher and Processor loop tasks created.")
 
   def _get_client_channel(self):
     return f"bus:channel:{self.client_id}"
@@ -128,7 +122,7 @@ class MsgBus:
     return f"bus:channel:{target_client_id}"
 
   async def _subscriber_loop(self):
-    print(f"MsgBus._subscriber_loop(): Subscriber loop started. Listening on {self._get_client_channel()}")
+    # print(f"MsgBus._subscriber_loop(): Subscriber loop started. Listening on {self._get_client_channel()}")
     try:
       while not self.shutdown_event.is_set():
         try:
@@ -137,7 +131,7 @@ class MsgBus:
           if message and message.get('type') == 'message':
             try:
               msg_data_str = message['data'].decode('utf-8') # assumes messages are UTF-8 encoded JSON strings
-              print(f"MsgBus._subscriber_loop(): Received raw message: {msg_data_str}")
+              # print(f"MsgBus._subscriber_loop(): Received raw message: {msg_data_str}")
               parsed_msg = msg_from_json(msg_data_str)
               await self.inbound_q.put(parsed_msg)
             except json.JSONDecodeError:
@@ -156,7 +150,7 @@ class MsgBus:
             await self.redis_conn.ping()
             self.pubsub_client = self.redis_conn.pubsub()
             await self.pubsub_client.subscribe(self._get_client_channel())
-            print("MsgBus._subscriber_loop(): Reconnected to Redis and resubscribed.")
+            # print("MsgBus._subscriber_loop(): Reconnected to Redis and resubscribed.")
           except Exception as recon_e:
             print(f"MsgBus._subscriber_loop(): Failed to reconnect to Redis: {recon_e}")
             await asyncio.sleep(5)         # wait before next attempt
@@ -177,7 +171,7 @@ class MsgBus:
           print(f"MsgBus._subscriber_loop(): Error closing pubsub client: {e}")
 
   async def _publisher_loop(self):
-    print("MsgBus._publisher_loop(): Publisher loop started.")
+    # print("MsgBus._publisher_loop(): Publisher loop started.")
     try:
       while not self.shutdown_event.is_set() or not self.outbound_q.empty():
         try:
@@ -185,7 +179,7 @@ class MsgBus:
           message_to_send = await asyncio.wait_for(self.outbound_q.get(), timeout=1.0)
           if message_to_send:
             target_channel, json_payload = message_to_send
-            print(f"MsgBus._publisher_loop(): Publishing to {target_channel}: {json_payload}")
+            # print(f"MsgBus._publisher_loop(): Publishing to {target_channel}: {json_payload}")
             await self.redis_conn.publish(target_channel, json_payload)
             self.outbound_q.task_done()
         except asyncio.TimeoutError:
@@ -193,7 +187,7 @@ class MsgBus:
             break                          # exit if shutdown and queue is empty
           continue                         # loop again to check shutdown_event or wait for message
         except redis.exceptions.ConnectionError as e:
-            print(f"MsgBus._publisher_loop(): Redis connection error: {e}. Message might be lost or requeued if logic added.")
+            # print(f"MsgBus._publisher_loop(): Redis connection error: {e}. Message might be lost or requeued if logic added.")
             # Basic recovery: wait and hope connection returns for next message.
             # For critical messages, add retry or dead-letter queue logic.
             await asyncio.sleep(5)
@@ -214,7 +208,7 @@ class MsgBus:
         try:                               # wait for an item with a timeout
           msg = await asyncio.wait_for(self.inbound_q.get(), timeout=1.0)
           if msg:
-            print(f"MsgBus._processor_loop(): Processing message: {msg}")
+            # print(f"MsgBus._processor_loop(): Processing message: {msg}")
             msg_type = msg.get('msg_type') # Use .get() for safety
             if msg_type and self.msg_handlers.get(msg_type):
               try:
@@ -240,13 +234,13 @@ class MsgBus:
 
   def on(self, msg_type, callback):
     # Register a callback for a specific message type
-    print(f"MsgBus.on(): Registering handler for msg_type: {msg_type}")
+    # print(f"MsgBus.on(): Registering handler for msg_type: {msg_type}")
     self.msg_handlers[msg_type] = callback
 
   def send(self, msg_type, target_client_id, payload):
     # Send a message to a target client
     if self.shutdown_event.is_set():
-      print("MsgBus.send(): Shutdown in progress. Cannot send message.")
+      # print("MsgBus.send(): Shutdown in progress. Cannot send message.")
       return
     # Create message using your Message class structure
     # The placeholder Message class creates a dictionary via .data 
@@ -258,7 +252,6 @@ class MsgBus:
     )
     json_payload = message_obj.to_json() # Serialize the message to JSON
     target_channel = self._get_target_channel(target_client_id)
-    # next line commented as it adds lots of log entries
     # print(f"MsgBus.send(): Queueing message for {target_channel}: {json_payload}")
     # Put (channel, payload) tuple onto the outbound queue
     # This needs to be thread-safe if send() is called from a different thread than the one running self.loop
