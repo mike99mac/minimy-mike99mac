@@ -134,12 +134,13 @@ class Intent:
     self.bus.send("system", 'system_skill', info)
 
   def get_question_intent_match(self, info):
-    self.log.debug(f"Intent:get_question_intent_match() intents: {intents}")
+    self.log.debug(f"Intent:get_question_intent_match() info: {info}")
     aplay(self.earcon_filename)            # should be configurable
     skill_id = ''                          # see if a quation matches an intent.
     for intent in self.intents:
       stype, subject, verb = intent.split(":") 
       if stype == 'Q' and subject in info['subject'] and verb == info['qword']:
+        self.log.debug(f"Intent:get_question_intent_match() matched skill_id: {skill_id}")
         info['subject'] = subject          # fuzzy match - improve upon this
         skill_id = self.intents[intent]['skill_id']
         intent_state = self.intents[intent]['state']
@@ -170,12 +171,10 @@ class Intent:
     return skill_id, ''        # no match will return ('','')
 
   def handle_register_intent(self, msg):
-    #data = msg.data
     data = msg["payload"]
     subject = data['subject'].replace(":", ";") # convert colons to semicolons
     verb = data['verb']
     key = data['intent_type'] + ':' + subject.lower() + ':' + verb
-    
     # try adding to recognized_verbs - it is not getting set -MM
     # if verb not in self.recognized_verbs:
     #   self.recognized_verbs.append(data['verb'])
@@ -183,11 +182,11 @@ class Intent:
     if key in self.intents:
       self.log.warning(f"Intent:handle_register_intent() Intent clash! key={key} skill_id=%{data['skill_id']}")
     else:
-      self.log.info(f"Intent:handle_register_intent() key {key} is in intent match")
+      self.log.info(f"Intent:handle_register_intent() adding key {key} to intents")
       self.intents[key] = {'skill_id':data['skill_id'], 'state':'enabled'}
 
   def run(self):
-    self.log.debug(f"Intent.run() Intent processor started - is_running = {self.is_running}")
+    self.log.debug(f"Intent.run() intents: {self.intents}")
     si = SentenceInfo(self.base_dir)
     while self.is_running:                 # get all text files in the input directory
       mylist = sorted( [f for f in glob.glob(self.tmp_file_path + "save_text/*.txt")] )

@@ -1,10 +1,17 @@
-import time, glob, dbm, sys, os, io
-import multiprocessing
-from datetime import datetime
 from bus.MsgBus import MsgBus
-from google.cloud import speech
-from subprocess import Popen, PIPE, STDOUT
+from datetime import datetime
+import dbm
 from framework.util.utils import LOG, Config, aplay, get_wake_words
+import glob 
+from google.cloud import speech
+import io
+import json
+import multiprocessing
+import os
+from subprocess import Popen, PIPE, STDOUT
+import sys
+import time
+
 REMOTE_TIMEOUT = 3
 LOCAL_TIMEOUT = 5
 
@@ -125,6 +132,12 @@ class STTSvc:
   def process_stt_result(self, utt):
     # we want the wake word but if we don't have it maybe
     # it was the previous utterance so handle that too.
+    try:                                 # parse nested JSON string
+      parsed_text = json.loads(utt)
+      utt = parsed_text.get("text", "").strip()
+    except json.JSONDecodeError as e:
+      self.log.error(f"STT.process_stt_result(): failed to parse local STT result: {e}")
+      utt = ""
     self.log.info(f"STT.process_stt_result() utt: {utt}")
     if utt:
       utt = utt.strip()
@@ -177,22 +190,17 @@ class STTSvc:
     self.previous_utterance = ''
     self.previous_utt_was_ww = False
     loop_ctr = 0
-
-    # 10 seconds at 4 times a second see sleep at bottom of loop
-    clear_utt_time_in_seconds = 5
+    clear_utt_time_in_seconds = 5 # 5 secs at 4 times/sec see sleep at bottom of loop
     clear_utt_time_in_seconds *= 4
-
-    # this is not necessary if you have good echo cancellation like a headset
-    self.muted = False
+    self.muted = False # not necessary if you have good echo cancellation like a headset
     self.mute_start_time = 0
-    self.log.info("STT.run() started")
+    self.log.debug(f"STT.run() use_remote_stt: {self.use_remote_stt}")
     while True:
       loop_ctr += 1
       if loop_ctr > clear_utt_time_in_seconds:
         # time out previous utterance this is so you can't say wake word
         # then a long time later you say something else and we think its 
-        # wake word plus utterance. this is a byproduct of our wake word to
-        # utterance stitching strategy
+        # wake word plus utterance - byproduct of wake word to utterance stitching strategy
         self.previous_utterance = ''
         loop_ctr = 0
       if self.muted:
@@ -208,16 +216,12 @@ class STTSvc:
       if len(mylist) > 0:      # take the first
         loop_ctr = 0
         self.wav_file = mylist[0]
-        """
-        TODO reject files too small and maybe too large!
+        # TODO reject files too small and maybe too large!
         file_size = os.path.getsize(self.wav_file)
-        self.log.error("FILESIZE=%s" % (file_size,))
-        """
-
-        # convert it to text
-        utt = ''
+        self.log.debug(f"STT.run() wav_file: {self.wav_file} file_size: {file_size}")
+        utt = ''                           # convert it to text
         self.waiting_stt = True
-        if self.use_remote_stt:  # remote stt with fail over
+        if self.use_remote_stt:            # remote stt with failover
           self.goog_return_dict = self.manager.dict()
           self.local_return_dict = self.manager.dict()
           self.goog_proc = multiprocessing.Process(target=_remote_transcribe_file, args=(self.wav_file, self.goog_return_dict))
@@ -237,12 +241,10 @@ class STTSvc:
           self.local_proc.join(LOCAL_TIMEOUT)
           if self.local_proc:
             self.local_proc.kill()
-
         try:                               # to remove input file
           os.remove(self.wav_file)
         except:
           pass
-
         self.wav_file = None
         self.log.debug(f"STT.run(): goog_return_dict: {self.goog_return_dict} local_return_dict: {self.local_return_dict}")
         if self.goog_return_dict:
@@ -250,14 +252,12 @@ class STTSvc:
         elif self.local_return_dict:       # only have a local result BUT we have a cache hit to use 
           if len( self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8") ) > 0:
             self.log.error("STT.run() CACHE HIT!!! converted local=%s  to remote=%s" % (self.local_return_dict['text'], self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")))
-            self.process_stt_result( self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8") )
+            self.process_stt_result(self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8"))
           else:
-            self.process_stt_result( self.local_return_dict['text'] )
+            self.process_stt_result(self.local_return_dict['text'])
         else:
           self.log.info("STT.run() Can't produce STT from wav")
-
-        # if we have both responses we create a new cache entry 
-        if self.goog_return_dict and self.local_return_dict:
+        if self.goog_return_dict and self.local_return_dict: # both responses create a new cache entry 
           self.log.error("STT new cache entry. local=%s, remote=%s" % (self.local_return_dict['text'], self.goog_return_dict['text']))
           self.local2remote[ self.local_return_dict['text'] ] = self.goog_return_dict['text']
       time.sleep(0.025)

@@ -6,9 +6,7 @@ from threading import Event
 class TimeSkill(SimpleVoiceAssistant):
   def __init__(self, bus=None, timeout=5):
     super().__init__(skill_id='time_skill', skill_category='system')
-
-  def register_intents(self):
-    self.log.debug("TimeSkill.register_intents()")
+    self.log.debug("TimeSkill.__init__(): Registering intents")
     self.register_intent('Q', 'what', 'time', self.handle_time_match)
     self.register_intent('Q', 'what', 'date', self.handle_date_match)
     self.register_intent('Q', 'what', 'today', self.handle_date_match)
