@@ -89,7 +89,7 @@ class Config:
     self.save_cfg()
     self.cfg = self.load_cfg()
 
-  def get_cfg_val(self,key):
+  def get_cfg_val(self, key):
     ka = key.split(".")
     sect = self.cfg[0]
     for k in ka:
@@ -99,7 +99,7 @@ class Config:
         return None
     return sect
 
-  def set_cfg_val(self,key,value):
+  def set_cfg_val(self, key, value):
     ka = key.split(".")
     cmd = "self.cfg[0]"
     for k in ka:

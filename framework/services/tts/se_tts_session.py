@@ -61,9 +61,9 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
     if cfg.get_cfg_val('Advanced.TTS.Local') == 'c': # coqui
       from framework.services.tts.local.coqui_tts import local_speak_dialog
       self.which_local_tts = 'c'
-    elif cfg.get_cfg_val('Advanced.TTS.Local') == 'm': # mimic3
-      from framework.services.tts.local.mimic3 import local_speak_dialog
-      self.which_local_tts = 'm'
+    elif cfg.get_cfg_val('Advanced.TTS.Local') == 'p': # piper
+      from framework.services.tts.local.piper import local_speak_dialog
+      self.which_local_tts = 'p'
     else:
       from framework.services.tts.local.espeak import local_speak_dialog
     self.local_speak = local_speak_dialog
@@ -259,9 +259,9 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
       time.sleep(0.01)
 
   def handle_skill_msg(self, msg):
-    self.log.debug(f"TTSSession.handle_skill_msg() msg: {msg}") 
-    data = msg["payload"]
-    msg_correlator = data.get("correlator","")
+    data = msg.data
+    self.log.debug(f"TTSSession.handle_skill_msg() data: {data}") 
+    msg_correlator = data.get("correlator", "")
     if data['skill_id'] == self.skill_id:
       if data['subtype'] == 'media_player_command_response':
         # these come to us from the media service

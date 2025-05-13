@@ -106,13 +106,13 @@ class Intent:
     return resp
 
   def send_utt(self, utt):
-    self.log.debug("Intent:send_utt()")  
     # sends an utterance to a target and handles edge cases
     target = utt.get('skill_id','*')
     if target == '':
       target = '*'
     if utt == 'stop':
       target = 'system_skill'
+    self.log.debug(f"Intent:send_utt() target: {target}")  
     self.bus.send("utterance", target, {'utt': utt,'subtype':'utt'})
 
   def send_media(self, info):
@@ -135,6 +135,7 @@ class Intent:
 
   def get_question_intent_match(self, info):
     self.log.debug(f"Intent:get_question_intent_match() info: {info}")
+    self.log.debug(f"Intent:get_question_intent_match() intents: {self.intents}")
     aplay(self.earcon_filename)            # should be configurable
     skill_id = ''                          # see if a quation matches an intent.
     for intent in self.intents:
@@ -171,7 +172,7 @@ class Intent:
     return skill_id, ''        # no match will return ('','')
 
   def handle_register_intent(self, msg):
-    data = msg["payload"]
+    data = msg.get("payload")
     subject = data['subject'].replace(":", ";") # convert colons to semicolons
     verb = data['verb']
     key = data['intent_type'] + ':' + subject.lower() + ':' + verb

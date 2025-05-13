@@ -140,13 +140,12 @@ class STTSvc:
       utt = ""
     self.log.info(f"STT.process_stt_result() utt: {utt}")
     if utt:
-      utt = utt.strip()
       wake_word = ''
       for ww in self.wws:
         if utt.lower().find(ww.lower()) > -1:
           wake_word = ww
           break
-      if wake_word == '':      # ww not found in utt
+      if wake_word == "":                  # ww not found in utt
         if self.muted:
           self.muted = False
           self.send_unmute()

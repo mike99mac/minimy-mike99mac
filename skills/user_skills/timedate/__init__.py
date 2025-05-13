@@ -11,6 +11,7 @@ class TimeSkill(SimpleVoiceAssistant):
     self.register_intent('Q', 'what', 'date', self.handle_date_match)
     self.register_intent('Q', 'what', 'today', self.handle_date_match)
     self.register_intent('Q', 'what', 'day', self.handle_day_match)
+    self.speak("done initializing time skill")
 
   def handle_date_match(self, msg):
     self.log.debug("TimeSkill.handle_date_match()")
@@ -19,6 +20,7 @@ class TimeSkill(SimpleVoiceAssistant):
     self.speak(text)
 
   def handle_time_match(self, msg):
+    self.log.debug("TimeSkill.handle_time_match()")
     now = datetime.datetime.now()
     text = now.strftime("%I %M %p")
     minute = int(text.split(" ")[1])

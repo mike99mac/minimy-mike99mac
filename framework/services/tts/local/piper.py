@@ -1,14 +1,16 @@
+from framework.util.utils import execute_command, Config
 import os
 
-def local_speak_dialog(text, filename, wait_q):
-  print(f"local_speak_dialog() text = {text} filename = {filename} ")
+def local_speak_dialog(text, file_name, wait_q):
+  # convert text to speech locally using piper 
+  print(f"local_speak_dialog() text: {text} file_name: {file_name} ")
   base_dir = os.getenv('SVA_BASE_DIR')
-  if base_dir is None:
-    base_dir = os.getcwd()
-    print("Warning, SVA_BASE_DIR environment variable is not set. Defaulting it to %s" % (base_dir,))
-  config_file = base_dir + '/install/mmconfig.yml'
-  cmd = f"echo {text} | piper --model {base_dir}/voice/en_US-lessac-medium.onnx --output_file speech.wav;aplay speech.wav"
-  os.system(cmd)
+  model_file = get_cfg_val('Advanced.TTS.LocalVoice')
+  piper_dir = f"{base_dir}/framework/services/tts/local/piper"
+  config_file = f"{base_dir}/install/mmconfig.yml"
+  cmd = f"echo {text} | {piper_dir}/piper --model {piper_dir}/{model_file}.onnx --output_file speech.wav; aplay speech.wav"
+  print(f"local_speak_dialog() cmd: {cmd}")
+  os.system(cmd)                           # piper creates speech.wav then plays it
   os.system("rm speech.wav")
   wait_q.put({'service':'local', 'status':'success'})
     
