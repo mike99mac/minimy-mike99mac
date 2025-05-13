@@ -135,7 +135,7 @@ class Intent:
 
   def get_question_intent_match(self, info):
     self.log.debug(f"Intent:get_question_intent_match() info: {info}")
-    self.log.debug(f"Intent:get_question_intent_match() intents: {self.intents}")
+    # self.log.debug(f"Intent:get_question_intent_match() intents: {self.intents}")
     aplay(self.earcon_filename)            # should be configurable
     skill_id = ''                          # see if a quation matches an intent.
     for intent in self.intents:

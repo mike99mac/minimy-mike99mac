@@ -214,13 +214,13 @@ class MsgBus:
         try:                               # wait for an item with a timeout
           msg = await asyncio.wait_for(self.inbound_q.get(), timeout=1.0)
           if msg:
-            self.log.debug(f"MsgBus._processor_loop(): Processing message: {msg}")
+            self.log.debug(f"MsgBus._processor_loop(): Processing msg")
             msg_type = msg.get('msg_type') # Use .get() for safety
             if msg_type and self.msg_handlers.get(msg_type):
               try:
                 self.msg_handlers[msg_type](msg) # Call the registered handler
               except Exception as e:
-                self.log.error(f"MsgBus._processor_loop(): Error in message handler for {msg_type}: {e}")
+                self.log.error(f"MsgBus._processor_loop(): Error in msg_type {msg_type}: {e}")
             else:
               self.log.warning(f"MsgBus._processor_loop(): No handler for msg_type: {msg_type} or msg_type is None.")
             self.inbound_q.task_done()
