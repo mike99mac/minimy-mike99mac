@@ -533,21 +533,26 @@ class SimpleVoiceAssistant:
       self.send_message('tts_service', info)
       self.i_am_paused = True
 
-  def handle_system_msg(self, message):
-    self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() self.skill_id = {self.skill_control.skill_id} message: {message}")
-    if message.data['skill_id'] == self.skill_control.skill_id:
-      match message.data['subtype']:
-        case "stop" | "stock":   # "stop" is often heard as "stock"
+  def handle_system_msg(self, msg):
+    msg_type = msg.get('msg_type')
+    source = msg.get('source')
+    payload = msg.get('payload') 
+    subtype = payload.get('subtype')
+    from_skill_id = payload.get('from_skill_id')
+    self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() skill_id: {self.skill_control.skill_id} from_skill_id: {from_skill_id}")
+    self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() subtype: {subtype}  payload: {payload}")
+    if from_skill_id == self.skill_control.skill_id:
+      match subtype:
+        case "stop" | "stock":             # "stop" is often heard as "stock"
           self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() stop detected - calling 'mpc clear'")
-          self.mpc_cmd("clear")  # clear the MPC queue
+          self.mpc_cmd("clear")            # clear the MPC queue
           self.i_am_paused = False
-          # TODO error check and timeout check
           self.waiting_for_input_focus = False
           self.i_am_conversed = True
           self.ignore_raw_ctr = 0
         case "request_output_focus_response":
-          self.log.info(f"SimpleVoiceAssistant.handle_system_msg() {self.skill_control.skill_id} acquired output focus!")
-          if message.data['status'] == 'confirm': # if state speak else must be state media
+          self.log.info(f"SimpleVoiceAssistant.handle_system_msg() {self.skill_control.skill_id} acquired output focus status: {msg.data['status']}")
+          if msg.data['status'] == 'confirm': # if state speak else must be state media
             if self.focus_mode == 'speech':
               self.tts_session_response = ''
               info = {
@@ -603,5 +608,6 @@ class SimpleVoiceAssistant:
 
       # honor any registered message handlers
       if self.handle_message is not None:
-        self.handle_message(message)
+        self.log.debug("SimpleVoiceAssistant.handle_system_msg() calling self.handle_msg")
+        self.handle_message(msg)
 

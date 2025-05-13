@@ -25,6 +25,7 @@ def execute_command(command):
 def _local_transcribe_file(wav_filename, return_dict):
   start_time = time.time()
   cmd = 'curl http://localhost:5002/stt -H "Content-Type: audio/wav" --data-binary @"%s"' % (wav_filename,)
+  print(f"_local_transcribe_file(): executing cmd: {cmd}") 
   out, err = execute_command(cmd)
   res = out.strip()
   if res != '':
