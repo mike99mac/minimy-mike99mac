@@ -308,6 +308,11 @@ class SimpleVoiceAssistant:
     self.speak_callback = wait_callback
     self.log.debug(f"SimpleVoiceAssistant.speak() sending message to speak with info: {info}")
     self.bus.send("system", 'system_skill', info)
+ 
+    # added new code
+    tts_info = {'text': text, 'skill_id': self.skill_control.skill_id}
+    self.log.debug(f"SimpleVoiceAssistant.speak() sending TTS text to tts_service: {tts_info}")
+    self.bus.send("speak", 'tts_service', tts_info)
     return True
 
   def speak_lang(self, base_dir: str, mesg_file: str, mesg_info: dict, wait_callback=None):
