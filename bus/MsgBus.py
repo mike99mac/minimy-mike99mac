@@ -215,7 +215,7 @@ class MsgBus:
           msg = await asyncio.wait_for(self.inbound_q.get(), timeout=1.0)
           if msg:
             self.log.debug(f"MsgBus._processor_loop(): Processing msg")
-            msg_type = msg.get('msg_type') # Use .get() for safety
+            msg_type = msg.get('msg_type') 
             if msg_type and self.msg_handlers.get(msg_type):
               try:
                 self.msg_handlers[msg_type](msg) # Call the registered handler
@@ -248,8 +248,6 @@ class MsgBus:
     if self.shutdown_event.is_set():
       self.log.warning("MsgBus.send(): Shutdown in progress. Cannot send message.")
       return
-    # Create message using your Message class structure
-    # The placeholder Message class creates a dictionary via .data 
     message_obj = Message(
       msg_type=msg_type,
       source=self.client_id,
@@ -322,19 +320,17 @@ class MsgBus:
     if self.redis_conn:                     # close Redis connection
       self.log.debug("MsgBus.close(): Closing Redis connection.")
       if self.loop.is_running():
-          close_future = asyncio.run_coroutine_threadsafe(self.redis_conn.close(), self.loop)
-          try:
-            close_future.result(timeout=5)
-            self.log.debug("MsgBus.close(): connection closed.")
-          except Exception as e:
-            self.log.error(f"MsgBus.close(): Error closing connection: {e}")
+        close_future = asyncio.run_coroutine_threadsafe(self.redis_conn.close(), self.loop)
+        try:
+          close_future.result(timeout=5)
+          self.log.debug("MsgBus.close(): connection closed.")
+        except Exception as e:
+          self.log.error(f"MsgBus.close(): Error closing connection: {e}")
       else:                                # Fallback if loop is not running
-          try:
-              # This won't work if redis_conn.close() is a coroutine and loop isn't running
-              # For redis.asyncio, it is a coroutine.
-              self.log.warning("MsgBus.close(): Loop not running, cannot call async redis_conn.close().")
-          except Exception as e:
-              self.log.error(f"MsgBus.close(): Error trying to close Redis connection without running loop: {e}")
+        try:
+          self.log.warning("MsgBus.close(): Loop not running, cannot call async redis_conn.close().")
+        except Exception as e:
+          self.log.error(f"MsgBus.close(): Error trying to close Redis connection without running loop: {e}")
     if self.loop.is_running():             # Stop the event loop itself
       self.log.debug("MsgBus.close(): Stopping event loop.")
       self.loop.call_soon_threadsafe(self.loop.stop)
@@ -342,17 +338,10 @@ class MsgBus:
       self.log.debug("MsgBus.close(): Joining event loop thread.")
       self.event_loop_thread.join(timeout=5)
       if self.event_loop_thread.is_alive():
-          self.log.warning("MsgBus.close(): Event loop thread did not join cleanly.")
-    # Finally, close the loop object if it's not already closed.
-    # This should be done after run_forever() has returned and all resources are released.
+        self.log.warning("MsgBus.close(): Event loop thread did not join cleanly.")
     if not self.loop.is_closed():
-        self.log.debug("MsgBus.close(): Closing asyncio loop object.")
-        # There's no self.loop.close() in the thread that called run_forever(),
-        # it closes when run_forever() exits and all tasks complete.
-        # For a loop run in another thread, ensuring it's closed can be complex.
-        # asyncio.set_event_loop(self.loop) # May be needed before close if loop was not set for this thread
-        # self.loop.close() # Be cautious with this.
-        pass # The loop should close itself when _run_event_loop finishes.
+      self.log.debug("MsgBus.close(): Closing asyncio loop object.")
+      pass                                 # loop should close itself when _run_event_loop() finishes.
     self.log.info("MsgBus.close(): MsgBus closed.")
 
   async def _cancel_task(self, task):

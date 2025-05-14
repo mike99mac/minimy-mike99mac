@@ -243,7 +243,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
         self.pause_ack = False
         self.handle_event(se_tts_constants.EVENT_INTERNAL_PAUSE, {'tsid':self.tts_sid, 'msid':self.msid})
       if not self.paused:
-        if len(self.session_data) == self.index and self.index != 0: # End of q reached!
+        if len(self.session_data) == self.index and self.index != 0: # End of queue reached!
           self.index = 0
           self.session_data = []
           self.handle_event(se_tts_constants.INTERNAL_EVENT_ENDED, {'tsid':self.tts_sid, 'msid':self.msid})
@@ -259,8 +259,8 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
       time.sleep(0.01)
 
   def handle_skill_msg(self, msg):
+    self.log.debug(f"TTSSession.handle_skill_msg() msg: {msg}") 
     data = msg.data
-    self.log.debug(f"TTSSession.handle_skill_msg() data: {data}") 
     msg_correlator = data.get("correlator", "")
     if data['skill_id'] == self.skill_id:
       if data['subtype'] == 'media_player_command_response':
