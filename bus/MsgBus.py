@@ -130,8 +130,7 @@ class MsgBus:
     self.log.debug(f"MsgBus._subscriber_loop(): Subscriber loop started. Listening on {self._get_client_channel()}")
     try:
       while not self.shutdown_event.is_set():
-        try:
-          # timeout helps to periodically check shutdown_event
+        try:                               # timeout helps to periodically check shutdown_event
           message = await self.pubsub_client.get_message(ignore_subscribe_messages=True, timeout=1.0)
           if message and message.get('type') == 'message':
             try:

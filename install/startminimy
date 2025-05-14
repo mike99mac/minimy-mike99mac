@@ -85,13 +85,20 @@ function mountUmountDirs
 
   # unmount and remount a tmpfs over /var/log and $HOME/minimy/logs
   umountTmpfs $HOME/minimy/logs
+  sleep 1
   mountTmpfs home-$USER-minimy-logs.mount Minimy log directory
 
   # mount a tmpfs over $HOME/minimy/tmp and create three subdirectories
+  echo "Mounting tmpfs over $HOME/minimy/tmp"
   umountTmpfs $HOME/minimy/tmp
   mountTmpfs home-$USER-minimy-tmp.mount Minimy temp directory
   sleep 1
-  mkdir $baseDir/tmp/save_audio $baseDir/tmp/save_text $baseDir/tmp/save_tts
+  for nextDir in save_audio save_text save_tts; do
+    if [ ! -d $baseDir/tmp/$nextDir ]; then 
+      echo "Making directory: $baseDir/tmp/$nextDir"
+      mkdir $baseDir/tmp/$nextDir
+    fi
+  done
  }                                         # mountUmountDirs()
 
 #+--------------------------------------------------------------------------+
@@ -104,43 +111,28 @@ function startSystem
 
   cd $baseDir
   source minimy_venv/bin/activate          # start the minimy virtual environment
-  echo "Starting Local STT Server ..."
   cd $baseDir
+  echo "Starting local STT server whisper ..."
   python3 framework/services/stt/local/whisper/local_whisper.py >$logDir/whisper.log 2>&1 &
-  # 
-  #echo "Starting Local TTS Server ..."
-  #deactivate                               # minimy_venv
-  #cd $baseDir/framework/services/tts/local/mimic3
-  #if [ ! -d .venv ]; then                  # venv not found
-  #  echo "ERROR: directory $baseDir/framework/services/tts/local/mimic3/.venv not found"
-  #  exit 4
-  #fi
-  #source .venv/bin/activate                # start the mimic venv
-  #bin/mimic3 --model-dir voices/apope  > $logDir/mimic3_tts.log 2>&1 &
-  #deactivate                               # exit mimic venv
-  #cd $baseDir
   source minimy_venv/bin/activate          # start the minimy virtual environment
   export PYTHONPATH=`pwd`   
   export SVA_BASE_DIR=`pwd`
   export GOOGLE_APPLICATION_CREDENTIALS="/home/pi/minimy/install/my-google-key.json"
-  echo "Starting Message Bus ..."
-  cd $baseDir/bus
-  python3 MsgBus.py &
-  sleep 2
+  logDir="/home/pi/minimy/logs"
   echo "Starting system skills ..."
   cd $baseDir/skills/system_skills
-  python3 skill_system.py &
+  python3 skill_system.py >> $logDir/skills.log &
   sleep 1
-  echo "Starting Intent Service ..."
+  echo "Starting intent service ..."
   cd $baseDir 
-  python3 framework/services/intent/intent.py &
+  python3 framework/services/intent/intent.py >> $logDir/intent.log &
   sleep 2 
   echo "Starting media player ..."
-  python3 framework/services/output/media_player.py &
+  python3 framework/services/output/media_player.py >> $logDir/skills.log &
   echo "Starting TTS service ..."
-  python3 framework/services/tts/tts.py &
+  python3 framework/services/tts/tts.py >> $logDir/tts.log &
   echo "Starting STT service ..."
-  python3 framework/services/stt/stt.py &
+  python3 framework/services/stt/stt.py >> $logDir/stt.log &
   sleep 1
  }                                         # startSystem() 
 
