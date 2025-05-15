@@ -51,6 +51,7 @@ class SimpleVoiceAssistant:
     self.watchdog_thread = None
     self.i_am_active = False
     self.i_am_paused = False       # this skill has been paused by the user
+    self.i_am_paused = True        # override for now 
     self.i_am_conversed = False
     self.done_speaking = True
     self.ignore_raw_ctr = 0
@@ -268,6 +269,7 @@ class SimpleVoiceAssistant:
   def speak(self, text, wait_callback=None):
     self.log.debug(f"SimpleVoiceAssistant.speak() text: {text} wait_callback: {wait_callback} i_am_paused: {self.i_am_paused}")
     if self.i_am_paused:                   # send text to tts service
+      self.log.debug(f"SimpleVoiceAssistant.speak(): tts_service_session_id: {self.tts_service_session_id}") 
       if self.tts_service_session_id != 0:
         info = {
             'error':'',
@@ -310,9 +312,9 @@ class SimpleVoiceAssistant:
     self.bus.send("system", 'system_skill', info)
  
     # added new code
-    tts_info = {'text': text, 'skill_id': self.skill_control.skill_id}
-    self.log.debug(f"SimpleVoiceAssistant.speak() sending TTS text to tts_service: {tts_info}")
-    self.bus.send("speak", 'tts_service', tts_info)
+    # tts_info = {'text': text, 'skill_id': self.skill_control.skill_id}
+    # self.log.debug(f"SimpleVoiceAssistant.speak() sending TTS text to tts_service: {tts_info}")
+    # self.bus.send("speak", 'tts_service', tts_info)
     return True
 
   def speak_lang(self, base_dir: str, mesg_file: str, mesg_info: dict, wait_callback=None):
