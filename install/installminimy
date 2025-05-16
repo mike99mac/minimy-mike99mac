@@ -75,7 +75,7 @@ function buildVenv
   runCmd $pipCmd install --upgrade wheel setuptools
   runCmd sudo apt-get install -y python3-dev build-essential portaudio19-dev mpg123 ffmpeg curl wget
   runCmd sudo apt-get install -y libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
-  runCmd sudo apt-get install -y libavcodec-dev libavformat-dev libavdevice-dev 
+  runCmd sudo apt-get install -y libavcodec-dev libavformat-dev libavdevice-dev redis
   echo | tee -a $logFile
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
   echo "Python version: $pythonVer ..." | tee -a $logFile
@@ -94,6 +94,7 @@ function buildVenv
   runCmd $pipCmd install lgpio
   runCmd $pipCmd install optimum
   runCmd $pipCmd install quart
+  runCmd $pipCmd install redis
   runCmd $pipCmd install whisper
   runCmd $pipCmd install youtube-search
   runCmd $pipCmd install --upgrade --upgrade-strategy eager "optimum[neural-compressor]"

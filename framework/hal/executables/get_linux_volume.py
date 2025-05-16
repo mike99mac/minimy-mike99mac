@@ -2,7 +2,6 @@ from framework.util.utils import execute_command
 
 res = execute_command("amixer sget Master")
 res = res.split("\n")
-
 for line in res:
     if line.find("Limits") == -1:
         start_indx = line.find("Playback ")

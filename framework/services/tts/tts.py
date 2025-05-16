@@ -419,8 +419,9 @@ class TTSEngine:
     self.log.info("TTS Engine Initialized")
 
   def handle_speak_msg(self, msg):
-    self.log.debug(f"TTSEngine.handle_speak_msg() data: {msg.data}")
-    self.handle_event(EVENT_SPEAK, msg.data)
+    payload = msg["payload"]
+    self.log.debug(f"TTSEngine.handle_speak_msg() payload: {payload}")
+    self.handle_event(EVENT_SPEAK, payload)
 
   def handle_skill_msg(self, msg):
     data = msg["payload"]

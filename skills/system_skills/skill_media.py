@@ -5,46 +5,46 @@ from framework.util.utils import aplay
 class SVAMediaSkill(SimpleVoiceAssistant):
   # determine who should handle a media request when tell that skill to handle it 
   def __init__(self, bus=None, timeout=5):
-    super().__init__(msg_handler=self.handle_message, skill_id='media_skill', skill_category='media')
-    self.skill_id = 'media_skill'
+    super().__init__(msg_handler=self.handle_message, skill_id="media_skill", skill_category="media")
+    self.skill_id = "media_skill"
     self.log.debug(f"SVAMediaSkill.__init__() skill_id = {self.skill_id} skill_base_dir = {self.skill_base_dir}") 
     self.media_skills = []       # array of registered media skill handlers
     self.active_media_skill = None
     self.tick_file_name = self.base_dir + "/framework/assets/tick.wav"
     info = {               # register OOBs
-        'subtype':'reserve_oob', 
-        'skill_id':'system_skill', 
-        'from_skill_id':self.skill_id, 
-        'verb':'pause'
+        "subtype":"reserve_oob", 
+        "skill_id":"system_skill", 
+        "from_skill_id":self.skill_id, 
+        "verb":"pause"
          }
-    self.bus.send("system", 'system_skill', info)
-    info['verb'] = 'resume'
-    self.bus.send("system", 'system_skill', info)
-    info['verb'] = 'previous'
-    self.bus.send("system", 'system_skill', info)
-    info['verb'] = 'next'
-    self.bus.send("system", 'system_skill', info)
-    info['verb'] = 'stop'
-    self.bus.send("system", 'system_skill', info)
+    self.bus.send("system", "system_skill", info)
+    info["verb"] = "resume"
+    self.bus.send("system", "system_skill", info)
+    info["verb"] = "previous"
+    self.bus.send("system", "system_skill", info)
+    info["verb"] = "next"
+    self.bus.send("system", "system_skill", info)
+    info["verb"] = "stop"
+    self.bus.send("system", "system_skill", info)
     self.log.debug("SVAMediaSkill.__init__(): registering OOB intents") 
-    self.register_intent('O', 'next', 'song', self.handle_next)
-    self.register_intent('O', 'next', 'station', self.handle_next)
-    self.register_intent('O', 'next', 'title', self.handle_next)
-    self.register_intent('O', 'next', 'track', self.handle_next)
-    self.register_intent('O', 'previous', 'song', self.handle_prev)
-    self.register_intent('O', 'previous', 'station', self.handle_prev)
-    self.register_intent('O', 'previous', 'title', self.handle_prev)
-    self.register_intent('O', 'previous', 'track', self.handle_prev)
-    self.register_intent('O', 'pause', 'music', self.handle_pause)
-    self.register_intent('O', 'resume', 'music', self.handle_resume)
-    self.register_intent('O', 'stop', 'music', self.handle_stop)
+    self.register_intent("O", "next", "song", self.handle_next)
+    self.register_intent("O", "next", "station", self.handle_next)
+    self.register_intent("O", "next", "title", self.handle_next)
+    self.register_intent("O", "next", "track", self.handle_next)
+    self.register_intent("O", "previous", "song", self.handle_prev)
+    self.register_intent("O", "previous", "station", self.handle_prev)
+    self.register_intent("O", "previous", "title", self.handle_prev)
+    self.register_intent("O", "previous", "track", self.handle_prev)
+    self.register_intent("O", "pause", "music", self.handle_pause)
+    self.register_intent("O", "resume", "music", self.handle_resume)
+    self.register_intent("O", "stop", "music", self.handle_stop)
 
   def handle_oob_detected(self, msg):
     self.log.debug(f"SVAMediaSkill.handle_oob_detected() OOB detected - msg: {msg}")
     if self.active_media_skill == None:    # nothing is playing
       aplay(self.tick_file_name)           # just play a short tick sound
     else:                                  # something is playing
-      oob_type = msg.data['verb']
+      oob_type = msg["payload"]["verb"]
       self.log.debug(f"SVAMediaSkill.handle_oob_detected(): oob_type = {oob_type}")
       match oob_type:
         case "previous":
@@ -85,8 +85,8 @@ class SVAMediaSkill(SimpleVoiceAssistant):
   def handle_query(self, msg):
     self.log.debug("SVAMediaSkill.handle_query() hit!")
     # send out message to all media skills saying you got 3 seconds to give me 
-    # your confidence level. all media skills need to respond to the 'get_confidence'
-    # message and the 'media_play' message
+    # your confidence level. all media skills need to respond to the "get_confidence"
+    # message and the "media_play" message
     for skill_id in self.media_skills:
       self.log.debug(f"SVAMediaSkill.handle_query(): sent media_get_confidence to {skill_id}")
       info = {
@@ -124,7 +124,7 @@ class SVAMediaSkill(SimpleVoiceAssistant):
       if from_skill_id == "media_player_service" and subtype == "media_player_command_response" and response == "session_ended" and self.active_media_skill == skill_id:
         self.log.debug(f"SVAMediaSkill.handle_message() media session ended for {self.active_media_skill}")
         self.active_media_skill = None
-        # Ken's comments: if media player announcing session ended for my active media session owner
+        # Ken"s comments: if media player announcing session ended for my active media session owner
         # {"type": "skill", "data": {"error": "", "subtype": "media_player_command_response", "response": "session_ended", 
         # "session_id": 1, "skill_id": "tts_service", "from_skill_id": "media_player_service"}, "context": {}}
       else:
@@ -159,7 +159,7 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     self.log.info("SVAMediaSkill.stop() - pausing music")
     self.mpc_cmd("pause")    
 
-if __name__ == '__main__':
+if __name__ == "__main__":
   sva_ms = SVAMediaSkill()
   Event().wait()                           # wait forever
 

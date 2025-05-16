@@ -15,19 +15,19 @@ class MediaSkill(SimpleVoiceAssistant):
     time.sleep(1)            # give fall back skill a chance to initialize
     self.log.debug("MediaSkill.__init__()")
     info = {               # register with the system media skill
-      'subtype': 'media_register_request',
-      'skill_id': 'media_skill',
-      'media_skill_id': skill_id
+      "subtype": "media_register_request",
+      "skill_id": "media_skill",
+      "media_skill_id": skill_id
       }
-    self.bus.send("skill", 'media_skill', info)
+    self.bus.send("skill", "media_skill", info)
 
   def handle_message(self, msg):
     self.log.debug(f"MediaSkill.handle_message() msg: {msg}")
-    if msg.data['subtype'] == 'media_get_confidence':
+    subtype = msg["payload"]["subtype"]
+    if subtype == "media_get_confidence":
       skill_data = self.get_media_confidence(msg)
-      message = {'subtype':'media_confidence_response','skill_id':'media_skill', 'skill_data':skill_data}
-      self.send_message('media_skill', message)
-    if msg.data['subtype'] == 'media_play':
+      info = {"subtype": "media_confidence_response", "skill_id": "media_skill", "skill_data": skill_data}
+      self.send_message("media_skill", info)
+    if subtype == "media_play":
       self.media_play(msg)
-
 

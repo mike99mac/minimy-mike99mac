@@ -8,30 +8,20 @@ class Platform(HalAbc):
     def __init__(self, input_device_id, input_level_control_name, output_device_name, output_level_control_name):
         self.type = 'PiOS'
         self.input_device_id = input_device_id
-
-        #self.input_level_control_name = "Capture"
         self.input_level_control_name = input_level_control_name
-
         self.output_device_name = output_device_name
-
-        #self.output_level_control_name = "Master"
         self.output_level_control_name = output_level_control_name
-
         self.set_input_level(100)
         self.set_output_level(100)
 
-        #os.system("amixer sset Master 100%")
-        #os.system("amixer sset Capture 100%")
-
     def set_input_level(self, new_level):
-        cmd = "amixer sset '%s' %s%%" % (self.input_level_control_name, new_level)
+        cmd = "amixer -q sset '%s' %s%%" % (self.input_level_control_name, new_level)
         os.system(cmd)
 
     def get_input_level(self):
-        cmd = "amixer sget '%s'" % (self.input_level_control_name,)
+        cmd = "amixer -q sget '%s'" % (self.input_level_control_name,)
         res = execute_command(cmd)
         res = res.split("\n")
-
         for line in res:
             if line.find("Limits") == -1:
                 start_indx = line.find("[")
@@ -44,11 +34,11 @@ class Platform(HalAbc):
                         return current_volume
 
     def set_output_level(self, new_level):
-        cmd = "amixer sset %s %s%%" % (self.output_level_control_name, new_level)
+        cmd = "amixer -q sset %s %s%%" % (self.output_level_control_name, new_level)
         os.system(cmd)
 
     def get_output_level(self):
-        cmd = "amixer sget %s" % (self.output_level_control_name,)
+        cmd = "amixer -q sget %s" % (self.output_level_control_name,)
         res = execute_command(cmd)
         res = res.split("\n")
 
