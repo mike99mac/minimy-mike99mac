@@ -6,16 +6,14 @@ from threading import Event
 import subprocess
 
 class MpcSkill(MediaSkill):  
-  """
-  Play music skill for minimy.  It uses mpc and mpd to play music from:
-  - A music library such as mp3 files 
-  - Internet radio stations stored in the file radio.stations.csv
-  - Internet music searches 
-  """
+  # Play music skill for minimy.  It uses mpc and mpd to play music from:
+  # - A music library such as mp3 files 
+  # - Internet radio stations stored in the file radio.stations.csv
+  # - Internet music searches 
   def __init__(self, bus=None, timeout=5):
-    self.skill_id = 'mpc_skill'
-    super().__init__(skill_id=self.skill_id, skill_category='media')
-    self.url = ''                          # has to be returned from get_media_confidence()
+    self.skill_id = "mpc_skill"
+    super().__init__(skill_id=self.skill_id, skill_category="media")
+    self.url = ""                          # has to be returned from get_media_confidence()
     self.lang = "en-us"                    # just US English for now
     self.mpc_client = MpcClient("/media/") # search for music under /media
     self.log.debug(f"MpcSkill.__init__(): skill_base_dir: {self.skill_base_dir}")
@@ -25,28 +23,24 @@ class MpcSkill(MediaSkill):
     self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.fallback_internet) 
 
   def fallback_internet(self):
-    """
-    Requested music was not found in library - fallback to Internet search
-    """
+    # Requested music was not found in library - fallback to Internet search
     self.log.debug(f"MpcSkill.fallback_internet(): calling mpc_client.search_internet({self.sentence})")
     self.music_info = self.mpc_client.search_internet(self.sentence)
 
   def get_media_confidence(self, msg):
-    """
-    Determine if the music requested can be played
-    """
-    sentence = msg.data['msg_sentence']
+    # Determine if the music requested can be played
+    sentence = msg["payload"]["msg_sentence"]
     self.log.debug(f"MpcSkill.get_media_confidence(): parse request {sentence}")
     sentence = sentence.lower()
  
     # if first word is a playlist verb then manipulate playlists
-    first_word = sentence.split(' ', 1)[0]
+    first_word = sentence.split(" ", 1)[0]
     match first_word:
-      case 'create'|'make'|'add'|'at'|'delete'|"i'd"|'remove'|'list'|'what': # 'add' is sometimes 'at' or I'd
+      case "create"|"make"|"add"|"at"|"delete"|"i'd"|"remove"|"list"|"what": # "add" is sometimes "at" or I"d
         self.music_info = self.mpc_client.manipulate_playlists(sentence)
-        return {'confidence':100, 'correlator':0, 'sentence':sentence, 'url':self.url} # all done
+        return {"confidence":100, "correlator":0, "sentence":sentence, "url":self.url} # all done
 
-    # if track or album is specified, assume it is a song, else search for 'radio', 'internet' or 'news' requests 
+    # if track or album is specified, assume it is a song, else search for "radio", "internet" or "news" requests 
     song_words = ["track", "song", "title", "album", "record", "artist", "band" ]
     if "internet radio" in sentence:      
       request_type = "radio"
@@ -90,12 +84,10 @@ class MpcSkill(MediaSkill):
       self.log.debug("MpcSkill.get_media_confidence(): found tracks or URLs") 
     else:                                  # error encountered
       self.log.debug(f"MpcSkill.get_media_confidence() did not find music: mesg_file = {self.music_info.mesg_file} mesg_info = {self.music_info.mesg_info}")
-    return {'confidence':100, 'correlator':0, 'sentence':sentence, 'url':self.url}
+    return {"confidence":100, "correlator":0, "sentence":sentence, "url":self.url}
 
   def media_play(self, msg):
-    """
-    Either music has been found, a playlist operation finished, or an error message has to be spoken
-    """
+    # Either music has been found, a playlist operation finished, or an error message has to be spoken
     self.log.debug(f"MpcSkill.media_play() match_type = {self.music_info.match_type}")
     if self.music_info.match_type == "none": # no music was found
       self.log.debug("MpcSkill.media_play() no music found") 
@@ -119,13 +111,11 @@ class MpcSkill(MediaSkill):
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.start_music)
     
   def start_music(self):
-    """
-    callback to start music after media_play() speaks informational message
-    """
+    # callback to start music after media_play() speaks informational message
     self.log.debug(f"MpcSkill.start_music() calling mpc_client.start_music({self.music_info}")
     self.mpc_client.start_music(self.music_info) # play the music
 
 # main()
-if __name__ == '__main__':
+if __name__ == "__main__":
   mpc = MpcSkill()
   Event().wait()                           # wait forever
