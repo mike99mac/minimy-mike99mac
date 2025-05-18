@@ -16,7 +16,7 @@ class Intent:
     self.tmp_file_path = self.base_dir + "/tmp/"
     log_filename = self.base_dir + "/logs/intent.log"
     self.log = LOG(log_filename).log
-    self.log.debug(f"Intent:__init__() base_dir = {self.base_dir}")
+    self.log.debug(f"Intent.__init__() base_dir = {self.base_dir}")
     self.earcon_filename = self.base_dir + "/framework/assets/earcon_start.wav"
     self.is_running = False                # set to True before calling run()
     cfg = Config()                         # get configuration
@@ -31,18 +31,18 @@ class Intent:
     wws = get_wake_words()
     for ww in wws:
       self.wake_words.append(ww.lower())
-    self.log.debug(f"Intent:__init__() registering handle_register_intent and handle_system_message")
+    self.log.debug(f"Intent.__init__() registering handle_register_intent and handle_system_message")
     self.bus.on("register_intent", self.handle_register_intent) # register message handlers
     self.bus.on("system", self.handle_system_message)
 
   def handle_system_message(self, msg):
     # stay in-sync with the system skill regarding OOBs
     skill_id = msg["payload"]["skill_id"]
-    self.log.debug(f"Intent:handle_system_message() skill_id:  {skill_id}")
+    self.log.debug(f"Intent.handle_system_message() skill_id:  {skill_id}")
     if skill_id == "system_skill":         # only care about system messages - reserve and release oob
       subtype = msg["payload"]["subtype"]
       verb = msg["payload"]["verb"]
-      self.log.debug(f"Intent:handle_system_message(): subtype: {subtype} verb: {verb}")  
+      self.log.debug(f"Intent.handle_system_message(): subtype: {subtype} verb: {verb}")  
       if subtype == "reserve_oob":
         self.recognized_verbs.append(verb)
       elif subtype == "release_oob":
@@ -57,23 +57,23 @@ class Intent:
      "f" - no oob detected
     """ 
     ua = utt.split(" ")
-    self.log.debug(f"Intent:is_oob() utt: {utt}")
-    self.log.debug(f"Intent:is_oob() recognized_verbs: {self.recognized_verbs}")
+    self.log.debug(f"Intent.is_oob() utt: {utt}")
+    self.log.debug(f"Intent.is_oob() recognized_verbs: {self.recognized_verbs}")
 
     # add tests for two-word OOBs -MM
     if len(ua) == 1:           # one word utterance
       if ua[0] in self.recognized_verbs or ua[0] in self.stop_aliases or ua[0] == "pause" or ua[0] == "resume":
-        self.log.debug("Intent:is_oob(): Intent Barge-In Normal OOB Detected")
+        self.log.debug("Intent.is_oob(): Intent Barge-In Normal OOB Detected")
         return "t"
     elif len(ua) == 2:         # check for two-word OOBs
       for next_key in self.intents:
         next_key = next_key.split(":") # split next key into words
         if next_key[0] == "O" and ua[0] == next_key[2] and ua[1] == next_key[1]:
-          self.log.debug("Intent:is_oob(): two-word OOB detected")
+          self.log.debug("Intent.is_oob(): two-word OOB detected")
           return "t"
-    self.log.debug(f"Intent:is_oob() crappy_aec = {self.crappy_aec}")
+    self.log.debug(f"Intent.is_oob() crappy_aec = {self.crappy_aec}")
     if not self.crappy_aec:
-      self.log.debug("Intent:is_oob(): decent AEC - returning "f"")
+      self.log.debug("Intent.is_oob(): decent AEC - returning "f"")
       return "f"
     # Deal with poor quality input (IE no AEC). You can disable this on a device with good AEC. 
     # also see sva_base for other code which would use this config value
@@ -82,13 +82,13 @@ class Intent:
       for alias in self.stop_aliases:
         oob_phrase = f"{ww} {alias}"
         if oob_phrase.lower() in utt.lower() or ( alias in utt.lower() and ww in utt.lower() ):
-          self.log.warning("Intent:is_oob() ** Maybe ? Intent Barge-In detected - returning 'o'")
+          self.log.warning("Intent.is_oob() ** Maybe ? Intent Barge-In detected - returning 'o'")
           return "o"
-    self.log.debug("Intent:is_oob(): fell through - returning 'f'")
+    self.log.debug("Intent.is_oob(): fell through - returning 'f'")
     return "f"
 
   def get_sentence_type(self, utt):
-    self.log.debug(f"Intent:get_sentence_type() utt: {utt}")
+    self.log.debug(f"Intent.get_sentence_type() utt: {utt}")
     # very rough is question or not TO DO - improve upon this
     vrb = utt.split(" ")[0]
     resp = "I"
@@ -96,7 +96,7 @@ class Intent:
       if utt.startswith(wrd):
         resp = "Q"
         break
-    self.log.info(f"Intent:get_sentence_type() resp = {resp}")    
+    self.log.info(f"Intent.get_sentence_type() resp = {resp}")    
     return resp
 
   def send_utt(self, utt):
@@ -106,12 +106,12 @@ class Intent:
       target = "*"
     if utt == "stop":
       target = "system_skill"
-    self.log.debug(f"Intent:send_utt() sending utt: {utt} to target: {target}")  
+    self.log.debug(f"Intent.send_utt() sending utt: {utt} to target: {target}")  
     self.bus.send("utterance", target, {"utt": utt,"subtype":"utt"})
-    self.log.debug(f"Intent:send_utt() after bus.send()")  
+    self.log.debug(f"Intent.send_utt() after bus.send()")  
 
   def send_media(self, info):
-    self.log.debug("Intent:send_media(): sending media request to message bus")
+    self.log.debug("Intent.send_media(): sending media request to message bus")
     self.bus.send("media", "media_skill", info)
 
   def send_oob_to_system(self, utt, contents):
@@ -125,27 +125,27 @@ class Intent:
             "verb": utt, 
             "intent_match": ""
            }
-    self.log.debug(f"Intent:send_oob_to_system() info = {info}")     
+    self.log.debug(f"Intent.send_oob_to_system() info = {info}")     
     self.bus.send("system", "system_skill", info)
 
   def get_question_intent_match(self, info):
-    self.log.debug(f"Intent:get_question_intent_match() info: {info}")
-    # self.log.debug(f"Intent:get_question_intent_match() intents: {self.intents}")
+    self.log.debug(f"Intent.get_question_intent_match() info: {info}")
+    # self.log.debug(f"Intent.get_question_intent_match() intents: {self.intents}")
     aplay(self.earcon_filename)            # should be configurable
     skill_id = ""                          # see if a quation matches an intent.
     for intent in self.intents:
       stype, subject, verb = intent.split(":") 
       if stype == "Q" and subject in info["subject"] and verb == info["qword"]:
-        self.log.debug(f"Intent:get_question_intent_match() matched skill_id: {skill_id}")
         info["subject"] = subject          # fuzzy match - improve upon this
         skill_id = self.intents[intent]["skill_id"]
+        self.log.debug(f"Intent.get_question_intent_match() matched skill_id: {skill_id}")
         intent_state = self.intents[intent]["state"]
         return skill_id, intent
     return skill_id, ""
 
   def get_intent_match(self, info):
     # for utterances of type command an intent match is a subject:verb and we don't fuzzy match
-    self.log.debug("Intent:get_intent_match() ")  
+    self.log.debug("Intent.get_intent_match() ")  
     aplay(self.earcon_filename)  # should be configurable
     skill_id = ""
     intent_type = "C"
@@ -158,11 +158,11 @@ class Intent:
       subject = subject.strip()
       verb = info["verb"].lower().strip()
     key = f"{intent_type}:{subject}:{verb}"
-    self.log.debug(f"Intent:get_intent_match() key: {key}")
+    self.log.debug(f"Intent.get_intent_match() key: {key}")
     if key in self.intents:
       skill_id = self.intents[key]["skill_id"]
       intent_state = self.intents[key]["state"]
-      self.log.debug(f"Intent:get_intent_match(): matched key: {key} skill_id: {skill_id} intent_state: {intent_state}")
+      self.log.debug(f"Intent.get_intent_match(): matched key: {key} skill_id: {skill_id} intent_state: {intent_state}")
       return skill_id, key
     return skill_id, ""        # no match will return ("","")
 
@@ -171,16 +171,12 @@ class Intent:
     verb = msg["payload"]["verb"]
     intent_type = msg["payload"]["intent_type"]
     key = f"{intent_type}:{subject}:{verb}"
-    # try adding to recognized_verbs - it is not getting set -MM
-    # if verb not in self.recognized_verbs:
-    #   self.recognized_verbs.append(data["verb"])
-    # end -MM  
     if key in self.intents:
       skill_id = msg["payload"]["skill_id"]
-      self.log.warning(f"Intent:handle_register_intent() Intent clash! key: {key} skill_id: {skill_id}")
+      self.log.warning(f"Intent.handle_register_intent() Intent clash! key: {key} skill_id: {skill_id}")
     else:
-      self.log.info(f"Intent:handle_register_intent() adding key {key} to intents")
-      self.intents[key] = {"skill_id":data["skill_id"], "state":"enabled"}
+      self.log.info(f"Intent.handle_register_intent() adding key {key} to intents")
+      self.intents[key] = {"skill_id":msg["payload"]["skill_id"], "state":"enabled"}
 
   def run(self):
     # loop waiting for voice commands

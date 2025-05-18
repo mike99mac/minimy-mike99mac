@@ -70,11 +70,11 @@ class SystemSkill(SimpleVoiceAssistant):
            }
     self.bus.send("system", target_skill, info)
 
-  def respond_sys_info(self, data):
+  def respond_sys_info(self, payload):
     self.log.debug("SystemSkill:respond_sys_info()")
     info = {"error": "",
             "subtype": "sys_info_response",
-            "skill_id": data["from_skill_id"],
+            "skill_id": payload["from_skill_id"],
             "from_skill_id": self.skill_id,
             "remote_stt": self.cfg_remote_stt,
             "remote_tts": self.cfg_remote_tts,
@@ -82,28 +82,28 @@ class SystemSkill(SimpleVoiceAssistant):
             "platform": self.cfg_platform,
             "wake_words": self.cfg_wake_words
            }
-    self.bus.send("skill", data["from_skill_id"], info)
+    self.bus.send("skill", payload["from_skill_id"], info)
 
-  def reserve_oob(self, data):
-    oob_verb = data["verb"]
+  def reserve_oob(self, payload):
+    oob_verb = payload["verb"]
     if oob_verb in self.stop_aliases:      # special handling for stop
-      self.log.info(f'SystemSkill.reserve_oob() system stop acquired by {data["from_skill_id"]}')
-      self.stop_overide = data["from_skill_id"]
+      self.log.info(f'SystemSkill.reserve_oob() system stop acquired by {payload["from_skill_id"]}')
+      self.stop_overide = payload["from_skill_id"]
     else:
-      self.recognized_verbs[oob_verb] = data["from_skill_id"]
+      self.recognized_verbs[oob_verb] = payload["from_skill_id"]
       self.log.debug(f"SystemSkill:reserve_oob() added verb: {verb} to recognized_verbs")
 
-  def release_oob(self, data):
+  def release_oob(self, payload):
     self.log.debug("SystemSkill.release_oob()")
-    oob_verb = data["verb"]
+    oob_verb = payload["verb"]
     if oob_verb in self.stop_aliases:      # special handling for stop
-      self.log.info(f'SystemSkill.release_oob(): system stop released by {data["from_skill_id"]}')
+      self.log.info(f'SystemSkill.release_oob(): system stop released by {payload["from_skill_id"]}')
       self.stop_overide = None
     else:
-      if data["verb"] in self.recognized_verbs:
-        del self.recognized_verbs[ data["verb"] ]
+      if payload["verb"] in self.recognized_verbs:
+        del self.recognized_verbs[ payload["verb"] ]
       else:
-        self.log.warning(f'SystemSkill.release_oob(): skill_id: data["from_skill_id"] release unrecognized verb: data["verb"]')
+        self.log.warning(f'SystemSkill.release_oob(): skill_id: payload["from_skill_id"] release unrecognized verb: payload["verb"]')
 
   def find_active_skill(self, skill_id):
     self.log.debug(f"SystemSkill:find_active_skill() skill_id: {skill_id}")
@@ -211,7 +211,7 @@ class SystemSkill(SimpleVoiceAssistant):
             self.log.debug(f"SystemSkill.handle_message(): EXTERNAL RESUME skill: {last_active_skill_id} active_skills: {self.active_skills}")
             self.send_resume(last_active_skill_id)
         else:                              # unrecognized oob 
-          self.log.info(f"SystemSkill.handle_message(): Unrecognized verb {verb} data: {data}")
+          self.log.info(f"SystemSkill.handle_message(): Unrecognized verb {verb}")
           verb, subject = verb.split(" ")
           utt = {"error": "", 
                  "verb": verb, 
@@ -221,14 +221,14 @@ class SystemSkill(SimpleVoiceAssistant):
                  "tree": "(VP)", 
                  "structure": "VP", 
                  "sentence_type": "I", 
-                 "sentence": data["sentence"], 
+                 "sentence": msg["payload"]["sentence"], 
                  "skill_id": "???????????", 
                  "intent_match": ""
                 }
           self.bus.send("utterance", "*", {"utt": utt,"subtype":"utt"})
-    elif data["subtype"] == "request_output_focus":
-      from_skill_id = data["from_skill_id"]
-      requesting_skill_category = data["skill_category"]
+    elif msg["payload"]["subtype"] == "request_output_focus":
+      from_skill_id = msg["payload"]["from_skill_id"]
+      requesting_skill_category = msg["payload"]["skill_category"]
       allowed_to_activate = True
       focus_response = ""
       if len(self.active_skills) != 0:
@@ -297,7 +297,7 @@ class SystemSkill(SimpleVoiceAssistant):
         else:
           self.active_skills.append({"skill_id": from_skill_id, "skill_category": requesting_skill_category})
           self.log.warning(f"SystemSkill.handle_message(): from_skill already active: {from_skill_id}")
-    elif data["subtype"] == "pause_confirmed":
+    elif msg["payload"]["subtype"] == "pause_confirmed":
       self.log.debug(f"SystemSkill.handle_message(): pause confirmed - reason: {self.pause_reason} msg: {msg}")
       if self.pause_reason == INTERNAL_PAUSE:
         self.log.debug("SystemSkill.handle_message(): INTERNAL_PAUSE confirmed, sending confirm output focus")
@@ -314,9 +314,9 @@ class SystemSkill(SimpleVoiceAssistant):
         self.pause_reason = None
         self.log.debug("SystemSkill.handle_message(): EXTERNAL_PAUSE confirmed, doing nothing")
       else:
-        self.log.debug("SystemSkill.handle_message(): Creepy Error 105 - got paused confirmed with no reason!")
-    elif data["subtype"] == "release_output_focus":
-      from_skill_id = data["from_skill_id"]
+        self.log.debug("SystemSkill.handle_message(): Creepy Error 103 - got paused confirmed with no reason!")
+    elif msg["payload"]["subtype"] == "release_output_focus":
+      from_skill_id = msg["payload"]["from_skill_id"]
       active_skill_entry = self.find_active_skill(from_skill_id)
       if active_skill_entry is not None:
         self.active_skills.pop(self.active_skills.index(active_skill_entry))
@@ -325,50 +325,50 @@ class SystemSkill(SimpleVoiceAssistant):
           skill_id = self.active_skills[len(self.active_skills) - 1]["skill_id"]
           self.log.debug(f"SystemSkill.handle_message(): Resuming skill: {skill_id}")
           self.send_resume(skill_id)
-    elif data["subtype"] == "request_input_focus": # handle converse 
+    elif msg["payload"]["subtype"] == "request_input_focus": # handle converse 
       if len(self.conversant_skills) > 0:
         self.log.warning(f"SystemSkill.handle_message(): Warning already in conversant mode: {self.conversant_skills}")
-      requesting_skill_category = data["skill_category"]
+      requesting_skill_category = msg["payload"]["skill_category"]
       if self.input_focus_determination(requesting_skill_category):
         # add skill to converse array
-        tmp_obj = {"skill_id":data["from_skill_id"], "skill_category":data["skill_category"]}
+        tmp_obj = {"skill_id": msg["payload"]["from_skill_id"], "skill_category": msg["payload"]["skill_category"]}
         self.conversant_skills.append( tmp_obj )
         self.log.info(f"SystemSkill.handle_message(): Added {tmp_obj} to conversant skills: {self.conversant_skills}")
         info = {"error": "",
                 "subtype": "request_input_focus_response",
                 "status": "confirm",
-                "skill_id": data["from_skill_id"],
+                "skill_id": msg["payload"]["from_skill_id"],
                 "from_skill_id": self.skill_id
                }
-        self.log.debug(f'SystemSkill.handle_message(): Sending positive input focus_response to: {data["from_skill_id"]}')
+        self.log.debug(f'SystemSkill.handle_message(): Sending positive input focus_response to: {msg["payload"]["from_skill_id"]}')
         time.sleep(1)                      # for inferior audio input devices
-        self.bus.send("system", data["from_skill_id"], info)
+        self.bus.send("system", msg["payload"]["from_skill_id"], info)
       else:
         info = {"error": "focus denied",
                 "subtype": "request_input_focus_response",
                 "status": "denied",
-                "skill_id": data["from_skill_id"],
+                "skill_id": msg["payload"]["from_skill_id"],
                 "from_skill_id": self.skill_id
                }
-        self.log.warning(f'SystemSkill.handle_message(): Sending negative input focus_response to: {data["from_skill_id"]}')
-        self.bus.send("system", data["from_skill_id"], info)
-    elif data["subtype"] == "release_input_focus": # remove skill from converse array
+        self.log.warning(f'SystemSkill.handle_message(): Sending negative input focus_response to: {msg["payload"]["from_skill_id"]}')
+        self.bus.send("system", msg["payload"]["from_skill_id"], info)
+    elif msg["payload"]["subtype"] == "release_input_focus": # remove skill from converse array
       if len(self.conversant_skills) == 0:
         self.log.warning("SystemSkill.handle_message(): end empty converse array!")
-      tmp_obj = {"skill_id":data["from_skill_id"], "skill_category":data["skill_category"]}
+      tmp_obj = {"skill_id":msg["payload"]["from_skill_id"], "skill_category":msg["payload"]["skill_category"]}
       try:
         self.conversant_skills.pop( self.conversant_skills.index( tmp_obj ) )
       except:
         self.log.error("SystemSkill.handle_message(): exception on conversant skills pop!")
       self.log.info(f"SystemSkill.handle_message(): Removed {tmp_obj} from conversant skills: {self.conversant_skills}")
-    elif data["subtype"] == "reserve_oob":
-      self.reserve_oob(data)
-    elif data["subtype"] == "release_oob":
-      self.release_oob(data)
-    elif data["subtype"] == "sys_info_request":
-      self.respond_sys_info(data)
+    elif msg["payload"]["subtype"] == "reserve_oob":
+      self.reserve_oob(msg["payload"])
+    elif msg["payload"]["subtype"] == "release_oob":
+      self.release_oob(msg["payload"])
+    elif msg["payload"]["subtype"] == "sys_info_request":
+      self.respond_sys_info(msg["payload"])
     else:
-      self.log.warning(f"SystemSkill.handle_message(): Unrecognized message: {data}")
+      self.log.warning(f"SystemSkill.handle_message(): Unrecognized message: {msg}")
 
 if __name__ == "__main__":
   ss = SystemSkill()

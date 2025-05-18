@@ -37,12 +37,11 @@ class FallbackSkill(SimpleVoiceAssistant):
 
   def handle_fallback(self, msg):
     self.log.debug("FallbackSkill:handle_fallback(): hit!")
-    data = msg["payload"]["utt"]
-    if data["sentence_type"] == "Q":       # for questions only right now
+    utt = msg["payload"]["utt"]
+    if utt["sentence_type"] == "Q":       # for questions only right now
       # send message to all Q&A skills saying you have 3 seconds to give me your confidence level 
       # All Q&A skills need to respond to the "get_confidence" message and the "play_qna_answer" message
-      for skill_id in self.qna_skills:
-        # send "q" getconf qna
+      for skill_id in self.qna_skills:     # send "q" getconf qna
         self.log.debug(f"FallbackSkill:handle_fallback(): sending qna_get_confidence to {skill_id}")
         info = {"subtype": "qna_get_confidence",
                 "skill_id": skill_id,
@@ -50,20 +49,20 @@ class FallbackSkill(SimpleVoiceAssistant):
                 "qword": "getconf",
                 "np": "qna",
                 "intent_match": "Q:getconf:qna",
-                "msg_np": data["np"],
-                "msg_vp": data["vp"],
-                "msg_aux": data["aux_verb"],
-                "msg_qword": data["qword"],
-                "msg_rule": data["rule"],
-                "msg_tree": data["tree"],
-                "msg_sentence": data["sentence"]
+                "msg_np": utt["np"],
+                "msg_vp": utt["vp"],
+                "msg_aux": utt["aux_verb"],
+                "msg_qword": utt["qword"],
+                "msg_rule": utt["rule"],
+                "msg_tree": utt["tree"],
+                "msg_sentence": utt["sentence"]
                }
         self.bus.send("skill", skill_id, info)
     else:
       self.log.debug("** Fallback Skill only handles sentences of type Question for now!, Utterance ignored! **")
       msg_out = {"subtype": "unrecognized_utterance", 
                  "skill_id": "system_monitor_skill", 
-                 "skill_data": data
+                 "skill_data": utt
                 }
       self.send_message("system_monitor_skill", msg_out)
       aplay(self.boing_filename)
@@ -71,5 +70,5 @@ class FallbackSkill(SimpleVoiceAssistant):
 # main()
 if __name__ == "__main__":
   fs = FallbackSkill()
-  Event().wait()             # Wait forever
+  Event().wait()                           # wait forever
 
