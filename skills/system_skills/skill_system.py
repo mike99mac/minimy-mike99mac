@@ -225,7 +225,7 @@ class SystemSkill(SimpleVoiceAssistant):
                  "skill_id": "???????????", 
                  "intent_match": ""
                 }
-          self.bus.send("utterance", "*", {"utt": utt,"subtype":"utt"})
+          self.bus.send("utterance", "*", {"utt": utt, "subtype":"utt"})
     elif msg["payload"]["subtype"] == "request_output_focus":
       from_skill_id = msg["payload"]["from_skill_id"]
       requesting_skill_category = msg["payload"]["skill_category"]

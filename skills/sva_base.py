@@ -77,12 +77,10 @@ class SimpleVoiceAssistant:
     self.lang = "en-us"
 
   def mpc_cmd(self, arg1, arg2=None):
-    """ 
-    Run any mpc command that takes one or two arguments
-    Param: arg 1 - such as "clear" or "play"
-       arg 2 - args to commands such as "add" or "load" 
-    Return: mpc return code
-    """
+    # Run any mpc command that takes one or two arguments
+    # Param: arg 1 - such as "clear" or "play"
+    #    arg 2 - args to commands such as "add" or "load" 
+    # Return: mpc return code
     cmd = "/usr/bin/mpc "+arg1
     if arg2 != None:   
       cmd = cmd+" "+arg2
@@ -94,8 +92,8 @@ class SimpleVoiceAssistant:
       self.log.error(f"SimpleVoiceAssistant.mpc_cmd(): cmd: {cmd} returned e.returncode: {e.returncode}")
       return e.returncode
 
-  # watchdog timer
   def start_watchdog(self, timeout, callback):
+  # watchdog timer
     timeout = int(timeout) * 1000
     while timeout > 0:
       time.sleep(0.001)
@@ -356,7 +354,7 @@ class SimpleVoiceAssistant:
   def handle_utterance(self, msg):
     # invokes callback based on verb:subject
     self.log.debug(f"SimpleVoiceAssistant.handle_utterance() msg: {msg}")
-    skill_id = msg["payload"]["skill_id"]
+    skill_id = msg["target"]
     utt = msg["payload"]["utt"]
     if self.skill_control.category == "fallback":
       if skill_id == "":                   # special handling for fallback/Q&A skills
