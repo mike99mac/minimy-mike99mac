@@ -369,16 +369,16 @@ class SimpleVoiceAssistant:
         subject = ""
         verb = ""
         intent_type = "C"
-        if msg["payload"]["sentence_type"] == "Q":
+        if msg["payload"]["utt"]["sentence_type"] == "Q":
           intent_type = "Q"
-          subject = msg["payload"]["np"]
-          verb = msg["payload"]["qword"]
+          subject = msg["payload"]["utt"]["np"]
+          verb = msg["payload"]["utt"]["qword"]
         else:
-          subject = msg["payload"]["subject"]
-          verb = msg["payload"]["verb"]
+          subject = msg["payload"]["utt"]["subject"]
+          verb = msg["payload"]["utt"]["verb"]
         subject = subject.replace(" the","")
         subject = subject.replace("the ","")
-        key = msg["payload"]["intent_match"]
+        key = msg["payload"]["utt"]["intent_match"]
         if key in self.intents:
           self.log.debug(f"SimpleVoiceAssistant.handle_utterance() skill base class intent match: {key}")
           (self.intents[key](msg))
@@ -472,8 +472,8 @@ class SimpleVoiceAssistant:
           self.tts_service_session_id = msg["payload"]["session_id"]
           info = {"text": self.text,"skill_id":self.skill_control.skill_id}
           self.bus.send("speak", "tts_service", info)
-      if self.handle_msg is not None:
-        self.handle_msg(msg)
+      if self.handle_message is not None:
+        self.handle_message(msg)
     else:                                  # else could be a stt_start/end notification which is useful for converse()
       if msg["payload"]["subtype"] == "stt_start":
         self.stt_is_active = True
@@ -584,6 +584,6 @@ class SimpleVoiceAssistant:
               self.send_message("tts_service", info)
               self.i_am_paused = False
       if self.handle_message is not None: # honor any registered message handlers
-        self.log.debug("SimpleVoiceAssistant.handle_system_msg() calling self.handle_msg")
+        self.log.debug("SimpleVoiceAssistant.handle_system_msg() calling self.handle_message")
         self.handle_message(msg)
 
