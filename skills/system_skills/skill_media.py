@@ -7,16 +7,15 @@ class SVAMediaSkill(SimpleVoiceAssistant):
   def __init__(self, bus=None, timeout=5):
     super().__init__(msg_handler=self.handle_message, skill_id="media_skill", skill_category="media")
     self.skill_id = "media_skill"
-    self.log.debug(f"SVAMediaSkill.__init__() skill_id = {self.skill_id} skill_base_dir = {self.skill_base_dir}") 
+    self.log.debug(f"SVAMediaSkill.__init__() skill_id: {self.skill_id} skill_base_dir: {self.skill_base_dir}") 
     self.media_skills = []       # array of registered media skill handlers
     self.active_media_skill = None
     self.tick_file_name = self.base_dir + "/framework/assets/tick.wav"
-    info = {               # register OOBs
-        "subtype":"reserve_oob", 
-        "skill_id":"system_skill", 
-        "from_skill_id":self.skill_id, 
-        "verb":"pause"
-         }
+    info = {"subtype": "reserve_oob", 
+            "skill_id": "system_skill", 
+            "from_skill_id": self.skill_id, 
+            "verb":"pause"
+           }
     self.bus.send("system", "system_skill", info)
     info["verb"] = "resume"
     self.bus.send("system", "system_skill", info)

@@ -20,6 +20,7 @@ class TimeSkill(SimpleVoiceAssistant):
     self.speak(text)
 
   def handle_time_match(self, msg):
+    self.log.debug(f"TimeSkill.handle_time_match() msg: {msg}")
     now = datetime.datetime.now()
     text = now.strftime("%I %M %p")
     minute = int(text.split(" ")[1])

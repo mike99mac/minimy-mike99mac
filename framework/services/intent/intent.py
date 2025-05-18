@@ -145,7 +145,7 @@ class Intent:
 
   def get_intent_match(self, info):
     # for utterances of type command an intent match is a subject:verb and we don't fuzzy match
-    self.log.debug("Intent.get_intent_match() ")  
+    self.log.debug(f"Intent.get_intent_match() info: {info}")  
     aplay(self.earcon_filename)  # should be configurable
     skill_id = ""
     intent_type = "C"
@@ -241,28 +241,28 @@ class Intent:
           # M - media request
           # O - oob (out of band) request
           if si.sentence_type == "Q":
-            print("Match Question. key=Q:%s:%s" % (si.insight.question,si.insight.subject))
+            print(f"Intent.run(): Match Question. key=Q:{si.insight.question}:{si.insight.subject}")
             info["skill_id"], info["intent_match"] = self.get_question_intent_match({"subject":info["subject"], "qword":info["question"]})
-            print("Match Question. skid:%s, im:%s" % (info["skill_id"], info["intent_match"]))
+            print(f"Intent.run(): Match Question. skill_id: {info["skill_id"]} intent_match:{info["intent_match"]}")
             res = self.send_utt(info) 
           elif si.sentence_type == "C":
-            print("Match Command")
+            print("Intent.run(): Match Command")
             info["skill_id"], info["intent_match"] = self.get_intent_match(info)
             res = self.send_utt(info) 
           elif si.sentence_type == "M":
-            print("Media Command")
+            print("Intent.run(): Media Command")
             info["skill_id"] = "media_skill"
             info["from_skill_id"] = self.skill_id
             info["subtype"] = "media_query"
             res = self.send_media(info) 
           elif si.sentence_type == "O":
-            print("OOB Command")
+            print("Intent.run(): OOB Command")
             if utt in self.recognized_verbs:
               self.send_oob_to_system(utt, contents)
             else:
               self.log.warning(f"Intent.run() Ignoring unrecognized OOB si.sentence_type {si.sentence_type} not found in {self.recognized_verbs}")
           else:
-            print(f"Unknown sentence type {si.sentence_type} or Informational sentence")
+            print(f"Intent.run(): Unknown sentence type {si.sentence_type} or Informational sentence")
         os.remove(txt_file)    # remove input file from file system
       time.sleep(0.125)
 
