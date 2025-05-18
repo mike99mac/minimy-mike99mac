@@ -60,7 +60,7 @@ class SVAMediaSkill(SimpleVoiceAssistant):
           self.log.error(f"SVAMediaSkill.handle_oob_detected() unexpected OOB: {oob_type}")
 
   def handle_register_media(self, msg):
-    skill_id = msg["payload["]["media_skill_id"]
+    skill_id = msg["payload"]["media_skill_id"]
     if skill_id not in self.media_skills:
       self.media_skills.append(skill_id)   # add to the list
       self.log.debug(f"SVAMediaSkill.handle_register_media() registered media skill: {skill_id}")

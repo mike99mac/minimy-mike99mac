@@ -176,7 +176,7 @@ class Intent:
       self.log.warning(f"Intent.handle_register_intent() Intent clash! key: {key} skill_id: {skill_id}")
     else:
       self.log.info(f"Intent.handle_register_intent() adding key {key} to intents")
-      self.intents[key] = {"skill_id":msg["payload"]["skill_id"], "state":"enabled"}
+      self.intents[key] = {"skill_id": msg["payload"]["skill_id"], "state": "enabled"}
 
   def run(self):
     # loop waiting for voice commands
@@ -243,7 +243,7 @@ class Intent:
           if si.sentence_type == "Q":
             print(f"Intent.run(): Match Question. key=Q:{si.insight.question}:{si.insight.subject}")
             info["skill_id"], info["intent_match"] = self.get_question_intent_match({"subject":info["subject"], "qword":info["question"]})
-            print(f"Intent.run(): Match Question. skill_id: {info["skill_id"]} intent_match:{info["intent_match"]}")
+            print(f'Intent.run(): Match Question. skill_id: {info["skill_id"]} intent_match: {info["intent_match"]}')
             res = self.send_utt(info) 
           elif si.sentence_type == "C":
             print("Intent.run(): Match Command")
