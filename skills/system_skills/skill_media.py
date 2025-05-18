@@ -102,7 +102,7 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     self.log.debug(f"SVAMediaSkill.handle_command(): active media is {self.active_media_skill}")
     msg["payload"]["skill_id"] = "media_player_service"
     msg["payload"]["subtype"] = "media_player_command"
-    self.send_message("media_player_service", data)
+    self.send_message("media_player_service", msg["payload"])
 
   def handle_message(self, msg):
     # Handle a media message
@@ -124,9 +124,6 @@ class SVAMediaSkill(SimpleVoiceAssistant):
       if from_skill_id == "media_player_service" and subtype == "media_player_command_response" and response == "session_ended" and self.active_media_skill == skill_id:
         self.log.debug(f"SVAMediaSkill.handle_message() media session ended for {self.active_media_skill}")
         self.active_media_skill = None
-        # Ken"s comments: if media player announcing session ended for my active media session owner
-        # {"type": "skill", "data": {"error": "", "subtype": "media_player_command_response", "response": "session_ended", 
-        # "session_id": 1, "skill_id": "tts_service", "from_skill_id": "media_player_service"}, "context": {}}
       else:
         self.log.warning(f"SVAMediaSkill.handle_message() unrecognized subtype: {subtype}")
 

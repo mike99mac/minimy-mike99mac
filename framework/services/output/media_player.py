@@ -106,7 +106,7 @@ class SVAMediaPlayerSkill:
     if play_session_id == self.current_session.session_id:
       media_entry = {"file_uri": file_uri,
                      "media_type": media_type,
-                     "delete_on_complete": msg.data["delete_on_complete"],
+                     "delete_on_complete": msg["payload"]["delete_on_complete"],
                      "from_skill_id": from_skill
                     }
       self.current_session.media_queue.append(media_entry)
@@ -133,15 +133,14 @@ class SVAMediaPlayerSkill:
     self.current_session.media_queue = []
     return self.send_message(tmp_target, info)
 
-  def send_session_reject(self, reason, message):
+  def send_session_reject(self, reason, msg):
     # Send session reject message on bus
-    self.log.debug(f"SVAMediaPlayerSkill.send_session_reject() reason: {reason} message: {message}")
-    data = message.data
+    self.log.debug(f"SVAMediaPlayerSkill.send_session_reject() reason: {reason} msg: {msg}")
     info = {"error": reason,
             "subtype": "media_player_command_response",
             "response": "session_reject",
             "correlator": self.current_session.correlator,
-            "skill_id": data["from_skill_id"],
+            "skill_id": msg["payload"]["from_skill_id"],
             "from_skill_id": "media_player_service"
            }
     return self.send_message(data["from_skill_id"], info)
@@ -159,17 +158,17 @@ class SVAMediaPlayerSkill:
         }
     return self.send_message(target, info)
 
-  def send_session_confirm(self, message):
-    self.log.debug(f"SVAMediaPlayerSkill.send_session_confirm() message: {message}")
+  def send_session_confirm(self, msg):
+    self.log.debug(f"SVAMediaPlayerSkill.send_session_confirm() msg: {msg}")
     info = {"error": "",
             "subtype": "media_player_command_response",
             "response": "session_confirm",
             "correlator": self.current_session.correlator,
             "session_id": self.current_session.session_id,
-            "skill_id": message.data["from_skill_id"],
+            "skill_id": msg["payload"]["from_skill_id"],
             "from_skill_id": "media_player_service"
             }
-    return self.send_message(message.data["from_skill_id"], info)
+    return self.send_message(msg["payload"]["from_skill_id"], info)
 
   def get_paused_session(self, paused_sid):
     self.log.debug(f"SVAMediaPlayerSkill.get_paused_session() paused_sid: {paused_sid}")

@@ -371,16 +371,16 @@ class SimpleVoiceAssistant:
         subject = ""
         verb = ""
         intent_type = "C"
-        if data["sentence_type"] == "Q":
+        if msg["payload"]["sentence_type"] == "Q":
           intent_type = "Q"
-          subject = data["np"]
-          verb = data["qword"]
+          subject = msg["payload"]["np"]
+          verb = msg["payload"]["qword"]
         else:
-          subject = data["subject"]
-          verb = data["verb"]
+          subject = msg["payload"]["subject"]
+          verb = msg["payload"]["verb"]
         subject = subject.replace(" the","")
         subject = subject.replace("the ","")
-        key = data["intent_match"]
+        key = msg["payload"]["intent_match"]
         if key in self.intents:
           self.log.debug(f"SimpleVoiceAssistant.handle_utterance() skill base class intent match: {key}")
           (self.intents[key](msg))
