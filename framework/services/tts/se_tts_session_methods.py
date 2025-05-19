@@ -18,23 +18,21 @@ class TTSSessionMethods:
     if new_state == self.state:
       self.log.warning("TTSSession change_state() - warning illogical state change from '%s' to '%s' ignored" % (self.state, new_state))
       return False
-
     if new_state not in self.valid_states:
       self.log.warning("TTSSession change_state() - warning invalid state change '%s' not a valid state, ignored" % (new_state,))
       return False
-
     self.log.info("TTSSession change_state() - from '%s' to '%s'. owner:%s, tts_sid:%s, msid:%s" % (self.state, new_state, self.owner, self.tts_sid, self.msid))
     self.state = new_state
     return True
 
-  # idle state 
   def _idle_start(self, msg):
+    # idle state 
     self.__change_state(se_tts_constants.STATE_WAIT_MEDIA_START)
     self.correlator = msg['correlator']
     self.send_media_session_request()
 
-  # wait media start state - pause is ignored
   def _wms_stop(self, msg):
+    # wait media start state - pause is ignored
     self.__change_state(se_tts_constants.STATE_WAIT_MEDIA_CANCELLED)
     self.stop_media_session()
 
@@ -50,8 +48,8 @@ class TTSSessionMethods:
     self.__change_state(se_tts_constants.STATE_IDLE)
     self.internal_event_callback(se_tts_constants.INTERNAL_EVENT_REJECTED, msg)
 
-  # active state 
   def _active_pause(self, msg):
+    # active state 
     self.__change_state(se_tts_constants.STATE_ACTIVE_WAIT_PAUSED)
     self.paused = True
     self.wait_paused(msg['from_skill_id'])
@@ -76,8 +74,8 @@ class TTSSessionMethods:
   def _active_tts_session_ended(self, msg):
     self.__change_state(se_tts_constants.STATE_WAIT_MEDIA_END)
 
-  # active paused states 
   def _awp_external_pause(self, msg):
+    # active paused states 
     self.external_pause = True             # we got an external pause confirm
     if self.internal_pause:
       self.external_pause = False
@@ -124,8 +122,8 @@ class TTSSessionMethods:
     # add the text to the active speak q
     self.add( chunk_text( msg['text'] ) )
 
-  # wait media active state 
   def _wma_stop(self, msg):
+    # wait media active state 
     self.__change_state(se_tts_constants.STATE_WAIT_MEDIA_CANCELLED)
     self.stop_media_session()
 
@@ -141,8 +139,8 @@ class TTSSessionMethods:
     self.__change_state(se_tts_constants.STATE_IDLE)
     self.internal_event_callback(se_tts_constants.INTERNAL_EVENT_REJECTED,msg)
 
-  # wait media active paused states 
   def _wmawi_stop(self, msg):
+    # wait media active paused states 
     self.__change_state(se_tts_constants.STATE_WAIT_MEDIA_CANCELLED)
     self.stop_media_session()
 
@@ -209,8 +207,8 @@ class TTSSessionMethods:
     self.paused = False
     self.send_session_resume()
 
-  # wait media cancelled state 
   def _wmc_ended(self, msg):
+    # wait media cancelled state 
     self.__change_state(se_tts_constants.STATE_IDLE)
     self.session_data = []
     self.index = 0
@@ -221,14 +219,14 @@ class TTSSessionMethods:
     self.paused = True
     self.wait_paused(msg['from_skill_id'])
 
-  # wait media cancelled paused state 
   def _wmcp_resume(self, msg):
+    # wait media cancelled paused state 
     self.__change_state(se_tts_constants.STATE_WAIT_MEDIA_CANCELLED)
     self.paused = False
     self.send_session_resume()
 
-  # wait media end state 
   def _wme_pause(self, msg):
+    # wait media end state 
     self.__change_state(se_tts_constants.STATE_WAIT_MEDIA_END_WAIT_PAUSED)
     self.wait_paused(msg['from_skill_id'])
 
@@ -242,8 +240,8 @@ class TTSSessionMethods:
     self.index = 0
     self.internal_event_callback(se_tts_constants.INTERNAL_EVENT_ENDED,msg)
 
-  # wait media end paused states 
   def _wmewp_stop(self, msg):
+    # wait media end paused states 
     self.__change_state(se_tts_constants.STATE_WAIT_MEDIA_CANCELLED)
     self.stop_media_session()
 

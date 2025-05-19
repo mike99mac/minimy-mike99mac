@@ -51,7 +51,7 @@ class SimpleVoiceAssistant:
     self.watchdog_thread = None
     self.i_am_active = False
     self.i_am_paused = False       # this skill has been paused by the user
-    self.i_am_paused = True        # override for now 
+    self.i_am_paused = True        # override for now
     self.i_am_conversed = False
     self.done_speaking = True
     self.ignore_raw_ctr = 0
@@ -283,7 +283,7 @@ class SimpleVoiceAssistant:
         self.log.debug(f"SimpleVoiceAssistant.speak() sending resume_session message to tts_service")
         time.sleep(0.1)
         info = {"text": text, "skill_id": self.skill_control.skill_id}
-        self.log.debug(f"SimpleVoiceAssistant.speak() calling bus.send({info})")
+        self.log.debug(f"SimpleVoiceAssistant.speak() calling bus.send with info: ({info})")
         self.bus.send("speak", "tts_service", info)
         self.i_am_paused = False
         return True

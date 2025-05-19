@@ -10,8 +10,7 @@ from se_tts_session_methods import TTSSessionMethods
 
 class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
   def __init__(self, owner, tts_sid, msid, session_data, internal_event_callback, log):
-    # Run remote and local tts in parallel. this will hold maybe
-    # both responses, maybe one or maybe none. None would be a time out
+    # Run remote and local tts in parallel. this will hold maybe both responses, maybe one or maybe none => a time out
     self.log = log
     self.log.debug(f"TTSSession.__init__() owner: {owner} tts_sid: {tts_sid} msid: {msid}")
     super(TTSSession, self).__init__()
