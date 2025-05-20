@@ -60,11 +60,9 @@ def handle_utt(ww, utt, tmp_file_path):
   fh.close()
 
 class STTSvc:
-  """
-  Monitor the wav file input directory and convert wav files to text strings in files in the output directory. we stitch so if
-  someone says 'wake word' brief silence, 'bla bla' we stitch them together before intent matching. this produces two broad 
-  categories of input; raw and wake word qualified. these become "raw" and "utterance"
-  """
+  # Monitor the wav file input directory and convert wav files to text strings in files in the output directory. we stitch so if
+  # someone says 'wake word' brief silence, 'bla bla' we stitch them together before intent matching. this produces two broad 
+  # categories of input; raw and wake word qualified. these become "raw" and "utterance"
   def __init__(self, bus=None, timeout=5, no_bus=False):
     # used for skill type messages
     self.skill_id = 'stt_service'
@@ -78,7 +76,6 @@ class STTSvc:
       if bus is None:
         bus = MsgBus(self.skill_id)
       self.bus = bus
-    base_dir = os.getenv('SVA_BASE_DIR')
     log_filename = base_dir + '/logs/stt.log'
     self.log = LOG(log_filename).log
     self.waiting_stt = False
