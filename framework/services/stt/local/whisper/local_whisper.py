@@ -14,7 +14,9 @@ log_filename = base_dir + '/logs/whisper.log'
 log = LOG(log_filename).log
 log.debug("fasterWhisper.__init__() starting")
 app = Quart(__name__)                      # Initialize the Quart app
-model_name = "tiny.en"                     # others to try: tiny.en, small.en
+#model_name = "tiny.en"                     # fastest but least reliable      
+model_name = "base.en"                     # middle of the road - acceptable on a RasPi 5
+#model_name = "small.en"                    # most reliable but too slow on a RasPi 5
 log.debug(f"fasterWhisper.__init__(): loading model: {model_name}")
 original_load = torch.load                 # load Whisper model and override
 torch.load = lambda f, *args, **kwargs: original_load(f, *args, weights_only=True, **kwargs)

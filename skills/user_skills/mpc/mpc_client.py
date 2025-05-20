@@ -21,7 +21,7 @@ from youtube_search import YoutubeSearch
 class MpcClient(SimpleVoiceAssistant):
   # Accept voice commands to communicate with mpd using mpc calls 
   # Support cataloging of music files and accessing Internet radio stations
-  music_dir: str                           # usually /media/ due to automount
+  music_dir: str                           # directory where music files are 
   max_queued: int                          # maximum number of tracks or stations to queue
   station_name: str                   
   station_genre: str  
@@ -238,7 +238,7 @@ class MpcClient(SimpleVoiceAssistant):
     tracks_or_urls = []                    # at least one hit
     correct_artist = True
     for artist_found, album_found, title, time_str, relative_path in results:
-      next_track="""+self.music_dir+relative_path+"""  
+      next_track=f'"{relative_path}"'  
       self.log.debug(f"MpcClient.get_album() adding track: {next_track} to queue")     
       tracks_or_urls.append(next_track)    # add track to queue
       if artist_name != "unknown_artist" and artist_name != artist_found.lower(): # wrong artist  
@@ -251,7 +251,7 @@ class MpcClient(SimpleVoiceAssistant):
       self.log.debug(f"MpcClient.get_album() found album: {album_name} by artist: {artist_found}")    
       mesg_file = "playing_album"
       mesg_info = {"album_name": album_found, "artist_name": artist_found}
-    self.mpc_cmd("repeat", "off")             # do not keep playing album after last track
+    self.mpc_cmd("repeat", "off")          # do not keep playing album after last track
     return Music_info("album", mesg_file, mesg_info, tracks_or_urls)
 
   def get_artist(self, artist_name):
@@ -267,7 +267,7 @@ class MpcClient(SimpleVoiceAssistant):
       if artist_found.lower() != artist_name: # not an exact match
         self.log.debug(f"MpcClient.get_artist() skipping artist found that does not match: {artist_found.lower()}")
         continue   
-      next_track="""+self.music_dir + relative_path+"""  
+      next_track=f'"{relative_path}"'  
       self.log.debug(f"MpcClient.get_artist() adding track {next_track} to queue")     
       tracks_or_urls.append(next_track)    # add track to queue
       i += 1                               # increment counter
@@ -287,7 +287,7 @@ class MpcClient(SimpleVoiceAssistant):
     self.log.debug(f"MpcClient.get_music_info() match_type: {match_type} mesg_file: {mesg_file} mesg_info: {mesg_info}")
     tracks_or_urls = []   
     for artist_found, album_found, title, time_str, relative_path in results:
-      next_track="""+self.music_dir+relative_path+"""  # enclose file name in double quotes 
+      next_track=f'"{relative_path}"'      # enclose file name in double quotes 
       self.log.debug(f"MpcClient.get_music_info() adding track: {next_track} to queue")     
       tracks_or_urls.append(next_track)    # add track to queue  
     return Music_info(match_type, mesg_file, mesg_info, tracks_or_urls) 
@@ -346,7 +346,7 @@ class MpcClient(SimpleVoiceAssistant):
     mesg_info = {}
     tracks_or_urls = []                 
     for artist_found, album_found, track_found, time_str, relative_path in results:
-      tracks_or_urls.append("""+self.music_dir + relative_path+""")
+      tracks_or_urls.append(f'"{relative_path}"')
       if track_found.lower() == track_name: # track name matches
         if artist_name != "unknown_artist" and artist_found.lower() == artist_name: # exact match
           # self.log.debug(f"MpcClient.get_track() exact match at index: {index}") 
@@ -384,7 +384,7 @@ class MpcClient(SimpleVoiceAssistant):
         case "artist":                   
           for artist, album, title, time_str, relative_path in results:
             if artist.lower() == music_name: # exact match
-              tracks_or_urls.append("""+self.music_dir + relative_path+""")
+              tracks_or_urls.append(f'"{relative_path}"')
           num_exact = len(tracks_or_urls)
           if num_exact == 0:
             continue                     # iterate loop
@@ -393,13 +393,13 @@ class MpcClient(SimpleVoiceAssistant):
             music_info = Music_info("artist", "playing_artist", mesg_info, tracks_or_urls)
         case "album":                    # queue multiple tracks
           for artist, album, title, time_str, relative_path in results:
-            tracks_or_urls.append("""+self.music_dir+relative_path+""")
+            tracks_or_urls.append(f'"{relative_path}"')
           mesg_info = {"album_name": album, "artist_name": artist}
           music_info = Music_info("album", "playing_album", mesg_info, tracks_or_urls)
         case "title":                    # queue one track
           index = random.randrange(num_recs) # choose a random track 
           self.log.debug(f"MpcClient.get_unknown_music() random track index: {index}")
-          tracks_or_urls.append("""+self.music_dir + results[index][4]+""") # relative path is fifth value 
+          tracks_or_urls.append(f'"{results[index][4]}"') # relative path is fifth value 
           self.log.debug(f"MpcClient.get_unknown_music() tracks_or_urls: {tracks_or_urls}")
           mesg_info = {"track_name": results[index][2], "album_name": results[index][1], "artist_name": results[index][0]}
           music_info = Music_info("song", "playing_track", mesg_info, tracks_or_urls)

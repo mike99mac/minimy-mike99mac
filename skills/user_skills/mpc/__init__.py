@@ -1,3 +1,4 @@
+from framework.util.utils import Config
 from mpc_client import MpcClient
 from music_info import Music_info
 import os, requests, time
@@ -15,7 +16,9 @@ class MpcSkill(MediaSkill):
     super().__init__(skill_id=self.skill_id, skill_category="media")
     self.url = ""                          # has to be returned from get_media_confidence()
     self.lang = "en-us"                    # just US English for now
-    self.mpc_client = MpcClient("/media/") # search for music under /media
+    cfg = Config()                         # get config file
+    self.music_dir = cfg.get_cfg_val("Basic.MusicDir")
+    self.mpc_client = MpcClient(self.music_dir) # search for music under <music_dir>
     self.log.debug(f"MpcSkill.__init__(): skill_base_dir: {self.skill_base_dir}")
     self.music_info = Music_info("none", "", {}, []) # music to play
     self.sentence = None 
@@ -119,3 +122,4 @@ class MpcSkill(MediaSkill):
 if __name__ == "__main__":
   mpc = MpcSkill()
   Event().wait()                           # wait forever
+
