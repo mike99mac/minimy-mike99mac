@@ -417,11 +417,10 @@ def chunk_text(data):
     if line.strip():
       paragraphs.append(line)
   sentences = []
-  for para in paragraphs:
-    # remove everything in parens
+  for para in paragraphs:                  # remove everything in parens
     para = re.sub(r'\([^)]*\)', '', para)
-    para = expand_abbrevs(para)    # normalize common terms
-    para = para.split(".")       # split on sentences
+    para = expand_abbrevs(para)            # normalize common terms
+    para = para.split(".")                 # split on sentences
     for p in para:
       p = p.replace("  ", " ")
       p = p.lstrip().strip()

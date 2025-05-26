@@ -20,4 +20,4 @@ fi
 cd $baseDir
 frameworkFiles="framework/*py framework/*/*py framework/*/*/*py framework/*/*/*/*py framework/*/*/*/*/*py framework/*/*/*/*/*/*py framework/*/*/*/*/*/*/*py"
 srcFiles="*py bus/*py $frameworkFiles skills/*py skills/*/*py skills/*/*/*py"
-grep -n "$@" $srcFiles 2>/dev/null | sed "s:^:$HOME/minimy/:g"
+grep -n "$@" $srcFiles 2>/dev/null | sed "s:^:$baseDir/:g"

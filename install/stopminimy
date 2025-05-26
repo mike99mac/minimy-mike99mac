@@ -18,5 +18,7 @@ sortlogs                                   # create a time sorted file of all lo
 rm -fr /tmp/pymp*                          # clean up socket temp directories
 cd $HOME
 cp $HOME/minimy/logs/* $HOME               # copy each log file   
-sleep 3                                    # wait for processes to die before unmounting tmpfs
+waitSecs=4
+echo "Waiting $waitSecs seconds for processes to finish ..."
+sleep $waitSecs                            # wait for processes to die before unmounting tmpfs
 sudo umount $HOME/minimy/logs              # unmount log directory - and logs disappear
