@@ -11,14 +11,15 @@ class Platform(HalAbc):
         self.input_level_control_name = "Mic Boost"
         self.output_device_name = output_device_name
         self.output_level_control_name = "Master"
-        os.system("amixer -q sset Capture 100%")
-        os.system("amixer -q sset 'Mic Boost' 100%")
-        os.system("amixer -q sset Master 100%")
-        os.system("amixer -q sset Speaker 100%")
+        # comment these out for now
+        # os.system("amixer -q sset Capture 100%")
+        # os.system("amixer -q sset 'Mic Boost' 100%")
+        # os.system("amixer -q sset Master 100%")
+        # os.system("amixer -q sset Speaker 100%")
 
     def set_input_level(self, new_level):
         cmd = "amixer -q sset '%s' %s%%" % (self.input_level_control_name, new_level)
-        os.system(cmd)
+        # os.system(cmd)
 
     def get_input_level(self):
         cmd = "amixer -q sget '%s'" % (self.input_level_control_name,)

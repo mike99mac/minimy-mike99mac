@@ -205,16 +205,13 @@ class SimpleVoiceAssistant:
     from_skill_id = self.skill_control.skill_id # try to acquire a media player session and play a media file
     from_skill_category = self.skill_control.category
     if self.i_am_paused:
-      if self.media_player_session_id:
-        # paused with active msid and play request
-        # need to reset paused session and reset pause
-        # cancel existing session
-        info = {"error":"",
-                "subtype":"media_player_command",
-                "command":"cancel_session",
-                "session_id":self.media_player_session_id,
-                "skill_id":"media_player_service",
-                "from_skill_id":from_skill_id
+      if self.media_player_session_id: # paused with active msid and play request need to reset paused session and reset pause
+        info = {"error": "",
+                "subtype": "media_player_command",
+                "command": "cancel_session",
+                "session_id": self.media_player_session_id,
+                "skill_id": "media_player_service",
+                "from_skill_id": from_skill_id
                }
         self.bus.send("media", "media_player_service", info)
         self.i_am_paused = False
@@ -521,15 +518,15 @@ class SimpleVoiceAssistant:
           print(f"SimpleVoiceAssistant.handle_system_msg() YOOO! {self.skill_control.skill_id} acquired output focus")
           info = {"error": "",
                   "source": "system_skill",
-                  "target": "from_skill_id",
+                  "target": from_skill_id,
                   "subtype": "session_confirm",
                   "session_id": self.tts_service_session_id + 1
                  }
           self.send_message("tts_service", info)
         case "request_output_focus_response": 
           status = msg["status"]
-          self.log.info(f"SimpleVoiceAssistant.handle_system_msg() YO)OO! request_output_focus_response status: {status}")
-          print(f"SimpleVoiceAssistant.handle_system_msg() YO)OO! request_output_focus_response status: {status}")
+          self.log.info(f"SimpleVoiceAssistant.handle_system_msg() YOOOO! request_output_focus_response status: {status}")
+          print(f"SimpleVoiceAssistant.handle_system_msg() YOOOO! request_output_focus_response status: {status}")
           if msg["payload"]["status"] == "confirm": # if state speak else must be state media
             if self.focus_mode == "speech":
               self.tts_session_response = ""
