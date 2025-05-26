@@ -412,7 +412,7 @@ class TTSEngine:
 
   def handle_skill_msg(self, msg):
     data = msg["payload"]
-    self.log.debug(f"TTSEngine.handle_skill_msg() state: {self.state} current_session.msid: {self.current_session.msid}")
+    self.log.debug(f"TTSEngine.handle_skill_msg() state: {self.state} current_session.msid: {self.current_session.msid} msg: {msg}")
     if data["skill_id"] == self.skill_id:
       if data["subtype"] == "tts_service_command":
         # these come from our users
