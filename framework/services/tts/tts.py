@@ -43,7 +43,6 @@ class TTSEngine:
     self.handle_event(event, info)
 
   def get_session_guts(self):
-    # poor man"s deepcopy
     self.log.debug(f"TTSEngine.get_session_guts()")
     session_guts = {}
     session_guts["state"] = self.current_session.state
@@ -412,7 +411,7 @@ class TTSEngine:
 
   def handle_skill_msg(self, msg):
     data = msg["payload"]
-    self.log.debug(f"TTSEngine.handle_skill_msg() state: {self.state} current_session.msid: {self.current_session.msid} msg: {msg}")
+    self.log.debug(f"TTSEngine.handle_skill_msg() state: {self.state} skill_id: {self.skill_id} msg: {msg}")
     if data["skill_id"] == self.skill_id:
       if data["subtype"] == "tts_service_command":
         # these come from our users
