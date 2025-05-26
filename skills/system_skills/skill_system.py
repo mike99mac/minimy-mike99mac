@@ -8,25 +8,24 @@ INTERNAL_PAUSE = 1
 EXTERNAL_PAUSE = 2
 
 class SystemSkill(SimpleVoiceAssistant):
-  """
-  The system skill provides several important functions:
+  # The system skill provides several important functions:
 
-  1) It handles out of band (oob) messages which are basically single word verbs. typically these are things
-  like "stop", "terminate", etc but it also handles common media commands like "pause", "rewind", etc. skills may
-  also register new single verb oobs as well as overide defaults. for example, the alarm skill overides the 
-  stop class of verbs when it has an active alarm. it should be noted that "stop" is a special class of oob
-  and has aliases and is always handled a bit different.
+  # 1) It handles out of band (oob) messages which are basically single word verbs. Typically these are things
+  # like "stop", "terminate", etc but it also handles common media commands like "pause", "rewind", etc. skills may
+  # also register new single verb oobs as well as overide defaults. for example, the alarm skill overides the 
+  # stop class of verbs when it has an active alarm. it should be noted that "stop" is a special class of oob
+  # and has aliases and is always handled a bit different.
 
-  2) It handles the coordination of skills and focus. skills may request focus of the 
-  speaker and based on overall system activity the system skill may grant or decline focus. it will also
-  handle any side effects arising from this like cancelling or pausing other active skills based on
-  the categories of skills involved at the time.
+  # 2) It handles the coordination of skills and focus. Skills may request focus of the 
+  # speaker and based on overall system activity the system skill may grant or decline focus. it will also
+  # handle any side effects arising from this like cancelling or pausing other active skills based on
+  # the categories of skills involved at the time.
 
-  3) It manages the active skills array and the conversant skills arrays which help
-  it make system level decisions during the course of its execution. 
+  # 3) It manages the active skills array and the conversant skills arrays which help
+  # it make system level decisions during the course of its execution. 
 
-  4) It responds to the get_sys_info message which provides system information on demand.
-  """
+  # 4) It responds to the get_sys_info message which provides system information on demand.
+
   def __init__(self, bus=None, timeout=5):
     self.skill_id = "system_skill"
     super().__init__(msg_handler=self.handle_message, skill_id=self.skill_id, skill_category="system")
@@ -109,6 +108,7 @@ class SystemSkill(SimpleVoiceAssistant):
     self.log.debug(f"SystemSkill:find_active_skill() skill_id: {skill_id}")
     for skill in self.active_skills:
       if skill["skill_id"] == skill_id:
+        self.log.debug(f"SystemSkill:find_active_skill() skill_id: {skill_id} is active")
         return skill
     return None
 
@@ -151,10 +151,10 @@ class SystemSkill(SimpleVoiceAssistant):
     # handle system messages and also raw messages to manage input focus
     msg_type = msg["msg_type"]
     subtype = msg["payload"]["subtype"]
-    self.log.debug(f"SystemSkill:handle_message() msg_type: {msg_type} sub_type: {subtype}")
+    self.log.debug(f"SystemSkill:handle_message() msg: {msg}")
     if msg_type == "raw":
       return self.handle_raw(msg)
-    if msg["msg_type"] != "system": # only handle system messages and the raw exception above
+    if msg["msg_type"] != "system":        # only handle system messages and the raw exception above
       self.log.debug(f"SystemSkill:handle_message() msg_type = {msg_type} is not system - returning False")
       return False
     if subtype == "oob":                   # single word verb ...
@@ -288,7 +288,7 @@ class SystemSkill(SimpleVoiceAssistant):
                 "skill_id": from_skill_id,
                 "from_skill_id": self.skill_id
                }
-        self.log.debug("SystemSkill.handle_message(): Sending activate_response from_skill_id: {from_skill_id} info: {info}")
+        self.log.debug(f"SystemSkill.handle_message(): Sending activate_response from_skill_id: {from_skill_id} info: {info}")
         self.bus.send("system", from_skill_id, info)
         active_skill_entry = self.find_active_skill(from_skill_id)
         if active_skill_entry is None:

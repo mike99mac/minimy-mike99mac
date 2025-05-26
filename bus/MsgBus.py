@@ -59,7 +59,7 @@ class MsgBus:
     init_future = asyncio.run_coroutine_threadsafe(self.init_core_tasks(), self.loop)
     try:
       init_future.result(timeout=10) # Block for up to 10 seconds
-      self.log.info(f"MsgBus.__init__() Initialization complete. Listening on channel: {self._get_client_channel()}")
+      # self.log.info(f"MsgBus.__init__() Initialization complete. Listening on channel: {self._get_client_channel()}")
     except Exception as e:
       self.log.error(f"MsgBus.__init__() Failed during initialization: {e}")
       self.loop.call_soon_threadsafe(self.loop.stop) # Signal loop to stop
@@ -76,7 +76,7 @@ class MsgBus:
   def _run_event_loop(self):
     asyncio.set_event_loop(self.loop)
     try:
-      self.log.debug("MsgBus._run_event_loop(): Event loop started.")
+      # self.log.debug("MsgBus._run_event_loop(): Event loop started.")
       self.loop.run_forever()
     except Exception as e:
       self.log.error(f"MsgBus._run_event_loop(): Event loop crashed: {e}")
@@ -92,19 +92,19 @@ class MsgBus:
       # Ensure loop is closed if it's still running due to run_until_complete calls in finally
       # This part is complex, primarily `loop.stop()` should be called from another thread or `call_soon_threadsafe`
       # And `loop.close()` after `run_forever` completes.
-      self.log.debug("MsgBus._run_event_loop(): Event loop finished.")
+      # self.log.debug("MsgBus._run_event_loop(): Event loop finished.")
 
   async def init_core_tasks(self):
-    self.log.debug("MsgBus.init_core_tasks(): Connecting to Redis...")
+    # self.log.debug("MsgBus.init_core_tasks(): Connecting to Redis...")
     self.redis_conn = redis.Redis(
       host=self.redis_host,
       port=self.redis_port,
     )
     try:
       await self.redis_conn.ping()
-      self.log.info("MsgBus.init_core_tasks(): Successfully connected to Redis.")
+      # self.log.info("MsgBus.init_core_tasks(): Successfully connected to Redis.")
     except Exception as e:
-      self.log.error(f"Redis ping failed: {e}")
+      self.log.error(f"MsgBus.init_core_tasks(): Redis ping failed: {e}")
       if self.redis_conn:
         await self.redis_conn.close()      # Clean up connection if ping fails
       raise
@@ -113,12 +113,12 @@ class MsgBus:
     self.pubsub_client = self.redis_conn.pubsub()
     await self.pubsub_client.subscribe(self._get_client_channel())
     self.listener_task = self.loop.create_task(self._subscriber_loop())
-    self.log.debug("MsgBus.init_core_tasks(): Subscriber loop task created.")
+    # self.log.debug("MsgBus.init_core_tasks(): Subscriber loop task created.")
 
     # Start other core tasks
     self._core_tasks.append(self.loop.create_task(self._publisher_loop()))
     self._core_tasks.append(self.loop.create_task(self._processor_loop()))
-    self.log.debug("MsgBus.init_core_tasks(): Publisher and Processor loop tasks created.")
+    # self.log.debug("MsgBus.init_core_tasks(): Publisher and Processor loop tasks created.")
 
   def _get_client_channel(self):
     return f"bus:channel:{self.client_id}"
@@ -127,7 +127,7 @@ class MsgBus:
     return f"bus:channel:{target_client_id}"
 
   async def _subscriber_loop(self):
-    self.log.debug(f"MsgBus._subscriber_loop(): Subscriber loop started. Listening on {self._get_client_channel()}")
+    # self.log.debug(f"MsgBus._subscriber_loop(): Subscriber loop started. Listening on {self._get_client_channel()}")
     try:
       while not self.shutdown_event.is_set():
         try:
@@ -136,7 +136,7 @@ class MsgBus:
           if message and message.get('type') == 'message':
             try:
               msg_data_str = message['data'].decode('utf-8') # assumes messages are UTF-8 encoded JSON strings
-              self.log.debug(f"MsgBus._subscriber_loop(): Received raw message")
+              # self.log.debug(f"MsgBus._subscriber_loop(): Received raw message")
               parsed_msg = msg_from_json(msg_data_str)
               await self.inbound_q.put(parsed_msg)
             except json.JSONDecodeError:
@@ -155,7 +155,7 @@ class MsgBus:
             await self.redis_conn.ping()
             self.pubsub_client = self.redis_conn.pubsub()
             await self.pubsub_client.subscribe(self._get_client_channel())
-            self.log.info("MsgBus._subscriber_loop(): Reconnected to Redis and resubscribed.")
+            # self.log.info("MsgBus._subscriber_loop(): Reconnected to Redis and resubscribed.")
           except Exception as recon_e:
             self.log.error(f"MsgBus._subscriber_loop(): Failed to reconnect to Redis: {recon_e}")
             await asyncio.sleep(5)         # wait before next attempt
@@ -176,14 +176,14 @@ class MsgBus:
           self.log.error(f"MsgBus._subscriber_loop(): Error closing pubsub client: {e}")
 
   async def _publisher_loop(self):
-    self.log.debug("MsgBus._publisher_loop(): Publisher loop started.")
+    # self.log.debug("MsgBus._publisher_loop(): Publisher loop started.")
     try:
       while not self.shutdown_event.is_set() or not self.outbound_q.empty():
         try:                               # wait for an item with a timeout to allow checking shutdown_event
           message_to_send = await asyncio.wait_for(self.outbound_q.get(), timeout=1.0)
           if message_to_send:
             target_channel, json_payload = message_to_send
-            self.log.debug(f"MsgBus._publisher_loop(): Publishing to {target_channel}: {json_payload}")
+            # self.log.debug(f"MsgBus._publisher_loop(): Publishing to {target_channel}: {json_payload}")
             await self.redis_conn.publish(target_channel, json_payload)
             self.outbound_q.task_done()
         except asyncio.TimeoutError:
@@ -207,7 +207,7 @@ class MsgBus:
       self.log.debug("MsgBus._publisher_loop(): Publisher loop stopped.")
 
   async def _processor_loop(self):
-    self.log.debug("MsgBus._processor_loop(): Processor loop started.")
+    # self.log.debug("MsgBus._processor_loop(): Processor loop started.")
     try:
       while not self.shutdown_event.is_set() or not self.inbound_q.empty():
         try:                               # wait for an item with a timeout
@@ -322,7 +322,7 @@ class MsgBus:
         close_future = asyncio.run_coroutine_threadsafe(self.redis_conn.close(), self.loop)
         try:
           close_future.result(timeout=5)
-          self.log.debug("MsgBus.close(): connection closed.")
+          # self.log.debug("MsgBus.close(): connection closed.")
         except Exception as e:
           self.log.error(f"MsgBus.close(): Error closing connection: {e}")
       else:                                # Fallback if loop is not running
@@ -331,10 +331,10 @@ class MsgBus:
         except Exception as e:
           self.log.error(f"MsgBus.close(): Error trying to close Redis connection without running loop: {e}")
     if self.loop.is_running():             # Stop the event loop itself
-      self.log.debug("MsgBus.close(): Stopping event loop.")
+      # self.log.debug("MsgBus.close(): Stopping event loop.")
       self.loop.call_soon_threadsafe(self.loop.stop)
     if self.event_loop_thread.is_alive():      # Wait for the event loop thread to finish
-      self.log.debug("MsgBus.close(): Joining event loop thread.")
+      # self.log.debug("MsgBus.close(): Joining event loop thread.")
       self.event_loop_thread.join(timeout=5)
       if self.event_loop_thread.is_alive():
         self.log.warning("MsgBus.close(): Event loop thread did not join cleanly.")

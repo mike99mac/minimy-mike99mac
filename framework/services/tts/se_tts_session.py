@@ -50,7 +50,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
       else:                                # remote default is polly
         from framework.services.tts.remote.polly import remote_tts
       self.remote_tts = remote_tts()
-    self.log.info(f"TTSsession.__init__() use_remote_tts: {self.use_remote_tts} remote_tts: {self.remote_tts}")
+    self.log.info(f"TTSSession.__init__() use_remote_tts: {self.use_remote_tts} remote_tts: {self.remote_tts}")
     self.which_local_tts = "e"             # which local tts engine to use. 
     if cfg.get_cfg_val("Advanced.TTS.Local") == "c": # coqui
       from framework.services.tts.local.coqui_tts import local_speak_dialog
@@ -73,7 +73,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
     self.external_pause = False
     self.paused = True
     self.paused_requestor = requestor
-    self.send_session_pause()              #  tell media player too
+    self.send_session_pause()              # tell media player too
     self.pause_ack = True                  # this will cause an internal event to fire once
 
   def play_file(self, file_name):

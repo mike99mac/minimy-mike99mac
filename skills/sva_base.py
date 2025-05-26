@@ -7,31 +7,30 @@ import subprocess
 
 class SimpleVoiceAssistant:
   def __init__(self, msg_handler=None, skill_id=None, skill_category=None, bus=None, timeout=5):
-    """
-    Most user skills at some point in their lifecycles will want to speak() and/or play_media(). These
-    require acquisition of a session and associated error logic which is shared among all skills by
-    placing it here. 
+    # Most user skills at some point in their lifecycles will want to speak() and/or play_media(). These
+    # require acquisition of a session and associated error logic which is shared among all skills by
+    # placing it here. 
 
-    Skills wishing to play media call their play_media() method which handles initiating a session with the
-    media service and playing the media. Establishing a session with the media player also causes a skill to
-    go active and remain active until either the media session is terminated or it ends normally. 
+    # Skills wishing to play media call their play_media() method which handles initiating a session with the
+    # media service and playing the media. Establishing a session with the media player also causes a skill to
+    # go active and remain active until either the media session is terminated or it ends normally. 
 
-    A great deal of trouble went into supporting the ability to interrupt oneself. For example, while 
-    speaking an answer a user may wish to ask wiki yet another question. The intended behavior in this case
-    is to stack the TTS output so when the new qustion has been answered the old question will automatically
-    be resumed. While this behavior may not be desirable to the developer it may be easily overridden in the 
-    system skill (see the methods input_focus_determination() and output_focus_determination() in the system skill 
-    for more detailed information) making it far easier for the developer to disable then to implement.
+    # A great deal of trouble went into supporting the ability to interrupt oneself. For example, while 
+    # speaking an answer a user may wish to ask wiki yet another question. The intended behavior in this case
+    # is to stack the TTS output so when the new qustion has been answered the old question will automatically
+    # be resumed. While this behavior may not be desirable to the developer it may be easily overridden in the 
+    # system skill (see the methods input_focus_determination() and output_focus_determination() in the system skill 
+    # for more detailed information) making it far easier for the developer to disable than to implement.
 
-    It is the same process with the tts service. A skill enters the active state upon initiating a session with
-    the tts service. In this case the tts service itself establishes a session with the media service. The skill
-    calling the speak() method will enter the 'active' state upon successful negotiation of the session with the tts
-    service. It will remain in the active state until both the session with the tts service and the underlying 
-    session with the medai service have been terminated. This all happens automatically in this base class. 
+    # It is the same process with the tts service. A skill enters the active state upon initiating a session with
+    # the tts service. In this case the tts service itself establishes a session with the media service. The skill
+    # calling the speak() method will enter the 'active' state upon successful negotiation of the session with the tts
+    # service. It will remain in the active state until both the session with the tts service and the underlying 
+    # session with the medai service have been terminated. This all happens automatically in this base class. 
 
-    The base class maintains the last session response and current session id for both the tts service and the media 
-    service.
-    """
+    # The base class maintains the last session response and current session id for both the tts service and the media 
+    # service.
+
     self.skill_control = SkillControl()
     self.skill_control.skill_id = skill_id
     self.skill_control.category = skill_category
@@ -240,9 +239,7 @@ class SimpleVoiceAssistant:
              }
       self.bus.send("media", "media_player_service", info)
       return True
-
-    # else we need to acquire a media session
-    # BUG - these probably need to be stacked !!!
+    # else we need to acquire a media session BUG - these probably need to be stacked !!!
     self.log.warning(f"SimpleVoiceAssistant.play_media(): setting file_uri to {file_uri} media_type to {media_type}")
     self.file_uri = file_uri
     self.media_type = media_type
@@ -323,7 +320,7 @@ class SimpleVoiceAssistant:
         variable = "{"+key+"}"             # variables are surrounded by {braces}
         text = text.replace(variable, str(mesg_info[key]))
     self.log.debug(f"SimpleVoiceAssistant.speak_lang() speaking message: {text}")
-    self.speak(text, wait_callback)        # speak the message 
+    self.speak(text, wait_callback)        # speak the message then call the callback
 
   def register_intent(self, intent_type, verb, subject, callback):
     """
@@ -427,7 +424,6 @@ class SimpleVoiceAssistant:
           self.bus.send("system", "system_skill", info)
         elif self.media_session_response == "session_confirm":
           self.media_player_session_id = msg["payload"]["session_id"]
-          # otherwise we are good to go
           self.log.info(f"SimpleVoiceAssistant.handle_skill_msg() Play media {self.skill_control.skill_id}")
           self.i_am_active = True
           info = {
@@ -468,9 +464,11 @@ class SimpleVoiceAssistant:
           self.bus.send("system", "system_skill", info)
         elif self.tts_session_response == "session_confirm":
           if self.tts_service_session_id != msg["payload"]["session_id"] and self.tts_service_session_id != 0:
-            self.tts_service_session_ids.append( self.tts_service_session_id )
+            self.tts_service_session_ids.append(self.tts_service_session_id)
           self.tts_service_session_id = msg["payload"]["session_id"]
-          info = {"text": self.text,"skill_id":self.skill_control.skill_id}
+          info = {"text": self.text,
+                  "skill_id":self.skill_control.skill_id
+                 }
           self.bus.send("speak", "tts_service", info)
       if self.handle_message is not None:
         self.handle_message(msg)
@@ -515,14 +513,14 @@ class SimpleVoiceAssistant:
       self.i_am_paused = True
 
   def handle_system_msg(self, msg):
+    self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() YOO! skill_control.skill_id: {self.skill_control.skill_id} msg: {msg}")
     msg_type = msg.get("msg_type")
     source = msg.get("source")
     payload = msg.get("payload") 
     subtype = payload.get("subtype")
-    from_skill_id = payload.get("from_skill_id")
-    self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() skill_id: {self.skill_control.skill_id} from_skill_id: {from_skill_id}")
-    self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() subtype: {subtype}  payload: {payload}")
+    from_skill_id = payload.get("skill_id")
     if from_skill_id == self.skill_control.skill_id:
+      self.log.info(f"SimpleVoiceAssistant.handle_system_msg() from_skill_id: {from_skill_id} matches control skill ID - subtype: {subtype}")
       match subtype:
         case "stop" | "stock":             # "stop" is often heard as "stock"
           self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() stop detected - calling 'mpc clear'")
@@ -531,9 +529,18 @@ class SimpleVoiceAssistant:
           self.waiting_for_input_focus = False
           self.i_am_conversed = True
           self.ignore_raw_ctr = 0
-        case "request_output_focus_response":
+        case "request_output_focus":       # try adding request_output_focus -MM
+          self.log.info(f"SimpleVoiceAssistant.handle_system_msg() YOOO! {self.skill_control.skill_id} acquired output focus")
+          info = {"error": "",
+                  "source": "system_skill",
+                  "target": "from_skill_id",
+                  "payload": {"subtype": "session_confirm",
+                              "session_id": self.tts_service_session_id + 1
+                             }
+                 }
+          self.send_message("tts_service", info)
+        case "request_output_focus_response": 
           status = msg["payload"]["status"]
-          self.log.info(f"SimpleVoiceAssistant.handle_system_msg() {self.skill_control.skill_id} acquired output focus status: {status}")
           if msg["payload"]["status"] == "confirm": # if state speak else must be state media
             if self.focus_mode == "speech":
               self.tts_session_response = ""
@@ -584,6 +591,6 @@ class SimpleVoiceAssistant:
               self.send_message("tts_service", info)
               self.i_am_paused = False
       if self.handle_message is not None: # honor any registered message handlers
-        self.log.debug("SimpleVoiceAssistant.handle_system_msg() calling self.handle_message")
+        self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() calling self.handle_message() msg: {msg}")
         self.handle_message(msg)
 

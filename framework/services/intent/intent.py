@@ -16,7 +16,7 @@ class Intent:
     self.tmp_file_path = self.base_dir + "/tmp/"
     log_filename = self.base_dir + "/logs/intent.log"
     self.log = LOG(log_filename).log
-    self.log.debug(f"Intent.__init__() base_dir = {self.base_dir}")
+    # self.log.debug(f"Intent.__init__() base_dir = {self.base_dir}")
     self.earcon_filename = self.base_dir + "/framework/assets/earcon_start.wav"
     self.is_running = False                # set to True before calling run()
     cfg = Config()                         # get configuration
