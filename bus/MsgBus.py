@@ -256,7 +256,7 @@ class MsgBus:
     json_payload = message_obj.to_json() # Serialize the message to JSON
     target_channel = self._get_target_channel(target_client_id)
     # next line commented as it adds lots of log entries
-    # self.log.debug(f"MsgBus.send(): Queueing message for {target_channel}: {json_payload}")
+    self.log.debug(f"MsgBus.send(): NESTING? Queueing message for {target_channel}: {json_payload}")
     # Put (channel, payload) tuple onto the outbound queue
     # This needs to be thread-safe if send() is called from a different thread than the one running self.loop
     try:

@@ -158,46 +158,43 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
     self.log.debug(f"TTSSession.stop_media_session() state: {self.state} msid: {self.msid}")
     self.paused = True
     if self.msid != 0:
-      info = {
-          "error":"",
-          "subtype":"media_player_command",
-          "command":"stop_session",
-          "correlator":self.correlator,
-          "session_id":self.msid,
-          "skill_id":"media_player_service",
-          "from_skill_id":self.skill_id,
-           }
+      info = {"error": "",
+              "subtype": "media_player_command",
+              "command": "stop_session",
+              "correlator": self.correlator,
+              "session_id": self.msid,
+              "skill_id": "media_player_service",
+              "from_skill_id": self.skill_id
+              }
       self.bus.send("media", "media_player_service", info)
       self.msid = 0
-    else:                # else no active media session to stop
+    else:                                  # no active media session to stop
       self.log.warning(f"TTSSession no media player session to stop msid: {self.msid}")
     self.session_data = []
     self.index = 0
 
   def send_session_pause(self):
     self.log.debug("TTSSession.send_session_pause()") 
-    info = {
-        "error":"",
-        "subtype":"media_player_command",
-        "command":"pause_session",
-        "correlator":self.correlator,
-        "session_id":self.msid,
-        "skill_id":"media_player_service",
-        "from_skill_id":self.skill_id,
-        }
+    info = {"error": "",
+            "subtype": "media_player_command",
+            "command": "pause_session",
+            "correlator": self.correlator,
+            "session_id": self.msid,
+            "skill_id": "media_player_service",
+            "from_skill_id": self.skill_id
+           }
     self.bus.send("media", "media_player_service", info)
 
   def send_session_resume(self):
     self.log.debug("TTSSession.send_session_resume()") 
-    info = {
-        "error":"",
-        "subtype":"media_player_command",
-        "command":"resume_session",
-        "correlator":self.correlator,
-        "session_id":self.msid,
-        "skill_id":"media_player_service",
-        "from_skill_id":self.skill_id,
-        }
+    info = {"error": "",
+            "subtype": "media_player_command",
+            "command": "resume_session",
+            "correlator": self.correlator,
+            "session_id": self.msid,
+            "skill_id": "media_player_service",
+            "from_skill_id": self.skill_id
+           }
     self.bus.send("media", "media_player_service", info)
 
   def add(self, i):
