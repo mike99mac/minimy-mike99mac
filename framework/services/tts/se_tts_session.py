@@ -51,13 +51,11 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
         from framework.services.tts.remote.polly import remote_tts
       self.remote_tts = remote_tts()
     self.log.info(f"TTSSession.__init__() use_remote_tts: {self.use_remote_tts} remote_tts: {self.remote_tts}")
-    self.which_local_tts = "e"             # which local tts engine to use. 
     if cfg.get_cfg_val("Advanced.TTS.Local") == "c": # coqui
       from framework.services.tts.local.coqui_tts import local_speak_dialog
-      self.which_local_tts = "c"
     elif cfg.get_cfg_val("Advanced.TTS.Local") == "p": # piper
+      self.log.debug(f"TTSSession.__init__() importing piper's local_speak_dialog()")
       from framework.services.tts.local.piper import local_speak_dialog
-      self.which_local_tts = "p"
     else:
       from framework.services.tts.local.espeak import local_speak_dialog
     self.local_speak = local_speak_dialog
@@ -220,12 +218,12 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
 
   def run(self):
     self.log.debug("TTSSession.run()") 
-    while not self.exit_flag:      # loop forever waiting till it out turn to speak
+    while not self.exit_flag:              # loop forever waiting until our turn to speak
       if self.pause_ack:
         self.pause_ack = False
         self.handle_event(se_tts_constants.EVENT_INTERNAL_PAUSE, {"tsid":self.tts_sid, "msid":self.msid})
       if not self.paused:
-        if len(self.session_data) == self.index and self.index != 0: # End of queue reached!
+        if len(self.session_data) == self.index and self.index != 0: # end of queue reached!
           self.index = 0
           self.session_data = []
           self.handle_event(se_tts_constants.INTERNAL_EVENT_ENDED, {"tsid":self.tts_sid, "msid":self.msid})

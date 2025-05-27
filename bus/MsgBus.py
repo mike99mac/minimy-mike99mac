@@ -14,7 +14,7 @@ class Message:
       "source": source,
       "target": target,
       "payload": payload,
-      # do we need the timestamp?
+      # uncomment to get a timestamp in every message
       # "timestamp": datetime.datetime.utcnow().isoformat() 
     }
 
@@ -214,7 +214,7 @@ class MsgBus:
         try:                               # wait for an item with a timeout
           msg = await asyncio.wait_for(self.inbound_q.get(), timeout=1.0)
           if msg:
-            self.log.debug(f"MsgBus._processor_loop(): Processing msg")
+            # self.log.debug(f"MsgBus._processor_loop(): Processing msg")
             msg_type = msg.get("msg_type") 
             if msg_type and self.msg_handlers.get(msg_type):
               try:
