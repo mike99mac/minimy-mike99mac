@@ -146,7 +146,7 @@ class Intent:
   def get_intent_match(self, info):
     # for utterances of type command an intent match is a subject:verb and we don't fuzzy match
     self.log.debug(f"Intent.get_intent_match() info: {info}")  
-    aplay(self.earcon_filename)  # should be configurable
+    aplay(self.earcon_filename)            # should be configurable
     skill_id = ""
     intent_type = "C"
     if info["sentence_type"] == "I":

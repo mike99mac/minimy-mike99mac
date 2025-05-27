@@ -1,9 +1,10 @@
-import os, time
-from skills.sva_control import SkillControl
 from bus.MsgBus import MsgBus
-from framework.util.utils import LOG, Config
-from threading import Event, Thread
+from framework.util.utils import LOG, Config, execute_command
+import os 
+from skills.sva_control import SkillControl
 import subprocess
+from threading import Event, Thread
+import time 
 
 class SimpleVoiceAssistant:
   def __init__(self, msg_handler=None, skill_id=None, skill_category=None, bus=None, timeout=5):
@@ -50,12 +51,13 @@ class SimpleVoiceAssistant:
     self.watchdog_thread = None
     self.i_am_active = False
     self.i_am_paused = False       # this skill has been paused by the user
-    self.i_am_paused = True        # override for now
+    # self.i_am_paused = True        # override for now
     self.i_am_conversed = False
     self.done_speaking = True
     self.ignore_raw_ctr = 0
     cfg = Config()
     self.crappy_aec = cfg.get_cfg_val("Advanced.CrappyAEC")
+    self.model_file = cfg.get_cfg_val('Advanced.TTS.LocalVoice')
     self._converse_callback = None
     self.activate_response = ""
     self.tts_session_response = ""
@@ -247,6 +249,22 @@ class SimpleVoiceAssistant:
     return True
 
   def speak(self, text, wait_callback=None):
+    # This code has been short-circuited to directly call piper then return -MM
+    text = text.replace('\n', ' ')           # remove trailing newline
+    text_file = f"{self.base_dir}/tmp/save_text/speech.wav"
+    piper_dir = f"{self.base_dir}/framework/services/tts/local/piper"
+    cmd = f'echo "{text}" | {piper_dir}/piper --model {piper_dir}/{self.model_file} --output_file {text_file}; aplay {text_file}'
+    print(f"local_speak_dialog() cmd: {cmd}")
+    try:                                   # writing file to ~/minimy/tmp/save_text
+      self.log.debug(f"SimpleVoiceAssistant.speak(): running command: {cmd}")
+      result = subprocess.check_output(["bash", "-c", cmd])
+    except subprocess.CalledProcessError as e:
+      self.log.error(f"SimpleVoiceAssistant.mpc_cmd(): cmd: {cmd} returned e.returncode: {e.returncode}")
+      return e.returncode
+    os.system(f"rm {text_file}")
+    return
+    # nothing below is being called -MM
+
     self.log.debug(f"SimpleVoiceAssistant.speak() text: {text} wait_callback: {wait_callback} i_am_paused: {self.i_am_paused}")
     if self.i_am_paused:                   # send text to tts service
       self.log.debug(f"SimpleVoiceAssistant.speak(): tts_service_session_id: {self.tts_service_session_id}") 
@@ -513,18 +531,18 @@ class SimpleVoiceAssistant:
           self.waiting_for_input_focus = False
           self.i_am_conversed = True
           self.ignore_raw_ctr = 0
-        case "request_output_focus":       # try adding request_output_focus -MM
-          self.log.info(f"SimpleVoiceAssistant.handle_system_msg() YOOO! {self.skill_control.skill_id} acquired output focus")
-          print(f"SimpleVoiceAssistant.handle_system_msg() YOOO! {self.skill_control.skill_id} acquired output focus")
-          info = {"error": "",
-                  "command": "start_session",
-                  "session_id": self.tts_service_session_id + 1,
-                  "skill_id": "tts_service",
-                  "source": "system_skill",
-                  "subtype": "tts_service_command"
-                  # "subtype": "session_confirm"
-                 }
-          self.send_message("tts_service", info)
+        # case "request_output_focus":       # try adding request_output_focus -MM
+        #   self.log.info(f"SimpleVoiceAssistant.handle_system_msg() YOOO! {self.skill_control.skill_id} acquired output focus")
+        #   print(f"SimpleVoiceAssistant.handle_system_msg() YOOO! {self.skill_control.skill_id} acquired output focus")
+        #   info = {"error": "",
+        #           "command": "start_session",
+        #           "session_id": self.tts_service_session_id + 1,
+        #           "skill_id": "tts_service",
+        #           "source": "system_skill",
+        #           "subtype": "tts_service_command"
+        #           # "subtype": "session_confirm"
+        #          }
+        #   self.send_message("tts_service", info)
                                            # end -MM
         case "request_output_focus_response": 
           status = msg["payload"]["status"]

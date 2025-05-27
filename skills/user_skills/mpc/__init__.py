@@ -111,7 +111,9 @@ class MpcSkill(MediaSkill):
     if self.music_info.mesg_file == None:  # no message
       self.start_music()
     else:                                  # speak message and pass callback  
-      self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.start_music)
+      #self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.start_music)
+      self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info)
+      self.start_music()
     
   def start_music(self):
     # callback to start music after media_play() speaks informational message

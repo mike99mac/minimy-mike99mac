@@ -247,7 +247,7 @@ class STTSvc:
         if self.goog_return_dict:
           self.process_stt_result(self.goog_return_dict['text'])
         elif self.local_return_dict:       # only have a local result BUT we have a cache hit to use 
-          if len( self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8") ) > 0:
+          if len(self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")) > 0:
             self.log.error("STT.run() CACHE HIT!!! converted local=%s  to remote=%s" % (self.local_return_dict['text'], self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")))
             self.process_stt_result(self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8"))
           else:
