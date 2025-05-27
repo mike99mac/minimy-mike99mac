@@ -5,23 +5,23 @@ class TTSSessionMethods:
     pass
 
   def handle_event(self, event, msg):
-    self.log.info("TTSSession handle_event. state=%s, event=%s. owner:%s, tts_sid:%s, msid:%s" % (self.state, event, self.owner, self.tts_sid, self.msid))
+    self.log.info(f"TTSSessionMethods.handle_event() state: {self.state} event: {event} owner: {self.owner} tts_sid: {self.tts_sid} msid: {self.msid}")
     if event in self.valid_events:
       branch_key = self.state + ':' + event
       if branch_key in self.SE:
         return self.SE[branch_key](msg)
       else:
-        self.log.warning("TTSSession Error - no State/Event entry. state=%s, event=%s" % (self.state, event))
+        self.log.warning(f"TTSSession Error - no State/Event entry. state: {self.state} event: {event}")
     return False
 
   def __change_state(self, new_state):
     if new_state == self.state:
-      self.log.warning("TTSSession change_state() - warning illogical state change from '%s' to '%s' ignored" % (self.state, new_state))
+      self.log.warning(f"TTSSessionMethods.change_state() - warning illogical state change from {self.state} to {new_state}")
       return False
     if new_state not in self.valid_states:
       self.log.warning("TTSSession change_state() - warning invalid state change '%s' not a valid state, ignored" % (new_state,))
       return False
-    self.log.info("TTSSession change_state() - from '%s' to '%s'. owner:%s, tts_sid:%s, msid:%s" % (self.state, new_state, self.owner, self.tts_sid, self.msid))
+    self.log.info("TTSSessionMethods.__change_state() - from '%s' to '%s'. owner:%s, tts_sid:%s, msid:%s" % (self.state, new_state, self.owner, self.tts_sid, self.msid))
     self.state = new_state
     return True
 
