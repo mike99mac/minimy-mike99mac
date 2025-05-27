@@ -190,11 +190,11 @@ class SystemSkill(SimpleVoiceAssistant):
           self.log.info("SystemSkill.handle_message() Stop Ignored Because active_skills array empty")
       elif verb in self.recognized_verbs: # if oob recognized
         skill_id = self.recognized_verbs[verb]
-        info = {"error":"",
-                "subtype":"oob_detect",
-                "skill_id":skill_id,
-                "from_skill_id":self.skill_id,
-                "verb":verb,
+        info = {"error": "",
+                "subtype": "oob_detect",
+                "skill_id": skill_id,
+                "from_skill_id": self.skill_id,
+                "verb": verb
                }
         self.log.debug(f"SystemSkill.handle_message(): skill_id: {skill_id} sending info: {info}")
         self.bus.send("skill", skill_id, info)
@@ -225,8 +225,8 @@ class SystemSkill(SimpleVoiceAssistant):
                  "skill_id": "???????????", 
                  "intent_match": ""
                 }
-          self.bus.send("utterance", "*", {"utt": utt, "subtype":"utt"})
-    elif msg["payload"]["subtype"] == "request_output_focus":
+          self.bus.send("utterance", "*", {"utt": utt, "subtype": "utt"})
+    elif subtype == "request_output_focus":
       from_skill_id = msg["payload"]["from_skill_id"]
       requesting_skill_category = msg["payload"]["skill_category"]
       allowed_to_activate = True
@@ -241,12 +241,11 @@ class SystemSkill(SimpleVoiceAssistant):
         self.log.info(f"SystemSkill.handle_message(): focus_response: {focus_response} last_active_skill_id: {last_active_skill_id} requesting_skill_category: {requesting_skill_category} from_skill_id:{from_skill_id}") 
         if focus_response == "cancel":
           self.log.info(f"SystemSkill.handle_message(): Stopping skill {last_active_skill_id}")
-          info = {
-              "error":"",
-              "subtype":"stop",
-              "skill_id":last_active_skill_id,
-              "from_skill_id":self.skill_id,
-              }
+          info = {"error": "",
+                  "subtype": "stop",
+                  "skill_id": last_active_skill_id,
+                  "from_skill_id": self.skill_id
+                 }
           self.bus.send("system", last_active_skill_id, info)
           self.active_skills = self.active_skills[:-1] # remove from active skills array
           self.log.debug("SystemSkill.handle_message(): Send activate accepted message")
@@ -297,7 +296,7 @@ class SystemSkill(SimpleVoiceAssistant):
         else:
           self.active_skills.append({"skill_id": from_skill_id, "skill_category": requesting_skill_category})
           self.log.warning(f"SystemSkill.handle_message(): from_skill already active: {from_skill_id}")
-    elif msg["payload"]["subtype"] == "pause_confirmed":
+    elif subtype == "pause_confirmed":
       self.log.debug(f"SystemSkill.handle_message(): pause confirmed - reason: {self.pause_reason} msg: {msg}")
       if self.pause_reason == INTERNAL_PAUSE:
         self.log.debug("SystemSkill.handle_message(): INTERNAL_PAUSE confirmed, sending confirm output focus")
@@ -315,7 +314,7 @@ class SystemSkill(SimpleVoiceAssistant):
         self.log.debug("SystemSkill.handle_message(): EXTERNAL_PAUSE confirmed, doing nothing")
       else:
         self.log.debug("SystemSkill.handle_message(): Creepy Error 103 - got paused confirmed with no reason!")
-    elif msg["payload"]["subtype"] == "release_output_focus":
+    elif subtype == "release_output_focus":
       from_skill_id = msg["payload"]["from_skill_id"]
       active_skill_entry = self.find_active_skill(from_skill_id)
       if active_skill_entry is not None:
@@ -325,7 +324,7 @@ class SystemSkill(SimpleVoiceAssistant):
           skill_id = self.active_skills[len(self.active_skills) - 1]["skill_id"]
           self.log.debug(f"SystemSkill.handle_message(): Resuming skill: {skill_id}")
           self.send_resume(skill_id)
-    elif msg["payload"]["subtype"] == "request_input_focus": # handle converse 
+    elif subtype == "request_input_focus": # handle converse 
       if len(self.conversant_skills) > 0:
         self.log.warning(f"SystemSkill.handle_message(): Warning already in conversant mode: {self.conversant_skills}")
       requesting_skill_category = msg["payload"]["skill_category"]
@@ -352,20 +351,20 @@ class SystemSkill(SimpleVoiceAssistant):
                }
         self.log.warning(f'SystemSkill.handle_message(): Sending negative input focus_response to: {msg["payload"]["from_skill_id"]}')
         self.bus.send("system", msg["payload"]["from_skill_id"], info)
-    elif msg["payload"]["subtype"] == "release_input_focus": # remove skill from converse array
+    elif subtype == "release_input_focus": # remove skill from converse array
       if len(self.conversant_skills) == 0:
         self.log.warning("SystemSkill.handle_message(): end empty converse array!")
-      tmp_obj = {"skill_id":msg["payload"]["from_skill_id"], "skill_category":msg["payload"]["skill_category"]}
+      tmp_obj = {"skill_id": msg["payload"]["from_skill_id"], "skill_category": msg["payload"]["skill_category"]}
       try:
-        self.conversant_skills.pop( self.conversant_skills.index( tmp_obj ) )
+        self.conversant_skills.pop(self.conversant_skills.index(tmp_obj))
       except:
         self.log.error("SystemSkill.handle_message(): exception on conversant skills pop!")
       self.log.info(f"SystemSkill.handle_message(): Removed {tmp_obj} from conversant skills: {self.conversant_skills}")
-    elif msg["payload"]["subtype"] == "reserve_oob":
+    elif subtype == "reserve_oob":
       self.reserve_oob(msg["payload"])
-    elif msg["payload"]["subtype"] == "release_oob":
+    elif subtype == "release_oob":
       self.release_oob(msg["payload"])
-    elif msg["payload"]["subtype"] == "sys_info_request":
+    elif subtype == "sys_info_request":
       self.respond_sys_info(msg["payload"])
     else:
       self.log.warning(f"SystemSkill.handle_message(): Unrecognized message: {msg}")

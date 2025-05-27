@@ -410,24 +410,31 @@ class TTSEngine:
     self.handle_event(EVENT_SPEAK, payload)
 
   def handle_skill_msg(self, msg):
-    data = msg["payload"]
     self.log.debug(f"TTSEngine.handle_skill_msg() state: {self.state} skill_id: {self.skill_id} msg: {msg}")
-    if data["skill_id"] == self.skill_id:
-      if data["subtype"] == "tts_service_command":
-        # these come from our users
-        if data["command"] == "start_session":
-          return self.handle_event(EVENT_START, data)
-        if data["command"] == "stop_session":
-          return self.handle_event(EVENT_STOP, data)
-        if data["command"] == "pause_session":
-          return self.handle_event(EVENT_PAUSE, data)
-        if data["command"] == "resume_session":
-          return self.handle_event(EVENT_RESUME, data)
-        if data["command"] == "reset_session":
-          self.log.error("TTSEngine.handle_skill_msg(): NEW RESET HIT!")
-          # TO DO - the direct call works but the handle_event call does not - fix it!
-          #return self.handle_event(EVENT_RESET, data)
-          return self._paused_reset(data)
+    skill_id = msg["payload"]["skill_id"]
+    subtype = msg["payload"]["subtype"]
+    command = msg["payload"]["command"]
+    self.log.debug(f"TTSEngine.handle_skill_msg() subtype: {subtype} skill_id: {skill_id} command: {command}")
+    if skill_id == self.skill_id:
+      if subtype == "tts_service_command":
+        match command:
+          case "start_session":
+            self.log.debug(f"TTSEngine.handle_skill_msg() sending EVENT_START message")
+            return self.handle_event(EVENT_START, msg["payload"])
+          case "stop_session":
+            return self.handle_event(EVENT_STOP, msg["payload"])
+          case "pause_session":
+            return self.handle_event(EVENT_PAUSE, msg["payload"])
+          case "resume_session":
+            return self.handle_event(EVENT_RESUME, msg["payload"])
+          case "reset_session":
+            self.log.error("TTSEngine.handle_skill_msg(): NEW RESET HIT!")
+            # TO DO - the direct call works but the handle_event call does not - fix it!
+            #return self.handle_event(EVENT_RESET, data)
+            return self._paused_reset(data)
+          case _:
+            self.log.error(f"TTSEngine.handle_skill_msg(): Internal error: command: {command}")
+
 
 if __name__ == "__main__":
   tts_eng = TTSEngine()

@@ -274,7 +274,7 @@ class SimpleVoiceAssistant:
         info = {"text": text, 
                 "skill_id": self.skill_control.skill_id
                }
-        self.log.debug(f"SimpleVoiceAssistant.speak() calling bus.send with info: ({info})")
+        self.log.debug(f"SimpleVoiceAssistant.speak() calling bus.send with info: {info}")
         self.bus.send("speak", "tts_service", info)
         self.i_am_paused = False
         return True
@@ -517,17 +517,20 @@ class SimpleVoiceAssistant:
           self.log.info(f"SimpleVoiceAssistant.handle_system_msg() YOOO! {self.skill_control.skill_id} acquired output focus")
           print(f"SimpleVoiceAssistant.handle_system_msg() YOOO! {self.skill_control.skill_id} acquired output focus")
           info = {"error": "",
+                  "command": "start_session",
+                  "session_id": self.tts_service_session_id + 1,
+                  "skill_id": "tts_service",
                   "source": "system_skill",
-                  "target": from_skill_id,
-                  "subtype": "session_confirm",
-                  "session_id": self.tts_service_session_id + 1
+                  "subtype": "tts_service_command"
+                  # "subtype": "session_confirm"
                  }
           self.send_message("tts_service", info)
+                                           # end -MM
         case "request_output_focus_response": 
-          status = msg["status"]
+          status = msg["payload"]["status"]
           self.log.info(f"SimpleVoiceAssistant.handle_system_msg() YOOOO! request_output_focus_response status: {status}")
           print(f"SimpleVoiceAssistant.handle_system_msg() YOOOO! request_output_focus_response status: {status}")
-          if msg["payload"]["status"] == "confirm": # if state speak else must be state media
+          if status == "confirm":          # state speak 
             if self.focus_mode == "speech":
               self.tts_session_response = ""
               info = {"error": "",
@@ -537,7 +540,7 @@ class SimpleVoiceAssistant:
                       "from_skill_id": self.skill_control.skill_id
                      }
               self.send_message("tts_service", info)
-            else:
+            else:                          # must be state media
               info = {"error": "",
                       "subtype": "media_player_command",
                       "command": "start_session",

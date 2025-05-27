@@ -10,11 +10,12 @@ from framework.util.utils import LOG
 class Message:
   def __init__(self, msg_type, source, target, payload):
     self.data = {
-      'msg_type': msg_type,
-      'source': source,
-      'target': target,
-      'payload': payload,
-      'timestamp': datetime.datetime.utcnow().isoformat()
+      "msg_type": msg_type,
+      "source": source,
+      "target": target,
+      "payload": payload,
+      # do we need the timestamp?
+      # "timestamp": datetime.datetime.utcnow().isoformat() 
     }
 
   def __getitem__(self, key):
@@ -34,15 +35,15 @@ def msg_from_json(json_input):
   return data                              # Return a dictionary
 
 class MsgBus:
-  def __init__(self, client_id, redis_host='localhost', redis_port=6379):
+  def __init__(self, client_id, redis_host="localhost", redis_port=6379):
     self.client_id = client_id
     self.redis_host = redis_host
     self.redis_port = redis_port
-    self.base_dir = str(os.getenv('SVA_BASE_DIR'))
-    log_filename = self.base_dir + '/logs/messages.log'
+    self.base_dir = str(os.getenv("SVA_BASE_DIR"))
+    log_filename = self.base_dir + "/logs/messages.log"
     self.log = LOG(log_filename).log
     self.log.debug(f"MsgBus.__init__() client_id: {self.client_id}")
-    logging.getLogger('asyncio').setLevel(logging.WARNING) # fewer msgs from asyncio
+    logging.getLogger("asyncio").setLevel(logging.WARNING) # fewer msgs from asyncio
     self.redis_conn = None
     self.pubsub_client = None
     self.listener_task = None # For the pubsub listener
@@ -89,7 +90,7 @@ class MsgBus:
           for task in pending:
             task.cancel()
           # self.loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True)) # This might be tricky here
-      # Ensure loop is closed if it's still running due to run_until_complete calls in finally
+      # Ensure loop is closed if it"s still running due to run_until_complete calls in finally
       # This part is complex, primarily `loop.stop()` should be called from another thread or `call_soon_threadsafe`
       # And `loop.close()` after `run_forever` completes.
       # self.log.debug("MsgBus._run_event_loop(): Event loop finished.")
@@ -133,14 +134,14 @@ class MsgBus:
         try:
           # timeout helps to periodically check shutdown_event
           message = await self.pubsub_client.get_message(ignore_subscribe_messages=True, timeout=1.0)
-          if message and message.get('type') == 'message':
+          if message and message.get("type") == "message":
             try:
-              msg_data_str = message['data'].decode('utf-8') # assumes messages are UTF-8 encoded JSON strings
+              msg_data_str = message["data"].decode("utf-8") # assumes messages are UTF-8 encoded JSON strings
               # self.log.debug(f"MsgBus._subscriber_loop(): Received raw message")
               parsed_msg = msg_from_json(msg_data_str)
               await self.inbound_q.put(parsed_msg)
             except json.JSONDecodeError:
-              self.log.error(f"MsgBus._subscriber_loop(): JSON decode for message: {message['data']}")
+              self.log.error(f'MsgBus._subscriber_loop(): JSON decode for message: {message["data"]}')
             except Exception as e:
               self.log.error(f"MsgBus._subscriber_loop(): Error message: {e}")
           elif message is None and self.shutdown_event.is_set(): # Timeout and shutdown requested
@@ -214,12 +215,12 @@ class MsgBus:
           msg = await asyncio.wait_for(self.inbound_q.get(), timeout=1.0)
           if msg:
             self.log.debug(f"MsgBus._processor_loop(): Processing msg")
-            msg_type = msg.get('msg_type') 
+            msg_type = msg.get("msg_type") 
             if msg_type and self.msg_handlers.get(msg_type):
               try:
                 self.msg_handlers[msg_type](msg) # Call the registered handler
               except Exception as e:
-                self.log.error(f"MsgBus._processor_loop(): Error in msg_type {msg_type}: {e}")
+                self.log.error(f"MsgBus._processor_loop(): Error in msg_type {msg_type}: {e} msg: {msg}")
             else:
               self.log.warning(f"MsgBus._processor_loop(): No handler for msg_type: {msg_type} or msg_type is None.")
             self.inbound_q.task_done()
@@ -260,7 +261,7 @@ class MsgBus:
     # Put (channel, payload) tuple onto the outbound queue
     # This needs to be thread-safe if send() is called from a different thread than the one running self.loop
     try:
-      # If send() is called from the event loop's thread, put_nowait is fine.
+      # If send() is called from the event loop"s thread, put_nowait is fine.
       # If called from external threads (likely), use run_coroutine_threadsafe.
       if threading.get_ident() == self.event_loop_thread.ident:
           self.outbound_q.put_nowait((target_channel, json_payload))
@@ -281,7 +282,7 @@ class MsgBus:
       return
     if self.loop.is_running():             # Signal all async tasks to stop
       self.loop.call_soon_threadsafe(self.shutdown_event.set)
-    else:                                  # loop isn't running, can't use call_soon_threadsafe effectively
+    else:                                  # loop isn"t running, can"t use call_soon_threadsafe effectively
       self.shutdown_event.set() # Set it synchronously, tasks might not see it if loop dead
     # Wait for the core tasks (publisher, processor) to finish
     # These tasks check shutdown_event and queue emptiness.
@@ -292,7 +293,7 @@ class MsgBus:
         all_tasks_to_wait_for.append(self.listener_task)
     for task in self._core_tasks:
       if task and not task.done():
-        # task.cancel() # Optionally cancel if they don't exit via shutdown_event quickly
+        # task.cancel() # Optionally cancel if they don"t exit via shutdown_event quickly
         all_tasks_to_wait_for.append(task)
     if all_tasks_to_wait_for and self.loop.is_running():
         self.log.debug(f"MsgBus.close(): Waiting for {len(all_tasks_to_wait_for)} tasks to complete...")
@@ -307,7 +308,7 @@ class MsgBus:
         except asyncio.TimeoutError:
             self.log.warning("MsgBus.close(): Timeout waiting for tasks to complete during close. Forcing cancellation.")
             for task_future in all_tasks_to_wait_for: # Iterate over original list of tasks
-                if not task_future.done(): # Check if it's actually a future/task object
+                if not task_future.done(): # Check if it"s actually a future/task object
                     # This cancellation is from the external thread via run_coroutine_threadsafe
                     cancel_future = asyncio.run_coroutine_threadsafe(self._cancel_task(task_future), self.loop)
                     try:
@@ -349,7 +350,7 @@ class MsgBus:
         try:
             await task                     # allow cancellation to propagate
         except asyncio.CancelledError:
-            self.log.debug(f"(MsgBus._cancel_task(): {task.get_name() if hasattr(task, 'get_name') else 'unknown'} successfully cancelled.")
+            self.log.debug(f'(MsgBus._cancel_task(): {task.get_name() if hasattr(task, "get_name") else "unknown"} successfully cancelled.')
         except Exception as e:
-            self.log.error(f"MsgBus._cancel_task(): Exception during task cancellation wait for {task.get_name() if hasattr(task, 'get_name') else 'unknown'}: {e}")
+            self.log.error(f'MsgBus._cancel_task(): Exception during task cancellation wait for {task.get_name() if hasattr(task, "get_name") else "unknown"}: {e}')
 
