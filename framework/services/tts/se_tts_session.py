@@ -144,14 +144,13 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
 
   def send_media_session_request(self):
     self.log.debug("TTSSession.send_media_session_request()") 
-    info = {
-        "error":"",
-        "subtype":"media_player_command",
-        "command":"start_session",
-        "correlator":self.correlator,
-        "skill_id":"media_player_service",
-        "from_skill_id":self.skill_id
-         }
+    info = {"error":"",
+            "subtype": "media_player_command",
+            "command": "start_session",
+            "correlator": self.correlator,
+            "skill_id": "media_player_service",
+            "from_skill_id": self.skill_id
+           }
     self.bus.send("media", "media_player_service", info)
 
   def stop_media_session(self):
