@@ -52,20 +52,15 @@ class Audio(object):
     elif file is not None:
       self.chunk = 320
       self.wf = wave.open(file, "rb")
-
     self.stream = self.pa.open(**kwargs)
     self.stream.start_stream()
 
   def resample(self, data, input_rate):
-    """
-    Microphone may not support our native processing sampling rate, so
-    resample from input_rate to RATE_PROCESS here for webrtcvad and
-    deepspeech
-
-    Args:
-      data (binary): Input audio stream
-      input_rate (int): Input audio rate to resample from
-    """
+    # Microphone may not support our native processing sampling rate, so
+    # resample from input_rate to RATE_PROCESS here for webrtcvad and deepspeech
+    # Args:
+    #   data (binary): Input audio stream
+    #   input_rate (int): Input audio rate to resample from
     data16 = np.fromstring(string=data, dtype=np.int16)
     resample_size = int(len(data16) / self.input_rate * self.RATE_PROCESS)
     resample = signal.resample(data16, resample_size)
@@ -167,9 +162,7 @@ def main():
   # general linux 
   # aggressiveness = 2
   # padding = 300
-  # ratio = 0.95 # .75 and we split sentences with minor delay
-
-  # mark2
+  # ratio = 0.95 
   aggressiveness = 2
   padding = 500
   ratio = 0.5                              # .75 and we split sentences with minor delay

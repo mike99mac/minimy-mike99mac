@@ -89,8 +89,7 @@ class TTSEngine:
   def send_paused_confirmed_message(self, target, tts_sid):
     # TTS session messages are ecxchanged between the TTS Engine and the user/skill 
     self.log.debug(f"TTSEngine.send_paused_confirmed_message() target: {target} tts_sid: {tts_sid}")
-    info = {"error": "",
-            "subtype": "tts_service_command_response",
+    info = {"subtype": "tts_service_command_response",
             "response": "paused_confirmed",
             "session_id": tts_sid,
             "skill_id": target,
@@ -100,8 +99,7 @@ class TTSEngine:
 
   def send_session_confirm(self, target, sid):
     self.log.debug(f"TTS.Engine.send_session_confirm() target: {target} sid: {sid}")
-    info = {"error": "",
-            "subtype": "tts_service_command_response",
+    info = {"subtype": "tts_service_command_response",
             "response": "session_confirm",
             "session_id": sid,
             "skill_id": target,
@@ -111,8 +109,7 @@ class TTSEngine:
 
   def send_session_reject(self, reason, target):
     self.log.debug(f"TTS.Engine.send_session_reject() target: {target} sid: {sid}")
-    info = {"error": reason,
-            "subtype": "tts_service_command_response",
+    info = {"subtype": "tts_service_command_response",
             "response": "session_reject",
             "skill_id": target,
             "from_skill_id": self.skill_id
@@ -121,8 +118,7 @@ class TTSEngine:
 
   def send_session_end_notify(self, skill_id):
     self.log.debug(f"TTSEngine.send_session_end_notify() skill_id: {skill_id}")
-    info = {"error": "",
-            "subtype": "tts_service_command_response",
+    info = {"subtype": "tts_service_command_response",
             "response": "session_ended",
             "session_id": self.current_session.tts_sid,
             "skill_id": skill_id,
@@ -251,8 +247,7 @@ class TTSEngine:
     self.current_session.handle_event(SESSION_EVENT_RESUME, msg)
     self.current_session.session_data = []
     self.current_session.index = 0
-    info = {"error": "",
-            "subtype": "media_player_command",
+    info = {"subtype": "media_player_command",
             "command": "reset_session",
             "session_id": self.current_session.msid,
             "skill_id": "media_player_service",

@@ -5,7 +5,7 @@ from framework.util.utils import aplay, Config
 class FallbackSkill(SimpleVoiceAssistant):
   def __init__(self, bus=None, timeout=5):
     super().__init__(msg_handler=self.handle_message, skill_id="fallback_skill", skill_category="fallback")
-    self.qna_skills = []                   # array of registered qna skill handlers
+    self.qna_skills = []       
     cfg = Config()
     base_dir = cfg.get_cfg_val("Basic.BaseDir")
     self.boing_filename = base_dir + "/framework/assets/boing.wav"
@@ -18,11 +18,11 @@ class FallbackSkill(SimpleVoiceAssistant):
 
   def handle_qna_response(self, msg):
     # gather responses and decide who handles question, then send message to that skill_id to play the answer
-    msg_out = {"subtype": "qna_answer_question", 
+    info = {"subtype": "qna_answer_question", 
                "skill_id": msg["payload"]["from_skill_id"], 
                "skill_data": msg["payload"]["skill_data"]
               }
-    self.log.info(f"FallbackSkill.handle_qna_response() msg_out: {msg_out}")
+    self.log.debug(f"FallbackSkill.handle_qna_response() info: {info}")
     self.send_message(msg["payload"]["from_skill_id"], msg_out) # for now assume the only skill to answer gets it
 
   def handle_message(self, msg):

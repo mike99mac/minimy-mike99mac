@@ -116,8 +116,7 @@ class Intent:
 
   def send_oob_to_system(self, utt, contents):
     # send OOB message to bus
-    info = {"error":"", 
-            "subtype": "oob", 
+    info = {"subtype": "oob", 
             "skill_id": "system_skill", 
             "from_skill_id": self.skill_id, 
             "sentence_type": "I", 
@@ -210,8 +209,7 @@ class Intent:
           if sentence_type != "Q":
             utt = remove_pleasantries(utt)
           si.parse_utterance(utt)
-          info = {"error": "", 
-                  "sentence_type": si.sentence_type, 
+          info = {"sentence_type": si.sentence_type, 
                   "sentence": si.original_sentence, 
                   "normalized_sentence": si.normalized_sentence, 
                   "qtype": si.insight.qtype, 

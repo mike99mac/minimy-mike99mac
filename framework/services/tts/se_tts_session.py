@@ -142,8 +142,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
 
   def send_media_session_request(self):
     self.log.debug("TTSSession.send_media_session_request()") 
-    info = {"error":"",
-            "subtype": "media_player_command",
+    info = {"subtype": "media_player_command",
             "command": "start_session",
             "correlator": self.correlator,
             "skill_id": "media_player_service",
@@ -155,8 +154,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
     self.log.debug(f"TTSSession.stop_media_session() state: {self.state} msid: {self.msid}")
     self.paused = True
     if self.msid != 0:
-      info = {"error": "",
-              "subtype": "media_player_command",
+      info = {"subtype": "media_player_command",
               "command": "stop_session",
               "correlator": self.correlator,
               "session_id": self.msid,
@@ -172,8 +170,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
 
   def send_session_pause(self):
     self.log.debug("TTSSession.send_session_pause()") 
-    info = {"error": "",
-            "subtype": "media_player_command",
+    info = {"subtype": "media_player_command",
             "command": "pause_session",
             "correlator": self.correlator,
             "session_id": self.msid,
@@ -184,8 +181,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
 
   def send_session_resume(self):
     self.log.debug("TTSSession.send_session_resume()") 
-    info = {"error": "",
-            "subtype": "media_player_command",
+    info = {"subtype": "media_player_command",
             "command": "resume_session",
             "correlator": self.correlator,
             "session_id": self.msid,

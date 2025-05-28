@@ -259,7 +259,6 @@ class MsgBus:
     # next line commented as it adds lots of log entries
     # self.log.debug(f"MsgBus.send(): Queueing message for {target_channel}: {json_payload}")
     # Put (channel, payload) tuple onto the outbound queue
-    # This needs to be thread-safe if send() is called from a different thread than the one running self.loop
     try:
       # If send() is called from the event loop"s thread, put_nowait is fine.
       # If called from external threads (likely), use run_coroutine_threadsafe.

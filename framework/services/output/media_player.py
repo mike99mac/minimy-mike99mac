@@ -117,8 +117,7 @@ class SVAMediaPlayerSkill:
 
   def send_session_end_notify(self, reason):
     self.log.debug(f"SVAMediaPlayerSkill.send_session_end_notify() reason: {reason}")
-    info = {"error": "",
-            "subtype": "media_player_command_response",
+    info = {"subtype": "media_player_command_response",
             "response": "session_ended",
             "correlator": self.current_session.correlator,
             "reason": reason,
@@ -147,27 +146,24 @@ class SVAMediaPlayerSkill:
 
   def send_session_paused(self, session_id, target):
     self.log.debug(f"SVAMediaPlayerSkill.send_session_paused() session_id: {session_id} target: {target}")
-    info = {
-        "error":"",
-        "subtype":"media_player_command_response",
-        "response":"session_paused",
-        "correlator":self.current_session.correlator,
-        "session_id":session_id,
-        "skill_id":target,
-        "from_skill_id":"media_player_service",
-        }
+    info = {"subtype":"media_player_command_response",
+            "response":"session_paused",
+            "correlator":self.current_session.correlator,
+            "session_id":session_id,
+            "skill_id":target,
+            "from_skill_id":"media_player_service",
+           }
     return self.send_message(target, info)
 
   def send_session_confirm(self, msg):
     self.log.debug(f"SVAMediaPlayerSkill.send_session_confirm() msg: {msg}")
-    info = {"error": "",
-            "subtype": "media_player_command_response",
+    info = {"subtype": "media_player_command_response",
             "response": "session_confirm",
             "correlator": self.current_session.correlator,
             "session_id": self.current_session.session_id,
             "skill_id": msg["payload"]["from_skill_id"],
             "from_skill_id": "media_player_service"
-            }
+           }
     return self.send_message(msg["payload"]["from_skill_id"], info)
 
   def get_paused_session(self, paused_sid):
@@ -238,8 +234,7 @@ class SVAMediaPlayerSkill:
       sid = msg["payload"]["session_id"]
       target = msg["payload"]["from_skill_id"]
       self.log.warning(f"SVAMediaPlayerSkill.stop_session() owner: {self.current_session.owner} not the requester: {target}")
-      info = {"error": "",
-              "subtype": "media_player_command_response",
+      info = {"subtype": "media_player_command_response",
               "response": "session_ended",
               "correlator": sid,
               "reason": "killed",

@@ -22,10 +22,10 @@ class Buttons:
      GPIO2  (3)  (4)  5V
      GPIO3  (5)  (6)  GND
      GPIO4  (7)  (8)  GPIO14
-       GND  (9)! (10) GPIO15
-    GPIO17 (11)! (12) GPIO18
-    GPIO27 (13)! (14) GND
-    GPIO22 (15)! (16) GPIO23
+       GND  (9)! (10) GPIO15     common ground
+    GPIO17 (11)! (12) GPIO18     prev
+    GPIO27 (13)! (14) GND        stop
+    GPIO22 (15)! (16) GPIO23     next
        3V3 (17)  (18) GPIO24
     GPIO10 (19)  (20) GND
      GPIO9 (21)  (22) GPIO25
@@ -49,30 +49,44 @@ class Buttons:
     self.log.debug(f"Buttons.__init__(): initializing 3 buttons log_filename: {log_filename}")
     
   def monitor_buttons(self):               # wait for button presses     
+    info = {"subtype": "oob_detect",
+            "skill_id": "media_skill",
+            "verb": "????"
+           }
     while True:                            # loop forever waiting for button presses or holds
       if self.prev_button.is_held:
-        self.log.debug("prev button held") 
+        self.log.debug("Buttons.monitor_buttons(): prev button held")
+        print("prev button held")
+        info["verb"] = "rewind"            # move to start of playlist/album
         sleep(1)
       elif self.stop_button.is_held:
-        self.log.debug("stop button held") 
+        self.log.debug("Buttons.monitor_buttons(): stop button held")
         print("stop button held")
+        info["verb"] = "stop"              # clear playlist
+        self.bus.send("media", "media_skill", info)
         sleep(1)
       elif self.next_button.is_held:
-        self.log.debug("next button held") 
+        self.log.debug("Buttons.monitor_buttons(): next button held")
+        print("next button held")
+        info["verb"] = "stop"              # clear playlist
+        self.bus.send("media", "media_skill", info)
         sleep(1)
       elif self.prev_button.is_pressed:
-        self.log.debug("prev button pressed")
-        self.bus.on("media", "mycroft.audio.service.prev")
+        self.log.debug("Buttons.monitor_buttons(): prev button pressed")
+        info["verb"] = "prev"              # previous track
+        self.bus.send("media", "media_skill", info)
         print("prev button pressed")
         sleep(1)
       elif self.stop_button.is_pressed:
-        self.log.debug("stop button pressed")
+        self.log.debug("Buttons.monitor_buttons(): stop button pressed")
         print("stop button pressed")
-        self.bus.on("media", "mycroft.audio.service.toggle") # toggle between pause and resume
+        info["verb"] = "pause"             # keep song where it was 
+        self.bus.send("media", "media_skill", info)
         sleep(1)
       elif self.next_button.is_pressed:
-        self.log.debug("next button pressed")
-        self.bus.on("media", "mycroft.audio.service.next")
+        self.log.debug("Buttons.monitor_buttons(): next button pressed")
+        info["verb"] = "next"              # next track    
+        self.bus.send("media", "media_skill", info)
         print("next button pressed")
         sleep(1) 
       sleep(.1)                            # cool it?  
@@ -82,9 +96,9 @@ class Buttons:
           
 # main()
 if __name__ == '__main__':
-  buttons = Buttons()                        # create the singleton
+  buttons = Buttons()                      # create the singleton
   try:
-    buttons.monitor_buttons()                # loops forever
+    buttons.monitor_buttons()              # loops forever
   except KeyboardInterrupt:
     ws.bus.client.disconnect()
 

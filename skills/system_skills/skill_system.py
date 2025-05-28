@@ -53,8 +53,7 @@ class SystemSkill(SimpleVoiceAssistant):
     subtype = "pause"
     if self.pause_reason == INTERNAL_PAUSE:
       subtype = "pause_internal"
-    info = {"error": "",
-            "subtype": subtype,
+    info = {"subtype": subtype,
             "skill_id": target_skill,
             "from_skill_id": self.skill_id
            }
@@ -62,8 +61,7 @@ class SystemSkill(SimpleVoiceAssistant):
 
   def send_resume(self, target_skill):
     self.log.debug(f"SystemSkill:send_pause() target_skill: {target_skill}")
-    info = {"error":"",
-            "subtype": "resume",
+    info = {"subtype": "resume",
             "skill_id": target_skill,
             "from_skill_id": self.skill_id
            }
@@ -71,8 +69,7 @@ class SystemSkill(SimpleVoiceAssistant):
 
   def respond_sys_info(self, payload):
     self.log.debug("SystemSkill:respond_sys_info()")
-    info = {"error": "",
-            "subtype": "sys_info_response",
+    info = {"subtype": "sys_info_response",
             "skill_id": payload["from_skill_id"],
             "from_skill_id": self.skill_id,
             "remote_stt": self.cfg_remote_stt,
@@ -170,8 +167,7 @@ class SystemSkill(SimpleVoiceAssistant):
         if self.stop_overide is not None:  # handle stop overide
           skill_id = self.stop_overide     # stop has been overidden by a skill, send stop to that skill only.
           self.log.info(f"SystemSkill.handle_message(): STOP OVERIDE! Sending stop to {skill_id}")
-          info = {"error": "",
-                  "subtype": "stop",
+          info = {"subtype": "stop",
                   "skill_id": skill_id,
                   "from_skill_id": self.skill_id
                  }
@@ -180,8 +176,7 @@ class SystemSkill(SimpleVoiceAssistant):
         if len(self.active_skills) > 0:    # fall thru to active skills
           skill_id = self.active_skills[len(self.active_skills)-1]["skill_id"]
           self.log.info(f"SystemSkill.handle_message(): Sending stop to skill: {skill_id}")
-          info = {"error": "",
-                  "subtype": "stop",
+          info = {"subtype": "stop",
                   "skill_id": skill_id,
                   "from_skill_id": self.skill_id
                  }
@@ -190,8 +185,7 @@ class SystemSkill(SimpleVoiceAssistant):
           self.log.info("SystemSkill.handle_message() Stop Ignored Because active_skills array empty")
       elif verb in self.recognized_verbs: # if oob recognized
         skill_id = self.recognized_verbs[verb]
-        info = {"error": "",
-                "subtype": "oob_detect",
+        info = {"subtype": "oob_detect",
                 "skill_id": skill_id,
                 "from_skill_id": self.skill_id,
                 "verb": verb
@@ -213,8 +207,7 @@ class SystemSkill(SimpleVoiceAssistant):
         else:                              # unrecognized oob 
           self.log.info(f"SystemSkill.handle_message(): Unrecognized verb {verb}")
           verb, subject = verb.split(" ")
-          utt = {"error": "", 
-                 "verb": verb, 
+          utt = {"verb": verb, 
                  "value": "derived from verb", 
                  "subject": subject, 
                  "squal": "", 
@@ -241,8 +234,7 @@ class SystemSkill(SimpleVoiceAssistant):
         self.log.info(f"SystemSkill.handle_message(): focus_response: {focus_response} last_active_skill_id: {last_active_skill_id} requesting_skill_category: {requesting_skill_category} from_skill_id:{from_skill_id}") 
         if focus_response == "cancel":
           self.log.info(f"SystemSkill.handle_message(): Stopping skill {last_active_skill_id}")
-          info = {"error": "",
-                  "subtype": "stop",
+          info = {"subtype": "stop",
                   "skill_id": last_active_skill_id,
                   "from_skill_id": self.skill_id
                  }
@@ -281,8 +273,7 @@ class SystemSkill(SimpleVoiceAssistant):
                }
         self.bus.send("system", from_skill_id, info)
       else:  
-        info = {"error": "",
-                "subtype": "request_output_focus_response",
+        info = {"subtype": "request_output_focus_response",
                 "status": "confirm",
                 "skill_id": from_skill_id,
                 "from_skill_id": self.skill_id
@@ -301,8 +292,7 @@ class SystemSkill(SimpleVoiceAssistant):
       if self.pause_reason == INTERNAL_PAUSE:
         self.log.debug("SystemSkill.handle_message(): INTERNAL_PAUSE confirmed, sending confirm output focus")
         self.pause_reason = None
-        info = {"error": "",
-                "subtype": "request_output_focus_response",
+        info = {"subtype": "request_output_focus_response",
                 "status": "confirm",
                 "skill_id": self.pause_requestor,
                 "from_skill_id": self.skill_id
@@ -333,8 +323,7 @@ class SystemSkill(SimpleVoiceAssistant):
         tmp_obj = {"skill_id": msg["payload"]["from_skill_id"], "skill_category": msg["payload"]["skill_category"]}
         self.conversant_skills.append( tmp_obj )
         self.log.info(f"SystemSkill.handle_message(): Added {tmp_obj} to conversant skills: {self.conversant_skills}")
-        info = {"error": "",
-                "subtype": "request_input_focus_response",
+        info = {"subtype": "request_input_focus_response",
                 "status": "confirm",
                 "skill_id": msg["payload"]["from_skill_id"],
                 "from_skill_id": self.skill_id
