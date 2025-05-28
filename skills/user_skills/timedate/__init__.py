@@ -27,7 +27,7 @@ class TimeSkill(SimpleVoiceAssistant):
     hour = int(text.split(" ")[0])
     ampm = text.split(" ")[2]
     if ampm == "AM":
-      ampm = "aay em"
+      ampm = "aaa em"
     elif ampm == "PM":
       ampm = "pee em"
     if minute > 0 and minute < 10:         # add an "oh" before the minute

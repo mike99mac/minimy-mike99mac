@@ -14,7 +14,7 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     info = {"subtype": "reserve_oob", 
             "skill_id": "system_skill", 
             "from_skill_id": self.skill_id, 
-            "verb":"pause"
+            "verb": "pause"
            }
     self.bus.send("system", "system_skill", info)
     info["verb"] = "resume"
@@ -88,12 +88,11 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     # message and the "media_play" message
     for skill_id in self.media_skills:
       self.log.debug(f"SVAMediaSkill.handle_query(): sent media_get_confidence to {skill_id}")
-      info = {
-        "subtype": "media_get_confidence",
-        "skill_id": skill_id,
-        "from_skill_id":self.skill_id,
-        "msg_sentence":msg["payload"]["sentence"]
-        }
+      info = {"subtype": "media_get_confidence",
+              "skill_id": skill_id,
+              "from_skill_id": self.skill_id,
+              "msg_sentence": msg["payload"]["sentence"]
+             }
       self.bus.send("skill", skill_id, info)
 
   def handle_command(self, msg):

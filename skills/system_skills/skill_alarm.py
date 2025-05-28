@@ -116,25 +116,22 @@ class AlarmSkill(SimpleVoiceAssistant):
 
   def send_reserve_message(self):
     # acquire the oob verbs "stop" and "snooze"
-    info = {
-        "subtype":"reserve_oob",
-        "skill_id":"system_skill",
-        "from_skill_id":self.skill_id,
-        "verb":"stop"
-        }
+    info = {"subtype": "reserve_oob",
+            "skill_id": "system_skill",
+            "from_skill_id": self.skill_id,
+            "verb": "stop"
+           }
     self.bus.send("system", "system_skill", info)
     info["verb"] = "snooze"
     self.bus.send("system", "system_skill", info)
 
-
   def send_release_message(self):
     # release the oob verbs "stop" and "snooze"
-    info = {
-        "subtype":"release_oob",
-        "skill_id":"system_skill",
-        "from_skill_id":self.skill_id,
-        "verb":"stop"
-        }
+    info = {"subtype": "release_oob",
+            "skill_id": "system_skill",
+            "from_skill_id": self.skill_id,
+            "verb":"stop"
+           }
     self.bus.send("system", "system_skill", info)
     info["verb"] = "snooze"
     self.bus.send("system", "system_skill", info)
@@ -164,9 +161,7 @@ class AlarmSkill(SimpleVoiceAssistant):
       else:
         # have no date or time
         return self.have_no_date_and_no_time(dt)
-
     return ""
-
 
   def handle_expired_alarm(self, alarm):
     # we have an expired alarm. we need to 
@@ -178,12 +173,10 @@ class AlarmSkill(SimpleVoiceAssistant):
     # go live
     self.send_reserve_message()
 
-
   def remove_expired_alarms(self, alarms):
     now = datetime.datetime.now()
     now = now + timedelta(minutes=3)
     nowd = now.strftime("%Y-%m-%d %H:%M:%S")
-
     new_alarms = []
     for alarm in alarms:
       alarm = alarm.strip()
@@ -195,9 +188,7 @@ class AlarmSkill(SimpleVoiceAssistant):
           new_alarms.append(alarm)
         else:
           self.log.info("expired alarm excluded = %s" % (alarm,))
-
     return new_alarms
-
 
   def update_alarm_db(self):
     # we always just overwrite
@@ -205,7 +196,6 @@ class AlarmSkill(SimpleVoiceAssistant):
     for alarm in self.alarms:
       fh.write(alarm + "\n")
     fh.close()
-
 
   def get_alarm_from_db(self, alarm):
     fh = open(self.db_filename)
@@ -219,11 +209,9 @@ class AlarmSkill(SimpleVoiceAssistant):
         return True
     return False
 
-
   def remove_alarm(self, alarm_time, alarm_name):
     self.alarms.remove(alarm_time)
     self.update_alarm_db()
-
 
   def add_alarm(self, alarm_time, alarm_name):
     self.log.debug("add alarm to db. time:%s, name:%s" % (alarm_time, alarm_name))
@@ -233,19 +221,16 @@ class AlarmSkill(SimpleVoiceAssistant):
     if self.get_alarm_from_db(alarm_time):
       self.log.warning("Error - duplicate alarm %s" % (alarm_time,))
       return False
-
     new_alarm = "%s,%s" % (alarm_time, alarm_name) 
     self.alarms.append( new_alarm )
     self.update_alarm_db()
     return True
-
 
   def cancel_converse(self, user_input):
     for word in self.cancel_converse_words:
       if word in user_input:
         return True
     return False
-
 
   def handle_user_confirmation_input(self, user_response):
     # handle bail out 
@@ -281,12 +266,9 @@ class AlarmSkill(SimpleVoiceAssistant):
 
   def handle_time_input(self, user_response):
     self.speak("got time input.")
-
     """
     unused, hour, minute = get_raw(user_response)
-
     ampm = get_ampm(user_response)
-
     if hour != 0:
       have_time = True
       # dt hour is in 24 hour format so we need 
@@ -298,7 +280,6 @@ class AlarmSkill(SimpleVoiceAssistant):
           hour += 12
       dt = dt.replace(hour=hour, minute=minute)
       return dt
-
     # otherwise we could not get a complete 
     # date and time - missing valid time!
     return ""
@@ -308,21 +289,17 @@ class AlarmSkill(SimpleVoiceAssistant):
     user_prompt = "Create an alarm for when?"
     self.get_user_input(self.handle_datetime_input, user_prompt, self.handle_datetime_timeout)
 
-
   def have_date_no_time(self, dt):
     # otherwise have date but no time
     hour = 0
     minute = 0
-
     dom = int( dt.strftime("%d") )
     spoken_dom = self.inflect_thing.ordinal(dom)
     speakable_date = dt.strftime("%A %B") + " " + spoken_dom
     speakable_date = speakable_date.replace(" 00","")
     speakable_date = re.sub(r"0+(.+)", r"\1", speakable_date)
-
     user_prompt = "Create an alarm at what time on %s?" % (speakable_date)
     self.get_user_input(self.handle_time_input, user_prompt, self.handle_datetime_timeout)
-
 
   def get_speakable(self, date_string):
     date_string = str(date_string)
@@ -340,7 +317,6 @@ class AlarmSkill(SimpleVoiceAssistant):
     t = " at %s %s %s" % (hr, spoken_minute, ampm)
     s += t
     return s
-
 
   def handle_delete(self, message):
     sentence = message["payload"]["utt"]["sentence"]
@@ -412,5 +388,5 @@ class AlarmSkill(SimpleVoiceAssistant):
 
 if __name__ == "__main__":
   my_alarm_skill = AlarmSkill()
-  Event().wait()  # Wait forever
+  Event().wait()                           # wait forever
 

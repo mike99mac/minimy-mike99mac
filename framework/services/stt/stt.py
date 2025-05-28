@@ -25,7 +25,7 @@ def execute_command(command):
 def _local_transcribe_file(wav_filename, return_dict):
   start_time = time.time()
   cmd = 'curl http://localhost:5002/stt -H "Content-Type: audio/wav" --data-binary @"%s"' % (wav_filename,)
-  print(f"_local_transcribe_file(): executing cmd: {cmd}") 
+  # print(f"_local_transcribe_file(): executing cmd: {cmd}") 
   out, err = execute_command(cmd)
   res = out.strip()
   if res != '':
@@ -130,13 +130,14 @@ class STTSvc:
   def process_stt_result(self, utt):
     # we want the wake word but if we don't have it maybe
     # it was the previous utterance so handle that too.
-    try:                                 # parse nested JSON string
-      parsed_text = json.loads(utt)
-      utt = parsed_text.get("text", "").strip()
-    except json.JSONDecodeError as e:
-      self.log.error(f"STT.process_stt_result(): failed to parse local STT result: {e}")
-      utt = ""
-    self.log.info(f"STT.process_stt_result() utt: {utt}")
+    self.log.error(f"STT.process_stt_result(): utt: {utt}")
+    # try:                                 # parse nested JSON string
+    #   parsed_text = json.loads(utt)
+    #   utt = parsed_text.get("text", "").strip()
+    # except json.JSONDecodeError as e:
+    #   self.log.error(f"STT.process_stt_result(): failed to parse local STT result: {e}")
+    #   utt = ""
+    # self.log.info(f"STT.process_stt_result() utt: {utt}")
     if utt:
       wake_word = ''
       for ww in self.wws:
