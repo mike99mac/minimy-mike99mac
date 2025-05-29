@@ -33,6 +33,7 @@ class MpcClient(SimpleVoiceAssistant):
   list_lines: list                         # all radio stations in the CSV file
   
   def __init__(self, music_dir: Path):
+    super().__init__(skill_id="mpc_skill", skill_category="media")
     self.log = logging.getLogger(__name__)
     self.music_dir = music_dir
     self.max_queued = 20                                         
@@ -44,8 +45,7 @@ class MpcClient(SimpleVoiceAssistant):
     self.station_URL = "unknown"  
     self.request_type = "unknown"  
     self.list_lines = []
-    base_dir = str(os.getenv("SVA_BASE_DIR"))
-    self.temp_dir = base_dir + "/logs"     # log dir should be a tmpfs so files self-delete at minimy restart
+    self.temp_dir = self.base_dir + "/tmp/save_audio" # save audio files here 
 
   def initialize(self, music_dir: Path):  
     """ 
@@ -752,20 +752,18 @@ class MpcClient(SimpleVoiceAssistant):
     self.log.debug(f"MpcClient.get_stations() self.request_type: {self.request_type} search_name: {search_name}")
     mesg_info = {}
     tracks_or_urls = []
-
-    # check that the radio station file exists
-    if not os.path.exists("/home/pi/minimy/skills/user_skills/mpc/radio.stations.csv"):
-      self.log.debug("MpcClient.get_stations() file /home/pi/minimy/skills/user_skills/mpc/radio.stations.csv not found")
+    stations_file = "f{self.base_dir}/skills/user_skills/mpc/radio.stations.csv"
+    if not os.path.exists(f"{stations_file}"): # radio station file does not exist
+      self.log.debug(f"MpcClient.get_stations() file {stations_file} not found")
       return Music_info("none", "file_not_found", {"file": "radio.stations.csv"}, None) 
     self.mpc_cmd("clear")                  # clear the queue
-    input_file = open("/home/pi/minimy/skills/user_skills/mpc/radio.stations.csv", "r+")
+    input_file = open(f"{stations_file}", "r+")
     reader_file = csv.reader(input_file)
     self.list_lines = list(reader_file)    # convert to list
     num_lines = len(self.list_lines)       # number of saved radio stations
     self.log.debug(f"MpcClient.get_stations() num_lines: {num_lines}")
     match self.request_type:
       case "random":
-      #  if num_lines <= self.max_queued:   # all stations can be queued 
         indices = random.sample(range(1, num_lines), self.max_queued)
         for next_index in indices:
           self.log.debug(f"MpcClient.get_stations() next_index: {next_index}")
@@ -973,12 +971,12 @@ class MpcClient(SimpleVoiceAssistant):
     self.log.debug(f"MpcClient.search_news() start_indx: {start_indx} end_indx: {end_indx} ")       
     new_url = page[:end_indx]
     new_url = new_url.replace("\\","")
-    os.chdir(self.temp_dir)                # change to the logs directory which should be a tmpfs
-    self.log.debug(f"MpcClient.search_news() current directory is: {os.getcwd()}")
+    os.chdir(self.music_dir)               # write file to music directory
     cmd = f"wget {new_url}"
+    self.log.debug(f"MpcClient.search_news() cwd: {os.getcwd()} cmd: {cmd}")
     os.system(cmd)                         # get the file with wget
-    file_names = glob.glob("*.mp3")        # find the downloaded file
-    file_name = f"{self.temp_dir}/{file_names[0]}" # fully qualify file name
-    self.log.debug(f"MpcClient.search_news() news file_name: {file_name}")
+    file_name = new_url.rsplit('/', 1)[-1]
+    self.log.debug(f"MpcClient.search_news() mp3 file_name: {file_name}")
+    self.mpc_cmd("update")                 # update so mpc can see new file
     return Music_info("news", mesg_file, mesg_info, [file_name])
 

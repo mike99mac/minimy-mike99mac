@@ -10,17 +10,20 @@
     OutputLevelControlName: Speaker
     Platform: u
     STT:
-      UseRemote: n
+      UseRemote: y
     TTS:
-      Local: m
+      Local: p
       Remote: p
       UseRemote: n
+      LocalVoice: en_US-hfc_male-medium
   Basic:
     AWSId: ''
     AWSKey: ''
     BaseDir: /home/pi/minimy
     GoogleApiKeyPath: install/my_google_key.json
+    MusicDir: /mnt/usb/music
     Version: 1.0.4
     WakeWords: 
     - 'computer'
     - 'hey boom box'
+    - 'hey boombox'

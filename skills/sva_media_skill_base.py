@@ -4,11 +4,10 @@ import time
 
 class MediaSkill(SimpleVoiceAssistant):
   def __init__(self, skill_id=None, skill_category=None, bus=None, timeout=5):
-    # All user media skills inheret from the MediaSkill. A user media
-    # skill must have at least two methods defined; get_media_confidence()
-    # and media_play(). A media skill is called first to return the 
-    # confidence level it has regarding a media play request. If its 
-    # confidence is the highest it is later called to play that media. 
+    # All user media skills inheret from the MediaSkill. 
+    # A user media skill must have at least two methods defined:
+    # 1) get_media_confidence(): return the confidence level it has regarding a media play request
+    # 2) media_play(): called if the confidence is the highest 
     super().__init__(msg_handler=self.handle_message, skill_id=skill_id, skill_category=skill_category)
     time.sleep(1)            # give fall back skill a chance to initialize
     self.log.debug("MediaSkill.__init__()")
@@ -26,7 +25,7 @@ class MediaSkill(SimpleVoiceAssistant):
       info = {"subtype": "media_confidence_response", 
               "skill_id": "media_skill", 
               "skill_data": skill_data
-            }
+             }
       self.send_message("media_skill", info)
     if subtype == "media_play":
       self.media_play(msg)
