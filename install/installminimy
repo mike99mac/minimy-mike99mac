@@ -132,8 +132,8 @@ function buildVenv
   cd $baseDir/framework/services/tts/local
   if [ ! -d piper ]; then                  # not downloaded yet
     runCmd wget -q https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_arm64.tar.gz
-    runCmd tar xzf piper_arm64.tar.gz
-    cd piper
+    runCmd tar xzf piper_arm64.tar.gz      # creates piper dir
+    cd piper                               # get a male and a female voice
     runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx
     runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx.json
     runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_male/medium/en_US-hfc_male-medium.onnx
@@ -141,11 +141,11 @@ function buildVenv
     echo "Piper has been installed!" | ./piper --model en_US-hfc_male-medium.onnx --output_file testpiper.wav
     rc=$?
     if [ "$rc" != 0 ]; then
-      echo "ERROR: piper config command returned $rc" | tee -a $logFile
+      echo "ERROR: piper test command returned $rc" | tee -a $logFile
       exit 1
     fi
     runCmd aplay testpiper.wav             # play audio file
-  else
+  else                                     # assume it is installed
     echo "Skipping piper - already installed ..."| tee -a $logFile
   fi
 

@@ -2,13 +2,21 @@
 from bus.MsgBus import MsgBus
 from framework.util.utils import LOG, Config
 import os
+import platform
 from signal import pause
 import subprocess
 import sys
 from time import sleep
 from gpiozero.pins.lgpio import LGPIOFactory
 from gpiozero import Device, PWMLED, Button
-Device.pin_factory = LGPIOFactory(chip=4)
+
+def is_raspberry_pi():
+  try:
+    with open("/proc/device-tree/model") as f:
+      model = f.read().lower()
+    return "raspberry pi" in model
+  except Exception:
+    return False
 
 class Buttons:
   """
@@ -95,10 +103,20 @@ class Buttons:
     sys.exit(0)
           
 # main()
+# TO DO: Get buttons working on Nvidia Jetson Nano
+# They provide a package for GPIO on Jetson: Jetson.GPIO (based on the standard RPi.GPIO API).
+#   sudo apt install python3-pip
+#   sudo pip3 install Jetson.GPIO
+# 
+
 if __name__ == '__main__':
-  buttons = Buttons()                      # create the singleton
-  try:
-    buttons.monitor_buttons()              # loops forever
-  except KeyboardInterrupt:
-    ws.bus.client.disconnect()
+  if is_raspberry_pi():
+    Device.pin_factory = LGPIOFactory(chip=4)
+    buttons = Buttons()                      # create the singleton
+    try:
+      buttons.monitor_buttons()              # loops forever
+    except KeyboardInterrupt:
+      ws.bus.client.disconnect()
+  else:
+    print("The hardware is not a Raspberry Pi - GPIO buttons disabled")
 
