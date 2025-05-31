@@ -25,9 +25,9 @@ def execute_command(command):
 def _local_transcribe_file(wav_filename, return_dict):
   start_time = time.time()
   cmd = 'curl http://localhost:5002/stt -H "Content-Type: audio/wav" --data-binary @"%s"' % (wav_filename,)
-  # print(f"_local_transcribe_file(): executing cmd: {cmd}") 
   out, err = execute_command(cmd)
   res = out.strip()
+  print(f"_local_transcribe_file(): cmd: {cmd} res: {res}") 
   if res != '':
     return_dict['service'] = 'local'
     return_dict['text'] = res
@@ -206,12 +206,8 @@ class STTSvc:
         if diff > 3.5:
           self.muted = False
           self.send_unmute()
-
-      # get all wav files in the input directory
-      mylist = sorted( [f for f in glob.glob(self.tmp_file_path + "save_audio/*.wav")] )
-
-      # if we have at least one
-      if len(mylist) > 0:      # take the first
+      mylist = sorted( [f for f in glob.glob(self.tmp_file_path + "save_audio/*.wav")] ) # get wav files 
+      if len(mylist) > 0:                  # we have at least one
         loop_ctr = 0
         self.wav_file = mylist[0]
         # TODO reject files too small and maybe too large!
