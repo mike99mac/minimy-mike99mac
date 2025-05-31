@@ -81,6 +81,7 @@ class SystemSkill(SimpleVoiceAssistant):
     self.bus.send("skill", payload["from_skill_id"], info)
 
   def reserve_oob(self, payload):
+    self.log.info(f"SystemSkill.reserve_oob() payload: {payload}")
     oob_verb = payload["verb"]
     if oob_verb in self.stop_aliases:      # special handling for stop
       self.log.info(f'SystemSkill.reserve_oob() system stop acquired by {payload["from_skill_id"]}')

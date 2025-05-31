@@ -12,21 +12,21 @@ import whisper
 base_dir = os.getenv('SVA_BASE_DIR')
 log_filename = base_dir + '/logs/whisper.log'
 log = LOG(log_filename).log
-log.debug("fasterWhisper.__init__() starting")
 app = Quart(__name__)                      # Initialize the Quart app
+
+# set the model
 #model_name = "tiny.en"                     # fastest but least reliable      
 model_name = "base.en"                     # middle of the road - acceptable on a RasPi 5
 #model_name = "small.en"                    # most reliable but too slow on a RasPi 5
-log.debug(f"fasterWhisper.__init__(): loading model: {model_name}")
+
+log.debug(f"whisper.__init__(): loading model: {model_name}")
 original_load = torch.load                 # load Whisper model and override
 torch.load = lambda f, *args, **kwargs: original_load(f, *args, weights_only=True, **kwargs)
 model = whisper.load_model(model_name)     # load model
 
 @app.route("/stt", methods=["POST"])
 async def transcribe():
-  """ 
-  STT transcription - expects raw WAV file data in the request body 
-  """
+  # STT transcription - expects raw WAV file data in the request body 
   wav_bytes = await request.data
   try:                                     # to load WAV data
     with io.BytesIO(wav_bytes) as wav_io:
@@ -45,9 +45,7 @@ async def transcribe():
 
 @app.route("/stream", methods=["POST"])
 async def stream_transcription():
-  """ 
-  Handle streaming audio transcription.  Expects raw audio chunks in the request body. 
-  """
+  # Handle streaming audio transcription.  Expects raw audio chunks in the request body. 
   model_stream = model.create_stream()
   try:
     async for chunk in request.body:       # convert chunk to NumPy array and feed into model
