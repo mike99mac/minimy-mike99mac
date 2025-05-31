@@ -130,13 +130,13 @@ class STTSvc:
   def process_stt_result(self, utt):
     # we want the wake word but if we don't have it maybe
     # it was the previous utterance so handle that too.
-    # self.log.error(f"STT.process_stt_result(): utt: {utt}")
-    # try:                                 # parse nested JSON string
-    #   parsed_text = json.loads(utt)
-    #   utt = parsed_text.get("text", "").strip()
-    # except json.JSONDecodeError as e:
-    #   self.log.error(f"STT.process_stt_result(): failed to parse local STT result: {e}")
-    #   utt = ""
+    self.log.error(f"STT.process_stt_result(): utt: {utt}")
+    try:                                 # parse nested JSON string
+      parsed_text = json.loads(utt)
+      utt = parsed_text.get("text", "").strip()
+    except json.JSONDecodeError as e:
+      self.log.error(f"STT.process_stt_result(): failed to parse local STT result: {e}")
+      utt = ""
     self.log.info(f"STT.process_stt_result() utt: {utt}")
     if utt:
       wake_word = ''
