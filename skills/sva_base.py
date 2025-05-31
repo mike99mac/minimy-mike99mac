@@ -324,7 +324,7 @@ class SimpleVoiceAssistant:
 
   def register_intent(self, intent_type, verb, subject, callback):
     # bind a sentence type, subject and verb to a callback and send on message bus to intent service.
-    self.log.debug(f"SimpleVoiceAssistant.register_intent() intent_type = {intent_type} verb = {verb} subject = {subject}")
+    self.log.debug(f"SimpleVoiceAssistant.register_intent() intent_type: {intent_type} verb: {verb} subject: {subject}")
     subjects = subject
     verbs = verb
     if type(subject) is not list:
@@ -497,8 +497,7 @@ class SimpleVoiceAssistant:
       self.i_am_paused = True
 
   def handle_system_msg(self, msg):
-    self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() YOO! skill_control.skill_id: {self.skill_control.skill_id} msg: {msg}")
-    print(f"SimpleVoiceAssistant.handle_system_msg() YOO! skill_control.skill_id: {self.skill_control.skill_id} msg: {msg}")
+    self.log.debug(f"SimpleVoiceAssistant.handle_system_msg() skill_control.skill_id: {self.skill_control.skill_id} msg: {msg}")
     msg_type = msg.get("msg_type")
     source = msg.get("source")
     payload = msg.get("payload") 
@@ -514,11 +513,9 @@ class SimpleVoiceAssistant:
           self.waiting_for_input_focus = False
           self.i_am_conversed = True
           self.ignore_raw_ctr = 0
-                                           # end -MM
         case "request_output_focus_response": 
           status = msg["payload"]["status"]
-          self.log.info(f"SimpleVoiceAssistant.handle_system_msg() YOOOO! request_output_focus_response status: {status}")
-          print(f"SimpleVoiceAssistant.handle_system_msg() YOOOO! request_output_focus_response status: {status}")
+          self.log.info(f"SimpleVoiceAssistant.handle_system_msg() request_output_focus_response status: {status}")
           if status == "confirm":          # state speak 
             if self.focus_mode == "speech":
               self.tts_session_response = ""
