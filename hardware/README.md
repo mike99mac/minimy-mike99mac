@@ -146,7 +146,14 @@ Following are the speeds and feeds recommended for 1/2" Baltic Birch:
 | Plunge rate         | 30 in/min  |
 | Depth of cut        | 0.125"     |
 
-### Calibraion
+### Calibration
+If your CNC machine is not making accurate cuts, you will need to calibrate.  The following calibrations were performed.
+The default for the X and Y axis is 200.
+
+| Axis      | Firmware variable | Value
+| ----      | ----------------- | -----
+| X         | $100              | 210     
+| Y         | $101              | 212     
  
 ### G-code to cut panels
 Using a 30" x 30" capacity CNC machine, the blank must be cut into three pieces. Then the sides are assembled and a job is performed on them.  The following G-code ``.nc`` files are used to cut out all the pieces.
