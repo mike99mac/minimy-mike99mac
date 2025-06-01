@@ -139,9 +139,12 @@ A Sienci Longmill is used to cut the panels.
 
 ### Speeds and feeds
 Following are the speeds and feeds recommended for 1/2" Baltic Birch:
-| Cut rate | 100 in/min |
-| Plunge rate | 30 in/min |
-| Depth of cut | 0.125" |
+
+| Measurement         | Speed      |   
+| -----------         | -----      |  
+| Cut rate            | 100 in/min |
+| Plunge rate         | 30 in/min  |
+| Depth of cut        | 0.125"     |
 
 ### Calibraion
  
