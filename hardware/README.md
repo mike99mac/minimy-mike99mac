@@ -148,12 +148,14 @@ Following are the speeds and feeds recommended for 1/2" Baltic Birch:
 
 ### Calibration
 If your CNC machine is not making accurate cuts, you will need to calibrate.  The following calibrations were performed.
-The default for the X and Y axis is 200.
+The default for the X and Y axis is 200.  The G-code specified 0.480" for cuts in the X and Y direction
 
-| Axis      | Firmware variable | Value
-| ----      | ----------------- | -----
-| X         | $100              | 210     
-| Y         | $101              | 212     
+| Axis      | Firmware variable | Value  | Measured cut
+| ----      | ----------------- | -----  | ------------ 
+| X         | $100              | 210    | 0.483" 
+| Y         | $101              | 212    | 0.501"
+
+Note: The Y is too large.  (TODO Reduce Y to 208)
  
 ### G-code to cut panels
 Using a 30" x 30" capacity CNC machine, the blank must be cut into three pieces. Then the sides are assembled and a job is performed on them.  The following G-code ``.nc`` files are used to cut out all the pieces.
