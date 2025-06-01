@@ -134,6 +134,17 @@ Below is a sketch of the side of the carcase and an assembled side.
 
 ![](sidePiecesSketch.jpg)
 
+## CNC machine
+A Sienci Longmill is used to cut the panels.
+
+### Speeds and feeds
+Following are the speeds and feeds recommended for 1/2" Baltic Birch:
+| Cut rate | 100 in/min |
+| Plunge rate | 30 in/min |
+| Depth of cut | 0.125" |
+
+### Calibraion
+ 
 ### G-code to cut panels
 Using a 30" x 30" capacity CNC machine, the blank must be cut into three pieces. Then the sides are assembled and a job is performed on them.  The following G-code ``.nc`` files are used to cut out all the pieces.
 
