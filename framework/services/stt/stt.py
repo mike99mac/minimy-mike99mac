@@ -1,7 +1,7 @@
 from bus.MsgBus import MsgBus
 from datetime import datetime
 import dbm
-from framework.util.utils import LOG, Config, aplay, get_wake_words
+from framework.util.utils import aplay, LOG, Config, get_wake_words
 import glob 
 from google.cloud import speech
 import io
@@ -236,7 +236,10 @@ class STTSvc:
           if self.local_proc:
             self.local_proc.kill()
         try:                               # to remove input file
-          os.remove(self.wav_file)
+          # for debug - move the file to /tmp rather than delete it
+          # os.remove(self.wav_file)
+          cmd = f"mv {self.wav_file} /tmp"
+          execute_command(cmd)
         except:
           pass
         self.wav_file = None

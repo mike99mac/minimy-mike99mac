@@ -1,4 +1,5 @@
-from framework.util.utils import execute_command, Config
+#from framework.util.utils import execute_command, Config
+from framework.util.utils import Config
 import os
 
 def local_speak_dialog(text, file_name, wait_q):

@@ -38,9 +38,11 @@ async def transcribe():
     # fold text to lower case, remove leading spaces, ','s and '?'s
     transcription = result["text"].lower().lstrip().replace(",", "").replace("?", "")
     log.debug(f"whisper.transcribe() Transcription: {transcription}")
+    print(f"whisper.transcribe() Transcription: {transcription}")
     return {"text": transcription}
   except Exception as e:
     log.debug(f"whisper.transcribe(): Error during transcription: {e}")
+    print(f"whisper.transcribe(): Error during transcription: {e}")
     return {"error": str(e)}, 400
 
 @app.route("/stream", methods=["POST"])
