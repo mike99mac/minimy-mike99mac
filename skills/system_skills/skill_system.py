@@ -43,7 +43,6 @@ class SystemSkill(SimpleVoiceAssistant):
     self.cfg_remote_tts = cfg.get_cfg_val("Advanced.TTS.UseRemote")
     self.cfg_remote_nlp = cfg.get_cfg_val("Advanced.NLP.UseRemote")
     self.cfg_platform = cfg.get_cfg_val("Advanced.Platform")
-    self.cfg_version = cfg.get_cfg_val("Basic.Version")
     self.cfg_wake_words = cfg.get_cfg_val("Basic.WakeWords")
     self.base_dir = cfg.get_cfg_val("Basic.BaseDir")
     self.play_filename = self.base_dir + "/framework/assets/stop.wav"

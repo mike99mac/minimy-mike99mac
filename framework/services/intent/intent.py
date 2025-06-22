@@ -100,10 +100,12 @@ class Intent:
     return resp
 
   def send_utt(self, utt):
-    # send an utterance to a target and handles edge cases
-    target = utt.get("skill_id","*")
+    # send an utterance to a target and handle edge cases
+    target = utt.get("skill_id", "*")
     if target == "":
-      target = "*"
+      # changing target from * to fallback_skill STILL does not invoke the fallback skill
+      # target = "*"
+      target = "fallback_skill"
     if utt == "stop":
       target = "system_skill"
     self.log.debug(f"Intent.send_utt() sending utt: {utt} to target: {target}")  
@@ -261,7 +263,7 @@ class Intent:
               self.log.warning(f"Intent.run() Ignoring unrecognized OOB si.sentence_type {si.sentence_type} not found in {self.recognized_verbs}")
           else:
             print(f"Intent.run(): Unknown sentence type {si.sentence_type} or Informational sentence")
-        os.remove(txt_file)    # remove input file from file system
+        os.remove(txt_file)                # remove input file 
       time.sleep(0.125)
 
 if __name__ == "__main__":
