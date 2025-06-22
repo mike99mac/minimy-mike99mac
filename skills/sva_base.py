@@ -347,8 +347,8 @@ class SimpleVoiceAssistant:
 
   def handle_utterance(self, msg):
     # invokes callback based on verb:subject
-    self.log.debug(f"SimpleVoiceAssistant.handle_utterance() msg: {msg}")
     skill_id = msg["target"]
+    self.log.debug(f"SimpleVoiceAssistant.handle_utterance() msg: {msg} skill_id: {skill_id} category: {self.skill_control.category}")
     utt = msg["payload"]["utt"]
     if self.skill_control.category == "fallback":
       if skill_id == "":                   # special handling for fallback/Q&A skills
@@ -357,6 +357,8 @@ class SimpleVoiceAssistant:
           self.handle_fallback(msg)
         else:
           self.log.error(f"SimpleVoiceAssistant.handle_utterance() skill_id: {self.skill_control.skill_id} has no handle_fallback()")
+      else:
+        self.log.error(f"SimpleVoiceAssistant.handle_utterance() skill_id is not empty string")
     else:                                  # not a fallback skill
       self.log.debug(f"SimpleVoiceAssistant.handle_utterance() skill_id: {skill_id}")
       if skill_id == self.skill_control.skill_id:

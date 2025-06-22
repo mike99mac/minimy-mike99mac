@@ -5,6 +5,93 @@
 #     install/installminimy
 #
 #+--------------------------------------------------------------------------+
+function usage
+# Give help to the user
+#+--------------------------------------------------------------------------+
+ {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+
+  echo "Name: lsskills - List OVOS/Neon skills "
+  echo "Usage: lsskills [OPTIONS] [PATTERN]"
+  echo "Where: PATTERN is an optional string pattern to search for"
+  echo ""
+  echo "OPTIONS:"
+  echo "  -h|--help           Give help (this screen)"
+  echo "  -H|--hub [HUB]      Specify the 'hub' server"
+  echo "  -m|--musicDir [DIR] Directory with music files"
+  echo "  -v|--verbose        Verbose output"
+  echo "  -x|--debug          Print commands and arguments as they are executed"
+  exit 51
+ }                                         # usage()
+
+#+--------------------------------------------------------------------------+
+function parseArgs
+# Parse arguments
+# Args: All arguments passed into script
+#+--------------------------------------------------------------------------+
+ {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+
+  while [ -n "$1" ]                        # loop through args passed in
+  do
+    case "$1" in
+      -h|--help)
+        usage
+        ;;
+      --hub)
+        if [ $# = 0 ]; then                # hostname not passed in
+          echo "ERROR! HUB not passed in after $1"
+          usage                            # give help
+        fi
+        shift                              # get to next arg
+        hub=$1
+        ;;
+      -v|--verbose)
+        verbose=2
+        ;;
+      -x|--debug)                          # turn trace on
+         set -vx
+         ;;
+      *)
+        echo "ERROR: Too many arguments: $1"
+        usage
+        ;;
+    esac
+    shift                                  # move to next arg
+  done
+ }                                         # parseArgs()
+
+#+--------------------------------------------------------------------------+
+function setMinimyVars
+# Set Minimy variables in mmconfig.yaml:                 
+# - hub: host name of server doing STT and Q&A
+# - musicDir: directory with music files
+#+--------------------------------------------------------------------------+
+ {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+
+  if [ ${#hub} = 0 ]; then                 # hub not set with args
+    hub=`grep "    Hub:" $configFile | awk '{print $2}'` # get hub in config file
+    echo -n "Host name of hub server [$hub]: "
+    read hub
+  fi
+  if [ ${#hub} != 0 ]; then                # new value was supplied
+    sed -i "s/    Hub: .*/    Hub: $hub/g" $configFile # reset hub server
+  fi
+  if [ ${#MusicDir} = 0 ]; then            # music dir not set with args
+    musicDir=`grep "    MusicDir:" $configFile | awk '{print $2}'` # get music dir in config file
+    echo -n "Directory with music files [$musicDir]: "
+    read newMusicDir
+    if [ ${#newMusicDir} != 0 ]; then      # new music dir was supplied
+      sed -i "s/    MusicDir: .*/    MusicDir: $hub/g" $configFile # reset hub server
+    fi
+  fi
+ }                                         # setMinimyVars()
+
+#+--------------------------------------------------------------------------+
 function runCmd
 # run a command, report time spent and exit if it fails
 #+--------------------------------------------------------------------------+
@@ -33,17 +120,21 @@ function runCmd
 
 #+--------------------------------------------------------------------------+
 function checkEnv
-# Check the environment
+# Check that the base directory and Minimy config file exist
 #+--------------------------------------------------------------------------+
  {
   : SOURCE: ${BASH_SOURCE}
   : STACK:  ${FUNCNAME[@]}
 
-  if [ ! -d "$baseDir" ]; then
+  if [ ! -d $baseDir ]; then
     echo "ERROR: base directory $baseDir not found"
     exit 2
   fi
- }                                         # runCmd()
+  if [ ! -f $configFile ]; then
+    echo "ERROR: Minimy config file $configFile not found"
+    exit 3
+  fi
+ }                                         # checkEnv()
 
 #+--------------------------------------------------------------------------+
 function buildVenv                              
@@ -142,7 +233,7 @@ function buildVenv
     rc=$?
     if [ "$rc" != 0 ]; then
       echo "ERROR: piper test command returned $rc" | tee -a $logFile
-      exit 1
+      exit 4
     fi
     runCmd aplay testpiper.wav             # play audio file
   else                                     # assume it is installed
@@ -176,16 +267,21 @@ function buildVenv
   echo "Install Complete at `date`" | tee -a $logFile
  }                                         # buildVenv()
 
-# main()
+# global variables
 baseDir="$HOME/minimy"
+configFile="$baseDir/install/mmconfig.yml" # Minimy config file
+hub=""                                     # hub server
 let lastSecs=$SECONDS
 timeStamp=`date +"%y-%m-%d-%H-%M-%S"`
 logFile="$HOME/$timeStamp-install.out"     # output file
+musicDir=""                                # directory with music files
 let stepNum=0
-timeStamp=`date +"%y-%m-%d-%H-%M-%S"`   
 
+# main()
 checkEnv                                   # check the environment
-buildVenv                                       # do the work
+parseArgs $@                               # parse arguments
+setMinimyVars                              # set config file variables
+buildVenv                                  # do the work
 let min=$SECONDS/60
 let sec=$SECONDS%60
 if [ $sec -lt 10 ]; then                   # add a leading 0

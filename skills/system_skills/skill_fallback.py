@@ -19,11 +19,11 @@ class FallbackSkill(SimpleVoiceAssistant):
   def handle_qna_response(self, msg):
     # gather responses and decide who handles question, then send message to that skill_id to play the answer
     info = {"subtype": "qna_answer_question", 
-               "skill_id": msg["payload"]["from_skill_id"], 
-               "skill_data": msg["payload"]["skill_data"]
-              }
+            "skill_id": msg["payload"]["from_skill_id"], 
+            "skill_data": msg["payload"]["skill_data"]
+           }
     self.log.debug(f"FallbackSkill.handle_qna_response() info: {info}")
-    self.send_message(msg["payload"]["from_skill_id"], msg_out) # for now assume the only skill to answer gets it
+    self.send_message(msg["payload"]["from_skill_id"], info) # for now assume the only skill to answer gets it
 
   def handle_message(self, msg):
     self.log.info(f"FallbackSkill.handle_message()")

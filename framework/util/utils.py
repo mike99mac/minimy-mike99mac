@@ -30,10 +30,9 @@ class Config:
   config_defaults = [
     {
     'Basic': {
-      'Version':'1.0.4',
       'BaseDir':'',
-      'WakeWords': ['hey computer', 'computer'],
-      #'GoogleApiKeyPath' : 'install/my_google_key.json',
+      'WakeWords': ['computer', 'internet'],
+      'GoogleApiKeyPath' : 'install/my_google_key.json',
       'AWSId': '',
       'AWSKey': ''
       },

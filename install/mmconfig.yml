@@ -1,5 +1,4 @@
 - Advanced:
-    ButtonsType: '3'
     CrappyAEC: n
     InputDeviceId: '0'
     InputLevelControlName: Mic
@@ -10,7 +9,7 @@
     OutputLevelControlName: Speaker
     Platform: u
     STT:
-      UseRemote: y
+      UseRemote: n
     TTS:
       Local: p
       Remote: p
@@ -21,9 +20,8 @@
     AWSKey: ''
     BaseDir: /home/pi/minimy
     GoogleApiKeyPath: install/my_google_key.json
+    Hub: papabear
     MusicDir: /mnt/usb/music
-    Version: 1.0.4
     WakeWords: 
     - 'computer'
-    - 'hey boom box'
-    - 'hey boombox'
+    - 'internet'
