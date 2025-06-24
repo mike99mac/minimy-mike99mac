@@ -159,7 +159,10 @@ def execute_command(command):
   stdout, stderr = p.communicate()
   stdout = str(stdout.decode('utf-8'))
   stderr = str(stderr.decode('utf-8'))
-  return "STDOUT:" + stdout + "\nSTDERR:" + stderr
+  if stderr != "":                         # return stdout and stderr
+    return "STDOUT:" + stdout + "\nSTDERR:" + stderr
+  else:                                    # just return stdout
+    return stdout
 
 class CommandExecutor:
   """
