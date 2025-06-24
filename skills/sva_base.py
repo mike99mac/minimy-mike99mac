@@ -1,5 +1,6 @@
 from bus.MsgBus import MsgBus
 from framework.util.utils import LOG, Config, execute_command
+import json 
 import os 
 from skills.sva_control import SkillControl
 import subprocess
@@ -8,29 +9,32 @@ import time
 
 class SimpleVoiceAssistant:
   def __init__(self, msg_handler=None, skill_id=None, skill_category=None, bus=None, timeout=5):
-    # Most user skills at some point in their lifecycles will want to speak() and/or play_media(). These
-    # require acquisition of a session and associated error logic which is shared among all skills by
-    # placing it here. 
+    # Most user skills at some point in their lifecycles will want to speak() and/or play_media(). 
+    # These require acquisition of a session and associated error logic which is shared among all
+    # skills by placing it here. 
 
-    # Skills wishing to play media call their play_media() method which handles initiating a session with the
-    # media service and playing the media. Establishing a session with the media player also causes a skill to
-    # go active and remain active until either the media session is terminated or it ends normally. 
+    # Skills wishing to play media call their play_media() method which handles initiating a 
+    # session with the media service and playing the media. Establishing a session with the 
+    # media player also causes a skill to go active and remain active until either the media 
+    # session is terminated or it ends normally. 
 
-    # A great deal of trouble went into supporting the ability to interrupt oneself. For example, while 
-    # speaking an answer a user may wish to ask wiki yet another question. The intended behavior in this case
-    # is to stack the TTS output so when the new qustion has been answered the old question will automatically
-    # be resumed. While this behavior may not be desirable to the developer it may be easily overridden in the 
-    # system skill (see the methods input_focus_determination() and output_focus_determination() in the system skill 
-    # for more detailed information) making it far easier for the developer to disable than to implement.
+    # A great deal of trouble went into supporting the ability to interrupt oneself. For example, 
+    # while speaking an answer a user may wish to ask wiki yet another question. The intended 
+    # behavior in this case is to stack the TTS output so when the new qustion has been answered 
+    # the old question will automatically be resumed. While this behavior may not be desirable 
+    # to the developer it may be easily overridden in the system skill (see the methods 
+    # input_focus_determination() and output_focus_determination() in the system skill for more
+    # detailed information) making it far easier for the developer to disable than to implement.
 
-    # It is the same process with the tts service. A skill enters the active state upon initiating a session with
-    # the tts service. In this case the tts service itself establishes a session with the media service. The skill
-    # calling the speak() method will enter the 'active' state upon successful negotiation of the session with the tts
-    # service. It will remain in the active state until both the session with the tts service and the underlying 
-    # session with the medai service have been terminated. This all happens automatically in this base class. 
+    # It is the same process with the tts service. A skill enters the active state upon initiating 
+    # a session with the tts service. In this case the tts service itself establishes a session 
+    # with the media service. The skill calling the speak() method will enter the 'active' state 
+    # upon successful negotiation of the session with the tts service. It will remain in the active 
+    # state until both the session with the tts service and the underlying session with the media 
+    # service have been terminated. This all happens automatically in this base class. 
 
-    # The base class maintains the last session response and current session id for both the tts service and the media 
-    # service.
+    # The base class maintains the last session response and current session id for both the 
+    # tts service and the media service.
 
     self.skill_control = SkillControl()
     self.skill_control.skill_id = skill_id
@@ -173,7 +177,7 @@ class SimpleVoiceAssistant:
       self.prompt_callback()
 
   def handle_raw_msg(self, msg):
-    self.log.debug(f"SimpleVoiceAssistant.handle_raw_msg() skill_control.skill_id: {self.skill_control.skill_id} msg: {msg}")
+    self.log.debug(f"SimpleVoiceAssistant.handle_raw_msg() skill_control.skill_id: {self.skill_control.skill_id} msg: \n{json.dumps(msg,indent=2)}")
     if self.skill_control.skill_id == "system_skill": # special handling for the system skill 
       self.handle_message(msg)
       return True
@@ -195,7 +199,7 @@ class SimpleVoiceAssistant:
       self._converse_callback(msg["payload"]["utterance"])
 
   def send_message(self, target, msg):
-    self.log.debug(f"SimpleVoiceAssistant.send_message() target: {target} msg: {msg}")
+    self.log.debug(f"SimpleVoiceAssistant.send_message() target: {target} msg: \n{json.dumps(msg,indent=2)}")
     from_skill_id = self.skill_control.skill_id
     msg["from_skill_id"] = from_skill_id
     self.bus.send("skill", target, msg)
@@ -257,48 +261,7 @@ class SimpleVoiceAssistant:
       self.log.error(f"SimpleVoiceAssistant.mpc_cmd(): cmd: {cmd} returned e.returncode: {e.returncode}")
       return e.returncode
     os.system(f"rm {text_file}")
-    return                                 # nothing below is being called -MM
-
-    self.log.debug(f"SimpleVoiceAssistant.speak() text: {text} wait_callback: {wait_callback} i_am_paused: {self.i_am_paused}")
-    if self.i_am_paused:                   # send text to tts service
-      self.log.debug(f"SimpleVoiceAssistant.speak(): tts_service_session_id: {self.tts_service_session_id}") 
-      if self.tts_service_session_id != 0:
-        info = {"subtype": "tts_service_command",
-                "command": "reset_session",
-                "session_id": self.tts_service_session_id,
-                "skill_id": "tts_service",
-                "from_skill_id": self.skill_control.skill_id
-               }
-        self.send_message("tts_service", info)
-        self.log.debug(f"SimpleVoiceAssistant.speak() sending reset_session message to tts_service")
-        time.sleep(0.1)
-        info = {"subtype": "tts_service_command",
-                "command": "resume_session",
-                "session_id": self.tts_service_session_id,
-                "skill_id":"tts_service",
-                "from_skill_id": self.skill_control.skill_id
-               }
-        self.send_message("tts_service", info)
-        self.log.debug(f"SimpleVoiceAssistant.speak() sending resume_session message to tts_service")
-        time.sleep(0.1)
-        info = {"text": text, 
-                "skill_id": self.skill_control.skill_id
-               }
-        self.log.debug(f"SimpleVoiceAssistant.speak() calling bus.send with info: {info}")
-        self.bus.send("speak", "tts_service", info)
-        self.i_am_paused = False
-        return True
-    self.focus_mode = "speech"
-    self.text = text
-    info = {"subtype": "request_output_focus",
-            "skill_id": "system_skill",
-            "from_skill_id": self.skill_control.skill_id,
-            "skill_category": self.skill_control.category
-           }
-    self.speak_callback = wait_callback
-    self.log.debug(f"SimpleVoiceAssistant.speak() sending message to speak with info: {info}")
-    self.bus.send("system", "system_skill", info)
-    return True
+    return    
 
   def speak_lang(self, base_dir: str, mesg_file: str, mesg_info: dict, wait_callback=None):
     # Speak text from a file so as to support other languages 
@@ -348,17 +311,17 @@ class SimpleVoiceAssistant:
   def handle_utterance(self, msg):
     # invokes callback based on verb:subject
     skill_id = msg["target"]
-    self.log.debug(f"SimpleVoiceAssistant.handle_utterance() msg: {msg} skill_id: {skill_id} category: {self.skill_control.category}")
+    self.log.debug(f"SimpleVoiceAssistant.handle_utterance() msg:\n{json.dumps(msg,indent=2)} category: {self.skill_control.category}")
     utt = msg["payload"]["utt"]
     if self.skill_control.category == "fallback":
-      if skill_id == "":                   # special handling for fallback/Q&A skills
-        if self.handle_fallback:
-          self.log.info(f"SimpleVoiceAssistant.handle_utterance() skill_id: {self.skill_control.skill_id} calling handle_fallback()")
-          self.handle_fallback(msg)
-        else:
-          self.log.error(f"SimpleVoiceAssistant.handle_utterance() skill_id: {self.skill_control.skill_id} has no handle_fallback()")
+      #if skill_id == "":                   # special handling for fallback/Q&A skills
+      if self.handle_fallback:
+        self.log.info(f"SimpleVoiceAssistant.handle_utterance() skill_id: {self.skill_control.skill_id} calling handle_fallback()")
+        self.handle_fallback(msg)
       else:
-        self.log.error(f"SimpleVoiceAssistant.handle_utterance() skill_id is not empty string")
+        self.log.error(f"SimpleVoiceAssistant.handle_utterance() skill_id: {self.skill_control.skill_id} has no handle_fallback()")
+      #else:
+      #  self.log.error(f"SimpleVoiceAssistant.handle_utterance() skill_id is not empty string")
     else:                                  # not a fallback skill
       self.log.debug(f"SimpleVoiceAssistant.handle_utterance() skill_id: {skill_id}")
       if skill_id == self.skill_control.skill_id:

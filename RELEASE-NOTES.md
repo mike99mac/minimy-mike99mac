@@ -8,6 +8,13 @@ It only knows English - there is little internationalization code.
 
 The version numbers are simply *yy.mm.dd*.
 
+### Version 25.06.24
+- Replaced Websockets with Redis as the new message bus
+- SimpleVoiceAssistant.speak() now calls piper directly for better performance
+- Added qa.py which answers questions from a remote server running Ollama
+- Hard-wired fallback to Ollama - no need for voting on Q&A skills
+- Removed wiki skill
+
 ### Version 24.06.05
 - Added faster-whisper as a new local Speech To Text (STT) engine - ideally going to google will no longer be necessary
 
