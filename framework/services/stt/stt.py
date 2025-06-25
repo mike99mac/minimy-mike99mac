@@ -1,9 +1,8 @@
 from bus.MsgBus import MsgBus
 from datetime import datetime
 import dbm
-from framework.util.utils import aplay, LOG, Config, get_wake_words
+from framework.util.utils import aplay, LOG, Config, execute_command, get_wake_words
 import glob 
-from google.cloud import speech
 import io
 import json
 import multiprocessing
@@ -15,39 +14,34 @@ import time
 REMOTE_TIMEOUT = 3
 LOCAL_TIMEOUT = 5
 
-def execute_command(command):
-  p = Popen(command, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
-  stdout, stderr = p.communicate()
-  stdout = str( stdout.decode('utf-8') )
-  stderr = str( stderr.decode('utf-8') )
-  return stdout, stderr
-
 def _local_transcribe_file(wav_filename, return_dict):
+  # Use whisper, listening on port 5002, for local STT 
   start_time = time.time()
   cmd = 'curl http://localhost:5002/stt -H "Content-Type: audio/wav" --data-binary @"%s"' % (wav_filename,)
-  out, err = execute_command(cmd)
+  out = execute_command(cmd)
   res = out.strip()
   print(f"_local_transcribe_file(): cmd: {cmd} res: {res}") 
   if res != '':
     return_dict['service'] = 'local'
     return_dict['text'] = res
 
-def _remote_transcribe_file(speech_file, return_dict):
-  start_time = time.time()
-  client = speech.SpeechClient()
-  with io.open(speech_file, "rb") as audio_file:
-    content = audio_file.read()
-  audio = speech.RecognitionAudio(content=content)
-  config = speech.RecognitionConfig(
-    encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-    sample_rate_hertz=16000,
-    language_code="en-US",
-  )
-  response = client.recognize(config=config, audio=audio)
-  for result in response.results:
-    return_dict['service'] = 'goog'
-    return_dict['text'] = result.alternatives[0].transcript
-    break
+# Old Google STT - now defined in ./remote/google_stt.py
+# def _remote_transcribe_file(speech_file, return_dict):
+#   start_time = time.time()
+#   client = speech.SpeechClient()
+#   with io.open(speech_file, "rb") as audio_file:
+#     content = audio_file.read()
+#   audio = speech.RecognitionAudio(content=content)
+#   config = speech.RecognitionConfig(
+#     encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+#     sample_rate_hertz=16000,
+#     language_code="en-US",
+#   )
+#   response = client.recognize(config=config, audio=audio)
+#   for result in response.results:
+#     return_dict['service'] = 'goog'
+#     return_dict['text'] = result.alternatives[0].transcript
+#     break
 
 def handle_utt(ww, utt, tmp_file_path):
   text_path = tmp_file_path + "save_text"
@@ -60,9 +54,10 @@ def handle_utt(ww, utt, tmp_file_path):
   fh.close()
 
 class STTSvc:
-  # Monitor the wav file input directory and convert wav files to text strings in files in the output directory. we stitch so if
-  # someone says 'wake word' brief silence, 'bla bla' we stitch them together before intent matching. this produces two broad 
-  # categories of input; raw and wake word qualified. these become "raw" and "utterance"
+  # Monitor the wav file input directory and convert wav files to text strings in files in 
+  # the output directory. we stitch so if someone says 'wake word' brief silence, 'bla bla' 
+  # we stitch them together before intent matching. this produces two broad categories of 
+  # input; raw and wake word qualified. these become "raw" and "utterance"
   def __init__(self, bus=None, timeout=5, no_bus=False):
     # used for skill type messages
     self.skill_id = 'stt_service'
@@ -80,9 +75,9 @@ class STTSvc:
     self.log = LOG(log_filename).log
     self.waiting_stt = False
     self.manager = multiprocessing.Manager()
-    self.goog_return_dict = self.manager.dict()
+    self.remote_return_dict = self.manager.dict()
     self.local_return_dict = self.manager.dict()
-    self.goog_proc = None
+    self.remote_proc = None
     self.local_proc = None
     self.bark = True
     self.bark = False
@@ -91,19 +86,22 @@ class STTSvc:
     self.wav_file = None
     self.mute_start_time = 0
     self.wws = get_wake_words()
-
-    # hard wire wake words - TODO - fix -MM
-    self.wws = ["computer", "hey boombox"] 
     base_dir = os.getenv('SVA_BASE_DIR')
     self.beep_loc = "%s/framework/assets/what.wav" % (base_dir,)
     cfg = Config()
-    self.use_remote_stt = True
     remote_stt = cfg.get_cfg_val('Advanced.STT.UseRemote')
+    if remote_stt = "y":                   # use remote STT
+      self.use_remote_stt = True
+      remote_stt = cfg.get_cfg_val('Advanced.STT.Remote')
+      if remote_stt = 'g':                 # use google
+        # from google.cloud import speech
+        from framework.services.stt.remote.google import remote_transcribe_file
+      else:                                # use whisper
+        from framework.services.stt.remote.whisper import remote_transcribe_file
+    else:
     self.log.info(f"STTSvc.__init__() use_remote_stt: {self.use_remote_stt} wws: {self.wws}")
-    if remote_stt and remote_stt == 'n':
       self.use_remote_stt = False
     if self.bark:
-      self.log.info(f"STT:Remote=%s, wake word(s)=%s" % (self.use_remote_stt, self.wws))
       print(f"STTSvc.__init__() use_remote_stt: {self.use_remote_stt} wws: {self.wws}")
 
   def send_message(self, target, subtype):
@@ -128,16 +126,10 @@ class STTSvc:
     self.send_message('volume_skill', 'unmute_volume')
 
   def process_stt_result(self, utt):
-    # we want the wake word but if we don't have it maybe
-    # it was the previous utterance so handle that too.
-    self.log.error(f"STT.process_stt_result(): utt: {utt}")
-    try:                                 # parse nested JSON string
-      parsed_text = json.loads(utt)
-      utt = parsed_text.get("text", "").strip()
-    except json.JSONDecodeError as e:
-      self.log.error(f"STT.process_stt_result(): failed to parse local STT result: {e}")
-      utt = ""
-    self.log.info(f"STT.process_stt_result() utt: {utt}")
+    self.log.debug(f"STT.process_stt_result(): utt: {utt!r}")  # !r - show escaped chars
+    if not utt or not utt.strip():
+      self.log.error("STT.process_stt_result(): empty utterance, skipping.")
+      return
     if utt:
       wake_word = ''
       for ww in self.wws:
@@ -157,11 +149,11 @@ class STTSvc:
             if self.bark:
               self.log.info("Too short --->%s" % (cmd,))
               print("Too short --->%s" % (cmd,))
-        else:            # ww not found and previous utt not ww => raw statement
+        else:                              # ww not found and previous utt not ww => raw statement
           handle_utt('', utt, self.tmp_file_path)
         self.previous_utt_was_ww = False
-      else:              # otherwise utt contains ww
-        if len(utt) == len(wake_word): # it is just the wake word
+      else:                                # otherwise utt contains ww
+        if len(utt) == len(wake_word):     # it is just the wake word
           self.previous_utterance = utt.lower()
           self.previous_utt_was_ww = True
           #os.system(self.beep_cmd)
@@ -170,7 +162,7 @@ class STTSvc:
             self.muted = True
             self.send_mute()
             self.mute_start_time = time.time()
-        else:            # utt contains the wake word and more
+        else:                              # utt contains the wake word and more
           if self.muted:
             self.muted = False
             self.send_unmute()
@@ -216,15 +208,16 @@ class STTSvc:
         utt = ''                           # convert it to text
         self.waiting_stt = True
         if self.use_remote_stt:            # remote stt with failover
-          self.goog_return_dict = self.manager.dict()
+          self.remote_return_dict = self.manager.dict()
           self.local_return_dict = self.manager.dict()
-          self.goog_proc = multiprocessing.Process(target=_remote_transcribe_file, args=(self.wav_file, self.goog_return_dict))
-          self.goog_proc.start()
+          #self.remote_proc = multiprocessing.Process(target=_remote_transcribe_file, args=(self.wav_file, self.remote_return_dict))
+          self.remote_proc = multiprocessing.Process(target=remote_transcribe_file, args=(self.wav_file, self.remote_return_dict))
+          self.remote_proc.start()
           self.local_proc = multiprocessing.Process(target=_local_transcribe_file, args=(self.wav_file, self.local_return_dict))
           self.local_proc.start()
-          self.goog_proc.join(REMOTE_TIMEOUT)
-          if self.goog_proc:
-            self.goog_proc.kill()
+          self.remote_proc.join(REMOTE_TIMEOUT)
+          if self.remote_proc:
+            self.remote_proc.kill()
           self.local_proc.join(2)
           if self.local_proc:
             self.local_proc.kill()
@@ -237,26 +230,27 @@ class STTSvc:
             self.local_proc.kill()
         try:                               # to remove input file
           # for debug - move the file to /tmp rather than delete it
-          # os.remove(self.wav_file)
-          cmd = f"mv {self.wav_file} /tmp"
-          execute_command(cmd)
+          # cmd = f"mv {self.wav_file} /tmp"
+          # execute_command(cmd)
+          os.remove(self.wav_file)
         except:
           pass
         self.wav_file = None
-        self.log.debug(f"STT.run(): goog_return_dict: {self.goog_return_dict} local_return_dict: {self.local_return_dict}")
-        if self.goog_return_dict:
-          self.process_stt_result(self.goog_return_dict['text'])
+        self.log.debug(f"STT.run(): remote_return_dict: {self.remote_return_dict} local_return_dict: {self.local_return_dict}")
+        if self.remote_return_dict:
+          self.process_stt_result(self.remote_return_dict['text'])
         elif self.local_return_dict:       # only have a local result BUT we have a cache hit to use 
           if len(self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")) > 0:
-            self.log.error("STT.run() CACHE HIT!!! converted local=%s  to remote=%s" % (self.local_return_dict['text'], self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")))
+            remote_text = self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")
+            self.log.error(f"STT.run() CACHE HIT!!! converted local: {self.local_return_dict['text']} remote: {remote_text}")
             self.process_stt_result(self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8"))
           else:
             self.process_stt_result(self.local_return_dict['text'])
         else:
           self.log.info("STT.run() Can't produce STT from wav")
-        if self.goog_return_dict and self.local_return_dict: # both responses create a new cache entry 
-          self.log.error("STT new cache entry. local=%s, remote=%s" % (self.local_return_dict['text'], self.goog_return_dict['text']))
-          self.local2remote[ self.local_return_dict['text'] ] = self.goog_return_dict['text']
+        if self.remote_return_dict and self.local_return_dict: # both responses create a new cache entry 
+          self.log.error(f"STT.run() new cache entry. local: {self.local_return_dict['text']} remote: {self.remote_return_dict['text']}")
+          self.local2remote[ self.local_return_dict['text'] ] = self.remote_return_dict['text']
       time.sleep(0.025)
 
 # main()

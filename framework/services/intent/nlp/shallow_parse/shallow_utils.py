@@ -8,13 +8,10 @@ ADJP_TAG = "(ADJP "
 SBAR_TAG = "(SBAR "
 
 def get_node(node_tag, tree):
-  # one of the few pieces of code that could
-  # probably have its performance improved
-  # by using a regular expression.
+  # code could probably have its performance improved by using regular expressionrs
   start_indx = tree.find(node_tag)
   if start_indx == -1:
     return ''
-
   paren_ctr = 1
   node = '('
   for c in tree[start_indx+1:]:
@@ -70,6 +67,7 @@ def scrub_sentence(utt):
     utt = utt.replace("%", " percent")
     utt = utt.replace(".", " ")
     utt = utt.replace(",", "")
+    utt = utt.replace("'", "")
     utt = utt.replace("-", " ")
     utt = utt.replace("please ", "")
     utt = utt.replace(" please", "")
