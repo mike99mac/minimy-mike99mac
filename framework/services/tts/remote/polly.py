@@ -9,10 +9,10 @@ class remote_tts:
 
     def remote_speak(self, text, filename, wait_q):
         status = 'fail'
-        CHANNELS = 1 #Polly's output is a mono audio stream
-        RATE = 16000 #Polly supports 16000Hz and 8000Hz output for PCM format
+        CHANNELS = 1                       # Polly's output is a mono audio stream
+        RATE = 16000                       # Polly supports 16000Hz and 8000Hz output for PCM format
         FRAMES = []
-        WAV_SAMPLE_WIDTH_BYTES = 2 # Polly's output is a stream of 16-bits (2 bytes) samples
+        WAV_SAMPLE_WIDTH_BYTES = 2 #       Polly's output is a stream of 16-bits (2 bytes) samples
 
         try:
             polly = boto3.Session(
@@ -23,7 +23,7 @@ class remote_tts:
             print("TTS Polly Remote request failed on connect!")
         try:
             response = polly.synthesize_speech(Text=text, TextType="text", OutputFormat="pcm",VoiceId="Matthew", SampleRate="16000")
-            #response = polly.synthesize_speech(Text=text, TextType="text", OutputFormat="pcm",VoiceId="Amy", SampleRate="16000")
+            # response = polly.synthesize_speech(Text=text, TextType="text", OutputFormat="pcm",VoiceId="Amy", SampleRate="16000")
             status = 'success'
         except:
             print("TTS Polly Remote request failed on synth!")
