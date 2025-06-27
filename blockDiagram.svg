@@ -1,0 +1,158 @@
+<svg viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1000" height="700" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#2c3e50">
+    Minimy Voice Assistant - Hub &amp; Spoke Architecture
+  </text>
+  
+  <!-- Hub Server (Center) -->
+  <g transform="translate(400, 250)">
+    <!-- Main server box -->
+    <rect x="0" y="0" width="200" height="200" rx="10" fill="#3498db" stroke="#2980b9" stroke-width="3"/>
+    <text x="100" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="white">HUB SERVER</text>
+    <text x="100" y="45" text-anchor="middle" font-size="12" fill="white">(High Performance)</text>
+    
+    <!-- Services in hub -->
+    <rect x="10" y="55" width="80" height="25" rx="3" fill="#e74c3c" stroke="#c0392b"/>
+    <text x="50" y="72" text-anchor="middle" font-size="10" fill="white">Minimy (PVA)</text>
+    
+    <rect x="110" y="55" width="80" height="25" rx="3" fill="#e67e22" stroke="#d35400"/>
+    <text x="150" y="72" text-anchor="middle" font-size="10" fill="white">Redis (Bus)</text>
+    
+    <rect x="10" y="85" width="80" height="25" rx="3" fill="#9b59b6" stroke="#8e44ad"/>
+    <text x="50" y="102" text-anchor="middle" font-size="10" fill="white">Piper (TTS)</text>
+    
+    <rect x="110" y="85" width="80" height="25" rx="3" fill="#27ae60" stroke="#229954"/>
+    <text x="150" y="102" text-anchor="middle" font-size="10" fill="white">Whisper (STT)</text>
+    
+    <rect x="60" y="115" width="80" height="25" rx="3" fill="#f39c12" stroke="#e67e22"/>
+    <text x="100" y="132" text-anchor="middle" font-size="10" fill="white">Ollama (AI)</text>
+    
+    <!-- Performance note -->
+    <text x="100" y="165" text-anchor="middle" font-size="10" fill="white">Fast STT Processing</text>
+    <text x="100" y="180" text-anchor="middle" font-size="10" fill="white">AI Model Inference</text>
+  </g>
+  
+  <!-- Spoke 1 (Left) -->
+  <g transform="translate(50, 280)">
+    <rect x="0" y="0" width="180" height="140" rx="8" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+    <text x="90" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="white">SPOKE 1</text>
+    <text x="90" y="35" text-anchor="middle" font-size="10" fill="white">(Client Device)</text>
+    
+    <!-- Local services -->
+    <rect x="10" y="45" width="70" height="20" rx="2" fill="#e74c3c" stroke="#c0392b"/>
+    <text x="45" y="58" text-anchor="middle" font-size="9" fill="white">Minimy</text>
+    
+    <rect x="100" y="45" width="70" height="20" rx="2" fill="#e67e22" stroke="#d35400"/>
+    <text x="135" y="58" text-anchor="middle" font-size="9" fill="white">Redis</text>
+    
+    <rect x="55" y="70" width="70" height="20" rx="2" fill="#9b59b6" stroke="#8e44ad"/>
+    <text x="90" y="83" text-anchor="middle" font-size="9" fill="white">Piper (TTS)</text>
+    
+    <!-- Remote access note -->
+    <text x="90" y="105" text-anchor="middle" font-size="9" fill="#ecf0f1">Accesses Hub for:</text>
+    <text x="90" y="118" text-anchor="middle" font-size="8" fill="#ecf0f1">• Fast STT (Whisper)</text>
+    <text x="90" y="130" text-anchor="middle" font-size="8" fill="#ecf0f1">• AI Processing (Ollama)</text>
+  </g>
+  
+  <!-- Spoke 2 (Right) -->
+  <g transform="translate(770, 280)">
+    <rect x="0" y="0" width="180" height="140" rx="8" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+    <text x="90" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="white">SPOKE 2</text>
+    <text x="90" y="35" text-anchor="middle" font-size="10" fill="white">(Client Device)</text>
+    
+    <!-- Local services -->
+    <rect x="10" y="45" width="70" height="20" rx="2" fill="#e74c3c" stroke="#c0392b"/>
+    <text x="45" y="58" text-anchor="middle" font-size="9" fill="white">Minimy</text>
+    
+    <rect x="100" y="45" width="70" height="20" rx="2" fill="#e67e22" stroke="#d35400"/>
+    <text x="135" y="58" text-anchor="middle" font-size="9" fill="white">Redis</text>
+    
+    <rect x="55" y="70" width="70" height="20" rx="2" fill="#9b59b6" stroke="#8e44ad"/>
+    <text x="90" y="83" text-anchor="middle" font-size="9" fill="white">Piper (TTS)</text>
+    
+    <!-- Remote access note -->
+    <text x="90" y="105" text-anchor="middle" font-size="9" fill="#ecf0f1">Accesses Hub for:</text>
+    <text x="90" y="118" text-anchor="middle" font-size="8" fill="#ecf0f1">• Fast STT (Whisper)</text>
+    <text x="90" y="130" text-anchor="middle" font-size="8" fill="#ecf0f1">• AI Processing (Ollama)</text>
+  </g>
+  
+  <!-- Internet Cloud -->
+  <g transform="translate(450, 80)">
+    <ellipse cx="50" cy="30" rx="80" ry="40" fill="#95a5a6" stroke="#7f8c8d" stroke-width="2"/>
+    <text x="50" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="white">INTERNET</text>
+    <text x="50" y="35" text-anchor="middle" font-size="10" fill="white">News, Weather,</text>
+    <text x="50" y="47" text-anchor="middle" font-size="10" fill="white">External APIs</text>
+  </g>
+  
+  <!-- Connection Lines -->
+  
+  <!-- Spoke 1 to Hub -->
+  <line x1="230" y1="350" x2="400" y2="350" stroke="#2c3e50" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <text x="315" y="340" text-anchor="middle" font-size="10" fill="#2c3e50">STT, AI Requests</text>
+  
+  <!-- Hub to Spoke 1 -->
+  <line x1="400" y1="370" x2="230" y2="370" stroke="#27ae60" stroke-width="2" marker-end="url(#arrowhead-green)"/>
+  <text x="315" y="385" text-anchor="middle" font-size="10" fill="#27ae60">Processed Results</text>
+  
+  <!-- Spoke 2 to Hub -->
+  <line x1="770" y1="350" x2="600" y2="350" stroke="#2c3e50" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <text x="685" y="340" text-anchor="middle" font-size="10" fill="#2c3e50">STT, AI Requests</text>
+  
+  <!-- Hub to Spoke 2 -->
+  <line x1="600" y1="370" x2="770" y2="370" stroke="#27ae60" stroke-width="2" marker-end="url(#arrowhead-green)"/>
+  <text x="685" y="385" text-anchor="middle" font-size="10" fill="#27ae60">Processed Results</text>
+  
+  <!-- Hub to Internet -->
+  <line x1="500" y1="250" x2="500" y2="150" stroke="#3498db" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrowhead-blue)"/>
+  <text x="520" y="200" font-size="10" fill="#3498db">External Data</text>
+  <text x="520" y="212" font-size="10" fill="#3498db">When Needed</text>
+  
+  <!-- Legend -->
+  <g transform="translate(50, 500)">
+    <rect x="0" y="0" width="900" height="180" rx="5" fill="#ecf0f1" stroke="#bdc3c7"/>
+    <text x="20" y="25" font-size="16" font-weight="bold" fill="#2c3e50">System Architecture Overview</text>
+    
+    <!-- Service Legend -->
+    <text x="20" y="50" font-size="12" font-weight="bold" fill="#2c3e50">Services:</text>
+    
+    <rect x="20" y="60" width="15" height="15" fill="#e74c3c"/>
+    <text x="45" y="72" font-size="11" fill="#2c3e50">Minimy (Personal Voice Assistant)</text>
+    
+    <rect x="20" y="80" width="15" height="15" fill="#e67e22"/>
+    <text x="45" y="92" font-size="11" fill="#2c3e50">Redis (Message Bus for inter-service communication)</text>
+    
+    <rect x="20" y="100" width="15" height="15" fill="#9b59b6"/>
+    <text x="45" y="112" font-size="11" fill="#2c3e50">Piper (Text-to-Speech synthesis)</text>
+    
+    <rect x="20" y="120" width="15" height="15" fill="#27ae60"/>
+    <text x="45" y="132" font-size="11" fill="#2c3e50">Whisper (Speech-to-Text - High performance on Hub)</text>
+    
+    <rect x="20" y="140" width="15" height="15" fill="#f39c12"/>
+    <text x="45" y="152" font-size="11" fill="#2c3e50">Ollama (AI Language Model for question answering)</text>
+    
+    <!-- Architecture Notes -->
+    <text x="500" y="50" font-size="12" font-weight="bold" fill="#2c3e50">Key Design Principles:</text>
+    <text x="500" y="70" font-size="11" fill="#2c3e50">• Hub provides computationally intensive services (STT, AI)</text>
+    <text x="500" y="85" font-size="11" fill="#2c3e50">• Spokes handle local audio I/O and basic processing</text>
+    <text x="500" y="100" font-size="11" fill="#2c3e50">• Centralized AI reduces hardware requirements per device</text>
+    <text x="500" y="115" font-size="11" fill="#2c3e50">• Internet access only when external data is needed</text>
+    <text x="500" y="130" font-size="11" fill="#2c3e50">• Redis message bus enables loose coupling between services</text>
+    <text x="500" y="145" font-size="11" fill="#2c3e50">• Distributed TTS allows for local audio response</text>
+  </g>
+  
+  <!-- Arrow markers -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2c3e50"/>
+    </marker>
+    <marker id="arrowhead-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#27ae60"/>
+    </marker>
+    <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#3498db"/>
+    </marker>
+  </defs>
+</svg>

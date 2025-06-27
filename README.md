@@ -9,7 +9,14 @@ I worked with Mycroft since 2019, and was able to get a prototype music skill, b
 
 This document describes how to get the solution running, and starts from the very beginning.
 
+Following is a block diagram:
+
+
 Here is a video of a beta version: https://www.youtube.com/watch?v=WRiqg0b-EPI
+
+![](blockDiagram.svg)
+
+TO DO - describe it
 
 ## The build
 
