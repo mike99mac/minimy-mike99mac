@@ -207,20 +207,25 @@ function buildVenv
   cd link-4.1b
   runCmd make
 
-  echo "Installing Local STT ..."| tee -a $logFile
+  echo "Installing Local STT ..." | tee -a $logFile
   echo | tee -a $logFile
   cd $baseDir/install
   echo "Loading the whisper model"
   if [ "$pythonVer" = "3.11" ]; then 
+    echo "Downgrading numpy to 1.24" | tee -a $logFile
     runCmd $pipCmd install --force-reinstall numpy==1.24 # numpy must be 1.24 for building whisper
+    pip list | grep numpy                  # show the new version
   fi
-  #source $HOME/minimy/minimy_venv/bin/activate # start the venv
   runCmd $pythonCmd $baseDir/bldwhisper.py $baseDir/jfk.wav # build the base.en model
-  #deactivate                                   # stop the venv
+  if [ "$pythonVer" = "3.11" ]; then 
+    echo "Upgrading numpy"
+    runCmd $pipCmd install --upgrade numpy==2.3 # go back to numpy 2.3
+    pip list | grep numpy                  # show the new version
+  fi
 
   echo "Installing Local TTS ..."| tee -a $logFile
   echo | tee -a $logFile
-  cd $baseDir/framework/services/tts/local
+  cd $baseDir/framework/services/tts/local # piper is built in the source tree
   if [ ! -d piper ]; then                  # not downloaded yet
     runCmd wget -q https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_arm64.tar.gz
     runCmd tar xzf piper_arm64.tar.gz      # creates piper dir

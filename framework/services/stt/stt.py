@@ -99,8 +99,8 @@ class STTSvc:
       else:                                # use whisper
         from framework.services.stt.remote.whisper import remote_transcribe_file
     else:
-    self.log.info(f"STTSvc.__init__() use_remote_stt: {self.use_remote_stt} wws: {self.wws}")
       self.use_remote_stt = False
+    self.log.info(f"STTSvc.__init__() use_remote_stt: {self.use_remote_stt} wws: {self.wws}")
     if self.bark:
       print(f"STTSvc.__init__() use_remote_stt: {self.use_remote_stt} wws: {self.wws}")
 
