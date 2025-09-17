@@ -16,7 +16,9 @@ Here is a video of a beta version: https://www.youtube.com/watch?v=WRiqg0b-EPI
 
 ![](blockDiagram.svg)
 
-TO DO - describe it
+The Hub & Spoke model is the idea that one device in the building has to have the best performance to support Speech To Text (STT) with decent performance and accuracy, and run an AI-bot under Ollam to do general question answering.
+
+The Hub box might have an Nvidia Jetson Nano.  The spoke boxes will probably have Raspberry Pi 5's. 
 
 ## The build
 
