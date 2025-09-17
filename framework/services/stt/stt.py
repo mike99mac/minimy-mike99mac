@@ -93,7 +93,7 @@ class STTSvc:
     if remote_stt == "y":                  # use remote STT
       self.use_remote_stt = True
       remote_stt = cfg.get_cfg_val('Advanced.STT.Remote')
-      if remote_stt = 'g':                 # use google
+      if remote_stt == 'g':                # use google
         # from google.cloud import speech
         from framework.services.stt.remote.google import remote_transcribe_file
       else:                                # use whisper
