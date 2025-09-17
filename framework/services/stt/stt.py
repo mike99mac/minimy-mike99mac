@@ -90,7 +90,7 @@ class STTSvc:
     self.beep_loc = "%s/framework/assets/what.wav" % (base_dir,)
     cfg = Config()
     remote_stt = cfg.get_cfg_val('Advanced.STT.UseRemote')
-    if remote_stt = "y":                   # use remote STT
+    if remote_stt == "y":                  # use remote STT
       self.use_remote_stt = True
       remote_stt = cfg.get_cfg_val('Advanced.STT.Remote')
       if remote_stt = 'g':                 # use google
