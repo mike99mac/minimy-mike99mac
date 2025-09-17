@@ -10,6 +10,8 @@
   - Ollama on the hub is the fallback skill
   - If the hub is not reachable, spokes can still play music, NPR news, date, time, weather, but no fallback 
   - Rewrite Google STT? (would need an API key)
+1. How to go to the Internet only when necessary - for example, news, weather and sports scores. 
+1. Write a skill to set global variables in $HOME/install/mmconfig.yml 
 
 ## Hardware on the smart boombox
 1. Enable arrow keys on a RasPi 400 to replace the 3 pushbuttons (for (k)eyboard choice above)
