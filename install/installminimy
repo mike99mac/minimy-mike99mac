@@ -151,8 +151,8 @@ function buildVenv
   cd $HOME/minimy
   echo | tee -a $logFile
   echo "Installing virtual environment ..." | tee -a $logFile
-  runCmd sudo apt-get install python3-venv
-  runCmd sudo apt-get install python3-dev
+  runCmd sudo apt-get install -y python3-venv
+  runCmd sudo apt-get install -y python3-dev
   runCmd python3 -m venv minimy_venv
   echo | tee -a $logFile
   echo "Upgrading pip ..." | tee -a $logFile
