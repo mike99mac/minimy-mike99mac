@@ -20,7 +20,7 @@
     AWSKey: ''
     BaseDir: /home/pi/minimy
     GoogleApiKeyPath: install/my_google_key.json
-    Hub: papabear
+    Hub: localhost
     MusicDir: /mnt/usb/music
     WakeWords: 
     - 'computer'
