@@ -12,6 +12,7 @@
   - Rewrite Google STT? (would need an API key)
 1. How to go to the Internet only when necessary - for example, news, weather and sports scores. 
 1. Write a skill to set global variables in $HOME/install/mmconfig.yml 
+1. When Ubuntu 25.10 comes out, rebase all code on Python 3.13
 
 ## Hardware on the smart boombox
 1. Enable arrow keys on a RasPi 400 to replace the 3 pushbuttons (for (k)eyboard choice above)
