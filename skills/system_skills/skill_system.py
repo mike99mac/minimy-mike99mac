@@ -87,7 +87,7 @@ class SystemSkill(SimpleVoiceAssistant):
       self.stop_overide = payload["from_skill_id"]
     else:
       self.recognized_verbs[oob_verb] = payload["from_skill_id"]
-      self.log.debug(f"SystemSkill:reserve_oob() added verb: {verb} to recognized_verbs")
+      self.log.debug(f"SystemSkill:reserve_oob() added verb: {oob_verb} to recognized_verbs")
 
   def release_oob(self, payload):
     self.log.debug("SystemSkill.release_oob()")

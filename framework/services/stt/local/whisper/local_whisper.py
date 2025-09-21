@@ -13,7 +13,7 @@ app = Quart(__name__)                      # Initialize the Quart app
 model_name = "base.en"                     # middle of the road - acceptable on a RasPi 5
 #model_name = "small.en"                    # most reliable but too slow on a RasPi 5
 original_load = torch.load                 # load Whisper model and override
-torch.load = lambda f, *args, **kwargs: original_load(f, *args, weights_only=True, **kwargs)
+torch.load = lambda f, *args, **kwargs: original_load(f, *args, **kwargs)
 model = whisper.load_model(model_name)     # load model
 
 @app.route("/stt", methods=["POST"])

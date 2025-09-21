@@ -72,8 +72,8 @@ class Intent:
           self.log.debug("Intent.is_oob(): two-word OOB detected")
           return "t"
     self.log.debug(f"Intent.is_oob() crappy_aec = {self.crappy_aec}")
-    if not self.crappy_aec:
-      self.log.debug("Intent.is_oob(): decent AEC - returning "f"")
+    if self.crappy_aec == 'n':
+      self.log.debug("Intent.is_oob(): decent AEC - returning 'f'")
       return "f"
     # Deal with poor quality input (IE no AEC). You can disable this on a device with good AEC. 
     # also see sva_base for other code which would use this config value
@@ -158,6 +158,8 @@ class Intent:
       subject = subject.replace(":",";").lower()
       subject = subject.strip()
       verb = info["verb"].lower().strip()
+    else:
+      verb = ""
     key = f"{intent_type}:{subject}:{verb}"
     self.log.debug(f"Intent.get_intent_match() key: {key}")
     if key in self.intents:
@@ -203,7 +205,7 @@ class Intent:
           res = self.send_oob_to_system("stop", contents) 
         elif utt_type == "RAW":            # send raw messages to system skill 
           if contents:
-            self.bus.send("raw", "system_skill", {"utterance": contents[5:]})
+            self.bus.send("raw", "system_skill", {"subtype": "utt", "utterance": contents[5:]})
         else:
           sentence_type = si.get_sentence_type(utt)
           self.log.debug(f"Intent.run() sentence_type: {sentence_type} utt = {utt}")
