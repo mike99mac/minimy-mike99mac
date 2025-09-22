@@ -17,7 +17,7 @@ LOCAL_TIMEOUT = 5
 def _local_transcribe_file(wav_filename, return_dict):
   # Use whisper, listening on port 5002, for local STT 
   start_time = time.time()
-  cmd = 'curl http://localhost:5002/stt -H "Content-Type: audio/wav" --data-binary @"%s"' % (wav_filename,)
+  cmd = 'curl http://localhost:5002/stt -s -H "Content-Type: audio/wav" --data-binary @"%s"' % (wav_filename,)
   out = execute_command(cmd)
   res = out.strip()
   print(f"_local_transcribe_file(): cmd: {cmd} res: {res}") 
