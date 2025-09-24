@@ -866,12 +866,8 @@ This script downloads *wheel files* for Python torch, torchaudio and torchvision
 CUDA available: True
 CUDA device: Orin
 ```
-## Setting NVMe drive to be the root file system <a name="localstt"></a> 
-The Nvidia Jetson Nano must boot off of a micro-SD card.  It also has slots for NVMe drives which are both faster and more reliable.
-
-So it is recommended to run the root file system on the NVMe and use only ``/boot/`` from the SD card.
-
-To do so, perform the following steps:
+## Setting NVMe drive to be the root file system <a name="nvmedrive"></a> 
+The Nvidia Jetson Nano must boot off of a micro-SD card.  It also has slots for NVMe drives which are both faster and more reliable.  So it is recommended to run the root file system on the NVMe and use only ``/boot/`` from the SD card.  To do so, perform the following steps:
 
 - Become root.
 
@@ -936,7 +932,6 @@ sys     2m13.414s
 # cp fstab fstab.orig
 # vi fstab
 
-```
 # Root on NVMe
 /dev/nvme0n1p1   /           ext4    defaults    0 1
 
