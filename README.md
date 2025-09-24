@@ -866,6 +866,111 @@ This script downloads *wheel files* for Python torch, torchaudio and torchvision
 CUDA available: True
 CUDA device: Orin
 ```
+## Setting NVMe drive to be the root file system <a name="nvmedrive"></a> 
+The Nvidia Jetson Nano must boot off of a micro-SD card.  It also has slots for NVMe drives which are both faster and more reliable.  So it is recommended to run the root file system on the NVMe and use only ``/boot/`` from the SD card.  To do so, perform the following steps:
+
+- Become root.
+
+```
+$ sudo -i
+```
+
+- Make the label "gpt" on the NVMe drive.
+
+```
+# parted /dev/nvme0n1 -- mklabel gpt
+Information: You may need to update /etc/fstab.
+```
+
+- Partition the disk.
+
+```
+# sudo parted -a optimal /dev/nvme0n1 -- mkpart primary ext4 0% 100%
+Information: You may need to update /etc/fstab.
+```
+
+- Create an ext4 file system.
+
+```
+root@pi:~# mkfs.ext4 /dev/nvme0n1p1
+mke2fs 1.46.5 (30-Dec-2021)
+...
+Writing superblocks and filesystem accounting information: done
+```
+
+- Confirm new devices.
+
+```
+# lsblk -o NAME,MAJ:MIN,SIZE,FSTYPE,MOUNTPOINT /dev/nvme0n*
+NAME        MAJ:MIN   SIZE FSTYPE MOUNTPOINT
+nvme0n1     259:0   931.5G
+└─nvme0n1p1 259:2   931.5G ext4
+nvme0n1p1   259:2   931.5G ext4
+```
+
+- Make a temporary directory and mount the NVMe over it.
+
+```
+# mkdir /mnt/nvme-root
+# mount /dev/nvme0n1p1 /mnt/nvme-root
+```
+
+- Copy the root file system, skipping in memory file systems and preserving permissions, links, and special files:
+
+```
+time rsync -aAXHv --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/lost+found"} / /mnt/nvme-root
+
+real    5m50.891s
+user    0m34.865s
+sys     2m13.414s
+```
+
+- Make a backup of, then update the new /etc/fstab so the root file system is the NVMe:
+
+```
+# cd /mnt/nvme-root/etc/
+# cp fstab fstab.orig
+# vi fstab
+
+# Root on NVMe
+/dev/nvme0n1p1   /           ext4    defaults    0 1
+
+# Boot on SD
+UUID=6FFC-FC56   /boot/efi   vfat    defaults    0 1
+```
+
+- Make backup of then update extlinux.conf to load ``/boot`` from SD card.
+
+```
+# cd /boot/extlinux/
+root@pi:/boot/extlinux# cp extlinux.conf extlinux.conf.orig
+# vi extlinux.conf 
+...
+# cat extlinux.conf
+TIMEOUT 30
+DEFAULT primary
+
+MENU TITLE L4T boot options
+
+LABEL primary
+      MENU LABEL primary kernel
+      LINUX /boot/Image
+      INITRD /boot/initrd
+      APPEND ${cbootargs} root=/dev/nvme0n1p1rw rootwait rootfstype=ext4 mminit_loglevel=4 console=ttyTCU0,115200 firmware_class.path=/etc/firmware fbcon=map:0 net.ifnames=0 nospectre_bhb video=efifb:off console=tty0
+```
+
+- Reboot and verify the root file system and ``/boot`` are mounted correctly.
+
+```
+$ df -h | grep -v tmpfs
+Filesystem       Size  Used Avail Use% Mounted on
+/dev/nvme0n1p1   916G   22G  848G   3% /
+/dev/mmcblk0p10   63M  118K   63M   1% /boot/efi
+/dev/mmcblk0p1    57G   22G   33G  40% /media/pi/e2c80031-d800-4c44-8cc5-346f05b0e59c
+```
+
+
+
 ## Getting STT running locally <a name="localstt"></a> 
 
 The code used to test the performance is below. I believe tracking the elapsed time of just the ``transcribe()`` function is correct. Here's the code:
