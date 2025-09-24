@@ -3,10 +3,12 @@ Description=Whisper Speech-to-Text Server
 After=network.target
 
 [Service]
-Type=simple
+ExecStart=/home/pi/minimy/minimy_venv/bin/python3 /home/pi/minimy/framework/services/stt/local/whisper/local_whisper.py
+WorkingDirectory=/home/pi/minimy/framework/services/stt/local/whisper
 User=pi
-WorkingDirectory=%h/minimy/
-ExecStart=/bin/bash -c 'source %h/minimy/minimy_venv/bin/activate && python3 %h/minimy/framework/services/stt/local/whisper/local_whisper.py'
+Group=pi
+Environment=PYTHONUNBUFFERED=1
 
 [Install]
 WantedBy=multi-user.target
+
