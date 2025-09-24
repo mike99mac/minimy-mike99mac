@@ -245,6 +245,10 @@ function buildVenv
     echo "Skipping piper - already installed ..."| tee -a $logFile
   fi
 
+  echo "Installing Ollama ..."| tee -a $logFile
+  echo | tee -a $logFile
+  curl -fsSL https://ollama.com/install.sh | sh
+
   cd $baseDir
   echo "Copying and enabling systemd .mount and .service files ..." | tee -a $logFile 
   runCmd sudo cp install/home-pi-minimy-logs.mount /etc/systemd/system 
@@ -254,7 +258,7 @@ function buildVenv
   runCmd sudo cp install/minimy.service /etc/systemd/system 
   runCmd sudo systemctl enable minimy
   runCmd sudo cp install/whisper.service /etc/systemd/system 
-  runCmd sudo systemctl enable minimy
+  runCmd sudo systemctl enable whisper 
   echo | tee -a $logFile
   echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile
   minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver test_ws.py"
