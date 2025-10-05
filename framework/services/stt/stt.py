@@ -3,45 +3,30 @@ from datetime import datetime
 import dbm
 from framework.util.utils import aplay, LOG, Config, execute_command, get_wake_words
 import glob 
-import io
-import json
 import multiprocessing
 import os
-from subprocess import Popen, PIPE, STDOUT
-import sys
 import time
+import json
+from threading import Event
 
-REMOTE_TIMEOUT = 3
-LOCAL_TIMEOUT = 5
-
-def _local_transcribe_file(wav_filename, return_dict):
+def _local_transcribe_file(wav_filename, return_dict, completion_pipe):
   # Use whisper, listening on port 5002, for local STT 
-  start_time = time.time()
-  cmd = 'curl http://localhost:5002/stt -s -H "Content-Type: audio/wav" --data-binary @"%s"' % (wav_filename,)
-  out = execute_command(cmd)
-  res = out.strip()
-  print(f"_local_transcribe_file(): cmd: {cmd} res: {res}") 
-  if res != '':
-    return_dict['service'] = 'local'
-    return_dict['text'] = res
-
-# Old Google STT - now defined in ./remote/google_stt.py
-# def _remote_transcribe_file(speech_file, return_dict):
-#   start_time = time.time()
-#   client = speech.SpeechClient()
-#   with io.open(speech_file, "rb") as audio_file:
-#     content = audio_file.read()
-#   audio = speech.RecognitionAudio(content=content)
-#   config = speech.RecognitionConfig(
-#     encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-#     sample_rate_hertz=16000,
-#     language_code="en-US",
-#   )
-#   response = client.recognize(config=config, audio=audio)
-#   for result in response.results:
-#     return_dict['service'] = 'goog'
-#     return_dict['text'] = result.alternatives[0].transcript
-#     break
+  try:
+    cmd = 'curl http://localhost:5002/stt -s -H "Content-Type: audio/wav" --data-binary @"%s"' % (wav_filename)
+    out = execute_command(cmd)
+    res = json.loads(out)["text"]          # Fix formatting
+    if res:
+      res = res.strip()
+      if res[-1] == '.':
+        res = res[:-1]
+      print(f"_local_transcribe_file(): cmd: {cmd} res: {res}") 
+      return_dict['service'] = 'local'
+      return_dict['text'] = res
+  except Exception as e:                   # Catch error if unable to reach remote
+    print(f"Local transcription error: {e}")
+  finally:
+    completion_pipe.send("done")           # Signal local transcription completed
+    completion_pipe.close()
 
 def handle_utt(ww, utt, tmp_file_path):
   text_path = tmp_file_path + "save_text"
@@ -79,7 +64,6 @@ class STTSvc:
     self.local_return_dict = self.manager.dict()
     self.remote_proc = None
     self.local_proc = None
-    self.bark = True
     self.bark = False
     self.previous_utterance = ''
     self.previous_utt_was_ww = False
@@ -88,16 +72,19 @@ class STTSvc:
     self.wws = get_wake_words()
     base_dir = os.getenv('SVA_BASE_DIR')
     self.beep_loc = "%s/framework/assets/what.wav" % (base_dir,)
-    cfg = Config()
-    remote_stt = cfg.get_cfg_val('Advanced.STT.UseRemote')
-    if remote_stt == "y":                  # use remote STT
+    self.cfg = Config()
+    self.hub = self.cfg.get_cfg_val("Basic.Hub")
+    remote_stt = self.cfg.get_cfg_val('Advanced.STT.UseRemote')
+    if remote_stt == 'y':                  # use remote STT
       self.use_remote_stt = True
-      remote_stt = cfg.get_cfg_val('Advanced.STT.Remote')
+      remote_stt = self.cfg.get_cfg_val('Advanced.STT.Remote')
       if remote_stt == 'g':                # use google
         # from google.cloud import speech
         from framework.services.stt.remote.google import remote_transcribe_file
+        self.remote_transcribe_function = remote_transcribe_file
       else:                                # use whisper
-        from framework.services.stt.remote.whisper import remote_transcribe_file
+        from framework.services.stt.remote.whisper_stt import remote_transcribe_file
+        self.remote_transcribe_function = remote_transcribe_file
     else:
       self.use_remote_stt = False
     self.log.info(f"STTSvc.__init__() use_remote_stt: {self.use_remote_stt} wws: {self.wws}")
@@ -126,11 +113,8 @@ class STTSvc:
     self.send_message('volume_skill', 'unmute_volume')
 
   def process_stt_result(self, utt):
-    self.log.debug(f"STT.process_stt_result(): utt: {utt!r}")  # !r - show escaped chars
-    if not utt or not utt.strip():
-      self.log.error("STT.process_stt_result(): empty utterance, skipping.")
-      return
     if utt:
+      self.log.debug(f"STT.process_stt_result(): utt: {utt}")
       wake_word = ''
       for ww in self.wws:
         if utt.lower().find(ww.lower()) > -1:
@@ -156,7 +140,6 @@ class STTSvc:
         if len(utt) == len(wake_word):     # it is just the wake word
           self.previous_utterance = utt.lower()
           self.previous_utt_was_ww = True
-          #os.system(self.beep_cmd)
           aplay(self.beep_loc)
           if not self.muted:
             self.muted = True
@@ -184,7 +167,7 @@ class STTSvc:
     clear_utt_time_in_seconds *= 4
     self.muted = False # not necessary if you have good echo cancellation like a headset
     self.mute_start_time = 0
-    self.log.debug(f"STT.run() use_remote_stt: {self.use_remote_stt}")
+    self.log.debug(f"STT.run(): use_remote_stt: {self.use_remote_stt}")
     while True:
       loop_ctr += 1
       if loop_ctr > clear_utt_time_in_seconds:
@@ -204,52 +187,66 @@ class STTSvc:
         self.wav_file = mylist[0]
         # TODO reject files too small and maybe too large!
         file_size = os.path.getsize(self.wav_file)
-        self.log.debug(f"STT.run() wav_file: {self.wav_file} file_size: {file_size}")
-        utt = ''                           # convert it to text
+        self.log.debug(f"STT.run(): wav_file: {self.wav_file} file_size: {file_size}")
         self.waiting_stt = True
-        if self.use_remote_stt:            # remote stt with failover
+        readers = []
+        # Remote STT
+        if self.use_remote_stt:
+          remote_parent_conn, remote_child_conn = multiprocessing.Pipe()
+          readers.append(remote_parent_conn)
           self.remote_return_dict = self.manager.dict()
-          self.local_return_dict = self.manager.dict()
-          #self.remote_proc = multiprocessing.Process(target=_remote_transcribe_file, args=(self.wav_file, self.remote_return_dict))
-          self.remote_proc = multiprocessing.Process(target=remote_transcribe_file, args=(self.wav_file, self.remote_return_dict))
+          self.remote_proc = multiprocessing.Process(
+            target=self.remote_transcribe_function,
+            args=(self.wav_file, self.remote_return_dict, self.hub, remote_child_conn)
+          )
           self.remote_proc.start()
-          self.local_proc = multiprocessing.Process(target=_local_transcribe_file, args=(self.wav_file, self.local_return_dict))
-          self.local_proc.start()
-          self.remote_proc.join(REMOTE_TIMEOUT)
-          if self.remote_proc:
+          remote_child_conn.close()
+        # Local STT
+        local_parent_conn, local_child_conn = multiprocessing.Pipe()
+        readers.append(local_parent_conn)
+        self.local_return_dict = self.manager.dict()
+        self.local_proc = multiprocessing.Process(
+          target=_local_transcribe_file,
+          args=(self.wav_file, self.local_return_dict, local_child_conn)
+        )
+        self.local_proc.start()
+        local_child_conn.close()           # Wait for the fastest process to finish, then proceed
+        ready = multiprocessing.connection.wait(readers)
+        if self.use_remote_stt and remote_parent_conn in ready:
+          remote_parent_conn.recv()        # Read the signal from pipe
+          if self.local_proc.is_alive():
+            self.local_proc.kill()         # Cleanup processes after completion
+            self.local_proc.join(timeout=0.01)
+          self.remote_proc.join(timeout=0.01)
+        else:
+          local_parent_conn.recv()         # Read the signal from pipe
+          if self.use_remote_stt and self.remote_proc.is_alive():
             self.remote_proc.kill()
-          self.local_proc.join(2)
-          if self.local_proc:
-            self.local_proc.kill()
-        else:                              # local stt
-          self.local_return_dict = self.manager.dict()
-          self.local_proc = multiprocessing.Process(target=_local_transcribe_file, args=(self.wav_file, self.local_return_dict))
-          self.local_proc.start()
-          self.local_proc.join(LOCAL_TIMEOUT)
-          if self.local_proc:
-            self.local_proc.kill()
+            self.remote_proc.join(timeout=0.01)
+          self.local_proc.join(timeout=0.01)
         try:                               # to remove input file
           # for debug - move the file to /tmp rather than delete it
           # cmd = f"mv {self.wav_file} /tmp"
           # execute_command(cmd)
           os.remove(self.wav_file)
-        except:
-          pass
+        except Exception as e:
+          self.log.error(f"Error deleting wav file: {e}")
         self.wav_file = None
-        self.log.debug(f"STT.run(): remote_return_dict: {self.remote_return_dict} local_return_dict: {self.local_return_dict}")
+        if self.remote_return_dict or self.local_return_dict:
+          self.log.debug(f"STT.run(): remote_return_dict: {self.remote_return_dict} local_return_dict: {self.local_return_dict}")
         if self.remote_return_dict:
           self.process_stt_result(self.remote_return_dict['text'])
         elif self.local_return_dict:       # only have a local result BUT we have a cache hit to use 
           if len(self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")) > 0:
             remote_text = self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")
-            self.log.error(f"STT.run() CACHE HIT!!! converted local: {self.local_return_dict['text']} remote: {remote_text}")
+            self.log.error(f"STT.run(): CACHE HIT!!! converted local: {self.local_return_dict['text']} remote: {remote_text}")
             self.process_stt_result(self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8"))
           else:
             self.process_stt_result(self.local_return_dict['text'])
         else:
-          self.log.info("STT.run() Can't produce STT from wav")
+          self.log.info("STT.run(): Can't produce STT from wav")
         if self.remote_return_dict and self.local_return_dict: # both responses create a new cache entry 
-          self.log.error(f"STT.run() new cache entry. local: {self.local_return_dict['text']} remote: {self.remote_return_dict['text']}")
+          self.log.error(f"STT.run(): new cache entry. local: {self.local_return_dict['text']} remote: {self.remote_return_dict['text']}")
           self.local2remote[ self.local_return_dict['text'] ] = self.remote_return_dict['text']
       time.sleep(0.025)
 
@@ -258,4 +255,3 @@ if __name__ == '__main__':
   stt_svc = STTSvc()
   stt_svc.run()
   Event().wait()                           # wait forever
-
