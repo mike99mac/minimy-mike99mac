@@ -177,6 +177,8 @@ class SimpleVoiceAssistant:
       self.prompt_callback()
 
   def handle_raw_msg(self, msg):
+    if msg["payload"]["utterance"] == "{\"text\":\"\"}":
+      return False                         # Ignore empty messages. Log clutter!
     self.log.debug(f"SimpleVoiceAssistant.handle_raw_msg() skill_control.skill_id: {self.skill_control.skill_id} msg: \n{json.dumps(msg,indent=2)}")
     if self.skill_control.skill_id == "system_skill": # special handling for the system skill 
       self.handle_message(msg)

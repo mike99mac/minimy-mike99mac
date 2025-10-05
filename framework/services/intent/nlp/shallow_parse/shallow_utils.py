@@ -63,14 +63,12 @@ def scrub_node(node):
 
 def scrub_sentence(utt):
     # really need an overt pre-processing phase
-    utt = utt.replace('{"text":', "")
-    utt = utt.replace('"', "")
-    utt = utt.replace("}", "")
     utt = utt.replace("per cent", " percent")
     utt = utt.replace("%", " percent")
     utt = utt.replace(".", " ")
     utt = utt.replace(",", "")
     utt = utt.replace("'", "")
+    utt = utt.replace('"', "")
     utt = utt.replace("-", " ")
     utt = utt.replace("please ", "")
     utt = utt.replace(" please", "")

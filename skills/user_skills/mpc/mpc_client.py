@@ -1,21 +1,16 @@
 import csv
-from dataclasses import dataclass
-from enum import Enum
-import glob
 import logging
 from music_info import Music_info
 import os 
 from pathlib import Path
 import random
-from random import shuffle
 import re
 import requests
 from skills.sva_base import SimpleVoiceAssistant
 import subprocess
-from subprocess import run, Popen, PIPE, STDOUT
+from subprocess import Popen, PIPE
 import time
-from typing import Union, Optional, List, Iterable
-import urllib.parse
+from typing import Optional, List
 from youtube_search import YoutubeSearch
 
 class MpcClient(SimpleVoiceAssistant):
@@ -68,7 +63,7 @@ class MpcClient(SimpleVoiceAssistant):
   
   def mpc_play(self):
     # Start the mpc player   
-    self.log.debug(f"MpcClient.mpc_play() - first sleeping for .1 sec")
+    self.log.debug("MpcClient.mpc_play() - first sleeping for .1 sec")
     time.sleep(.1)                         # is this really needed?
     self.mpc_cmd("play")
 
@@ -81,11 +76,11 @@ class MpcClient(SimpleVoiceAssistant):
     elif music_info.match_type == "next" or music_info.match_type == "prev":
       self.mpc_cmd(music_info.match_type)  # call "mpc next" or "mpc prev"
       return True
-    elif music_info.tracks_or_urls == None:
+    elif music_info.tracks_or_urls is None:
       self.log.debug("MpcClient.start_music() Unexpected: no music found")
       return False
     else:                                  # must be song or album
-      self.log.debug(f"MpcClient.start_music() -  calling mpc_play") 
+      self.log.debug("MpcClient.start_music() - calling mpc_play") 
       self.mpc_play()
       return True
 
@@ -95,9 +90,9 @@ class MpcClient(SimpleVoiceAssistant):
     # mpc syntax: https://www.musicpd.org/doc/mpc/html/#cmdoption-f
     self.log.debug(f"MpcClient.search_music(): command: {command} type1: {type1} name1: {name1}, type2: {type2} name2: {name2}")
     cmd = ["mpc", command, "--format", "%artist%\t%album%\t%title%\t%time%\t%file%"]
-    if type1 and name1 != None:            # there is a search qualifier
+    if type1 and name1 is not None:            # there is a search qualifier
       cmd.extend([type1, name1])
-    if type2 and name2 != None:            # there is a second search qualifier
+    if type2 and name2 is not None:            # there is a second search qualifier
       cmd.extend([type2, name2])
     self.log.debug(f"MpcClient.search_music(): cmd: {cmd}")  
     return [
@@ -243,7 +238,7 @@ class MpcClient(SimpleVoiceAssistant):
       tracks_or_urls.append(next_track)    # add track to queue
       if artist_name != "unknown_artist" and artist_name != artist_found.lower(): # wrong artist  
         correct_artist = False  
-    if correct_artist == False:    
+    if not correct_artist:    
       self.log.debug(f"MpcClient.get_album() playing album {album_name} by {artist_found} not by {artist_name}")
       mesg_file = "diff_album_artist"
       mesg_info = {"album_name": album_name, "artist_found": artist_found}
@@ -509,7 +504,7 @@ class MpcClient(SimpleVoiceAssistant):
       return Music_info("none", mesg_file, mesg_info, tracks_or_urls) 
          
     # get file names not track names of playlist
-    cmd = f"mpc -f "%file%" playlist" 
+    cmd = "mpc -f '%file%' playlist" 
     try:
       p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
       stdout, stderr = p.communicate()
@@ -663,7 +658,7 @@ class MpcClient(SimpleVoiceAssistant):
     self.log.debug(f"MpcClient.delete_from_playlist() music_name: {music_name} playlist_name: {playlist_name}")
 
     # verify playlist exists
-    rc = self.get_playlist(playlist_name) 
+    music_info = self.get_playlist(playlist_name) 
     if music_info.tracks_or_urls == []:    # playlist not found
       self.log.debug(f"MpcClient.delete_from_playlist() did not find playlist_name: {playlist_name}")
       mesg_info = {"playlist_name": playlist_name}
@@ -671,7 +666,7 @@ class MpcClient(SimpleVoiceAssistant):
     
     # verify track or album exists  
     music_info = self.search_library(music_name) 
-    if music_info.tracks_or_urls == None:
+    if music_info.tracks_or_urls is None:
       self.log.debug(f"MpcClient.delete_from_playlist() did not find track or album: {music_name}")
       mesg_info = {"playlist_name": playlist_name, "music_name": music_name} 
       return "playlist_missing_track", mesg_info
@@ -752,7 +747,7 @@ class MpcClient(SimpleVoiceAssistant):
     self.log.debug(f"MpcClient.get_stations() self.request_type: {self.request_type} search_name: {search_name}")
     mesg_info = {}
     tracks_or_urls = []
-    stations_file = "f{self.base_dir}/skills/user_skills/mpc/radio.stations.csv"
+    stations_file = f"{self.base_dir}/skills/user_skills/mpc/radio.stations.csv"
     if not os.path.exists(f"{stations_file}"): # radio station file does not exist
       self.log.debug(f"MpcClient.get_stations() file {stations_file} not found")
       return Music_info("none", "file_not_found", {"file": "radio.stations.csv"}, None) 
@@ -774,7 +769,7 @@ class MpcClient(SimpleVoiceAssistant):
       case "genre":
         self.log.debug(f"MpcClient.get_stations() searching for station by genre: {search_name}") 
         tracks_or_urls = self.get_matching_stations(1, search_name)
-        if tracks_or_urls == None:         # station not found
+        if tracks_or_urls is None:         # station not found
           self.log.debug(f"MpcClient.get_stations() did not find genre: {search_name}") 
           mesg_file = "radio_not_found"
           mesg_info = {"request_type": self.request_type, "search_name": search_name}
@@ -784,7 +779,7 @@ class MpcClient(SimpleVoiceAssistant):
       case "country":
         self.log.debug(f"MpcClient.get_stations() searching for station from country {search_name}") 
         tracks_or_urls = self.get_matching_stations(2, search_name)
-        if tracks_or_urls == None:         # country not found
+        if tracks_or_urls is None:         # country not found
           self.log.debug(f"MpcClient.get_stations() did not find country: {search_name}") 
           mesg_file = "country_not_found"
           mesg_info = {"country": search_name}
@@ -794,7 +789,7 @@ class MpcClient(SimpleVoiceAssistant):
       case "language":
         self.log.debug(f"MpcClient.get_stations() searching for station in language: {search_name}") 
         tracks_or_urls = self.get_matching_stations(3, search_name)
-        if tracks_or_urls == None:         # language not found
+        if tracks_or_urls is None:         # language not found
           self.log.debug(f"MpcClient.get_stations() did not find language: {search_name}") 
           mesg_file = "language_not_found"
           mesg_info = {"language": search_name} 
@@ -804,7 +799,7 @@ class MpcClient(SimpleVoiceAssistant):
       case "station":
         self.log.debug(f"MpcClient.get_stations() searching for station named: {search_name}") 
         tracks_or_urls = self.get_matching_stations(0, search_name)
-        if tracks_or_urls == None:         # station not found
+        if tracks_or_urls is None:         # station not found
           self.log.debug(f"MpcClient.get_stations() did not find station named: {search_name}") 
           mesg_file = "station_not_found"
           mesg_info = {"station": search_name}
@@ -837,7 +832,7 @@ class MpcClient(SimpleVoiceAssistant):
     utterance = utterance.replace("on my ", "")
     utterance = utterance.replace("the ", "")
     utterance = utterance.replace(" a ", " ")
-    self.log.debug(f"MpcClient.parse_radio() cleaned up utterance: "+utterance)  
+    self.log.debug(f"MpcClient.parse_radio() cleaned up utterance: {utterance}")  
     words = utterance.split()              # split request into words
     num_words = len(words)
     self.log.debug(f"MpcClient.parse_radio() num_words: {num_words}")  
@@ -880,7 +875,7 @@ class MpcClient(SimpleVoiceAssistant):
           case "station":
             self.request_type = "station" 
             search_name = words[2]       
-          case other:
+          case _:
             if words[2] == "radio" or words[2] == "station": 
                self.request_type = "genre"
                search_name = words[1]
@@ -942,7 +937,7 @@ class MpcClient(SimpleVoiceAssistant):
       except subprocess.CalledProcessError as e:
         self.log.error(f"MpcClient.stream_internet_music() e.returncode: {e.returncode}")
         return False
-    if self.mpc_cmd("play") != True:        # Now play the queued up tracks
+    if not self.mpc_cmd("play"):        # Now play the queued up tracks
         self.log.debug("MpcClient.start_music(): mpc_cmd(play) failed")
         return False 
 
@@ -958,14 +953,14 @@ class MpcClient(SimpleVoiceAssistant):
     page = res.text
     start_indx = page.find("audioUrl")
     if start_indx == -1:
-      self.log.debug(f"MpcClient.search_news() cannot find NPR news URL") 
+      self.log.debug("MpcClient.search_news() cannot find NPR news URL") 
       mesg_file = "cannot_play_npr"
       return Music_info("none", mesg_file, {}, [])
     end_indx = start_indx + len("audioUrl")
     page = page[end_indx + 3:]
     end_indx = page.find("?")
     if end_indx == -1:
-      self.log.debug(f"MpcClient.search_news() Parse error")
+      self.log.debug("MpcClient.search_news() Parse error")
       mesg_file = "cannot_parse_npr"
       return Music_info("none", mesg_file, {}, [])
     self.log.debug(f"MpcClient.search_news() start_indx: {start_indx} end_indx: {end_indx} ")       

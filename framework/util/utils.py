@@ -1,5 +1,9 @@
-import os, re, pty, time, json, datetime
-from subprocess import Popen, PIPE, STDOUT
+import os
+import re
+import time
+import json
+import datetime
+from subprocess import Popen, PIPE
 from lingua_franca.parse import extract_datetime
 from lingua_franca.time import to_local
 import lingua_franca
@@ -68,7 +72,7 @@ class Config:
     self.cfg = None          # if not exists create
     try:
       self.cfg = self.load_cfg()
-    except:
+    except Exception:
       pass
     if self.cfg is None:
       #print("Warning, install/mmconfig.yml not found, creating one!\n")
@@ -81,7 +85,7 @@ class Config:
 
   def save_cfg(self):
     with open(self.config_file, 'w') as yamlfile:
-      data = yaml.dump(self.cfg, yamlfile)
+      yaml.dump(self.cfg, yamlfile)
 
   def reset_config(self):
     self.cfg = self.config_defaults
@@ -94,7 +98,7 @@ class Config:
     for k in ka:
       try:
         sect = sect[k]
-      except:
+      except Exception:
         return None
     return sect
 
@@ -197,7 +201,7 @@ class CommandExecutor:
         return False
       else:
         return True
-    except:
+    except Exception:
       return True
 
   def get_return_code(self):
@@ -257,7 +261,7 @@ def get_hour_min(qual):
   else:
     #print("No time at all")
     pass
-  print(f"get_hour_min() sentence: {sentence} hour: {hour} minute: {minute}")  
+  print(f"get_hour_min() sentence: {qual} hour: {hour} minute: {minute}")  
   return int(hour), int(minute)
 
 def get_raw(sentence):
@@ -342,7 +346,7 @@ def make_time_speakable(text):
     try:
       if int(words[indx]):
         break
-    except:
+    except Exception:
       pass
     indx += 1
   text = " ".join(words)
@@ -357,7 +361,7 @@ def remove_pleasantries(sentence):
   sentence = sentence.replace("!","")
   sa = sentence.split(" " )
   for s in sa:
-    if not s.lower() in pleasantries:
+    if s.lower() not in pleasantries:
       altered += s + ' '
   return altered.strip()
 

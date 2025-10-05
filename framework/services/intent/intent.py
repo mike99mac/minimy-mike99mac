@@ -1,4 +1,6 @@
-import requests, time, glob, os
+import time
+import glob
+import os
 from bus.MsgBus import MsgBus
 from framework.util.utils import LOG, Config, get_wake_words, aplay, normalize_sentence, remove_pleasantries
 from framework.services.intent.nlp.shallow_parse.nlu import SentenceInfo
@@ -31,7 +33,7 @@ class Intent:
     wws = get_wake_words()
     for ww in wws:
       self.wake_words.append(ww.lower())
-    self.log.debug(f"Intent.__init__() registering handle_register_intent and handle_system_message")
+    self.log.debug("Intent.__init__() registering handle_register_intent and handle_system_message")
     self.bus.on("register_intent", self.handle_register_intent) # register message handlers
     self.bus.on("system", self.handle_system_message)
 
@@ -57,8 +59,8 @@ class Intent:
      "f" - no oob detected
     """ 
     ua = utt.split(" ")
-    self.log.debug(f"Intent.is_oob() utt: {utt}")
-    self.log.debug(f"Intent.is_oob() recognized_verbs: {self.recognized_verbs}")
+    self.log.debug(f"Intent.is_oob(): utt: {utt}")
+    self.log.debug(f"Intent.is_oob(): recognized_verbs: {self.recognized_verbs}")
 
     # add tests for two-word OOBs -MM
     if len(ua) == 1:           # one word utterance
@@ -71,7 +73,7 @@ class Intent:
         if next_key[0] == "O" and ua[0] == next_key[2] and ua[1] == next_key[1]:
           self.log.debug("Intent.is_oob(): two-word OOB detected")
           return "t"
-    self.log.debug(f"Intent.is_oob() crappy_aec = {self.crappy_aec}")
+    self.log.debug(f"Intent.is_oob(): crappy_aec = {self.crappy_aec}")
     if self.crappy_aec == 'n':
       self.log.debug("Intent.is_oob(): decent AEC - returning 'f'")
       return "f"
@@ -82,7 +84,7 @@ class Intent:
       for alias in self.stop_aliases:
         oob_phrase = f"{ww} {alias}"
         if oob_phrase.lower() in utt.lower() or ( alias in utt.lower() and ww in utt.lower() ):
-          self.log.warning("Intent.is_oob() ** Maybe ? Intent Barge-In detected - returning 'o'")
+          self.log.warning("Intent.is_oob(): ** Maybe ? Intent Barge-In detected - returning 'o'")
           return "o"
     self.log.debug("Intent.is_oob(): fell through - returning 'f'")
     return "f"
@@ -110,7 +112,7 @@ class Intent:
       target = "system_skill"
     self.log.debug(f"Intent.send_utt() sending utt: {utt} to target: {target}")  
     self.bus.send("utterance", target, {"utt": utt,"subtype":"utt"})
-    self.log.debug(f"Intent.send_utt() after bus.send()")  
+    self.log.debug("Intent.send_utt() after bus.send()")  
 
   def send_media(self, info):
     self.log.debug("Intent.send_media(): sending media request to message bus")
@@ -200,9 +202,9 @@ class Intent:
         oob_type = self.is_oob(utt)        # special case OOBs 
         self.log.debug(f"Intent.run() oob_type: {oob_type} utt_type: {utt_type} utt: {utt}")
         if oob_type == "t":
-          res = self.send_oob_to_system(utt, contents) 
+          self.send_oob_to_system(utt, contents) 
         elif oob_type == "o":
-          res = self.send_oob_to_system("stop", contents) 
+          self.send_oob_to_system("stop", contents) 
         elif utt_type == "RAW":            # send raw messages to system skill 
           if contents:
             self.bus.send("raw", "system_skill", {"subtype": "utt", "utterance": contents[5:]})
@@ -246,17 +248,17 @@ class Intent:
             print(f"Intent.run(): Match Question. key=Q:{si.insight.question}:{si.insight.subject}")
             info["skill_id"], info["intent_match"] = self.get_question_intent_match({"subject":info["subject"], "qword":info["question"]})
             print(f'Intent.run(): Match Question. skill_id: {info["skill_id"]} intent_match: {info["intent_match"]}')
-            res = self.send_utt(info) 
+            self.send_utt(info) 
           elif si.sentence_type == "C":
             print("Intent.run(): Match Command")
             info["skill_id"], info["intent_match"] = self.get_intent_match(info)
-            res = self.send_utt(info) 
+            self.send_utt(info) 
           elif si.sentence_type == "M":
             print("Intent.run(): Media Command")
             info["skill_id"] = "media_skill"
             info["from_skill_id"] = self.skill_id
             info["subtype"] = "media_query"
-            res = self.send_media(info) 
+            self.send_media(info) 
           elif si.sentence_type == "O":
             print("Intent.run(): OOB Command")
             if utt in self.recognized_verbs:

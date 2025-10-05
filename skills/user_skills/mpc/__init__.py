@@ -1,10 +1,8 @@
 from framework.util.utils import Config
 from mpc_client import MpcClient
 from music_info import Music_info
-import os, requests, time
 from skills.sva_media_skill_base import MediaSkill
 from threading import Event
-import subprocess
 
 class MpcSkill(MediaSkill):  
   # Play music skill for minimy.  It uses mpc and mpd to play music from:
@@ -68,7 +66,7 @@ class MpcSkill(MediaSkill):
         self.log.debug(f"MpcSkill.get_media_confidence() match_type = {self.music_info.match_type}")
         if self.music_info.match_type == "none": # music not found in library
           self.sentence = sentence 
-          self.log.debug(f"MpcSkill.get_media_confidence(): not found in library - searching Internet")
+          self.log.debug("MpcSkill.get_media_confidence(): not found in library - searching Internet")
           self.music_info.mesg_file = "searching_internet"
           self.music_info.mesg_info = {"sentence": sentence} 
           # the callback did not get called  
@@ -83,7 +81,7 @@ class MpcSkill(MediaSkill):
         self.music_info = self.mpc_client.get_playlist(sentence)
       case "news":
         self.music_info = self.mpc_client.search_news(sentence)
-    if self.music_info.tracks_or_urls != None: # no error 
+    if self.music_info.tracks_or_urls is not None: # no error 
       self.log.debug("MpcSkill.get_media_confidence(): found tracks or URLs") 
     else:                                  # error encountered
       self.log.debug(f"MpcSkill.get_media_confidence() did not find music: mesg_file = {self.music_info.mesg_file} mesg_info = {self.music_info.mesg_info}")
@@ -108,7 +106,7 @@ class MpcSkill(MediaSkill):
         self.mpc_client.mpc_cmd(cmd)
     elif self.music_info.match_type == "playlist":     
       self.mpc_client.mpc_cmd("random on") # shuffle tracks 
-    if self.music_info.mesg_file == None:  # no message
+    if self.music_info.mesg_file is None:  # no message
       self.start_music()
     else:                                  # speak message and pass callback  
       #self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.start_music)
