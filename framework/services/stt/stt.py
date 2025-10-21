@@ -248,7 +248,7 @@ class STTSvc:
         if self.remote_return_dict and self.local_return_dict: # both responses create a new cache entry 
           self.log.error(f"STT.run(): new cache entry. local: {self.local_return_dict['text']} remote: {self.remote_return_dict['text']}")
           self.local2remote[ self.local_return_dict['text'] ] = self.remote_return_dict['text']
-      time.sleep(0.025)
+      time.sleep(0.25)
 
 # main()
 if __name__ == '__main__':
