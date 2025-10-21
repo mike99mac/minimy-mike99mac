@@ -20,7 +20,7 @@ function checkEnv
     echo "ERROR: log directory $logDir not found"
     exit 2
   fi  
-  ps -ef | grep "python3.*minimy" | grep -v grep
+  ps -ef | grep "python3.*minimy" | grep -v grep | grep -v whisper
   if [ $? = 0 ]; then                      # minimy is running
     echo "It appears Minimy is already running!"
     exit 3
