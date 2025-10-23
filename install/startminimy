@@ -111,10 +111,6 @@ function startSystem
 
   cd $baseDir
   source minimy_venv/bin/activate          # start the minimy virtual environment
-  cd $baseDir
-  echo "Starting local STT server whisper ..."
-  python3 framework/services/stt/local/whisper/local_whisper.py >$logDir/whisper.log 2>&1 &
-  source minimy_venv/bin/activate          # start the minimy virtual environment
   export PYTHONPATH=`pwd`   
   export SVA_BASE_DIR=`pwd`
   export GOOGLE_APPLICATION_CREDENTIALS="/home/pi/minimy/install/my-google-key.json"
