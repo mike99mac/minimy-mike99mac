@@ -8,6 +8,8 @@ WorkingDirectory=/home/pi/minimy/framework/services/stt/local/whisper
 User=pi
 Group=pi
 Environment=PYTHONUNBUFFERED=1
+StandardOutput=append:/home/pi/minimy/logs/whisper.log
+StandardError=append:/home/pi/minimy/logs/whisper.log
 
 [Install]
 WantedBy=multi-user.target
