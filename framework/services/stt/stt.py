@@ -9,6 +9,8 @@ import time
 import json
 from threading import Event
 
+LOCAL_TIMEOUT = 8
+
 def _local_transcribe_file(wav_filename, return_dict, completion_pipe):
   # Use whisper, listening on port 5002, for local STT 
   try:
@@ -185,13 +187,13 @@ class STTSvc:
       if len(mylist) > 0:                  # we have at least one
         loop_ctr = 0
         self.wav_file = mylist[0]
-        # TODO reject files too small and maybe too large!
-        file_size = os.path.getsize(self.wav_file)
-        self.log.debug(f"STT.run(): wav_file: {self.wav_file} file_size: {file_size}")
+        self.log.debug(f"STT.run(): processing wav_file: {self.wav_file}")
         self.waiting_stt = True
         readers = []
+
         # Remote STT
         if self.use_remote_stt:
+          self.log.debug(f"STT.run(): sending file to remote STT")
           remote_parent_conn, remote_child_conn = multiprocessing.Pipe()
           readers.append(remote_parent_conn)
           self.remote_return_dict = self.manager.dict()
@@ -201,6 +203,7 @@ class STTSvc:
           )
           self.remote_proc.start()
           remote_child_conn.close()
+
         # Local STT
         local_parent_conn, local_child_conn = multiprocessing.Pipe()
         readers.append(local_parent_conn)
@@ -210,28 +213,47 @@ class STTSvc:
           args=(self.wav_file, self.local_return_dict, local_child_conn)
         )
         self.local_proc.start()
-        local_child_conn.close()           # Wait for the fastest process to finish, then proceed
-        ready = multiprocessing.connection.wait(readers)
-        if self.use_remote_stt and remote_parent_conn in ready:
-          remote_parent_conn.recv()        # Read the signal from pipe
+        self.log.debug(f"STT.run(): waiting for fastest process to finish...")
+        local_child_conn.close()           
+        
+        # Wait for the fastest process to finish, then proceed
+        ready = multiprocessing.connection.wait(readers, timeout=LOCAL_TIMEOUT)
+        if not ready:
+          self.log.error(f"STT.run(): timed out waiting for transcription")
           if self.local_proc.is_alive():
-            self.local_proc.kill()         # Cleanup processes after completion
+            self.local_proc.kill()
             self.local_proc.join(timeout=0.01)
-          self.remote_proc.join(timeout=0.01)
-        else:
-          local_parent_conn.recv()         # Read the signal from pipe
           if self.use_remote_stt and self.remote_proc.is_alive():
             self.remote_proc.kill()
             self.remote_proc.join(timeout=0.01)
-          self.local_proc.join(timeout=0.01)
-        try:                               # to remove input file
-          # for debug - move the file to /tmp rather than delete it
-          # cmd = f"mv {self.wav_file} /tmp"
-          # execute_command(cmd)
-          os.remove(self.wav_file)
-        except Exception as e:
-          self.log.error(f"Error deleting wav file: {e}")
+        else:
+          if self.use_remote_stt and remote_parent_conn in ready:
+            self.log.debug("STT.run(): remote STT returned")
+            remote_parent_conn.recv()
+            if self.local_proc.is_alive():
+              self.local_proc.kill()
+              self.local_proc.join(timeout=0.01)
+            self.remote_proc.join(timeout=0.01)
+          else:
+            self.log.debug("STT.run(): remote STT did not return")
+            local_parent_conn.recv()
+            if self.use_remote_stt and self.remote_proc.is_alive():
+              self.remote_proc.kill()
+              self.remote_proc.join(timeout=0.01)
+            self.local_proc.join(timeout=0.01)
+
+        # remove processed file
+        if os.path.exists(self.wav_file):
+          try:                  
+            self.log.debug(f"STT.run(): removing file {self.wav_file}")
+            os.remove(self.wav_file)
+          except Exception as e:
+            self.log.error(f"Error deleting wav file: {e}")
+        else:
+          self.log.debug(f"STT.run(): file {self.wav_file} already deleted or missing")
         self.wav_file = None
+
+        # handle results
         if self.remote_return_dict or self.local_return_dict:
           self.log.debug(f"STT.run(): remote_return_dict: {self.remote_return_dict} local_return_dict: {self.local_return_dict}")
         if self.remote_return_dict:
@@ -248,10 +270,11 @@ class STTSvc:
         if self.remote_return_dict and self.local_return_dict: # both responses create a new cache entry 
           self.log.error(f"STT.run(): new cache entry. local: {self.local_return_dict['text']} remote: {self.remote_return_dict['text']}")
           self.local2remote[ self.local_return_dict['text'] ] = self.remote_return_dict['text']
-      time.sleep(0.25)
+      time.sleep(0.025)
 
 # main()
 if __name__ == '__main__':
   stt_svc = STTSvc()
   stt_svc.run()
   Event().wait()                           # wait forever
+

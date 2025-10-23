@@ -39,11 +39,11 @@ class MsgBus:
     self.client_id = client_id
     self.redis_host = redis_host
     self.redis_port = redis_port
-    self.base_dir = str(os.getenv("SVA_BASE_DIR"))
-    log_filename = self.base_dir + "/logs/messages.log"
-    self.log = LOG(log_filename).log
-    self.log.debug(f"MsgBus.__init__() client_id: {self.client_id}")
-    logging.getLogger("asyncio").setLevel(logging.WARNING) # fewer msgs from asyncio
+    # self.base_dir = str(os.getenv("SVA_BASE_DIR"))
+    # log_filename = self.base_dir + "/logs/messages.log"
+    # self.log = LOG(log_filename).log
+    # self.log.debug(f"MsgBus.__init__() client_id: {self.client_id}")
+    # logging.getLogger("asyncio").setLevel(logging.WARNING) # fewer msgs from asyncio
     self.redis_conn = None
     self.pubsub_client = None
     self.listener_task = None # For the pubsub listener
@@ -62,7 +62,8 @@ class MsgBus:
       init_future.result(timeout=10) # Block for up to 10 seconds
       # self.log.info(f"MsgBus.__init__() Initialization complete. Listening on channel: {self._get_client_channel()}")
     except Exception as e:
-      self.log.error(f"MsgBus.__init__() Failed during initialization: {e}")
+      # self.log.error(f"MsgBus.__init__() Failed during initialization: {e}")
+      print(f"MsgBus.__init__() Failed during initialization: {e}")
       self.loop.call_soon_threadsafe(self.loop.stop) # Signal loop to stop
       if self.event_loop_thread.is_alive():
         self.event_loop_thread.join(timeout=2)
@@ -80,13 +81,16 @@ class MsgBus:
       # self.log.debug("MsgBus._run_event_loop(): Event loop started.")
       self.loop.run_forever()
     except Exception as e:
-      self.log.error(f"MsgBus._run_event_loop(): Event loop crashed: {e}")
+      #self.log.error(f"MsgBus._run_event_loop(): Event loop crashed: {e}")
+      print(f"MsgBus._run_event_loop(): Event loop crashed: {e}")
     finally:
-      self.log.debug("MsgBus._run_event_loop(): Event loop shutting down.")
+      # self.log.debug("MsgBus._run_event_loop(): Event loop shutting down.")
+      print("MsgBus._run_event_loop(): Event loop shutting down.")
       if not self.shutdown_event.is_set(): # loop stopped unexpectedly
         pending = [task for task in asyncio.all_tasks(loop=self.loop) if task is not asyncio.current_task()]
         if pending:
-          self.log.debug(f"MsgBus._run_event_loop(): Cancelling {len(pending)} outstanding tasks")
+          # self.log.debug(f"MsgBus._run_event_loop(): Cancelling {len(pending)} outstanding tasks")
+          print(f"MsgBus._run_event_loop(): Cancelling {len(pending)} outstanding tasks")
           for task in pending:
             task.cancel()
           # self.loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True)) # This might be tricky here
@@ -105,7 +109,8 @@ class MsgBus:
       await self.redis_conn.ping()
       # self.log.info("MsgBus.init_core_tasks(): Successfully connected to Redis.")
     except Exception as e:
-      self.log.error(f"MsgBus.init_core_tasks(): Redis ping failed: {e}")
+      #self.log.error(f"MsgBus.init_core_tasks(): Redis ping failed: {e}")
+      print(f"MsgBus.init_core_tasks(): Redis ping failed: {e}")
       if self.redis_conn:
         await self.redis_conn.close()      # Clean up connection if ping fails
       raise
@@ -139,13 +144,16 @@ class MsgBus:
               parsed_msg = msg_from_json(msg_data_str)
               await self.inbound_q.put(parsed_msg)
             except json.JSONDecodeError:
-              self.log.error(f'MsgBus._subscriber_loop(): JSON decode for message: {message["data"]}')
+              # self.log.error(f'MsgBus._subscriber_loop(): JSON decode for message: {message["data"]}')
+              print(f'MsgBus._subscriber_loop(): JSON decode for message: {message["data"]}')
             except Exception as e:
-              self.log.error(f"MsgBus._subscriber_loop(): Error message: {e}")
+              # self.log.error(f"MsgBus._subscriber_loop(): Error message: {e}")
+              print(f"MsgBus._subscriber_loop(): Error message: {e}")
           elif message is None and self.shutdown_event.is_set(): # Timeout and shutdown requested
             break
         except redis.exceptions.ConnectionError as e:
-          self.log.error(f"MsgBus._subscriber_loop(): Subscriber Redis connection error: {e}. Attempting to reconnect...")
+          # self.log.error(f"MsgBus._subscriber_loop(): Subscriber Redis connection error: {e}. Attempting to reconnect...")
+          print(f"MsgBus._subscriber_loop(): Subscriber Redis connection error: {e}. Attempting to reconnect...")
           await asyncio.sleep(5)           # wait before retrying (implement more robust backoff later)
           try:
             if self.pubsub_client: await self.pubsub_client.close() # Close old pubsub
@@ -156,13 +164,15 @@ class MsgBus:
             await self.pubsub_client.subscribe(self._get_client_channel())
             # self.log.info("MsgBus._subscriber_loop(): Reconnected to Redis and resubscribed.")
           except Exception as recon_e:
-            self.log.error(f"MsgBus._subscriber_loop(): Failed to reconnect to Redis: {recon_e}")
+            # self.log.error(f"MsgBus._subscriber_loop(): Failed to reconnect to Redis: {recon_e}")
+            print(f"MsgBus._subscriber_loop(): Failed to reconnect to Redis: {recon_e}")
             await asyncio.sleep(5)         # wait before next attempt
         except asyncio.CancelledError:
           # self.log.debug("MsgBus._subscriber_loop(): Subscriber loop cancelled.")
           break
         except Exception as e:
-          self.log.error(f"MsgBus._subscriber_loop(): Unexpected error in subscriber loop: {e}")
+          # self.log.error(f"MsgBus._subscriber_loop(): Unexpected error in subscriber loop: {e}")
+          print(f"MsgBus._subscriber_loop(): Unexpected error in subscriber loop: {e}")
           if self.shutdown_event.is_set(): break
           await asyncio.sleep(1)           # avoid tight loop on unexpected errors
     finally:
@@ -172,7 +182,8 @@ class MsgBus:
           await self.pubsub_client.unsubscribe(self._get_client_channel())
           await self.pubsub_client.close()
         except Exception as e:
-          self.log.error(f"MsgBus._subscriber_loop(): Error closing pubsub client: {e}")
+          # self.log.error(f"MsgBus._subscriber_loop(): Error closing pubsub client: {e}")
+          print(f"MsgBus._subscriber_loop(): Error closing pubsub client: {e}")
 
   async def _publisher_loop(self):
     # self.log.debug("MsgBus._publisher_loop(): Publisher loop started.")
@@ -190,7 +201,8 @@ class MsgBus:
             break                          # exit if shutdown and queue is empty
           continue                         # loop again to check shutdown_event or wait for message
         except redis.exceptions.ConnectionError as e:
-            self.log.error(f"MsgBus._publisher_loop(): Redis connection error: {e}. Message might be lost or requeued if logic added.")
+            # self.log.error(f"MsgBus._publisher_loop(): Redis connection error: {e}. Message might be lost or requeued if logic added.")
+            print(f"MsgBus._publisher_loop(): Redis connection error: {e}. Message might be lost or requeued if logic added.")
             # Basic recovery: wait and hope connection returns for next message.
             # For critical messages, add retry or dead-letter queue logic.
             await asyncio.sleep(5)
@@ -199,11 +211,13 @@ class MsgBus:
           # Potentially requeue messages from outbound_q if needed
           break
         except Exception as e:
-          self.log.error(f"MsgBus._publisher_loop(): Error in publisher loop: {e}")
+          # self.log.error(f"MsgBus._publisher_loop(): Error in publisher loop: {e}")
+          print(f"MsgBus._publisher_loop(): Error in publisher loop: {e}")
           if self.shutdown_event.is_set(): break
           await asyncio.sleep(1) # Avoid tight loop on unexpected errors
     finally:
-      self.log.debug("MsgBus._publisher_loop(): Publisher loop stopped.")
+      # self.log.debug("MsgBus._publisher_loop(): Publisher loop stopped.")
+      print("MsgBus._publisher_loop(): Publisher loop stopped.")
 
   async def _processor_loop(self):
     # self.log.debug("MsgBus._processor_loop(): Processor loop started.")
@@ -218,9 +232,11 @@ class MsgBus:
               try:
                 self.msg_handlers[msg_type](msg) # Call the registered handler
               except Exception as e:
-                self.log.error(f"MsgBus._processor_loop(): Error in msg_type {msg_type}: {e} msg: {msg}")
+                # self.log.error(f"MsgBus._processor_loop(): Error in msg_type {msg_type}: {e} msg: {msg}")
+                print(f"MsgBus._processor_loop(): Error in msg_type {msg_type}: {e} msg: {msg}")
             else:
-              self.log.warning(f"MsgBus._processor_loop(): No handler for msg_type: {msg_type} or msg_type is None.")
+              # self.log.warning(f"MsgBus._processor_loop(): No handler for msg_type: {msg_type} or msg_type is None.")
+              print(f"MsgBus._processor_loop(): No handler for msg_type: {msg_type} or msg_type is None.")
             self.inbound_q.task_done()
         except asyncio.TimeoutError:
           if self.shutdown_event.is_set() and self.inbound_q.empty():
@@ -230,11 +246,13 @@ class MsgBus:
           # self.log.debug("MsgBus._processor_loop(): Processor loop cancelled.")
           break
         except Exception as e:
-          self.log.error(f"MsgBus._processor_loop(): Error in processor loop: {e}")
+          # self.log.error(f"MsgBus._processor_loop(): Error in processor loop: {e}")
+          print(f"MsgBus._processor_loop(): Error in processor loop: {e}")
           if self.shutdown_event.is_set(): break
           await asyncio.sleep(1)
     finally:
-      self.log.debug("MsgBus._processor_loop(): Processor loop stopped.")
+      # self.log.debug("MsgBus._processor_loop(): Processor loop stopped.")
+      print("MsgBus._processor_loop(): Processor loop stopped.")
 
   def on(self, msg_type, callback):
     # Register a callback for a specific message type
@@ -244,7 +262,8 @@ class MsgBus:
   def send(self, msg_type, target_client_id, payload):
     # Send a message to a target client
     if self.shutdown_event.is_set():
-      self.log.warning("MsgBus.send(): Shutdown in progress. Cannot send message.")
+      # self.log.warning("MsgBus.send(): Shutdown in progress. Cannot send message.")
+      print("MsgBus.send(): Shutdown in progress. Cannot send message.")
       return
     message_obj = Message(
       msg_type=msg_type,
@@ -261,21 +280,25 @@ class MsgBus:
       # If send() is called from the event loop"s thread, put_nowait is fine.
       # If called from external threads (likely), use run_coroutine_threadsafe.
       if threading.get_ident() == self.event_loop_thread.ident:
-          self.outbound_q.put_nowait((target_channel, json_payload))
+        self.outbound_q.put_nowait((target_channel, json_payload))
       else:
-          asyncio.run_coroutine_threadsafe(
-              self.outbound_q.put((target_channel, json_payload)),
-              self.loop
-          ).result(timeout=5)              # add timeout to prevent indefinite blocking
+        asyncio.run_coroutine_threadsafe(
+          self.outbound_q.put((target_channel, json_payload)),
+          self.loop
+         ).result(timeout=5)               # add timeout to prevent indefinite blocking
     except asyncio.QueueFull:
-        self.log.error(f"MsgBus.send(): Outbound queue is full. Message to {target_channel} dropped.")
+      # self.log.error(f"MsgBus.send(): Outbound queue is full. Message to {target_channel} dropped.")
+      print(f"MsgBus.send(): Outbound queue is full. Message to {target_channel} dropped.")
     except Exception as e:
-        self.log.error(f"MsgBus.send(): Failed to queue message for {target_channel}: {e}")
+      # self.log.error(f"MsgBus.send(): Failed to queue message for {target_channel}: {e}")
+      print(f"MsgBus.send(): Failed to queue message for {target_channel}: {e}")
 
   def close(self):
-    self.log.info("MsgBus.close(): Initiating shutdown...")
+    # self.log.info("MsgBus.close(): Initiating shutdown...")
+    print("MsgBus.close(): Initiating shutdown...")
     if self.shutdown_event.is_set():
-      self.log.warning("MsgBus.close(): Shutdown already in progress.")
+      # self.log.warning("MsgBus.close(): Shutdown already in progress.")
+      print("MsgBus.close(): Shutdown already in progress.")
       return
     if self.loop.is_running():             # Signal all async tasks to stop
       self.loop.call_soon_threadsafe(self.shutdown_event.set)
@@ -293,27 +316,30 @@ class MsgBus:
         # task.cancel() # Optionally cancel if they don"t exit via shutdown_event quickly
         all_tasks_to_wait_for.append(task)
     if all_tasks_to_wait_for and self.loop.is_running():
-        # self.log.debug(f"MsgBus.close(): Waiting for {len(all_tasks_to_wait_for)} tasks to complete...")
-        # Create a future to await these tasks from the calling thread
-        tasks_done_future = asyncio.run_coroutine_threadsafe(
-            asyncio.gather(*all_tasks_to_wait_for, return_exceptions=True),
-            self.loop
-        )
-        try:
-            tasks_done_future.result(timeout=10) # Wait for tasks to finish
-            # self.log.debug("MsgBus.close(): Core tasks completed.")
-        except asyncio.TimeoutError:
-            self.log.warning("MsgBus.close(): Timeout waiting for tasks to complete during close. Forcing cancellation.")
-            for task_future in all_tasks_to_wait_for: # Iterate over original list of tasks
-                if not task_future.done(): # Check if it"s actually a future/task object
-                    # This cancellation is from the external thread via run_coroutine_threadsafe
-                    cancel_future = asyncio.run_coroutine_threadsafe(self._cancel_task(task_future), self.loop)
-                    try:
-                        cancel_future.result(timeout=2)
-                    except Exception as e_cancel:
-                        self.log.error(f"MsgBus.close(): Error cancelling task: {e_cancel}")
-        except Exception as e:
-            self.log.error(f"MsgBus.close(): Error waiting for tasks during close: {e}")
+      # self.log.debug(f"MsgBus.close(): Waiting for {len(all_tasks_to_wait_for)} tasks to complete...")
+      # Create a future to await these tasks from the calling thread
+      tasks_done_future = asyncio.run_coroutine_threadsafe(
+        asyncio.gather(*all_tasks_to_wait_for, return_exceptions=True),
+        self.loop
+       )
+      try:
+        tasks_done_future.result(timeout=10) # Wait for tasks to finish
+        # self.log.debug("MsgBus.close(): Core tasks completed.")
+      except asyncio.TimeoutError:
+        # self.log.warning("MsgBus.close(): Timeout waiting for tasks to complete during close. Forcing cancellation.")
+        print("MsgBus.close(): Timeout waiting for tasks to complete during close. Forcing cancellation.")
+        for task_future in all_tasks_to_wait_for: # Iterate over original list of tasks
+          if not task_future.done(): # Check if it"s actually a future/task object
+            # This cancellation is from the external thread via run_coroutine_threadsafe
+            cancel_future = asyncio.run_coroutine_threadsafe(self._cancel_task(task_future), self.loop)
+            try:
+              cancel_future.result(timeout=2)
+            except Exception as e_cancel:
+              # self.log.error(f"MsgBus.close(): Error cancelling task: {e_cancel}")
+              print(f"MsgBus.close(): Error cancelling task: {e_cancel}")
+      except Exception as e:
+        # self.log.error(f"MsgBus.close(): Error waiting for tasks during close: {e}")
+        print(f"MsgBus.close(): Error waiting for tasks during close: {e}")
     if self.redis_conn:                     # close Redis connection
       # self.log.debug("MsgBus.close(): Closing Redis connection.")
       if self.loop.is_running():
@@ -322,12 +348,15 @@ class MsgBus:
           close_future.result(timeout=5)
           # self.log.debug("MsgBus.close(): connection closed.")
         except Exception as e:
-          self.log.error(f"MsgBus.close(): Error closing connection: {e}")
+          # self.log.error(f"MsgBus.close(): Error closing connection: {e}")
+          print(f"MsgBus.close(): Error closing connection: {e}")
       else:                                # Fallback if loop is not running
         try:
-          self.log.warning("MsgBus.close(): Loop not running, cannot call async redis_conn.close().")
+          # self.log.warning("MsgBus.close(): Loop not running, cannot call async redis_conn.close().")
+          print("MsgBus.close(): Loop not running, cannot call async redis_conn.close().")
         except Exception as e:
-          self.log.error(f"MsgBus.close(): Error trying to close Redis connection without running loop: {e}")
+          # self.log.error(f"MsgBus.close(): Error trying to close Redis connection without running loop: {e}")
+          print(f"MsgBus.close(): Error trying to close Redis connection without running loop: {e}")
     if self.loop.is_running():             # Stop the event loop itself
       # self.log.debug("MsgBus.close(): Stopping event loop.")
       self.loop.call_soon_threadsafe(self.loop.stop)
@@ -335,19 +364,24 @@ class MsgBus:
       # self.log.debug("MsgBus.close(): Joining event loop thread.")
       self.event_loop_thread.join(timeout=5)
       if self.event_loop_thread.is_alive():
-        self.log.warning("MsgBus.close(): Event loop thread did not join cleanly.")
+        # self.log.warning("MsgBus.close(): Event loop thread did not join cleanly.")
+        print("MsgBus.close(): Event loop thread did not join cleanly.")
     if not self.loop.is_closed():
-      self.log.debug("MsgBus.close(): Closing asyncio loop object.")
+      # self.log.debug("MsgBus.close(): Closing asyncio loop object.")
+      print("MsgBus.close(): Closing asyncio loop object.")
       pass                                 # loop should close itself when _run_event_loop() finishes.
-    self.log.info("MsgBus.close(): MsgBus closed.")
+    # self.log.info("MsgBus.close(): MsgBus closed.")
+    print("MsgBus.close(): MsgBus closed.")
 
   async def _cancel_task(self, task):
     if task and not task.done():
-        task.cancel()
-        try:
-            await task                     # allow cancellation to propagate
-        except asyncio.CancelledError:
-            self.log.debug(f'(MsgBus._cancel_task(): {task.get_name() if hasattr(task, "get_name") else "unknown"} successfully cancelled.')
-        except Exception as e:
-            self.log.error(f'MsgBus._cancel_task(): Exception during task cancellation wait for {task.get_name() if hasattr(task, "get_name") else "unknown"}: {e}')
+      task.cancel()
+      try:
+        await task                     # allow cancellation to propagate
+      except asyncio.CancelledError:
+        # self.log.debug(f'(MsgBus._cancel_task(): {task.get_name() if hasattr(task, "get_name") else "unknown"} successfully cancelled.')
+        print(f'(MsgBus._cancel_task(): {task.get_name() if hasattr(task, "get_name") else "unknown"} successfully cancelled.')
+      except Exception as e:
+        # self.log.error(f'MsgBus._cancel_task(): Exception during task cancellation wait for {task.get_name() if hasattr(task, "get_name") else "unknown"}: {e}')
+        print(f'MsgBus._cancel_task(): Exception during task cancellation wait for {task.get_name() if hasattr(task, "get_name") else "unknown"}: {e}')
 
