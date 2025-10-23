@@ -188,6 +188,7 @@ function buildVenv
   runCmd $pipCmd install redis
   runCmd $pipCmd install whisper
   runCmd $pipCmd install youtube-search
+  runCmd $pipCmd install git+https://github.com/wiseman/py-webrtcvad.git
   runCmd $pipCmd install --upgrade --upgrade-strategy eager "optimum[neural-compressor]"
   echo | tee -a $logFile
 
@@ -261,7 +262,7 @@ function buildVenv
   runCmd sudo systemctl enable whisper 
   echo | tee -a $logFile
   echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile
-  minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver testhub.py"
+  minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver test_ws.py"
   echo | tee -a $logFile
   echo "cd to $HOME/minimy/install ..." | tee -a $logFile
   cd $HOME/minimy/install

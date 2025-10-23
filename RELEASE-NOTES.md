@@ -8,6 +8,16 @@ It only knows English - there is little internationalization code.
 
 The version numbers are simply *yy.mm.dd*.
 
+### Version 25.10.23
+- Added Basic.hub to config file install/mmconfig.yml
+  - This points to the fastest machine running whisper STT
+- Removed LOG object from MsgBus.py and replaced with print statements
+  - This prevents all messages being written to messages.log
+- Added LOG object to mic.py which now writes to audio.log
+- Fixed stt.py (hopefully) whereby savewav*wav files are piling up in tmp/save_audio   
+- Made whisper a service that always runs, not just when Minimy is running
+- Added script testhub.py to test the hub's STT function
+
 ### Version 25.06.24
 - Replaced Websockets with Redis as the new message bus
 - SimpleVoiceAssistant.speak() now calls piper directly for better performance

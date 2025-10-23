@@ -1,21 +1,25 @@
-import time
 from datetime import datetime
-import threading, collections, queue, os, os.path
+import collections
+from framework.util.utils import Config, LOG
+import logging
 import numpy as np
+import os, os.path
 import pyaudio
-import wave
-import sys
-import webrtcvad
+import queue 
 from scipy import signal
-from framework.util.utils import Config
+import sys
+import threading
+import time
+import wave
+import webrtcvad
 
 # script to read from mic and save utterances in the directory base_dir/tmp/save_audio/ as .wav files
 DEFAULT_SAMPLE_RATE = 16000
 BARK = False
 
-def log(msg):
-  if BARK:
-    print(msg)
+  # def log(msg):
+  # if BARK:
+  #   print(msg)
 
 class Audio(object):
   # Streams raw audio from microphone. Data is received in a separate thread, and stored in a buffer, to be read from.
@@ -31,7 +35,11 @@ class Audio(object):
         in_data = self.wf.readframes(self.chunk)
       callback(in_data)
       return (None, pyaudio.paContinue)
+
     if callback is None: callback = lambda in_data: self.buffer_queue.put(in_data)
+    self.base_dir = str(os.getenv("SVA_BASE_DIR"))
+    log_filename = self.base_dir + "/logs/audio.log"
+    self.log = LOG(log_filename).log
     self.buffer_queue = queue.Queue()
     self.device = device
     self.input_rate = input_rate
@@ -52,6 +60,7 @@ class Audio(object):
     elif file is not None:
       self.chunk = 320
       self.wf = wave.open(file, "rb")
+    self.log.debug(f"Audio.__init__() kwargs: {kwargs}")
     self.stream = self.pa.open(**kwargs)
     self.stream.start_stream()
 
@@ -84,7 +93,7 @@ class Audio(object):
   frame_duration_ms = property(lambda self: 1000 * self.block_size // self.sample_rate)
 
   def write_wav(self, filename, data):
-    log("write wav %s" % (filename))
+    self.log.debug(f"Audio.write_wav(): writing filename: {filename}")
     wf = wave.open(filename, "wb")
     wf.setnchannels(self.CHANNELS)
     # wf.setsampwidth(self.pa.get_sample_size(FORMAT))
@@ -99,6 +108,7 @@ class VADAudio(Audio):
 
   def __init__(self, aggressiveness=3, device=None, input_rate=None, file=None):
     super().__init__(device=device, input_rate=input_rate, file=file)
+    os.environ["ALSA_CARD"] = "0"          # prevent warning messages
     self.vad = webrtcvad.Vad(aggressiveness)
 
   def frame_generator(self):
