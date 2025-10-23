@@ -258,7 +258,14 @@ function buildVenv
   runCmd sudo systemctl enable home-pi-minimy-tmp.mount 
   runCmd sudo cp install/minimy.service /etc/systemd/system 
   runCmd sudo systemctl enable minimy
+
+  # set whisper to run as a system daemon and log to /home/pi/minimy/logs/whisper.log
   runCmd sudo cp install/whisper.service /etc/systemd/system 
+  runCmd sudo chmod -R 755 /home/pi/minimy/logs  
+  runCmd sudo touch /home/pi/minimy/logs/whisper.log
+  runCmd sudo chown pi:pi /home/pi/minimy/logs/whisper.log
+  runCmd sudo chmod 664 /home/pi/minimy/logs/whisper.log
+
   runCmd sudo systemctl enable whisper 
   echo | tee -a $logFile
   echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile
