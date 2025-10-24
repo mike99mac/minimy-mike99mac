@@ -182,6 +182,8 @@ function buildVenv
   runCmd $pipCmd install datasets
   runCmd $pipCmd install gpiozero
   runCmd $pipCmd install keyboard
+  runCmd $pipCmd install swig
+  runCmd sudo apt install -y liblgpio-dev
   runCmd $pipCmd install lgpio
   runCmd $pipCmd install optimum
   runCmd $pipCmd install quart
@@ -289,8 +291,8 @@ baseDir="$HOME/minimy"
 configFile="$baseDir/install/mmconfig.yml" # Minimy config file
 hub=""                                     # hub server
 let lastSecs=$SECONDS
-timeStamp=`date +"%y-%m-%d-%H-%M-%S"`
-logFile="$HOME/$timeStamp-install.out"     # output file
+timeSt=`date +"%y-%m-%d-%H-%M-%S"`
+logFile="$HOME/$timeSt-instalminimy.out"   # output file
 musicDir=""                                # directory with music files
 let stepNum=0
 
