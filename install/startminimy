@@ -113,8 +113,8 @@ function startSystem
   source minimy_venv/bin/activate          # start the minimy virtual environment
   export PYTHONPATH=`pwd`   
   export SVA_BASE_DIR=`pwd`
-  export GOOGLE_APPLICATION_CREDENTIALS="/home/pi/minimy/install/my-google-key.json"
-  logDir="/home/pi/minimy/logs"
+  export GOOGLE_APPLICATION_CREDENTIALS="$HOME/minimy/install/my-google-key.json"
+  logDir="$HOME/minimy/logs"
   echo "Starting system skills ..."
   cd $baseDir/skills/system_skills
   python3 skill_system.py >> $logDir/skills.log &

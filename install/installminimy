@@ -251,6 +251,7 @@ function buildVenv
   echo "Installing Ollama ..."| tee -a $logFile
   echo | tee -a $logFile
   curl -fsSL https://ollama.com/install.sh | sh
+  ollama pull llama3
 
   cd $baseDir
   echo "Copying and enabling systemd .mount and .service files ..." | tee -a $logFile 
@@ -264,7 +265,7 @@ function buildVenv
   # set whisper to run as a system daemon and log to /var/log/whisper.log
   runCmd sudo cp install/whisper.service /etc/systemd/system 
   runCmd sudo touch /var/log/whisper.log
-  runCmd sudo chown pi:pi /var/log/whisper.log
+  runCmd sudo chown $USER:$USER /var/log/whisper.log
   runCmd sudo chmod 664 /var/log/whisper.log
   runCmd sudo systemctl enable whisper 
   echo | tee -a $logFile

@@ -7,7 +7,7 @@ newFiles=""                                # files not in git
 gitCode="$HOME/minimy-mike99mac"           # git code
 srcCode="$HOME/minimy"                     # running code
 
-cd /home/pi/minimy
+cd "$HOME/minimy"
 sourceFiles=`ls bus/*py framework/*py framework/*/*py framework/*/*/*py framework/*/*/*/*py framework/*/*/*/*/*py skills/*py skills/*/*py skills/*/*/*py | xargs`
 for nextFile in $sourceFiles; do
   echo "comparing $nextFile ..."
@@ -38,7 +38,7 @@ else                                       # at least one change
   echo "#!/bin/bash" > $tmpFile            # restart file
   echo -e "$copyCmds" >> $tmpFile          # add copy commands with newlines
   sudo mv $tmpFile $copycode               # script to copy modified files
-  sudo chown $USER.$USER $copycode     
+  sudo chown $USER:$USER $copycode     
   sudo chmod 755 $copycode      
   echo "Copy commands in: $copycode"
   echo
