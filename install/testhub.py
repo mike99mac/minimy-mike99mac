@@ -1,12 +1,12 @@
-#!/home/pi/minimy/minimy_venv/bin/python3
 #
 # testhubstt.py - test the Hub's STT engine
 #
 import os
 import subprocess
 import sys
-sys.path.append("/home/pi/minimy")
 from framework.util.utils import Config
+home_dir = os.environ.get('HOME')
+sys.path.append(f"{home_dir}/minimy")
 
 def test_hub_stt(wav_filename, hub):
   cmd = [
@@ -27,7 +27,7 @@ def test_hub_stt(wav_filename, hub):
     print(f"Error testing hub STT: {e}")
 
 if __name__ == "__main__":
-  wav_file = "/home/pi/minimy/jfk.wav"
+  wav_file = f"{home_dir}/minimy/jfk.wav"
   cfg = Config()                         # get config file
   cfg_val = "Basic.Hub"
   try:
@@ -39,4 +39,3 @@ if __name__ == "__main__":
     test_hub_stt(wav_file, hub)
   except Exception as e:
     print(f"ERROR calling cfg.get_cfg_val(Basic.Hub): {e}")
-
