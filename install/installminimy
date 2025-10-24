@@ -269,7 +269,7 @@ function buildVenv
   runCmd sudo systemctl enable whisper 
   echo | tee -a $logFile
   echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile
-  minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver test_ws.py"
+  minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver testhub.py testspoke.py"
   echo | tee -a $logFile
   echo "cd to $HOME/minimy/install ..." | tee -a $logFile
   cd $HOME/minimy/install
