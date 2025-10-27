@@ -4,7 +4,7 @@
 #
 # main() 
 echo "Stopping Minimy ..." 
-procs=`ps -ef | egrep 'minimy/skills|skills/system_skills|framework/services|MsgBus|mimic3|skill_system.py' | grep -v grep`
+procs=`ps -ef | egrep 'minimy/skills|skills/system_skills|framework/services|MsgBus|mimic3|skill_system.py' | grep -v grep | grep -v local_whisper`
 if [ ${#procs} = 0 ]; then 
   echo "Minimy does not appear to be running"
 else
