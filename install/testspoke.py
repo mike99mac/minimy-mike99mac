@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #
 # testspoke.py - test localhost's STT engine
 #

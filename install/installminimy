@@ -220,7 +220,7 @@ function buildVenv
     runCmd $pipCmd install --force-reinstall numpy==1.24 # numpy must be 1.24 for building whisper
     pip list | grep numpy                  # show the new version
   fi
-  runCmd $pythonCmd $baseDir/bldwhisper.py $baseDir/jfk.wav # build the base.en model
+  runCmd $pythonCmd $baseDir/bldwhisper.py $baseDir/jfk.wav # build the whisper model specified in mmconfig.yml
   if [ "$pythonVer" = "3.11" ]; then 
     echo "Upgrading numpy"
     runCmd $pipCmd install --upgrade numpy==2.3 # go back to numpy 2.3

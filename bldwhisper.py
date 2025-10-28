@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 import argparse
-import numpy as np
-import pyaudio
 import time
 import whisper
-import wave
+import sys
+import socket
+from framework.util.utils import Config
 
 class WhisperTranscriber:
   """ Build whisper for local STT using the base.en model """
  
-  def __init__(self):
-    self.model = "base.en"                 # tiny.en and small.en are also possible
-    #self.model = "tiny.en" 
+  def __init__(self, model):
+    self.model = model                     # tiny.en, base.en, or small.en
     self.parser = argparse.ArgumentParser(description="Transcribe audio using Whisper.")
     self.parser.add_argument("filename", type=str, help="Path to the audio file")
     self.args = self.parser.parse_args()
@@ -34,8 +33,27 @@ class WhisperTranscriber:
     print(f"Elapsed time: {et}")
 
 if __name__ == "__main__":
-
+  cfg = Config()                           # get config file
+  cfg_val = "Basic.Hub"
+  try:
+    hub = cfg.get_cfg_val(cfg_val)
+    if hub is None:
+      print(f"ERROR {cfg_val} not found in config file: {cfg.config_file}")
+      sys.exit(1)
+  except Exception as e:
+    print(f"ERROR calling cfg.get_cfg_val(Basic.Hub): {e}")
+  if hub == socket.gethostname() or hub == "localhost":
+    cfg_val = "Basic.HubModel"
+  else:
+    cfg_val = "Basic.SpokeModel"
+  try:
+    model = cfg.get_cfg_val(cfg_val)
+    if model is None:
+      print(f"ERROR {cfg_val} not found in config file: {cfg.config_file}")
+      sys.exit(1)
+  except Exception as e:
+    print(f"ERROR calling cfg.get_cfg_val({cfg_val}): {e}")
   # Create an instance of the WhisperTranscriber class
-  transcriber = WhisperTranscriber()                      # create a singleton
+  transcriber = WhisperTranscriber(model)                 # create a singleton
   transcriber.load_model()                                # load the model
   transcriber.transcribe_audio(transcriber.args.filename) # transcribe a file
