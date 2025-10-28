@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #
 # testhubstt.py - test the Hub's STT engine
 #
