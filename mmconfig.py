@@ -31,6 +31,9 @@ def handle_advanced(cfg):
 def handle_basic(cfg):
     print("Basic Settings\n--------------")
     update_value(cfg, 'Basic.WakeWords', "Comma Separated List of Wake Words")
+    update_value(cfg, 'Basic.Hub', "Hub Hostname")
+    update_value(cfg, 'Basic.HubModel', "Hub STT Model (t)iny.en, (b)ase.en, or (s)mall.en")
+    update_value(cfg, 'Basic.SpokeModel', "Spoke STT Model (t)iny.en, (b)ase.en, or (s)mall.en")
     update_value(cfg, 'Basic.GoogleApiKeyPath', "Google API Key File Location")
     update_value(cfg, 'Basic.AWSId', "AWS ID")
     update_value(cfg, 'Basic.AWSKey', "AWS Key")

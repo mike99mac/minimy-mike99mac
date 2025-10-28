@@ -27,6 +27,12 @@ try:
   if model is None:
     print(f"ERROR {cfg_val} not found in config file: {cfg.config_file}")
     sys.exit(1)
+  if model == "t":
+    model = "tiny.en"
+  elif model == "b":
+    model = "base.en"
+  elif model == "s":
+    model = "small.en"
 except Exception as e:
   print(f"ERROR calling cfg.get_cfg_val({cfg_val}): {e}")
 model = WhisperModel(model, device="cpu", compute_type="int8") # run on CPU with INT8
@@ -34,4 +40,4 @@ home_dir = os.environ.get('HOME')
 segments, info = model.transcribe(f"{home_dir}/minimy-mike99mac/jfk.wav", beam_size=5)
 print("Detected language '%s' with probability %f" % (info.language, info.language_probability))
 for segment in segments:
-    print("[%.2fs -> %.2fs] %s" % (segment.start, segment.end, segment.text))
+  print("[%.2fs -> %.2fs] %s" % (segment.start, segment.end, segment.text))
