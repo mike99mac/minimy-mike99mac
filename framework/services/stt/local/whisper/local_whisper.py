@@ -36,12 +36,9 @@ try:
     model = "small.en"
 except Exception as e:
   print(f"ERROR calling cfg.get_cfg_val({cfg_val}): {e}")
-original_load = torch.load                 # load Whisper model and override
 if torch.cuda.is_available():              # Check for CUDA GPU to use
-  torch.load = lambda f, *args, **kwargs: original_load(f, *args, map_location="cuda", **kwargs)
   model = whisper.load_model(model, device="cuda") # load model on GPU
 else:
-  torch.load = lambda f, *args, **kwargs: original_load(f, *args, **kwargs)
   model = whisper.load_model(model)        # load model on CPU
 
 @app.route("/stt", methods=["POST"])
