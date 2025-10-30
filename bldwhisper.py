@@ -4,6 +4,7 @@ import time
 import whisper
 import sys
 import socket
+import torch
 from framework.util.utils import Config
 
 class WhisperTranscriber:
@@ -17,7 +18,10 @@ class WhisperTranscriber:
 
   def load_model(self):
     print("Loading Whisper model ...")
-    self.model = whisper.load_model(self.model)  # Load the quantized model
+    if torch.cuda.is_available():          # Check for CUDA GPU to use
+      self.model = whisper.load_model(model, device="cuda") # load model on GPU
+    else:
+      self.model = whisper.load_model(model) # load model on CPU
 
   def transcribe_audio(self, filename):
     print("transcribe_audio(): loading audio ...")
