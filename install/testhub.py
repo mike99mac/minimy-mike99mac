@@ -5,9 +5,9 @@
 import os
 import subprocess
 import sys
-from framework.util.utils import Config
 home_dir = os.environ.get('HOME')
 sys.path.append(f"{home_dir}/minimy")
+from framework.util.utils import Config
 
 def test_hub_stt(wav_filename, hub):
   cmd = [
