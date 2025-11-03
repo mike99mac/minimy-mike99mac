@@ -222,7 +222,7 @@ function buildVenv
   fi
   runCmd $pythonCmd $baseDir/bldwhisper.py $baseDir/jfk.wav # build the whisper model specified in mmconfig.yml
   if [ "$pythonVer" = "3.11" ]; then 
-    echo "Upgrading numpy"
+    echo "Upgrading numpy" | tee -a $logFile
     runCmd $pipCmd install --upgrade numpy==2.3 # go back to numpy 2.3
     pip list | grep numpy                  # show the new version
   fi
@@ -281,9 +281,6 @@ function buildVenv
   cd /usr/local/sbin
   runCmd sudo chown $USER:$USER $minimyScripts
   runCmd sudo cp $HOME/minimy/install/great_songs.m3u /var/lib/mpd/playlists
-  #echo | tee -a $logFile
-  #echo "Starting virtual environment ..." | tee -a $logFile
-  #source $HOME/minimy/minimy_venv/bin/activate
   echo " "
   echo "Install Complete at `date`" | tee -a $logFile
  }                                         # buildVenv()
@@ -301,9 +298,7 @@ let stepNum=0
 # main()
 checkEnv                                   # check the environment
 parseArgs $@                               # parse arguments
-# this is reading from the config file, but not setting anything
-# TO DO: if the user changes the hub host name or music mount point, update the config file
-# setMinimyVars                              # set config file variables
+setMinimyVars                              # set config file variables
 buildVenv                                  # do the work
 let min=$SECONDS/60
 let sec=$SECONDS%60

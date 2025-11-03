@@ -1,33 +1,46 @@
 from bus.MsgBus import MsgBus
 from datetime import datetime
 import dbm
-from framework.util.utils import aplay, LOG, Config, execute_command, get_wake_words
+from framework.util.utils import aplay, LOG, Config, get_wake_words
 import glob 
+import json
 import multiprocessing
 import os
 import time
-import json
+from subprocess import Popen, PIPE, STDOUT
 from threading import Event
 
-LOCAL_TIMEOUT = 8
+REMOTE_TIMEOUT = 3
+LOCAL_TIMEOUT = 7
+
+def execute_command(command):
+  p = Popen(command, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
+  stdout, stderr = p.communicate()
+  stdout = str(stdout.decode('utf-8'))
+  stderr = str(stderr.decode('utf-8'))
+  return stdout, stderr
 
 def _local_transcribe_file(wav_filename, return_dict, completion_pipe):
-  # Use whisper, listening on port 5002, for local STT 
+  # Use whisper, listening on port 5002, for local STT
   try:
-    cmd = 'curl http://localhost:5002/stt -s -H "Content-Type: audio/wav" --data-binary @"%s"' % (wav_filename)
-    out = execute_command(cmd)
-    res = json.loads(out)["text"]          # Fix formatting
+    cmd = f'curl -X POST http://localhost:5002/stt -s -H "Content-Type: audio/wav" --data-binary @"{wav_filename}" --max-time {LOCAL_TIMEOUT}'
+    stdout, stderr = execute_command(cmd)
+    print(f"DEBUG: Raw curl output: '{stdout}'")
+    print(f"DEBUG: Output length: {len(stdout)}")
+    res = json.loads(stdout)["text"]
     if res:
       res = res.strip()
       if res[-1] == '.':
         res = res[:-1]
-      print(f"_local_transcribe_file(): cmd: {cmd} res: {res}") 
+      print(f"_local_transcribe_file(): cmd: {cmd} res: {res}")
       return_dict['service'] = 'local'
       return_dict['text'] = res
-  except Exception as e:                   # Catch error if unable to reach remote
+    else:
+      print(f"_local_transcribe_file(): ERROR: res not set")
+  except Exception as e:
     print(f"Local transcription error: {e}")
   finally:
-    completion_pipe.send("done")           # Signal local transcription completed
+    completion_pipe.send("done")
     completion_pipe.close()
 
 def handle_utt(ww, utt, tmp_file_path):
@@ -66,7 +79,6 @@ class STTSvc:
     self.local_return_dict = self.manager.dict()
     self.remote_proc = None
     self.local_proc = None
-    self.bark = False
     self.previous_utterance = ''
     self.previous_utt_was_ww = False
     self.wav_file = None
@@ -90,8 +102,7 @@ class STTSvc:
     else:
       self.use_remote_stt = False
     self.log.info(f"STTSvc.__init__() use_remote_stt: {self.use_remote_stt} wws: {self.wws}")
-    if self.bark:
-      print(f"STTSvc.__init__() use_remote_stt: {self.use_remote_stt} wws: {self.wws}")
+    print(f"STTSvc.__init__() use_remote_stt: {self.use_remote_stt} wws: {self.wws}")
 
   def send_message(self, target, subtype):
     # send a standard skill message on the bus.
@@ -132,9 +143,8 @@ class STTSvc:
           if len(cmd) > 2:
             handle_utt(wake_word, cmd, self.tmp_file_path)
           else:
-            if self.bark:
-              self.log.info("Too short --->%s" % (cmd,))
-              print("Too short --->%s" % (cmd,))
+            self.log.info("Too short --->%s" % (cmd,))
+            print("Too short --->%s" % (cmd,))
         else:                              # ww not found and previous utt not ww => raw statement
           handle_utt('', utt, self.tmp_file_path)
         self.previous_utt_was_ww = False
@@ -155,9 +165,8 @@ class STTSvc:
           if len(cmd) > 2:
             handle_utt(wake_word, cmd, self.tmp_file_path)
           else:
-            if self.bark:
-              self.log.info("Too short --->%s" % (cmd,))
-              print("Too short --->%s" % (cmd,))
+            self.log.info("Too short --->%s" % (cmd,))
+            print("Too short --->%s" % (cmd,))
           self.previous_utt_was_ww = False
       self.previous_utterance = utt
 
@@ -173,7 +182,7 @@ class STTSvc:
     while True:
       loop_ctr += 1
       if loop_ctr > clear_utt_time_in_seconds:
-        # time out previous utterance this is so you can't say wake word
+        # time out previous utterance - this is so you can't say wake word
         # then a long time later you say something else and we think its 
         # wake word plus utterance - byproduct of wake word to utterance stitching strategy
         self.previous_utterance = ''
@@ -218,28 +227,29 @@ class STTSvc:
         
         # Wait for the fastest process to finish, then proceed
         ready = multiprocessing.connection.wait(readers, timeout=LOCAL_TIMEOUT)
+        self.log.error(f"STT.run(): ready: {ready}")
         if not ready:
           self.log.error(f"STT.run(): timed out waiting for transcription")
           if self.local_proc.is_alive():
             self.local_proc.kill()
-            self.local_proc.join(timeout=0.01)
+            self.local_proc.join(LOCAL_TIMEOUT)
           if self.use_remote_stt and self.remote_proc.is_alive():
             self.remote_proc.kill()
-            self.remote_proc.join(timeout=0.01)
+            self.remote_proc.join(LOCAL_TIMEOUT)
         else:
           if self.use_remote_stt and remote_parent_conn in ready:
             self.log.debug("STT.run(): remote STT returned")
             remote_parent_conn.recv()
             if self.local_proc.is_alive():
               self.local_proc.kill()
-              self.local_proc.join(timeout=0.01)
-            self.remote_proc.join(timeout=0.01)
+              self.local_proc.join(LOCAL_TIMEOUT)
+            self.remote_proc.join(REMOTE_TIMEOUT)
           else:
             self.log.debug("STT.run(): remote STT did not return")
             local_parent_conn.recv()
             if self.use_remote_stt and self.remote_proc.is_alive():
               self.remote_proc.kill()
-              self.remote_proc.join(timeout=0.01)
+              self.remote_proc.join(REMOTE_TIMEOUT)
             self.local_proc.join(timeout=0.01)
 
         # remove processed file
