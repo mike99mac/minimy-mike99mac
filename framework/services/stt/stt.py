@@ -4,11 +4,11 @@ import dbm
 from framework.util.utils import aplay, LOG, Config, get_wake_words
 import glob 
 import json
-import multiprocessing
+from multiprocessing import Process, Pipe, Manager
+from multiprocessing.connection import wait
 import os
 import time
-from subprocess import Popen, PIPE, STDOUT
-from threading import Event
+from subprocess import Popen, PIPE
 
 REMOTE_TIMEOUT = 3
 LOCAL_TIMEOUT = 7
@@ -16,15 +16,30 @@ LOCAL_TIMEOUT = 7
 def execute_command(command):
   p = Popen(command, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
   stdout, stderr = p.communicate()
-  stdout = str(stdout.decode('utf-8'))
-  stderr = str(stderr.decode('utf-8'))
-  return stdout, stderr
+  return (
+    str(stdout.decode('utf-8')),
+    str(stderr.decode('utf-8')),
+    p.returncode
+  )
 
 def _local_transcribe_file(wav_filename, return_dict, completion_pipe):
   # Use whisper, listening on port 5002, for local STT
+  if not os.path.exists(wav_filename):
+    print(f"remote_transcribe_file(): ERROR - File does not exist: {wav_filename}", flush=True)
+    completion_pipe.send("error")          # signal local transcription completed
+    return
   try:
     cmd = f'curl -X POST http://localhost:5002/stt -s -H "Content-Type: audio/wav" --data-binary @"{wav_filename}" --max-time {LOCAL_TIMEOUT}'
-    stdout, stderr = execute_command(cmd)
+    stdout, stderr, returncode = execute_command(cmd)
+    if returncode != 0:
+      print("remote_transcribe_file(): ERROR - Hub is not reachable")
+      completion_pipe.send("error")        # signal local transcription completed
+      return
+    if not stdout or stdout.strip() == "":
+      print(f"stdout: [{stdout}] stderr: [{stderr}]")
+      print("remote_transcribe_file(): ERROR - Empty response from curl", flush=True)
+      completion_pipe.send("done")         # signal local transcription completed
+      return
     print(f"DEBUG: Raw curl output: '{stdout}'")
     print(f"DEBUG: Output length: {len(stdout)}")
     res = json.loads(stdout)["text"]
@@ -35,12 +50,14 @@ def _local_transcribe_file(wav_filename, return_dict, completion_pipe):
       print(f"_local_transcribe_file(): cmd: {cmd} res: {res}")
       return_dict['service'] = 'local'
       return_dict['text'] = res
+      completion_pipe.send("done")         # signal local transcription completed
     else:
-      print(f"_local_transcribe_file(): ERROR: res not set")
+      print("_local_transcribe_file(): ERROR: res not set")
+      completion_pipe.send("done")         # signal local transcription completed
   except Exception as e:
     print(f"Local transcription error: {e}")
+    completion_pipe.send("done")          # signal local transcription completed
   finally:
-    completion_pipe.send("done")
     completion_pipe.close()
 
 def handle_utt(ww, utt, tmp_file_path):
@@ -58,10 +75,12 @@ class STTSvc:
   # the output directory. we stitch so if someone says 'wake word' brief silence, 'bla bla' 
   # we stitch them together before intent matching. this produces two broad categories of 
   # input; raw and wake word qualified. these become "raw" and "utterance"
-  def __init__(self, bus=None, timeout=5, no_bus=False):
+  def __init__(self, bus=None, no_bus=False):
     # used for skill type messages
     self.skill_id = 'stt_service'
     base_dir = os.getenv('SVA_BASE_DIR')
+    if base_dir is None:
+      base_dir = "/home/pi/minimy"
     self.tmp_file_path = base_dir + "/tmp/"
     l2r_path = base_dir + "/framework/services/stt/db/local2remote.db"
     self.local2remote = dbm.open(l2r_path, 'c')
@@ -74,7 +93,7 @@ class STTSvc:
     log_filename = base_dir + '/logs/stt.log'
     self.log = LOG(log_filename).log
     self.waiting_stt = False
-    self.manager = multiprocessing.Manager()
+    self.manager = Manager()
     self.remote_return_dict = self.manager.dict()
     self.local_return_dict = self.manager.dict()
     self.remote_proc = None
@@ -94,7 +113,7 @@ class STTSvc:
       remote_stt = self.cfg.get_cfg_val('Advanced.STT.Remote')
       if remote_stt == 'g':                # use google
         # from google.cloud import speech
-        from framework.services.stt.remote.google import remote_transcribe_file
+        from framework.services.stt.remote.google_stt import remote_transcribe_file
         self.remote_transcribe_function = remote_transcribe_file
       else:                                # use whisper
         from framework.services.stt.remote.whisper_stt import remote_transcribe_file
@@ -107,7 +126,7 @@ class STTSvc:
   def send_message(self, target, subtype):
     # send a standard skill message on the bus.
     # message must be a dict
-    if not self.no_bus:
+    if self.bus is not None:
       info = {
           'from_skill_id': self.skill_id,
           'skill_id': target,
@@ -202,55 +221,125 @@ class STTSvc:
 
         # Remote STT
         if self.use_remote_stt:
-          self.log.debug(f"STT.run(): sending file to remote STT")
-          remote_parent_conn, remote_child_conn = multiprocessing.Pipe()
+          self.log.debug("STT.run(): sending file to remote STT")
+          remote_parent_conn, remote_child_conn = Pipe()
           readers.append(remote_parent_conn)
           self.remote_return_dict = self.manager.dict()
-          self.remote_proc = multiprocessing.Process(
+          self.remote_proc = Process(
             target=self.remote_transcribe_function,
             args=(self.wav_file, self.remote_return_dict, self.hub, remote_child_conn)
           )
           self.remote_proc.start()
           remote_child_conn.close()
+        else:
+          remote_parent_conn = None
 
         # Local STT
-        local_parent_conn, local_child_conn = multiprocessing.Pipe()
+        local_parent_conn, local_child_conn = Pipe()
         readers.append(local_parent_conn)
         self.local_return_dict = self.manager.dict()
-        self.local_proc = multiprocessing.Process(
+        self.local_proc = Process(
           target=_local_transcribe_file,
           args=(self.wav_file, self.local_return_dict, local_child_conn)
         )
         self.local_proc.start()
-        self.log.debug(f"STT.run(): waiting for fastest process to finish...")
-        local_child_conn.close()           
-        
+        self.log.debug("STT.run(): waiting for fastest process to finish...")
+        local_child_conn.close()
+
         # Wait for the fastest process to finish, then proceed
-        ready = multiprocessing.connection.wait(readers, timeout=LOCAL_TIMEOUT)
+        ready = wait(readers, timeout=LOCAL_TIMEOUT)
         self.log.error(f"STT.run(): ready: {ready}")
         if not ready:
-          self.log.error(f"STT.run(): timed out waiting for transcription")
+          self.log.error("STT.run(): timed out waiting for transcription")
           if self.local_proc.is_alive():
             self.local_proc.kill()
             self.local_proc.join(LOCAL_TIMEOUT)
-          if self.use_remote_stt and self.remote_proc.is_alive():
+          if self.use_remote_stt and self.remote_proc is not None and self.remote_proc.is_alive():
             self.remote_proc.kill()
             self.remote_proc.join(LOCAL_TIMEOUT)
         else:
-          if self.use_remote_stt and remote_parent_conn in ready:
+          remote_success = False
+          if self.use_remote_stt and self.remote_proc is not None and remote_parent_conn in ready:
             self.log.debug("STT.run(): remote STT returned")
-            remote_parent_conn.recv()
+            msg = remote_parent_conn.recv()
+            if msg == "done":
+              remote_success = True
+              self.log.debug("STT.run(): remote STT succeeded")
+            else:
+              self.log.debug("STT.run(): remote STT failed")
+          
+          # If remote wasn't ready initially but exists, check if it completes quickly
+          if not remote_success and self.use_remote_stt and self.remote_proc is not None and remote_parent_conn is not None and remote_parent_conn not in ready:
+            # Quick poll to see if remote completes in the next moment
+            if remote_parent_conn.poll(0.01):
+              self.log.debug("STT.run(): remote STT completed after quick poll")
+              msg = remote_parent_conn.recv()
+              if msg == "done":
+                remote_success = True
+                self.log.debug("STT.run(): remote STT succeeded after quick poll")
+          
+          if remote_success and self.remote_proc is not None:
             if self.local_proc.is_alive():
               self.local_proc.kill()
               self.local_proc.join(LOCAL_TIMEOUT)
             self.remote_proc.join(REMOTE_TIMEOUT)
           else:
-            self.log.debug("STT.run(): remote STT did not return")
-            local_parent_conn.recv()
-            if self.use_remote_stt and self.remote_proc.is_alive():
-              self.remote_proc.kill()
-              self.remote_proc.join(REMOTE_TIMEOUT)
-            self.local_proc.join(timeout=0.01)
+            if local_parent_conn in ready:
+              local_success = False
+              self.log.debug("STT.run(): using local STT")
+              msg = local_parent_conn.recv()
+              if msg == "done":
+                local_success = True
+                self.log.debug("STT.run(): local STT succeeded")
+              else:
+                self.log.debug("STT.run(): local STT failed")
+              if local_success:
+                if self.use_remote_stt and self.remote_proc is not None and self.remote_proc.is_alive():
+                  self.remote_proc.kill()
+                  self.remote_proc.join(REMOTE_TIMEOUT)
+                self.local_proc.join(LOCAL_TIMEOUT)
+              else:
+                self.log.error("STT.run(): both remote and local STT failed")
+                if self.use_remote_stt and self.remote_proc is not None and self.remote_proc.is_alive():
+                  self.remote_proc.kill()
+                  self.remote_proc.join(REMOTE_TIMEOUT)
+                if self.local_proc.is_alive():
+                  self.local_proc.kill()
+                  self.local_proc.join(LOCAL_TIMEOUT)
+            else:
+              # Local isn't ready yet - wait for it
+              self.log.debug("STT.run(): remote failed, waiting for local")
+              remaining_ready = wait([local_parent_conn], timeout=LOCAL_TIMEOUT)
+              if remaining_ready:
+                local_success = False
+                self.log.debug("STT.run(): local STT completed")
+                msg = local_parent_conn.recv()
+                if msg == "done":
+                  local_success = True
+                  self.log.debug("STT.run(): local STT succeeded")
+                else:
+                  self.log.debug("STT.run(): local STT failed")
+                if local_success:
+                  if self.use_remote_stt and self.remote_proc is not None and self.remote_proc.is_alive():
+                    self.remote_proc.kill()
+                    self.remote_proc.join(REMOTE_TIMEOUT)
+                  self.local_proc.join(LOCAL_TIMEOUT)
+                else:
+                  self.log.error("STT.run(): both remote and local STT failed")
+                  if self.use_remote_stt and self.remote_proc is not None and self.remote_proc.is_alive():
+                    self.remote_proc.kill()
+                    self.remote_proc.join(REMOTE_TIMEOUT)
+                  if self.local_proc.is_alive():
+                    self.local_proc.kill()
+                    self.local_proc.join(LOCAL_TIMEOUT)
+              else:
+                self.log.error("STT.run(): local STT timed out after remote failed")
+                if self.local_proc.is_alive():
+                  self.local_proc.kill()
+                  self.local_proc.join(LOCAL_TIMEOUT)
+                if self.use_remote_stt and self.remote_proc is not None and self.remote_proc.is_alive():
+                  self.remote_proc.kill()
+                  self.remote_proc.join(REMOTE_TIMEOUT)
 
         # remove processed file
         if os.path.exists(self.wav_file):
@@ -263,12 +352,12 @@ class STTSvc:
           self.log.debug(f"STT.run(): file {self.wav_file} already deleted or missing")
         self.wav_file = None
 
-        # handle results
-        if self.remote_return_dict or self.local_return_dict:
-          self.log.debug(f"STT.run(): remote_return_dict: {self.remote_return_dict} local_return_dict: {self.local_return_dict}")
-        if self.remote_return_dict:
+        # Handle results
+        if self.remote_return_dict:        # We will never have both local and remote results
+          self.log.debug(f"STT.run(): remote_return_dict: {self.remote_return_dict}")
           self.process_stt_result(self.remote_return_dict['text'])
         elif self.local_return_dict:       # only have a local result BUT we have a cache hit to use 
+          self.log.debug(f"STT.run(): local_return_dict: {self.local_return_dict}")
           if len(self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")) > 0:
             remote_text = self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")
             self.log.error(f"STT.run(): CACHE HIT!!! converted local: {self.local_return_dict['text']} remote: {remote_text}")
@@ -285,6 +374,4 @@ class STTSvc:
 # main()
 if __name__ == '__main__':
   stt_svc = STTSvc()
-  stt_svc.run()
-  Event().wait()                           # wait forever
-
+  stt_svc.run()                            # Loop forever
