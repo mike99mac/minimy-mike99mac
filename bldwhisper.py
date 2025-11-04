@@ -17,7 +17,7 @@ class WhisperTranscriber:
     self.args = self.parser.parse_args()
 
   def load_model(self):
-    print("Loading Whisper model ...")
+    print(f"Loading Whisper model {model} ...")
     if torch.cuda.is_available():          # Check for CUDA GPU to use
       self.model = whisper.load_model(model, device="cuda") # load model on GPU
     else:
