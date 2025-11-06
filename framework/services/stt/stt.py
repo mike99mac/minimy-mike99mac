@@ -80,7 +80,8 @@ class STTSvc:
     self.skill_id = 'stt_service'
     base_dir = os.getenv('SVA_BASE_DIR')
     if base_dir is None:
-      base_dir = "/home/pi/minimy"
+      home_dir = os.environ.get('HOME')
+      base_dir = f"{home_dir}/minimy"
     self.tmp_file_path = base_dir + "/tmp/"
     l2r_path = base_dir + "/framework/services/stt/db/local2remote.db"
     self.local2remote = dbm.open(l2r_path, 'c')

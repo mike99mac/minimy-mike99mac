@@ -8,8 +8,8 @@ WorkingDirectory=/home/pi/minimy/framework/services/stt/local/whisper
 User=pi
 Group=pi
 Environment=PYTHONUNBUFFERED=1
-Environment=PYTHONPATH=$HOME/minimy:$PYTHONPATH
-Environment=SVA_BASE_DIR=$HOME/minimy
+Environment=PYTHONPATH=/home/pi/minimy:$PYTHONPATH
+Environment=SVA_BASE_DIR=/home/pi/minimy
 StandardOutput=append:/var/log/whisper.log
 StandardError=append:/var/log/whisper.log
 
