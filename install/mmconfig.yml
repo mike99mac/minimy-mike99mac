@@ -21,8 +21,8 @@
     BaseDir: /home/pi/minimy
     GoogleApiKeyPath: install/my_google_key.json
     Hub: localhost
-    HubModel: b
-    SpokeModel: t
+    HubModel: base.en
+    SpokeModel: tiny.en
     MusicDir: /mnt/usb/music
     WakeWords: 
     - 'computer'
