@@ -31,7 +31,7 @@ try:
 except Exception as e:
   print(f"ERROR calling cfg.get_cfg_val({cfg_val}): {e}")
 if torch.cuda.is_available():              # Check for CUDA GPU to use
-  print(f"Starting Whisper using CUDA GPU wit model {model}...")
+  print(f"Starting Whisper using CUDA GPU with model {model}...")
   model = whisper.load_model(model, device="cuda") # load model on GPU
 else:
   print(f"Starting Whisper using CPU with model {model}...")
