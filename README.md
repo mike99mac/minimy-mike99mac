@@ -814,11 +814,12 @@ The Nvidia Jetson Orin Nano has one M.2 port for NVMe SSDs and one micro SD card
     - Proceed to the next section.
 - If you do not have a method of connecting the NVMe SSD to your installation computer, you will need to bootstrap with a micro SD card:
     - Flash the `.img` file to the micro SD card. **MAKE SURE TO FLASH THE CORRECT DEVICE!**
-    - Insert the card into the slot underneath the GPU module.
+    - Put the `.img` file on the micro SD card if it is big enough or an external USB drive if not.
+    - Insert the card into the slot underneath the GPU module. Also insert the USB drive if needed.
     - Install the NVMe SSD to the Orin Nano's M.2 slot on the bottom of the board.
     - Boot the system.
     - Close out of the Ubuntu installer.
-    - Open a terminal and clone the micro SD card to the NVMe SSD with the following command. Be sure to verify the correct device names. `sudo dd if=/dev/mmcblk0 of=/dev/nvme0n1 bs=64M conv=sync,noerror status=progress`
+    - Open a terminal and flash the `.img` file to the NVMe SSD with the following command. Be sure to verify the correct device name. `sudo dd if={PATH TO .img FILE} of=/dev/nvme0n1 bs=64M conv=sync,noerror status=progress`
     - Mount the root partition of the NVMe SSD to /mnt/ssd: `sudo mkdir /mnt/ssd; sudo mount /dev/nvme0n1p1 /mnt/ssd`
     - Edit `/mnt/ssd/boot/extlinux/extlinux.conf` to replace `root=/dev/mmcblk0p10` with `root=/dev/nvme0n1p10`
     - Power off the system.
