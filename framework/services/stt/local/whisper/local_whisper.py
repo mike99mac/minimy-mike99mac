@@ -1,11 +1,14 @@
 import io
 import numpy as np
 from quart import Quart, request
+import os
 import torch
 import wave
 import whisper
 import sys
 import socket
+home_dir = os.environ.get('HOME')
+sys.path.append(f"{home_dir}/minimy")
 from framework.util.utils import Config
 
 app = Quart(__name__)                      # Initialize the Quart app
