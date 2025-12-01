@@ -65,7 +65,10 @@ function makeVenv                          # make the virtual environment
   runCmd $pipCmd install torchvision==0.23.0 --index-url https://download.pytorch.org/whl/cu126 --pre --extra-index-url https://pypi.jetson-ai-lab.io/jp6/cu126
   echo "Installing Whisper ..."
   runCmd $pipCmd install git+https://github.com/openai/whisper.git
+  runCmd $pipCmd install quart 
   runCmd $pipCmd install whisper 
+  runCmd $pipCmd install lingua_franca 
+  runCmd $pipCmd install pyyaml 
  }
 
 # main 
