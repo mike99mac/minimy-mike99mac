@@ -172,7 +172,7 @@ class CommandExecutor:
   """
   Support for old school type linux utilities like aplay and mpg123. Note, for async users,
   mpg123 should be terminated using send('s') while aplay requires kill(). Note also you
-  can not currently read stdout using this method. 
+  can not currently read stdout using this method.
   Synchronous Example:
     retcode = CommandExecutor('aplay -i test.wav').wait()
   Asynchronous Example:
@@ -205,7 +205,7 @@ class CommandExecutor:
       return True
 
   def get_return_code(self):
-    # if None, still alive 
+    # if None, still alive
     if self.proc is not None:
       return self.proc.returncode
     return self.proc
@@ -261,7 +261,7 @@ def get_hour_min(qual):
   else:
     #print("No time at all")
     pass
-  print(f"get_hour_min() sentence: {qual} hour: {hour} minute: {minute}")  
+  print(f"get_hour_min() sentence: {qual} hour: {hour} minute: {minute}")
   return int(hour), int(minute)
 
 def get_raw(sentence):
@@ -444,7 +444,7 @@ def chunk_text(data):
 
 if __name__ == '__main__':
   ## CommandExecutor tests
-  # example sync 
+  # example sync
   print("Start synchronous")
   home_dir = os.environ.get('HOME')
   retcode = CommandExecutor(f'aplay -i {home_dir}/minimy/jfk.wav').wait()

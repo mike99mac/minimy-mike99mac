@@ -1,16 +1,25 @@
 #!/bin/bash
 #
-# minimynver - get the Minimy version 
+# minimyver - get the Minimy version
 #
-baseDir="$HOME/minimy"
+
+# Detect base directory dynamically
+if [ -n "$SVA_BASE_DIR" ]; then
+  baseDir="$SVA_BASE_DIR"
+else
+  baseDir="$HOME/minimy"
+fi
+
 if [ ! -d $baseDir ]; then
   echo "ERROR: directory $baseDir not found - is Minimy installed?"
   exit 1
 fi
+
 cd $baseDir
+
 if [ ! -f version ]; then                  # version file not found
   echo "Unknown"
   exit 2
 fi
-cat $HOME/minimy/version
 
+cat $baseDir/version

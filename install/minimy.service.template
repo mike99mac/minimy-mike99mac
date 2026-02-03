@@ -1,0 +1,18 @@
+[Unit]
+Description=Minimy voice assistant
+After=pulseaudio.service
+
+[Service]
+User={{USER}}
+WorkingDirectory={{BASE_DIR}}
+ExecStart=/usr/local/sbin/startminimy
+ExecStop=/usr/local/sbin/stopminimy
+Type=forking
+Restart=no
+Environment="XDG_RUNTIME_DIR=/run/user/{{UID}}"
+Environment="PYTHONPATH={{BASE_DIR}}"
+Environment="SVA_BASE_DIR={{BASE_DIR}}"
+Environment="PATH={{BASE_DIR}}/minimy_venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+[Install]
+WantedBy=multi-user.target
