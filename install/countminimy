@@ -1,25 +1,36 @@
 #!/bin/bash
 #
-# countminimy - count the Lines of Code in Minimy Python files 
+# countminimy - count the Lines of Code in Minimy Python files
 #
-# main() 
-rootDir="$HOME/minimy"
+
+# Detect base directory dynamically
+if [ -n "$SVA_BASE_DIR" ]; then
+  rootDir="$SVA_BASE_DIR"
+else
+  rootDir="$HOME/minimy"
+fi
+
 if [ ! -d $rootDir ]; then
   echo "ERROR: no directory $rootDir"
   echo "did you: git clone https://github.com/mike99mac/minimy-mike99mac"
   exit 1
 fi
 cd $rootDir
-busFiles=`ls bus/*py | xargs`
-fwFiles=`ls framework/*py framework/*/*py framework/*/*/*py framework/*/*/*/*py framework/*/*/*/*/*py | xargs`
-skFiles=`ls skills/*py skills/*/*py skills/*/*/*py | xargs`
-busLoc=`wc -l $busFiles | tail -1 | awk '{print $1}'`
-fwLoc=`wc -l $fwFiles | tail -1 | awk '{print $1}'`
-skLoc=`wc -l $skFiles | tail -1 | awk '{print $1}'`
+busFiles=$(ls bus/*py 2>/dev/null | xargs)
+fwFiles=$(ls framework/*py framework/*/*py framework/*/*/*py framework/*/*/*/*py framework/*/*/*/*/*py 2>/dev/null | xargs)
+skFiles=$(ls skills/*py skills/*/*py skills/*/*/*py 2>/dev/null | xargs)
+busLoc=$(wc -l $busFiles 2>/dev/null | tail -1 | awk '{print $1}')
+fwLoc=$(wc -l $fwFiles 2>/dev/null | tail -1 | awk '{print $1}')
+skLoc=$(wc -l $skFiles 2>/dev/null | tail -1 | awk '{print $1}')
+
+# Handle empty values
+busLoc=${busLoc:-0}
+fwLoc=${fwLoc:-0}
+skLoc=${skLoc:-0}
 
 echo "Lines of code in Minimy:"
 echo "Msg bus  :   $busLoc"
 echo "framework:  $fwLoc"
 echo "skills   :  $skLoc"
-let loc=$busLoc+$fwLoc+$skLoc+mimicLoc
+let loc=$busLoc+$fwLoc+$skLoc
 echo "Total    :  $loc"
