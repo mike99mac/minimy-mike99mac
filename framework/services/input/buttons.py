@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 from bus.MsgBus import MsgBus
-from framework.util.utils import LOG, Config
+from framework.util.utils import LOG
 import os
-import platform
 from signal import pause
-import subprocess
 import sys
-from time import sleep
 from gpiozero.pins.lgpio import LGPIOFactory
-from gpiozero import Device, PWMLED, Button
+from gpiozero import Device, Button
 
 def is_raspberry_pi():
   try:

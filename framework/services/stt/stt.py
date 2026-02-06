@@ -1,17 +1,36 @@
 from bus.MsgBus import MsgBus
 from datetime import datetime
-import dbm
 from framework.util.utils import aplay, LOG, Config, get_wake_words
-import glob 
-import json
 from multiprocessing import Process, Pipe, Manager
 from multiprocessing.connection import wait
+from subprocess import Popen, PIPE
+import numpy as np
+import dbm
+import glob 
+import json
 import os
 import time
-from subprocess import Popen, PIPE
+import wave
 
 REMOTE_TIMEOUT = 3
 LOCAL_TIMEOUT = 7
+
+def has_speech(wav_filename, energy_threshold=0.001):
+  # Check if WAV file contains speech above threshold
+  try:
+    with wave.open(wav_filename, 'rb') as wav:
+      audio_data = wav.readframes(wav.getnframes())
+      audio_array = np.frombuffer(audio_data, dtype=np.int16)
+      if len(audio_array) == 0:
+        return False
+      # Normalize and calculate energy
+      audio_normalized = audio_array / 32768.0
+      energy = np.mean(audio_normalized ** 2)
+      # Add logging
+      print(f"DEBUG: File {os.path.basename(wav_filename)} energy: {energy:.6f}, threshold: {energy_threshold}")
+      return energy > energy_threshold
+  except Exception:
+    return True
 
 def execute_command(command):
   p = Popen(command, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
@@ -212,165 +231,195 @@ class STTSvc:
         if diff > 3.5:
           self.muted = False
           self.send_unmute()
-      mylist = sorted( [f for f in glob.glob(self.tmp_file_path + "save_audio/*.wav")] ) # get wav files 
-      if len(mylist) > 0:                  # we have at least one
-        loop_ctr = 0
-        self.wav_file = mylist[0]
-        self.log.debug(f"STT.run(): processing wav_file: {self.wav_file}")
-        self.waiting_stt = True
-        readers = []
-
-        # Remote STT
-        if self.use_remote_stt:
-          self.log.debug("STT.run(): sending file to remote STT")
+      # Get WAV files
+      mylist = sorted( [f for f in glob.glob(self.tmp_file_path + "save_audio/*.wav")] )
+      if len(mylist) == 0:                 # If no files present, sleep and continue
+        time.sleep(0.025)
+        continue
+      loop_ctr = 0                         # We have at least one WAV file
+      self.wav_file = mylist[0]
+      if not has_speech(self.wav_file):
+        self.log.debug(f"STT.run(): Skipping low-energy file: {self.wav_file}")
+        try:
+          os.remove(self.wav_file)
+        except Exception:
+          pass
+        continue
+      self.log.debug(f"STT.run(): processing wav_file: {self.wav_file}")
+      self.waiting_stt = True
+      readers = []
+      # Remote STT
+      remote_parent_conn = None
+      remote_proc = None
+      remote_return_dict = self.manager.dict()
+      if self.use_remote_stt:
+        self.log.debug("STT.run(): sending file to remote STT")
+        try:
           remote_parent_conn, remote_child_conn = Pipe()
           readers.append(remote_parent_conn)
-          self.remote_return_dict = self.manager.dict()
-          self.remote_proc = Process(
+          remote_proc = Process(
             target=self.remote_transcribe_function,
-            args=(self.wav_file, self.remote_return_dict, self.hub, remote_child_conn)
+            args=(self.wav_file, remote_return_dict, self.hub, remote_child_conn)
           )
-          self.remote_proc.start()
+          remote_proc.start()
           remote_child_conn.close()
-        else:
+        except Exception as e:
+          self.log.error(f"STT.run(): Failed to start remote STT: {e}")
           remote_parent_conn = None
-
-        # Local STT
-        local_parent_conn, local_child_conn = Pipe()
-        readers.append(local_parent_conn)
-        self.local_return_dict = self.manager.dict()
-        self.local_proc = Process(
-          target=_local_transcribe_file,
-          args=(self.wav_file, self.local_return_dict, local_child_conn)
-        )
-        self.local_proc.start()
-        self.log.debug("STT.run(): waiting for fastest process to finish...")
-        local_child_conn.close()
-
-        # Wait for the fastest process to finish, then proceed
+          remote_proc = None
+          if remote_parent_conn and remote_parent_conn in readers:
+            readers.remove(remote_parent_conn)
+      else:
+        remote_parent_conn = None
+      # Local STT
+      local_parent_conn, local_child_conn = Pipe()
+      readers.append(local_parent_conn)
+      local_return_dict = self.manager.dict()
+      local_proc = Process(
+        target=_local_transcribe_file,
+        args=(self.wav_file, local_return_dict, local_child_conn)
+      )
+      local_proc.start()
+      local_child_conn.close()
+      self.log.debug("STT.run(): waiting for fastest process to finish...")
+      # Wait for the fastest process to finish, then proceed
+      initial_timeout = REMOTE_TIMEOUT if self.use_remote_stt else LOCAL_TIMEOUT
+      try:
         ready = wait(readers, timeout=LOCAL_TIMEOUT)
         self.log.error(f"STT.run(): ready: {ready}")
-        if not ready:
-          self.log.error("STT.run(): timed out waiting for transcription")
-          if self.local_proc.is_alive():
-            self.local_proc.kill()
-            self.local_proc.join(LOCAL_TIMEOUT)
-          if self.use_remote_stt and self.remote_proc is not None and self.remote_proc.is_alive():
-            self.remote_proc.kill()
-            self.remote_proc.join(LOCAL_TIMEOUT)
-        else:
-          remote_success = False
-          if self.use_remote_stt and self.remote_proc is not None and remote_parent_conn in ready:
-            self.log.debug("STT.run(): remote STT returned")
+        remote_success = False
+        local_success = False
+        use_remote_result = False
+        # Check if remote succeeded first
+        if self.use_remote_stt and remote_parent_conn and remote_parent_conn in ready:
+          try:
             msg = remote_parent_conn.recv()
-            if msg == "done":
+            if msg == "done" and remote_return_dict and len(remote_return_dict) > 0:
               remote_success = True
-              self.log.debug("STT.run(): remote STT succeeded")
-            else:
-              self.log.debug("STT.run(): remote STT failed")
-          
-          # If remote wasn't ready initially but exists, check if it completes quickly
-          if not remote_success and self.use_remote_stt and self.remote_proc is not None and remote_parent_conn is not None and remote_parent_conn not in ready:
-            # Quick poll to see if remote completes in the next moment
-            if remote_parent_conn.poll(0.01):
-              self.log.debug("STT.run(): remote STT completed after quick poll")
-              msg = remote_parent_conn.recv()
-              if msg == "done":
-                remote_success = True
-                self.log.debug("STT.run(): remote STT succeeded after quick poll")
-          
-          if remote_success and self.remote_proc is not None:
-            if self.local_proc.is_alive():
-              self.local_proc.kill()
-              self.local_proc.join(LOCAL_TIMEOUT)
-            self.remote_proc.join(REMOTE_TIMEOUT)
-          else:
-            if local_parent_conn in ready:
-              local_success = False
-              self.log.debug("STT.run(): using local STT")
-              msg = local_parent_conn.recv()
-              if msg == "done":
-                local_success = True
-                self.log.debug("STT.run(): local STT succeeded")
-              else:
-                self.log.debug("STT.run(): local STT failed")
-              if local_success:
-                if self.use_remote_stt and self.remote_proc is not None and self.remote_proc.is_alive():
-                  self.remote_proc.kill()
-                  self.remote_proc.join(REMOTE_TIMEOUT)
-                self.local_proc.join(LOCAL_TIMEOUT)
-              else:
-                self.log.error("STT.run(): both remote and local STT failed")
-                if self.use_remote_stt and self.remote_proc is not None and self.remote_proc.is_alive():
-                  self.remote_proc.kill()
-                  self.remote_proc.join(REMOTE_TIMEOUT)
-                if self.local_proc.is_alive():
-                  self.local_proc.kill()
-                  self.local_proc.join(LOCAL_TIMEOUT)
-            else:
-              # Local isn't ready yet - wait for it
-              self.log.debug("STT.run(): remote failed, waiting for local")
-              remaining_ready = wait([local_parent_conn], timeout=LOCAL_TIMEOUT)
-              if remaining_ready:
-                local_success = False
-                self.log.debug("STT.run(): local STT completed")
-                msg = local_parent_conn.recv()
-                if msg == "done":
-                  local_success = True
-                  self.log.debug("STT.run(): local STT succeeded")
-                else:
-                  self.log.debug("STT.run(): local STT failed")
-                if local_success:
-                  if self.use_remote_stt and self.remote_proc is not None and self.remote_proc.is_alive():
-                    self.remote_proc.kill()
-                    self.remote_proc.join(REMOTE_TIMEOUT)
-                  self.local_proc.join(LOCAL_TIMEOUT)
-                else:
-                  self.log.error("STT.run(): both remote and local STT failed")
-                  if self.use_remote_stt and self.remote_proc is not None and self.remote_proc.is_alive():
-                    self.remote_proc.kill()
-                    self.remote_proc.join(REMOTE_TIMEOUT)
-                  if self.local_proc.is_alive():
-                    self.local_proc.kill()
-                    self.local_proc.join(LOCAL_TIMEOUT)
-              else:
-                self.log.error("STT.run(): local STT timed out after remote failed")
-                if self.local_proc.is_alive():
-                  self.local_proc.kill()
-                  self.local_proc.join(LOCAL_TIMEOUT)
-                if self.use_remote_stt and self.remote_proc is not None and self.remote_proc.is_alive():
-                  self.remote_proc.kill()
-                  self.remote_proc.join(REMOTE_TIMEOUT)
-
-        # remove processed file
-        if os.path.exists(self.wav_file):
-          try:                  
-            self.log.debug(f"STT.run(): removing file {self.wav_file}")
-            os.remove(self.wav_file)
+              use_remote_result = True
+              self.log.debug("STT.run(): remote STT succeeded first")
           except Exception as e:
-            self.log.error(f"Error deleting wav file: {e}")
-        else:
-          self.log.debug(f"STT.run(): file {self.wav_file} already deleted or missing")
+            self.log.error(f"STT.run(): error receiving from remote: {e}")
+        # Check local response if remote didn't succeed first
+        if not use_remote_result and local_parent_conn in ready:
+          try:
+            msg = local_parent_conn.recv()
+            if msg == "done" and local_return_dict and len(local_return_dict) > 0:
+              local_success = True
+              use_remote_result = False
+              self.log.debug("STT.run(): local STT succeeded first")
+          except Exception as e:
+            self.log.error(f"STT.run(): error receiving from local: {e}")
+        # If neither succeeds during the initial wait, continue waiting on whichever is still alive
+        if not remote_success and not local_success:
+          self.log.debug("STT.run(): waiting longer for transcription...")
+          pending_connections = []         # Build lists of pending connections
+          pending_indices = []
+          all_connections = []
+          if self.use_remote_stt and remote_parent_conn:
+            all_connections.append(remote_parent_conn)
+          all_connections.append(local_parent_conn)
+          # Check which ones weren't ready
+          for idx, conn in enumerate(all_connections):
+            # Map current index to original index in 'readers' list
+            original_idx = idx if (not self.use_remote_stt or remote_parent_conn) else (idx + 1 if idx > 0 else 0)
+            if original_idx not in ready:
+              pending_connections.append(conn)
+              pending_indices.append(original_idx)
+          if pending_connections:          # Wait for remaining processes with remaining timeout
+            remaining_timeout = LOCAL_TIMEOUT - initial_timeout
+            if remaining_timeout > 0:
+              # Use the original wait function on the pending connections
+              remaining_ready_indices = wait(pending_connections, timeout=remaining_timeout)
+              # Process ready connections
+              for pending_idx, conn in enumerate(pending_connections):
+                if pending_idx in remaining_ready_indices:
+                  try:
+                    msg = conn.recv()
+                    if msg == "done":      # Determine if this is remote or local based on original index
+                      original_idx = pending_indices[pending_idx]
+                      if (self.use_remote_stt and remote_parent_conn and 
+                        original_idx == 0):  # remote is at index 0
+                        remote_success = True
+                        use_remote_result = True
+                        self.log.debug("STT.run(): remote STT succeeded after longer wait")
+                      else:                # local
+                        local_success = True
+                        use_remote_result = False
+                        self.log.debug("STT.run(): local STT succeeded after longer wait")
+                  except Exception as e:
+                    self.log.error(f"STT.run(): error receiving after longer wait: {e}")
+        # Store results for later use
+        if remote_success and use_remote_result:
+          self.remote_return_dict = remote_return_dict
+          self.local_return_dict = {}
+        elif local_success and not use_remote_result:
+          self.local_return_dict = local_return_dict
+          self.remote_return_dict = {}
+      except Exception as e:
+        self.log.error(f"STT.run(): error in process coordination: {e}")
+        remote_success = False
+        local_success = False
+      try:                                 # Process termination
+        if local_proc and local_proc.is_alive():
+          local_proc.terminate()
+          local_proc.join(timeout=0.5)
+          if local_proc.is_alive():
+            local_proc.kill()
+            local_proc.join(timeout=0.5)
+      except Exception as e:
+        self.log.error(f"STT.run(): error terminating local process: {e}")
+      try:
+        if remote_proc and remote_proc.is_alive():
+          remote_proc.terminate()
+          remote_proc.join(timeout=0.5)
+          if remote_proc.is_alive():
+            remote_proc.kill()
+            remote_proc.join(timeout=0.5)
+      except Exception as e:
+        self.log.error(f"STT.run(): error terminating remote process: {e}")
+      if os.path.exists(self.wav_file):    # Safe file deletion
+        try:
+          self.log.debug(f"STT.run(): removing file {self.wav_file}")
+          os.remove(self.wav_file)
+        except Exception as e:
+          self.log.error(f"Error deleting WAV file: {e}")
+          time.sleep(0.05)                 # Try once more after short sleep
+          try:
+            os.remove(self.wav_file)
+          except Exception as e2:
+            self.log.error(f"Second attempt failed to delete WAV file: {e2}")
+      else:
+        self.log.debug(f"STT.run(): file {self.wav_file} already deleted or missing")
         self.wav_file = None
-
-        # Handle results
-        if self.remote_return_dict:        # We will never have both local and remote results
+        self.waiting_stt = False
+      try:                                 # Handle results
+        if remote_success and self.remote_return_dict and 'text' in self.remote_return_dict:
           self.log.debug(f"STT.run(): remote_return_dict: {self.remote_return_dict}")
           self.process_stt_result(self.remote_return_dict['text'])
-        elif self.local_return_dict:       # only have a local result BUT we have a cache hit to use 
+        elif local_success and self.local_return_dict and 'text' in self.local_return_dict:
           self.log.debug(f"STT.run(): local_return_dict: {self.local_return_dict}")
-          if len(self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")) > 0:
-            remote_text = self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8")
-            self.log.error(f"STT.run(): CACHE HIT!!! converted local: {self.local_return_dict['text']} remote: {remote_text}")
-            self.process_stt_result(self.local2remote.get(self.local_return_dict['text'], b'').decode("utf-8"))
+          local_text = self.local_return_dict['text']
+          if local_text in self.local2remote:
+            remote_text = self.local2remote[local_text].decode("utf-8")
+            self.log.debug(f"STT.run(): CACHE HIT!!! Converted local: {local_text} remote: {remote_text}")
+            self.process_stt_result(remote_text)
           else:
-            self.process_stt_result(self.local_return_dict['text'])
+            self.process_stt_result(local_text)
         else:
-          self.log.info("STT.run(): Can't produce STT from wav")
-        if self.remote_return_dict and self.local_return_dict: # both responses create a new cache entry 
-          self.log.error(f"STT.run(): new cache entry. local: {self.local_return_dict['text']} remote: {self.remote_return_dict['text']}")
-          self.local2remote[ self.local_return_dict['text'] ] = self.remote_return_dict['text']
-      time.sleep(0.025)
+          self.log.info("STT.run(): Can't produce STT from WAV file")
+        # Cache update with better validation
+        if (remote_success and local_success and
+            self.remote_return_dict and 'text' in self.remote_return_dict and
+            self.local_return_dict and 'text' in self.local_return_dict):
+          local_text = self.local_return_dict['text']
+          remote_text = self.remote_return_dict['text']
+          if local_text and remote_text:
+            self.log.debug(f"STT.run(): new cache entry. local: {local_text} remote: remote_text")
+            self.local2remote[local_text] = remote_text
+      except Exception as e:
+        self.log.error(f"STT.run(): error processing STT results: {e}")
+      time.sleep(0.025)                    # Short sleep to save resources
 
 # main()
 if __name__ == '__main__':
