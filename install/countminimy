@@ -10,12 +10,12 @@ else
   rootDir="$HOME/minimy"
 fi
 
-if [ ! -d $rootDir ]; then
+if [ ! -d "$rootDir" ]; then
   echo "ERROR: no directory $rootDir"
   echo "did you: git clone https://github.com/mike99mac/minimy-mike99mac"
   exit 1
 fi
-cd $rootDir
+cd "$rootDir"
 busFiles=$(ls bus/*py 2>/dev/null | xargs)
 fwFiles=$(ls framework/*py framework/*/*py framework/*/*/*py framework/*/*/*/*py framework/*/*/*/*/*py 2>/dev/null | xargs)
 skFiles=$(ls skills/*py skills/*/*py skills/*/*/*py 2>/dev/null | xargs)

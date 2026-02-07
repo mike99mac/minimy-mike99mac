@@ -45,7 +45,7 @@ function parseArgs
           usage                            # give help
         fi
         shift                              # get to next arg
-        hub=$1
+        hub="$1"
         ;;
       -v|--verbose)
         verbose=2
@@ -75,8 +75,8 @@ function detectUserInfo
   CURRENT_UID=$(id -u)
   CURRENT_GROUP=$(id -gn)
 
-  echo "Detected user: $CURRENT_USER (UID: $CURRENT_UID, Group: $CURRENT_GROUP)" | tee -a $logFile
-  echo "Base directory: $baseDir" | tee -a $logFile
+  echo "Detected user: $CURRENT_USER (UID: $CURRENT_UID, Group: $CURRENT_GROUP)" | tee -a "$logFile"
+  echo "Base directory: $baseDir" | tee -a "$logFile"
 
   # Validate that we're not running as root
   if [ "$CURRENT_USER" = "root" ]; then
@@ -197,7 +197,7 @@ function generateConfigFile
     # This handles /home/pi/minimy, /home/username/minimy, /opt/minimy, etc.
     sed -i "s|BaseDir: .*/minimy|BaseDir: $baseDir|g" "$baseDir/install/mmconfig.yml"
     # Also handle cases where BaseDir might have a different structure
-    sed -i "s|BaseDir: /[^[:space:]]*|BaseDir: $baseDir|g" "$baseDir/install/mmconfig.yml"
+    # sed -i "s|BaseDir: /[^[:space:]]*|BaseDir: $baseDir|g" "$baseDir/install/mmconfig.yml"
     echo "Updated existing mmconfig.yml with BaseDir: $baseDir" | tee -a $logFile
   else
     echo "WARNING: No config template or file found" | tee -a $logFile
@@ -219,15 +219,15 @@ function setMinimyVars
     echo -n "Host name of hub server [$hub]: "
     read hub
   fi
-  if [ ${#hub} != 0 ]; then                # new value was supplied
-    sed -i "s/    Hub: .*/    Hub: $hub/g" $configFile # reset hub server
+    if [ ${#hub} != 0 ]; then                # new value was supplied
+    sed -i "s/    Hub: .*/    Hub: $hub/g" "$configFile" # reset hub server
   fi
   if [ ${#MusicDir} = 0 ]; then            # music dir not set with args
-    musicDir=`grep "    MusicDir:" $configFile | awk '{print $2}'` # get music dir in config file
+    musicDir=`grep "    MusicDir:" "$configFile" | awk '{print $2}'` # get music dir in config file
     echo -n "Directory with music files [$musicDir]: "
     read newMusicDir
     if [ ${#newMusicDir} != 0 ]; then      # new music dir was supplied
-      sed -i "s/    MusicDir: .*/    MusicDir: $newMusicDir/g" $configFile # reset music dir
+      sed -i "s/    MusicDir: .*/    MusicDir: $newMusicDir/g" "$configFile" # reset music dir
     fi
   fi
  }                                         # setMinimyVars()
@@ -242,12 +242,12 @@ function runCmd
 
   cmd="$@"                                 # get all args
   let stepNum=$stepNum+1
-  echo | tee -a $logFile
-  echo "Step $stepNum: $cmd ..." 2>&1 | tee -a $logFile # show the command and send to output file
-  eval $cmd >> $logFile 2>&1               # run command and log output
+  echo | tee -a "$logFile"
+  echo "Step $stepNum: $cmd ..." 2>&1 | tee -a "$logFile" # show the command and send to output file
+  eval $cmd >> "$logFile" 2>&1               # run command and log output
   rc=$?
   if [ "$rc" != 0 ]; then                  # it failed
-    echo "ERROR: $cmd returned $rc" | tee -a $logFile
+    echo "ERROR: $cmd returned $rc" | tee -a "$logFile"
     echo "Log file: $logFile"
     exit 1
   else
@@ -255,7 +255,7 @@ function runCmd
   fi
   let curSecs=$SECONDS
   let et=$curSecs-$lastSecs
-  echo "Step $stepNum took $et seconds" | tee -a $logFile
+  echo "Step $stepNum took $et seconds" | tee -a "$logFile"
   lastSecs=$curSecs
  }                                         # runCmd()
 
@@ -267,10 +267,9 @@ function checkEnv
   : SOURCE: ${BASH_SOURCE}
   : STACK:  ${FUNCNAME[@]}
 
-  if [ ! -d $baseDir ]; then
-    echo "ERROR: base directory $baseDir not found"
-    exit 2
-  fi
+  # Check that the base directory exists
+  # Note: baseDir existence is already checked in detectUserInfo
+
 
   # Generate config file from template if it doesn't exist
   if [ ! -f $configFile ]; then
@@ -295,54 +294,54 @@ function buildVenv
   : STACK:  ${FUNCNAME[@]}
 
   echo
-  echo "Running $0 at `date` ..." > $logFile # create a new log file
-  echo | tee -a $logFile
-  echo "cd to $baseDir ..." | tee -a $logFile
-  cd $baseDir
-  echo | tee -a $logFile
+  echo "Running $0 at `date` ..." >> "$logFile" # append to log file
+  echo | tee -a "$logFile"
+  echo "cd to $baseDir ..." | tee -a "$logFile"
+  cd "$baseDir"
+  echo | tee -a "$logFile"
   echo "Installing virtual environment ..." | tee -a $logFile
   runCmd sudo apt-get install -y python3-venv
   runCmd sudo apt-get install -y python3-dev
   runCmd python3 -m venv minimy_venv
   echo | tee -a $logFile
-  echo "Upgrading pip ..." | tee -a $logFile
+  echo "Upgrading pip ..." | tee -a "$logFile"
   local pipCmd="$baseDir/minimy_venv/bin/pip" # use pip from the venv
-  runCmd $pipCmd install --upgrade pip
-  echo | tee -a $logFile
-  echo "Activating virtual environment ..." | tee -a $logFile
+  runCmd "$pipCmd" install --upgrade pip
+  echo | tee -a "$logFile"
+  echo "Activating virtual environment ..." | tee -a "$logFile"
   runCmd source minimy_venv/bin/activate   # start virtual environment
-  echo | tee -a $logFile
-  echo "Upgrading wheel and setuptools ..." | tee -a $logFile
-  runCmd $pipCmd install --upgrade wheel setuptools
+  echo | tee -a "$logFile"
+  echo "Upgrading wheel and setuptools ..." | tee -a "$logFile"
+  runCmd "$pipCmd" install --upgrade wheel setuptools
   runCmd sudo apt-get install -y python3-dev build-essential portaudio19-dev mpg123 ffmpeg curl wget
   runCmd sudo apt-get install -y libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
   runCmd sudo apt-get install -y libavcodec-dev libavformat-dev libavdevice-dev redis
   echo | tee -a $logFile
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
-  echo "Python version: $pythonVer ..." | tee -a $logFile
+  echo "Python version: $pythonVer ..." | tee -a "$logFile"
   local pythonCmd="$baseDir/minimy_venv/bin/python$pythonVer" # use python from the venv
-  runCmd $pythonCmd -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
-  echo "Installing yt-dlp and requirements.txt ..." | tee -a $logFile
-  cd $baseDir
-  runCmd pip install --no-binary :all: regex # force pip to ignore old wheels and build fresh
-  runCmd $pipCmd install lingua_franca
+  runCmd "$pythonCmd" -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
+  echo "Installing yt-dlp and requirements.txt ..." | tee -a "$logFile"
+  cd "$baseDir"
+  runCmd "$pipCmd" install --no-binary :all: regex # force pip to ignore old wheels and build fresh
+  # runCmd $pipCmd install lingua_franca # installed via requirements.txt
   runCmd sudo apt-get install python3-lingua-franca
-  runCmd $pipCmd install -r install/requirements.txt
-  echo "Installing local STT whisper" | tee -a $logFile
-  runCmd $pipCmd install git+https://github.com/openai/whisper.git
-  runCmd $pipCmd install datasets
-  runCmd $pipCmd install gpiozero
-  runCmd $pipCmd install keyboard
+  runCmd "$pipCmd" install -r install/requirements.txt
+  echo "Installing local STT whisper" | tee -a "$logFile"
+  runCmd "$pipCmd" install git+https://github.com/openai/whisper.git
+  runCmd "$pipCmd" install datasets
+  runCmd "$pipCmd" install gpiozero
+  runCmd "$pipCmd" install keyboard
   # runCmd $pipCmd install swig
   runCmd sudo apt-get install -y swig
   runCmd sudo apt-get install -y liblgpio-dev
-  runCmd $pipCmd install lgpio
-  runCmd $pipCmd install optimum
-  runCmd $pipCmd install quart
-  runCmd $pipCmd install redis
-  runCmd $pipCmd install whisper
-  runCmd $pipCmd install youtube-search
-  runCmd $pipCmd install git+https://github.com/wiseman/py-webrtcvad.git
+  runCmd "$pipCmd" install lgpio
+  runCmd "$pipCmd" install optimum
+  runCmd "$pipCmd" install quart
+  runCmd "$pipCmd" install redis
+  runCmd "$pipCmd" install whisper
+  runCmd "$pipCmd" install youtube-search
+  runCmd "$pipCmd" install git+https://github.com/wiseman/py-webrtcvad.git
   runCmd $pipCmd install --upgrade --upgrade-strategy eager "optimum[neural-compressor]"
   echo | tee -a $logFile
 
@@ -362,19 +361,19 @@ function buildVenv
   cd link-4.1b
   runCmd make
 
-  echo "Installing Local STT ..." | tee -a $logFile
-  echo | tee -a $logFile
-  cd $baseDir/install
+  echo "Installing Local STT ..." | tee -a "$logFile"
+  echo | tee -a "$logFile"
+  cd "$baseDir/install"
   echo "Loading the whisper model"
   if [ "$pythonVer" = "3.11" ]; then
-    echo "Downgrading numpy to 1.24" | tee -a $logFile
-    runCmd $pipCmd install --force-reinstall numpy==1.24 # numpy must be 1.24 for building whisper
+    echo "Downgrading numpy to 1.24" | tee -a "$logFile"
+    runCmd "$pipCmd" install --force-reinstall numpy==1.24 # numpy must be 1.24 for building whisper
     pip list | grep numpy                  # show the new version
   fi
-  runCmd $pythonCmd $baseDir/bldwhisper.py $baseDir/jfk.wav # build the whisper model specified in mmconfig.yml
+  runCmd "$pythonCmd" "$baseDir/bldwhisper.py" "$baseDir/jfk.wav" # build the whisper model specified in mmconfig.yml
   if [ "$pythonVer" = "3.11" ]; then
-    echo "Upgrading numpy" | tee -a $logFile
-    runCmd $pipCmd install --upgrade numpy==2.3 # go back to numpy 2.3
+    echo "Upgrading numpy" | tee -a "$logFile"
+    runCmd "$pipCmd" install --upgrade numpy==2.3 # go back to numpy 2.3
     pip list | grep numpy                  # show the new version
   fi
 
@@ -423,26 +422,26 @@ function buildVenv
   runCmd sudo systemctl enable whisper
   echo | tee -a $logFile
 
-  echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile
+  echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a "$logFile"
   minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver testhub.py testspoke.py"
-  echo | tee -a $logFile
-  echo "cd to $baseDir/install ..." | tee -a $logFile
-  cd $baseDir/install
+  echo | tee -a "$logFile"
+  echo "cd to $baseDir/install ..." | tee -a "$logFile"
+  cd "$baseDir/install"
   runCmd sudo cp $minimyScripts /usr/local/sbin
-  echo | tee -a $logFile
-  echo "cd to /usr/local/sbin ..." | tee -a $logFile
+  echo | tee -a "$logFile"
+  echo "cd to /usr/local/sbin ..." | tee -a "$logFile"
   cd /usr/local/sbin
-  runCmd sudo chown $CURRENT_USER:$CURRENT_GROUP $minimyScripts
+  runCmd sudo chown "$CURRENT_USER:$CURRENT_GROUP" $minimyScripts
 
   # Copy playlist file if mpd playlists directory exists
   if [ -d /var/lib/mpd/playlists ]; then
-    runCmd sudo cp $baseDir/install/great_songs.m3u /var/lib/mpd/playlists
+    runCmd sudo cp "$baseDir/install/great_songs.m3u" /var/lib/mpd/playlists
   else
-    echo "WARNING: /var/lib/mpd/playlists not found, skipping playlist copy" | tee -a $logFile
+    echo "WARNING: /var/lib/mpd/playlists not found, skipping playlist copy" | tee -a "$logFile"
   fi
 
   echo " "
-  echo "Install Complete at `date`" | tee -a $logFile
+  echo "Install Complete at `date`" | tee -a "$logFile"
  }                                         # buildVenv()
 
 # global variables
@@ -463,6 +462,7 @@ LOGS_MOUNT_UNIT=""
 TMP_MOUNT_UNIT=""
 
 # main()
+echo "Starting installation logging to $logFile" > "$logFile"
 detectUserInfo                             # detect user information first
 checkEnv                                   # check the environment
 generateConfigFile                         # generate config file from template

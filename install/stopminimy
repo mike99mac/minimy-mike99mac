@@ -14,17 +14,7 @@ logDir="$baseDir/logs"
 # Detect current user information
 CURRENT_USER=$(whoami)
 
-#+--------------------------------------------------------------------------+
-function getMountUnitName
-# Generate the systemd mount unit name based on the base directory path
-#+--------------------------------------------------------------------------+
- {
-  : SOURCE: ${BASH_SOURCE}
-  : STACK:  ${FUNCNAME[@]}
 
-  # systemd mount units must be named after the mount path with - replacing /
-  echo "$baseDir" | sed 's|^/||; s|/|-|g'
- }                                         # getMountUnitName()
 
 # main()
 echo "Stopping Minimy ..."
@@ -52,7 +42,7 @@ cd $HOME
 
 # Copy log files if the log directory exists
 if [ -d "$logDir" ]; then
-  cp $logDir/* $HOME 2>/dev/null           # copy each log file
+  cp "$logDir"/* "$HOME" 2>/dev/null           # copy each log file
 fi
 
 if [ ${#procs} != 0 ]; then
@@ -62,7 +52,7 @@ if [ ${#procs} != 0 ]; then
 
   # Unmount log directory using dynamic path
   if mount | grep -q "$logDir"; then
-    sudo umount $logDir                    # unmount log directory - and logs disappear
+    sudo umount "$logDir"                    # unmount log directory - and logs disappear
   fi
 fi
 
