@@ -22,15 +22,15 @@ function checkEnv
   : SOURCE: ${BASH_SOURCE}
   : STACK:  ${FUNCNAME[@]}
 
-  if [ ! -d $baseDir ]; then
+  if [ ! -d "$baseDir" ]; then
     echo "ERROR: base directory $baseDir not found"
     echo "To clone Minimy to your home directory: "
     echo "cd; git clone https://github.com/mike99mac/minimy-mike99mac"
     exit 1
   fi
-  if [ ! -d $logDir ]; then
+  if [ ! -d "$logDir" ]; then
     echo "WARNING: log directory $logDir not found, creating it..."
-    mkdir -p $logDir
+    mkdir -p "$logDir"
   fi
   ps -ef | grep "python3.*minimy" | grep -v grep | grep -v whisper
   if [ $? = 0 ]; then                      # minimy is running
@@ -136,7 +136,7 @@ function startSystem
   : SOURCE: ${BASH_SOURCE}
   : STACK:  ${FUNCNAME[@]}
 
-  cd $baseDir
+  cd "$baseDir"
 
   # Use explicit path to venv python to ensure packages are available
   local venvPython="$baseDir/minimy_venv/bin/python3"
@@ -152,19 +152,21 @@ function startSystem
   logDir="$baseDir/logs"
 
   echo "Starting system skills ..."
-  cd $baseDir/skills/system_skills
-  $venvPython skill_system.py >> $logDir/skills.log &
+  echo "Starting system skills ..."
+  cd "$baseDir/skills/system_skills"
+  "$venvPython" skill_system.py >> "$logDir/skills.log" &
   sleep 1
   echo "Starting intent service ..."
-  cd $baseDir
-  $venvPython framework/services/intent/intent.py >> $logDir/intent.log &
+  echo "Starting intent service ..."
+  cd "$baseDir"
+  "$venvPython" framework/services/intent/intent.py >> "$logDir/intent.log" &
   sleep 2
   echo "Starting media player ..."
-  $venvPython framework/services/output/media_player.py >> $logDir/skills.log &
+  "$venvPython" framework/services/output/media_player.py >> "$logDir/skills.log" &
   echo "Starting TTS service ..."
-  $venvPython framework/services/tts/tts.py >> $logDir/tts.log &
+  "$venvPython" framework/services/tts/tts.py >> "$logDir/tts.log" &
   echo "Starting STT service ..."
-  $venvPython framework/services/stt/stt.py >> $logDir/stt.log &
+  "$venvPython" framework/services/stt/stt.py >> "$logDir/stt.log" &
   sleep 1
  }                                         # startSystem()
 
@@ -182,13 +184,13 @@ function loadOneSkill
   shift
   local desc="$@"
 
-  if [ ! -d $theDir ]; then
+  if [ ! -d "$theDir" ]; then
     echo "ERROR: Directory $theDir not found"
     exit 5
   fi
-  cd $theDir
+  cd "$theDir"
   echo "Starting $desc from directory $theDir ..."
-  $baseDir/minimy_venv/bin/python3 __init__.py $PWD &
+  "$baseDir/minimy_venv/bin/python3" __init__.py "$PWD" &
  }                                         # loadOneSkill{}
 
 #+--------------------------------------------------------------------------+
@@ -200,12 +202,12 @@ function loadSystemSkills
   : STACK:  ${FUNCNAME[@]}
 
   echo "Starting System Skills ..."
-  cd $baseDir
+  cd "$baseDir"
   local venvPython="$baseDir/minimy_venv/bin/python3"
-  $venvPython skills/system_skills/skill_fallback.py &
-  $venvPython skills/system_skills/skill_media.py &
-  $venvPython skills/system_skills/skill_volume.py &
-  $venvPython skills/system_skills/skill_alarm.py &
+  "$venvPython" skills/system_skills/skill_fallback.py &
+  "$venvPython" skills/system_skills/skill_media.py &
+  "$venvPython" skills/system_skills/skill_volume.py &
+  "$venvPython" skills/system_skills/skill_alarm.py &
   sleep 2
  }                                       # loadSystemSkills()
 
@@ -228,10 +230,11 @@ function loadUserSkills
   # loadOneSkill ../rfm RFM skill
   # loadOneSkill ../wiki Wiki skill
   # loadOneSkill ../youtube YouTube skill
-  loadOneSkill $baseDir/skills/user_skills/help Help skill
-  loadOneSkill $baseDir/skills/user_skills/timedate TimeDate skill
-  loadOneSkill $baseDir/skills/user_skills/weather Weather skill
-  loadOneSkill $baseDir/skills/user_skills/mpc music and news skill
+  # loadOneSkill ../youtube YouTube skill
+  loadOneSkill "$baseDir/skills/user_skills/help" Help skill
+  loadOneSkill "$baseDir/skills/user_skills/timedate" TimeDate skill
+  loadOneSkill "$baseDir/skills/user_skills/weather" Weather skill
+  loadOneSkill "$baseDir/skills/user_skills/mpc" music and news skill
   sleep 3
  }                                         # loadUserSkills()
 
@@ -243,12 +246,12 @@ function loadOtherServices
   : SOURCE: ${BASH_SOURCE}
   : STACK:  ${FUNCNAME[@]}
 
-  cd $baseDir
+  cd "$baseDir"
   local venvPython="$baseDir/minimy_venv/bin/python3"
   echo "Starting buttons ..."
-  $venvPython framework/services/input/buttons.py &
+  "$venvPython" framework/services/input/buttons.py &
   echo "Starting the mic ..."
-  $venvPython framework/services/input/mic.py &
+  "$venvPython" framework/services/input/mic.py &
  }                                       # loadOtherServices()
 
 # main()

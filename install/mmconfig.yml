@@ -18,7 +18,7 @@
   Basic:
     AWSId: ''
     AWSKey: ''
-    BaseDir: /home/lucamignatti.linux/minimy
+    BaseDir: /home/user/minimy
     GoogleApiKeyPath: install/my_google_key.json
     Hub: localhost
     HubModel: base.en

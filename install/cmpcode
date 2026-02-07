@@ -30,7 +30,7 @@ sourceFiles=$(ls bus/*py framework/*py framework/*/*py framework/*/*/*py framewo
 
 for nextFile in $sourceFiles; do
   echo "comparing $nextFile ..."
-  if [ ! -f $gitCode/$nextFile ]; then
+  if [ ! -f "$gitCode/$nextFile" ]; then
     echo "$gitCode/$nextFile not found"
     if [ ${#newFiles} = 0 ]; then
       newFiles="$nextFile"
@@ -38,7 +38,7 @@ for nextFile in $sourceFiles; do
       newFiles="$newFiles \n$nextFile"
     fi
   else
-    diff $srcCode/$nextFile $gitCode/$nextFile >/dev/null
+    diff "$srcCode/$nextFile" "$gitCode/$nextFile" >/dev/null
     if [ $? != 0 ]; then                     # file has changed
       if [ ${#copyCmds} = 0 ]; then          # first copy command
         copyCmds="cp $srcCode/$nextFile $gitCode/$nextFile"
@@ -56,12 +56,12 @@ else                                       # at least one change
   tmpFile=$(mktemp)
   echo "#!/bin/bash" > $tmpFile            # restart file
   echo -e "$copyCmds" >> $tmpFile          # add copy commands with newlines
-  sudo mv $tmpFile $copycode               # script to copy modified files
-  sudo chown $(whoami):$(id -gn) $copycode
-  sudo chmod 755 $copycode
+  sudo mv "$tmpFile" "$copycode"               # script to copy modified files
+  sudo chown $(whoami):$(id -gn) "$copycode"
+  sudo chmod 755 "$copycode"
   echo "Copy commands in: $copycode"
   echo
-  cat $copycode
+  cat "$copycode"
 fi
 
 if [ ${#newFiles} != 0 ]; then             # at least one new file
