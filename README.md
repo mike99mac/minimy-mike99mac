@@ -509,7 +509,7 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
       Basic
         ('AWSId', '')
         ('AWSKey', '')
-        ('BaseDir', '/home/pi/minimy')
+        ('BaseDir', '$HOME/minimy')
         ('GoogleApiKeyPath', 'install/my_google_key.json')
         ('Version', '1.0.4')
         ('WakeWords', ['hey computer', 'computer'])
@@ -557,8 +557,8 @@ Their output is written to the ``logs/`` directory under the main install direct
       Swap:          1.0Gi       4.0Mi       1.0Gi
     tmpfs filesystem?
                           /var/log       Linux logs : yes
-              /home/pi/minimy/logs      Minimy logs : yes
-               /home/pi/minimy/tmp  Minimy temp dir : yes
+              $HOME/minimy/logs      Minimy logs : yes
+               $HOME/minimy/tmp  Minimy temp dir : yes
     ```
 You should see two changes:
 
@@ -604,7 +604,7 @@ Following are some debugging resources.
         **``tail -f *``**
 
 - There is an HTML file with JavaScript code that displays the message bus in real time. If you do not have a Web server running, you must view it from the local host.
-    - Start a browser on the box you're installing on and point it to ``file:///home/pi/minimy/display/sysmon.html``
+    - Start a browser on the box you're installing on and point it to ``file://$HOME/minimy/display/sysmon.html``
     - You should see all messages written to the message bus and the associated data.
 
 - The **``sortlogs``** script - merges and sorts all the log files by timestamp and saves them to ``/tmp``. The merged output is often easier to peruse than the individual files.

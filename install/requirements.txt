@@ -11,3 +11,4 @@ boto3
 boto3[crt]
 google-cloud-speech
 pytube
+lingua-franca

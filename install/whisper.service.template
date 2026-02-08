@@ -1,0 +1,17 @@
+[Unit]
+Description=Whisper Speech-to-Text Server
+After=network.target
+
+[Service]
+ExecStart={{BASE_DIR}}/minimy_venv/bin/python3 {{BASE_DIR}}/framework/services/stt/local/whisper/local_whisper.py
+WorkingDirectory={{BASE_DIR}}/framework/services/stt/local/whisper
+User={{USER}}
+Group={{GROUP}}
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH={{BASE_DIR}}:$PYTHONPATH
+Environment=SVA_BASE_DIR={{BASE_DIR}}
+StandardOutput=append:/var/log/whisper.log
+StandardError=append:/var/log/whisper.log
+
+[Install]
+WantedBy=multi-user.target
