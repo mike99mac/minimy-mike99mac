@@ -1,17 +1,36 @@
 #!/bin/bash
 #
-# cmpcode - compare code in $HOME/minimy and $HOME/minimy-mike99mac 
+# cmpcode - compare code in $HOME/minimy and $HOME/minimy-mike99mac
 #
-copyCmds=""                                # copy commands 
+
+# Detect base directory dynamically
+if [ -n "$SVA_BASE_DIR" ]; then
+  srcCode="$SVA_BASE_DIR"
+else
+  srcCode="$HOME/minimy"
+fi
+
+copyCmds=""                                # copy commands
 newFiles=""                                # files not in git
 gitCode="$HOME/minimy-mike99mac"           # git code
-srcCode="$HOME/minimy"                     # running code
 
-cd "$HOME/minimy"
-sourceFiles=`ls bus/*py framework/*py framework/*/*py framework/*/*/*py framework/*/*/*/*py framework/*/*/*/*/*py skills/*py skills/*/*py skills/*/*/*py | xargs`
+if [ ! -d "$srcCode" ]; then
+  echo "ERROR: source directory $srcCode not found"
+  exit 1
+fi
+
+if [ ! -d "$gitCode" ]; then
+  echo "ERROR: git directory $gitCode not found"
+  echo "did you: git clone https://github.com/mike99mac/minimy-mike99mac"
+  exit 1
+fi
+
+cd "$srcCode"
+sourceFiles=$(ls bus/*py framework/*py framework/*/*py framework/*/*/*py framework/*/*/*/*py framework/*/*/*/*/*py skills/*py skills/*/*py skills/*/*/*py 2>/dev/null | xargs)
+
 for nextFile in $sourceFiles; do
   echo "comparing $nextFile ..."
-  if [ ! -f $gitCode/$nextFile ]; then 
+  if [ ! -f "$gitCode/$nextFile" ]; then
     echo "$gitCode/$nextFile not found"
     if [ ${#newFiles} = 0 ]; then
       newFiles="$nextFile"
@@ -19,7 +38,7 @@ for nextFile in $sourceFiles; do
       newFiles="$newFiles \n$nextFile"
     fi
   else
-    diff $srcCode/$nextFile $gitCode/$nextFile >/dev/null
+    diff "$srcCode/$nextFile" "$gitCode/$nextFile" >/dev/null
     if [ $? != 0 ]; then                     # file has changed
       if [ ${#copyCmds} = 0 ]; then          # first copy command
         copyCmds="cp $srcCode/$nextFile $gitCode/$nextFile"
@@ -34,18 +53,18 @@ if [ ${#copyCmds} = 0 ]; then              # nothing changed
   echo "No code changes found in $srcCode"
 else                                       # at least one change
   copycode="/usr/local/sbin/copycode"
-  tmpFile=`mktemp`
+  tmpFile=$(mktemp)
   echo "#!/bin/bash" > $tmpFile            # restart file
   echo -e "$copyCmds" >> $tmpFile          # add copy commands with newlines
-  sudo mv $tmpFile $copycode               # script to copy modified files
-  sudo chown $USER:$USER $copycode     
-  sudo chmod 755 $copycode      
+  sudo mv "$tmpFile" "$copycode"               # script to copy modified files
+  sudo chown $(whoami):$(id -gn) "$copycode"
+  sudo chmod 755 "$copycode"
   echo "Copy commands in: $copycode"
   echo
-  cat $copycode
-fi 
+  cat "$copycode"
+fi
+
 if [ ${#newFiles} != 0 ]; then             # at least one new file
   echo "New files:"
   echo -e "$newFiles"
 fi
-

@@ -2,25 +2,58 @@
 #
 # stopminimy - kill processes with 'minimy' in them, sort log files, copy to $HOME and unmount tmpfs
 #
-# main() 
-echo "Stopping Minimy ..." 
-procs=`ps -ef | grep -E 'minimy/skills|skills/system_skills|framework/services|MsgBus|mimic3|skill_system.py' | grep -v grep | grep -v local_whisper | grep -v vim`
-if [ ${#procs} = 0 ]; then 
+
+# Detect base directory dynamically
+if [ -n "$SVA_BASE_DIR" ]; then
+  baseDir="$SVA_BASE_DIR"
+else
+  baseDir="$HOME/minimy"
+fi
+logDir="$baseDir/logs"
+
+# Detect current user information
+CURRENT_USER=$(whoami)
+
+
+
+# main()
+echo "Stopping Minimy ..."
+echo "User: $CURRENT_USER"
+echo "Base directory: $baseDir"
+
+procs=$(ps -ef | grep -E 'minimy/skills|skills/system_skills|framework/services|MsgBus|mimic3|skill_system.py' | grep -v grep | grep -v local_whisper | grep -v vim)
+if [ ${#procs} = 0 ]; then
   echo "Minimy does not appear to be running"
 else
   echo "$procs" | while read nextProc; do
-    pid=`echo $nextProc | awk '{print $2}'`
+    pid=$(echo $nextProc | awk '{print $2}')
     echo "killing process: $nextProc ..."
     sudo kill $pid
-  done 
+  done
 fi
-sortlogs                                   # create a time sorted file of all logs
+
+# Sort logs if the sortlogs command exists
+if command -v sortlogs &> /dev/null; then
+  sortlogs                                 # create a time sorted file of all logs
+fi
+
 rm -fr /tmp/pymp*                          # clean up socket temp directories
 cd $HOME
-cp $HOME/minimy/logs/* $HOME               # copy each log file   
-if [ ${#procs} != 0 ]; then 
+
+# Copy log files if the log directory exists
+if [ -d "$logDir" ]; then
+  cp "$logDir"/* "$HOME" 2>/dev/null           # copy each log file
+fi
+
+if [ ${#procs} != 0 ]; then
   waitSecs=4
   echo "Waiting $waitSecs seconds for processes to finish ..."
   sleep $waitSecs                          # wait for processes to die before unmounting tmpfs
-  sudo umount $HOME/minimy/logs            # unmount log directory - and logs disappear
+
+  # Unmount log directory using dynamic path
+  if mount | grep -q "$logDir"; then
+    sudo umount "$logDir"                    # unmount log directory - and logs disappear
+  fi
 fi
+
+echo "Minimy stopped."

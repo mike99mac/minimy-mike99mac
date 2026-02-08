@@ -12,9 +12,8 @@ function usage
   : SOURCE: ${BASH_SOURCE}
   : STACK:  ${FUNCNAME[@]}
 
-  echo "Name: lsskills - List OVOS/Neon skills "
-  echo "Usage: lsskills [OPTIONS] [PATTERN]"
-  echo "Where: PATTERN is an optional string pattern to search for"
+  echo "Name: installminimy - Install the Minimy voice assistant"
+  echo "Usage: installminimy [OPTIONS]"
   echo ""
   echo "OPTIONS:"
   echo "  -h|--help           Give help (this screen)"
@@ -46,7 +45,7 @@ function parseArgs
           usage                            # give help
         fi
         shift                              # get to next arg
-        hub=$1
+        hub="$1"
         ;;
       -v|--verbose)
         verbose=2
@@ -64,8 +63,150 @@ function parseArgs
  }                                         # parseArgs()
 
 #+--------------------------------------------------------------------------+
+function detectUserInfo
+# Detect the current user, UID, and base directory
+#+--------------------------------------------------------------------------+
+ {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+
+  # Detect current user information
+  CURRENT_USER=$(whoami)
+  CURRENT_UID=$(id -u)
+  CURRENT_GROUP=$(id -gn)
+
+  echo "Detected user: $CURRENT_USER (UID: $CURRENT_UID, Group: $CURRENT_GROUP)" | tee -a "$logFile"
+  echo "Base directory: $baseDir" | tee -a "$logFile"
+
+  # Validate that we're not running as root
+  if [ "$CURRENT_USER" = "root" ]; then
+    echo "ERROR: Do not run this script as root. Run as a regular user with sudo privileges."
+    exit 5
+  fi
+
+  # Check if base directory exists
+  if [ ! -d "$baseDir" ]; then
+    echo "ERROR: Base directory $baseDir not found"
+    exit 2
+  fi
+ }                                         # detectUserInfo()
+
+#+--------------------------------------------------------------------------+
+function generateServiceFiles
+# Generate systemd service files from templates with dynamic user and paths
+#+--------------------------------------------------------------------------+
+ {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+
+  echo | tee -a $logFile
+  echo "Generating systemd service files from templates..." | tee -a $logFile
+
+  # Create a temporary directory for generated files
+  local tmpDir=$(mktemp -d)
+
+  # Generate minimy.service from template
+  if [ ! -f "$baseDir/install/minimy.service.template" ]; then
+    echo "ERROR: minimy.service.template not found" | tee -a $logFile
+    exit 6
+  fi
+  sed -e "s|{{USER}}|$CURRENT_USER|g" \
+      -e "s|{{GROUP}}|$CURRENT_GROUP|g" \
+      -e "s|{{BASE_DIR}}|$baseDir|g" \
+      -e "s|{{UID}}|$CURRENT_UID|g" \
+      "$baseDir/install/minimy.service.template" > "$tmpDir/minimy.service"
+  echo "Generated minimy.service" | tee -a $logFile
+
+  # Generate whisper.service from template
+  if [ ! -f "$baseDir/install/whisper.service.template" ]; then
+    echo "ERROR: whisper.service.template not found" | tee -a $logFile
+    exit 7
+  fi
+  sed -e "s|{{USER}}|$CURRENT_USER|g" \
+      -e "s|{{GROUP}}|$CURRENT_GROUP|g" \
+      -e "s|{{BASE_DIR}}|$baseDir|g" \
+      -e "s|{{UID}}|$CURRENT_UID|g" \
+      "$baseDir/install/whisper.service.template" > "$tmpDir/whisper.service"
+  echo "Generated whisper.service" | tee -a $logFile
+
+  # Generate mount unit name based on base directory path
+  # systemd mount units must be named after the mount path with - replacing /
+  local mountUnitPath=$(echo "$baseDir" | sed 's|^/||; s|/|-|g')
+
+  # Generate logs mount file from template
+  if [ ! -f "$baseDir/install/minimy-logs.mount.template" ]; then
+    echo "ERROR: minimy-logs.mount.template not found" | tee -a $logFile
+    exit 8
+  fi
+  sed -e "s|{{USER}}|$CURRENT_USER|g" \
+      -e "s|{{GROUP}}|$CURRENT_GROUP|g" \
+      -e "s|{{BASE_DIR}}|$baseDir|g" \
+      "$baseDir/install/minimy-logs.mount.template" > "$tmpDir/${mountUnitPath}-logs.mount"
+  echo "Generated ${mountUnitPath}-logs.mount" | tee -a $logFile
+
+  # Generate tmp mount file from template
+  if [ ! -f "$baseDir/install/minimy-tmp.mount.template" ]; then
+    echo "ERROR: minimy-tmp.mount.template not found" | tee -a $logFile
+    exit 9
+  fi
+  sed -e "s|{{USER}}|$CURRENT_USER|g" \
+      -e "s|{{GROUP}}|$CURRENT_GROUP|g" \
+      -e "s|{{BASE_DIR}}|$baseDir|g" \
+      "$baseDir/install/minimy-tmp.mount.template" > "$tmpDir/${mountUnitPath}-tmp.mount"
+  echo "Generated ${mountUnitPath}-tmp.mount" | tee -a $logFile
+
+  # Store the mount unit names for later use
+  LOGS_MOUNT_UNIT="${mountUnitPath}-logs.mount"
+  TMP_MOUNT_UNIT="${mountUnitPath}-tmp.mount"
+
+  # Copy generated files to /etc/systemd/system
+  echo "Installing systemd service files..." | tee -a $logFile
+  runCmd sudo cp "$tmpDir/minimy.service" /etc/systemd/system/minimy.service
+  runCmd sudo cp "$tmpDir/whisper.service" /etc/systemd/system/whisper.service
+  runCmd sudo cp "$tmpDir/${mountUnitPath}-logs.mount" "/etc/systemd/system/${mountUnitPath}-logs.mount"
+  runCmd sudo cp "$tmpDir/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
+
+  # Cleanup temporary directory
+  rm -rf "$tmpDir"
+
+  # Reload systemd to pick up new files
+  runCmd sudo systemctl daemon-reload
+
+  echo "Systemd service files installed successfully" | tee -a $logFile
+ }                                         # generateServiceFiles()
+
+#+--------------------------------------------------------------------------+
+function generateConfigFile
+# Generate mmconfig.yml from template with dynamic base directory
+#+--------------------------------------------------------------------------+
+ {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+
+  echo | tee -a $logFile
+  echo "Generating configuration file..." | tee -a $logFile
+
+  if [ -f "$baseDir/install/mmconfig.yml.template" ]; then
+    sed -e "s|{{BASE_DIR}}|$baseDir|g" \
+        -e "s|{{USER}}|$CURRENT_USER|g" \
+        -e "s|{{GROUP}}|$CURRENT_GROUP|g" \
+        "$baseDir/install/mmconfig.yml.template" > "$baseDir/install/mmconfig.yml"
+    echo "Generated mmconfig.yml with BaseDir: $baseDir" | tee -a $logFile
+  elif [ -f "$baseDir/install/mmconfig.yml" ]; then
+    # Update existing config file - use generic pattern to match any path
+    # This handles /home/pi/minimy, /home/username/minimy, /opt/minimy, etc.
+    sed -i "s|BaseDir: .*/minimy|BaseDir: $baseDir|g" "$baseDir/install/mmconfig.yml"
+    # Also handle cases where BaseDir might have a different structure
+    # sed -i "s|BaseDir: /[^[:space:]]*|BaseDir: $baseDir|g" "$baseDir/install/mmconfig.yml"
+    echo "Updated existing mmconfig.yml with BaseDir: $baseDir" | tee -a $logFile
+  else
+    echo "WARNING: No config template or file found" | tee -a $logFile
+  fi
+ }                                         # generateConfigFile()
+
+#+--------------------------------------------------------------------------+
 function setMinimyVars
-# Set Minimy variables in mmconfig.yaml:                 
+# Set Minimy variables in mmconfig.yaml:
 # - hub: host name of server doing STT and Q&A
 # - musicDir: directory with music files
 #+--------------------------------------------------------------------------+
@@ -78,15 +219,15 @@ function setMinimyVars
     echo -n "Host name of hub server [$hub]: "
     read hub
   fi
-  if [ ${#hub} != 0 ]; then                # new value was supplied
-    sed -i "s/    Hub: .*/    Hub: $hub/g" $configFile # reset hub server
+    if [ ${#hub} != 0 ]; then                # new value was supplied
+    sed -i "s/    Hub: .*/    Hub: $hub/g" "$configFile" # reset hub server
   fi
   if [ ${#MusicDir} = 0 ]; then            # music dir not set with args
-    musicDir=`grep "    MusicDir:" $configFile | awk '{print $2}'` # get music dir in config file
+    musicDir=`grep "    MusicDir:" "$configFile" | awk '{print $2}'` # get music dir in config file
     echo -n "Directory with music files [$musicDir]: "
     read newMusicDir
     if [ ${#newMusicDir} != 0 ]; then      # new music dir was supplied
-      sed -i "s/    MusicDir: .*/    MusicDir: $hub/g" $configFile # reset hub server
+      sed -i "s/    MusicDir: .*/    MusicDir: $newMusicDir/g" "$configFile" # reset music dir
     fi
   fi
  }                                         # setMinimyVars()
@@ -101,12 +242,12 @@ function runCmd
 
   cmd="$@"                                 # get all args
   let stepNum=$stepNum+1
-  echo | tee -a $logFile
-  echo "Step $stepNum: $cmd ..." 2>&1 | tee -a $logFile # show the command and send to output file
-  eval $cmd >> $logFile 2>&1               # run command and log output
+  echo | tee -a "$logFile"
+  echo "Step $stepNum: $cmd ..." 2>&1 | tee -a "$logFile" # show the command and send to output file
+  eval $cmd >> "$logFile" 2>&1               # run command and log output
   rc=$?
   if [ "$rc" != 0 ]; then                  # it failed
-    echo "ERROR: $cmd returned $rc" | tee -a $logFile
+    echo "ERROR: $cmd returned $rc" | tee -a "$logFile"
     echo "Log file: $logFile"
     exit 1
   else
@@ -114,30 +255,38 @@ function runCmd
   fi
   let curSecs=$SECONDS
   let et=$curSecs-$lastSecs
-  echo "Step $stepNum took $et seconds" | tee -a $logFile
+  echo "Step $stepNum took $et seconds" | tee -a "$logFile"
   lastSecs=$curSecs
  }                                         # runCmd()
 
 #+--------------------------------------------------------------------------+
 function checkEnv
-# Check that the base directory and Minimy config file exist
+# Check that the base directory exists and create config if needed
 #+--------------------------------------------------------------------------+
  {
   : SOURCE: ${BASH_SOURCE}
   : STACK:  ${FUNCNAME[@]}
 
-  if [ ! -d $baseDir ]; then
-    echo "ERROR: base directory $baseDir not found"
-    exit 2
-  fi
+  # Check that the base directory exists
+  # Note: baseDir existence is already checked in detectUserInfo
+
+
+  # Generate config file from template if it doesn't exist
   if [ ! -f $configFile ]; then
-    echo "ERROR: Minimy config file $configFile not found"
-    exit 3
+    if [ -f "$baseDir/install/mmconfig.yml.template" ]; then
+      echo "Config file not found, generating from template..."
+      sed -e "s|{{BASE_DIR}}|$baseDir|g" \
+          -e "s|{{USER}}|$(whoami)|g" \
+          "$baseDir/install/mmconfig.yml.template" > "$configFile"
+    else
+      echo "ERROR: Minimy config file $configFile not found and no template available"
+      exit 3
+    fi
   fi
  }                                         # checkEnv()
 
 #+--------------------------------------------------------------------------+
-function buildVenv                              
+function buildVenv
 # Build the virtual environment
 #+--------------------------------------------------------------------------+
  {
@@ -145,53 +294,54 @@ function buildVenv
   : STACK:  ${FUNCNAME[@]}
 
   echo
-  echo "Running $0 at `date` ..." > $logFile # create a new log file
-  echo | tee -a $logFile
-  echo "cd to $HOME/minimy ..." | tee -a $logFile
-  cd $HOME/minimy
-  echo | tee -a $logFile
+  echo "Running $0 at `date` ..." >> "$logFile" # append to log file
+  echo | tee -a "$logFile"
+  echo "cd to $baseDir ..." | tee -a "$logFile"
+  cd "$baseDir"
+  echo | tee -a "$logFile"
   echo "Installing virtual environment ..." | tee -a $logFile
   runCmd sudo apt-get install -y python3-venv
   runCmd sudo apt-get install -y python3-dev
   runCmd python3 -m venv minimy_venv
   echo | tee -a $logFile
-  echo "Upgrading pip ..." | tee -a $logFile
-  local pipCmd="$HOME/minimy/minimy_venv/bin/pip" # use pip from the venv
-  runCmd $pipCmd install --upgrade pip
-  echo | tee -a $logFile
-  echo "Activating virtual environment ..." | tee -a $logFile
+  echo "Upgrading pip ..." | tee -a "$logFile"
+  local pipCmd="$baseDir/minimy_venv/bin/pip" # use pip from the venv
+  runCmd "$pipCmd" install --upgrade pip
+  echo | tee -a "$logFile"
+  echo "Activating virtual environment ..." | tee -a "$logFile"
   runCmd source minimy_venv/bin/activate   # start virtual environment
-  echo | tee -a $logFile
-  echo "Upgrading wheel and setuptools ..." | tee -a $logFile
-  runCmd $pipCmd install --upgrade wheel setuptools
+  echo | tee -a "$logFile"
+  echo "Upgrading wheel and setuptools ..." | tee -a "$logFile"
+  runCmd "$pipCmd" install --upgrade wheel setuptools
   runCmd sudo apt-get install -y python3-dev build-essential portaudio19-dev mpg123 ffmpeg curl wget
   runCmd sudo apt-get install -y libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
   runCmd sudo apt-get install -y libavcodec-dev libavformat-dev libavdevice-dev redis
   echo | tee -a $logFile
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
-  echo "Python version: $pythonVer ..." | tee -a $logFile
-  local pythonCmd="$HOME/minimy/minimy_venv/bin/python$pythonVer" # use python from the venv
-  runCmd $pythonCmd -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
-  echo "Installing yt-dlp and requirements.txt ..." | tee -a $logFile
-  cd $baseDir
-  runCmd pip install --no-binary :all: regex # force pip to ignore old wheels and build fresh
-  runCmd $pipCmd install lingua_franca
-  runCmd $pipCmd install -r install/requirements.txt
-  echo "Installing local STT whisper" | tee -a $logFile
-  runCmd $pipCmd install git+https://github.com/openai/whisper.git
-  runCmd $pipCmd install datasets
-  runCmd $pipCmd install gpiozero
-  runCmd $pipCmd install keyboard
+  echo "Python version: $pythonVer ..." | tee -a "$logFile"
+  local pythonCmd="$baseDir/minimy_venv/bin/python$pythonVer" # use python from the venv
+  runCmd "$pythonCmd" -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
+  echo "Installing yt-dlp and requirements.txt ..." | tee -a "$logFile"
+  cd "$baseDir"
+  runCmd "$pipCmd" install --no-binary :all: regex # force pip to ignore old wheels and build fresh
+  # runCmd $pipCmd install lingua_franca # installed via requirements.txt
+  runCmd sudo apt-get install python3-lingua-franca
+  runCmd "$pipCmd" install -r install/requirements.txt
+  echo "Installing local STT whisper" | tee -a "$logFile"
+  runCmd "$pipCmd" install git+https://github.com/openai/whisper.git
+  runCmd "$pipCmd" install datasets
+  runCmd "$pipCmd" install gpiozero
+  runCmd "$pipCmd" install keyboard
   # runCmd $pipCmd install swig
   runCmd sudo apt-get install -y swig
   runCmd sudo apt-get install -y liblgpio-dev
-  runCmd $pipCmd install lgpio
-  runCmd $pipCmd install optimum
-  runCmd $pipCmd install quart
-  runCmd $pipCmd install redis
-  runCmd $pipCmd install whisper
-  runCmd $pipCmd install youtube-search
-  runCmd $pipCmd install git+https://github.com/wiseman/py-webrtcvad.git
+  runCmd "$pipCmd" install lgpio
+  runCmd "$pipCmd" install optimum
+  runCmd "$pipCmd" install quart
+  runCmd "$pipCmd" install redis
+  runCmd "$pipCmd" install whisper
+  runCmd "$pipCmd" install youtube-search
+  runCmd "$pipCmd" install git+https://github.com/wiseman/py-webrtcvad.git
   runCmd $pipCmd install --upgrade --upgrade-strategy eager "optimum[neural-compressor]"
   echo | tee -a $logFile
 
@@ -202,7 +352,7 @@ function buildVenv
   fi
   runCmd $pipCmd install youtube-search-python
   echo | tee -a $logFile
-  cd $HOME/minimy/framework/services/intent/nlp/local
+  cd $baseDir/framework/services/intent/nlp/local
 
   echo "Building CMU link grammar ..." | tee -a $logFile
   runCmd tar xzf cmu_link-4.1b.tar.gz
@@ -211,19 +361,19 @@ function buildVenv
   cd link-4.1b
   runCmd make
 
-  echo "Installing Local STT ..." | tee -a $logFile
-  echo | tee -a $logFile
-  cd $baseDir/install
+  echo "Installing Local STT ..." | tee -a "$logFile"
+  echo | tee -a "$logFile"
+  cd "$baseDir/install"
   echo "Loading the whisper model"
-  if [ "$pythonVer" = "3.11" ]; then 
-    echo "Downgrading numpy to 1.24" | tee -a $logFile
-    runCmd $pipCmd install --force-reinstall numpy==1.24 # numpy must be 1.24 for building whisper
+  if [ "$pythonVer" = "3.11" ]; then
+    echo "Downgrading numpy to 1.24" | tee -a "$logFile"
+    runCmd "$pipCmd" install --force-reinstall numpy==1.24 # numpy must be 1.24 for building whisper
     pip list | grep numpy                  # show the new version
   fi
-  runCmd $pythonCmd $baseDir/bldwhisper.py $baseDir/jfk.wav # build the whisper model specified in mmconfig.yml
-  if [ "$pythonVer" = "3.11" ]; then 
-    echo "Upgrading numpy" | tee -a $logFile
-    runCmd $pipCmd install --upgrade numpy==2.3 # go back to numpy 2.3
+  runCmd "$pythonCmd" "$baseDir/bldwhisper.py" "$baseDir/jfk.wav" # build the whisper model specified in mmconfig.yml
+  if [ "$pythonVer" = "3.11" ]; then
+    echo "Upgrading numpy" | tee -a "$logFile"
+    runCmd "$pipCmd" install --upgrade numpy==2.3 # go back to numpy 2.3
     pip list | grep numpy                  # show the new version
   fi
 
@@ -255,34 +405,43 @@ function buildVenv
   ollama pull llama3
 
   cd $baseDir
-  echo "Copying and enabling systemd .mount and .service files ..." | tee -a $logFile 
-  runCmd sudo cp install/home-pi-minimy-logs.mount /etc/systemd/system 
-  runCmd sudo systemctl enable home-pi-minimy-logs.mount 
-  runCmd sudo cp install/home-pi-minimy-tmp.mount /etc/systemd/system 
-  runCmd sudo systemctl enable home-pi-minimy-tmp.mount 
-  runCmd sudo cp install/minimy.service /etc/systemd/system 
+
+  # Generate and install systemd service files dynamically
+  generateServiceFiles
+
+  # Enable the services
+  echo "Enabling systemd services..." | tee -a $logFile
+  runCmd sudo systemctl enable "$LOGS_MOUNT_UNIT"
+  runCmd sudo systemctl enable "$TMP_MOUNT_UNIT"
   runCmd sudo systemctl enable minimy
 
-  # set whisper to run as a system daemon and log to /var/log/whisper.log
-  runCmd sudo cp install/whisper.service /etc/systemd/system 
+  # Set whisper to run as a system daemon and log to /var/log/whisper.log
   runCmd sudo touch /var/log/whisper.log
-  runCmd sudo chown $USER:$USER /var/log/whisper.log
+  runCmd sudo chown $CURRENT_USER:$CURRENT_GROUP /var/log/whisper.log
   runCmd sudo chmod 664 /var/log/whisper.log
-  runCmd sudo systemctl enable whisper 
+  runCmd sudo systemctl enable whisper
   echo | tee -a $logFile
-  echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile
+
+  echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a "$logFile"
   minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver testhub.py testspoke.py"
-  echo | tee -a $logFile
-  echo "cd to $HOME/minimy/install ..." | tee -a $logFile
-  cd $HOME/minimy/install
-  runCmd sudo cp $minimyScripts /usr/local/sbin 
-  echo | tee -a $logFile
-  echo "cd to /usr/local/sbin ..." | tee -a $logFile
+  echo | tee -a "$logFile"
+  echo "cd to $baseDir/install ..." | tee -a "$logFile"
+  cd "$baseDir/install"
+  runCmd sudo cp $minimyScripts /usr/local/sbin
+  echo | tee -a "$logFile"
+  echo "cd to /usr/local/sbin ..." | tee -a "$logFile"
   cd /usr/local/sbin
-  runCmd sudo chown $USER:$USER $minimyScripts
-  runCmd sudo cp $HOME/minimy/install/great_songs.m3u /var/lib/mpd/playlists
+  runCmd sudo chown "$CURRENT_USER:$CURRENT_GROUP" $minimyScripts
+
+  # Copy playlist file if mpd playlists directory exists
+  if [ -d /var/lib/mpd/playlists ]; then
+    runCmd sudo cp "$baseDir/install/great_songs.m3u" /var/lib/mpd/playlists
+  else
+    echo "WARNING: /var/lib/mpd/playlists not found, skipping playlist copy" | tee -a "$logFile"
+  fi
+
   echo " "
-  echo "Install Complete at `date`" | tee -a $logFile
+  echo "Install Complete at `date`" | tee -a "$logFile"
  }                                         # buildVenv()
 
 # global variables
@@ -291,12 +450,22 @@ configFile="$baseDir/install/mmconfig.yml" # Minimy config file
 hub=""                                     # hub server
 let lastSecs=$SECONDS
 timeSt=`date +"%y-%m-%d-%H-%M-%S"`
-logFile="$HOME/$timeSt-instalminimy.out"   # output file
+logFile="$HOME/$timeSt-installminimy.out"  # output file
 musicDir=""                                # directory with music files
 let stepNum=0
 
+# User info (will be set by detectUserInfo)
+CURRENT_USER=""
+CURRENT_UID=""
+CURRENT_GROUP=""
+LOGS_MOUNT_UNIT=""
+TMP_MOUNT_UNIT=""
+
 # main()
+echo "Starting installation logging to $logFile" > "$logFile"
+detectUserInfo                             # detect user information first
 checkEnv                                   # check the environment
+generateConfigFile                         # generate config file from template
 parseArgs $@                               # parse arguments
 setMinimyVars                              # set config file variables
 buildVenv                                  # do the work
@@ -307,4 +476,3 @@ if [ $sec -lt 10 ]; then                   # add a leading 0
 fi
 echo "Successfully installed Minimy in $min:$sec" | tee -a $logFile
 echo "Log file: $logFile"
-
