@@ -286,7 +286,7 @@ class STTSvc:
       initial_timeout = REMOTE_TIMEOUT if self.use_remote_stt else LOCAL_TIMEOUT
       try:
         ready = wait(readers, timeout=LOCAL_TIMEOUT)
-        self.log.error(f"STT.run(): ready: {ready}")
+        self.log.debug(f"STT.run(): ready: {ready}")
         remote_success = False
         local_success = False
         use_remote_result = False
