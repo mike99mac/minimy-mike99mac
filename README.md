@@ -1,9 +1,9 @@
-# Minimy  
+# Minimy
 
 This is a fork of Ken-Mycroft's code at: https://github.com/ken-mycroft/minimy
 
 ## Overview
-This code enables a device to play music by voice. 
+This code enables a device to play music by voice.
 
 I worked with Mycroft since 2019, and was able to get a prototype music skill, based on mpc/mpd, working. But the company went bankrupt in 2023, so had to move on. :((  Thanks for all the hard work the Mycroft employees and contributors did to get us this far.
 
@@ -17,17 +17,17 @@ Following is a block diagram:
 
 The Hub & Spoke model is the idea that one device in the building has to have the best performance to support Speech To Text (STT) and AI general question answering.
 
-The Hub box might be powered by an Nvidia Jetson Nano and the spoke boxes with Raspberry Pi 5's. 
+The Hub box might be powered by an Nvidia Jetson Orin Nano and the spoke boxes with Raspberry Pi 5s.
 
 ## The build
 
 The environment used to develop the code and write this document is a RasPi 4/4GB and 5/8GB. It was tested with
-- Ubuntu Desktop 24.10 
+- Ubuntu Desktop 24.10
 - Rasperry Pi OS Lite, 19 Nov 2024
 
 The overall steps to build a *Smart Boombox* are:
 
-- Acquire the hardware 
+- Acquire the hardware
 - Flash Linux to a memory device
 - Connect the hardware
 - Install and configure Linux
@@ -37,22 +37,22 @@ The overall steps to build a *Smart Boombox* are:
 - Start Minimy and use it!
 
 ## Acquire the hardware
-The recommended hardware is a Raspberry Pi (RasPi) 5B with 4 or 8 GB of memory.  
+The recommended hardware is a Raspberry Pi (RasPi) 5B with 4 or 8 GB of memory.
 
-A Rasberry Pi 400 is another option.  It allows the CPU to be *offboard* which frees up space onboard to house batteries. The CPUs also run a lot cooler due to the massive heat sink.
+A Rasberry Pi 400 is another option. It allows the CPU to be *offboard* which frees up space onboard to house batteries. The CPUs also run a lot cooler due to the massive heat sink.
 
 Hopefully the RasPi 5 will be out soon and will be more powerful, run cooler, and be easier to procure.
 
-For a microphone, a flat, disk type with a mute/unmute switch for visible privacy is recommended.  Don't use a cheap one.
+For a microphone, a flat, disk type with a mute/unmute switch for visible privacy is recommended. Don't use a cheap one.
 It is best to move the microphone away from the speakers and closer to the center of the room.
 
-You can start with just about any speaker(s) with a 3.5mm jack that will plug into the RasPi.  I could start writing about DAC HATs and audio quality, but that's outside the scope of this document.
+You can start with just about any speaker(s) with a 3.5mm jack that will plug into the RasPi. I could start writing about DAC HATs and audio quality, but that's outside the scope of this document.
 
 ## Flash Linux to a memory device
-The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and copy a Linux distribution to it. 
+The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and copy a Linux distribution to it.
 
-The following Linux distributions have been tested: 
-- Ubuntu Desktop 24.10 - https://cdimage.ubuntu.com/releases/24.10/release/ubuntu-24.10-preinstalled-desktop-arm64+raspi.img.xz 
+The following Linux distributions have been tested:
+- Ubuntu Desktop 24.10 - https://cdimage.ubuntu.com/releases/24.10/release/ubuntu-24.10-preinstalled-desktop-arm64+raspi.img.xz
 - Raspberry Pi OS Lite - https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-11-19/2024-11-19-raspios-bookworm-arm64-lite.img.xz
 
 You will need another computer (ideally running Linux) to copy the Linux image to the memory card.
@@ -66,7 +66,7 @@ If you have a Linux box with an SD card port, you can use **``rpi-imager``** to 
 - If you don't have it already, install the tool.
 
     ```
-    sudo apt-get install -y rpi-imager
+    sudo apt install -y rpi-imager
     ```
 
 - Run the tool.
@@ -74,8 +74,8 @@ If you have a Linux box with an SD card port, you can use **``rpi-imager``** to 
     ```
     rpi-imager
     ```
-    
-    You should see a window as shown in the following figure. 
+
+    You should see a window as shown in the following figure.
 
 ![](rpi-imager.jpg)
 
@@ -110,9 +110,9 @@ To connect all the computer hardware, perform the following steps:
 - Plug the micro-SD card into the back underside of the RasPi.
 - If you have wired ethernet, plug it in to the RJ-45 connector on the RasPi.
 - Connect the mouse and keyboard to the USB slots.
-- Connect the monitor to the RasPi with an appropriate micro-HDMI cable.  The RasPi 4 two micro HDMI ports - only the left one sends output at boot time.
+- Connect the monitor to the RasPi with an appropriate micro-HDMI cable. The RasPi 4 two micro HDMI ports - only the left one sends output at boot time.
 - If you have a USB drive with music files on it, plug it in to a USB slot.
-- Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. An official RasPi power supply is recommended to avoid *undervoltage* warnings.  If you have an inline switch, turn it on.
+- Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. An official RasPi power supply is recommended to avoid *undervoltage* warnings. If you have an inline switch, turn it on.
 
 ## Install and configure Linux
 
@@ -126,7 +126,7 @@ To install and configure Ubuntu Desktop Linux, perform the following sections.
 
 ### Boot the RasPi
 
-When you supply power to the RasPi, it should start booting.  On the top, back, left side of the RasPi there are two LEDs:
+When you supply power to the RasPi, it should start booting. On the top, back, left side of the RasPi there are two LEDs:
 
 - The LED to the left should glow solid red. This signifies it has 5V DC power.
 - The LED to the right should flicker green. This signifies that there is communicaiton with the CPU. If there is a red light, but no green one, it's likely the micro-SD card does not have Linux properly installed.
@@ -158,7 +158,7 @@ A welcome screen should open on the monitor. Perform the following steps:
  - Click **Done** at the *Ready to go* window.
 
 Ubuntu Desktop 22.04 should now be installed
- 
+
 ### Initial Raspbian Desktop configuration
 
 If you are installing Ubuntu, skip this section.
@@ -181,14 +181,14 @@ If you are installing Raspbian, skip to the next section.
 The secure shell (SSH) server is not installed by default on Ubuntu desktop. Install it so you can access your system remotely. To do so, perform the following steps:
 
 - Open a terminal session by right-clicking the mouse anywhere on the desktop and choosing **Open in Terminal**. You should see a console window open.
-- Show the contents of the ``/etc/os-release`` file. 
+- Show the contents of the ``/etc/os-release`` file.
 
     ```
     cat /etc/os-release
     ```
-    
+
 - Update and upgrade your system which installs the latest code for all installed packages.
-    
+
     ```
     sudo apt-get update
     ```
@@ -197,12 +197,12 @@ The secure shell (SSH) server is not installed by default on Ubuntu desktop. Ins
     sudo apt-get upgrade -y
     ```
 
-- Install the ``openssh-server`` package, with the following command.  You will be prompted for your password.
-    
+- Install the ``openssh-server`` package, with the following command. You will be prompted for your password.
+
     ```
-    sudo apt-get install -y openssh-server
+    sudo apt install -y openssh-server
     ```
-    
+
     ```
     [sudo] password for pi:
     ```
@@ -212,16 +212,16 @@ The secure shell (SSH) server is not installed by default on Ubuntu desktop. Ins
     ```
     service sshd status
     ```
-    
+
 ### Setting up the SSH server on Raspbian
 
 If you are installing Ubuntu, skip this section.
 
-The secure shell (SSH) server is installed by default on Raspbian, but not running. 
+The secure shell (SSH) server is installed by default on Raspbian, but not running.
 
 To start it now, and enable it at boot time, perform the following steps:
 
-- Click the red Raspberry icon in the upper left corner, then in the drop-down menu choose **Accessories** then **Terminal**. 
+- Click the red Raspberry icon in the upper left corner, then in the drop-down menu choose **Accessories** then **Terminal**.
 
 - From the terminal session, start the SSH server for the current session.
 
@@ -234,15 +234,15 @@ To start it now, and enable it at boot time, perform the following steps:
     ```
     systemctl enable ssh
     ```
-    
+
 ### Start a terminal or SSH session
 
-You can continue to work from a *terminal session* or you can *SSH in* to your new Linux system.  To SSH in, perform the following steps.
+You can continue to work from a *terminal session* or you can *SSH in* to your new Linux system. To SSH in, perform the following steps.
 
-- Get your IP address. You should have either a Wi-Fi (``wlan0``) or a hard-wired (``eth0``) connection. To verify, enter the following command. 
+- Get your IP address. You should have either a Wi-Fi (``wlan0``) or a hard-wired (``eth0``) connection. To verify, enter the following command.
 
     ```
-    ip a 
+    ip a
     1: lo:
     ...
     2: eth0:
@@ -254,7 +254,7 @@ You can continue to work from a *terminal session* or you can *SSH in* to your n
 
 SSH as the user ``pi``, if you want to continue from another system. You can use **putty** to SSH in from a Windows box, or just use the **``ssh``** command from a Linux or macOS console.
 
-**IMPORTANT**: Do not run as ``root``. Doing so will almost certainly screw up your system. 
+**IMPORTANT**: Do not run as ``root``. Doing so will almost certainly screw up your system.
 Users other than ``pi`` ideally will work as the environment variable ``$HOME`` is used in scripts, however, this has never been tested.
 
 ## Install and use ovos-tools
@@ -262,19 +262,19 @@ Users other than ``pi`` ideally will work as the environment variable ``$HOME`` 
 The **``ovos-tools``** repo has been developed to help with the installation, configuration, use and testing of the free and open personal voice assistants.
 
 To install **``ovos-tools``** perform the following steps:
-  
+
 - Install **``git``** and **``vim``** as they are needed shortly.
 
     ```
-    sudo apt-get install -y git vim
+    sudo apt install -y git vim
     ```
-    
+
 - Make **``vim``** the default editor.
 
     ```
     sudo update-alternatives --install /usr/bin/editor editor /usr/bin/vim 100
     ```
-    
+
 - Allow members of the ``sudo`` group to be able to run **``sudo``** commands without a password, by adding **``NOPASSWD:``** to the line near the bottom of the file.
 
     ```
@@ -292,26 +292,26 @@ To install **``ovos-tools``** perform the following steps:
     ```
     git clone https://github.com/mike99mac/ovos-tools
     ```
-    
+
     ```
     Cloning into 'ovos-tools'...
     ...
     Resolving deltas: 100% (366/366), done.
     ```
-    
+
 - Change to the newly installed directory and run the setup script. It will copy scripts to the directory ``/usr/local/sbin`` which is in the default ``PATH``.
 
     ```
     cd ovos-tools
     ```
-    
+
     ```
     sudo ./setup.sh
     ```
-    
+
     The **``ovos-tools``** repo is now installed.
-    
-### Further customize 
+
+### Further customize
 
 The script **``install1``**, in the **``ovos-tools``** package you just installed, runs many commands and thus saves typing, time and possible errors.
 
@@ -330,12 +330,12 @@ It performs the following tasks:
 
 To run **``intall1``**, perform the following steps:
 
-- Run the **``install1``** script. 
+- Run the **``install1``** script.
 
     ```
     cd
     ```
-    
+
     ```
     install1
     ```
@@ -347,8 +347,8 @@ To run **``intall1``**, perform the following steps:
     ```
     lsenv
     ```
-    
-The output should show: 
+
+The output should show:
 
 - Processes with ``minimy`` in their name are not running.
 - The Music Playing Daemon, **``mpd``** is not running.
@@ -364,14 +364,14 @@ Some of the changes made by **``install1``** will not be realized until boot tim
     ```
     sudo reboot
     ```
-    
+
 - Restart your SSH session when it comes back up.
 - Run the same script again to see how the environment has changed.
 
     ```
     lsenv
     ```
-    
+
 You should see three changes:
 
 - The Music Playing Daemon, **``mpd``** is now running.
@@ -380,23 +380,23 @@ You should see three changes:
 
 ## Test microphone and speakers
 
-It is important to know your microphone and speakers are working. 
-There are scripts in *ovos-tools* named **``testrecord``** and **``testplay``**. 
+It is important to know your microphone and speakers are working.
+There are scripts in *ovos-tools* named **``testrecord``** and **``testplay``**.
 They are wrappers around the **``arecord``** and **``aplay``** commands designed to make it easier to test recording audio to a file and playing it back on the speaker(s).
 
-- To test your microphone and speakers, issue the following command then speak for up to five seconds. 
+- To test your microphone and speakers, issue the following command then speak for up to five seconds.
 
     ```
     testrecord
     ```
-    
+
     ```
     Testing your microphone for 5 seconds - SAY SOMETHING!
     INFO: running command: arecord -r 44100  -f S24_LE -d 5 /tmp/test-mic.wav
     Recording WAVE '/tmp/test-mic.wav' : Signed 24 bit Little Endian, Rate 44100 Hz, Mono
     ...
     ```
-    
+
 You should hear your words played back to you. If you do not, you must debug the issues - there's no sense in going forward without a microphone and speaker(s).
 
 At this point your system should have a solid sound and microphone stack running, especially **``mpd``** and **``pulseaudio``**, and all software necessary for the installation of Minimy.
@@ -410,8 +410,8 @@ In this section you will perform the following steps:
 - Configure Minimy
 - Get a Google API key
 
-### Download and copy Minimy 
-It is recommended that you make a second copy of Minimy after you download it.  This way, if you make some changes to the running code, you'll have a reference copy. Also the copy of the code that you run should not have a ``.git/`` directory, thus removing any connection to github.
+### Download and copy Minimy
+It is recommended that you make a second copy of Minimy after you download it. This way, if you make some changes to the running code, you'll have a reference copy. Also the copy of the code that you run should not have a ``.git/`` directory, thus removing any connection to github.
 
 The new directory ***must*** be named ``minimy``, removing the ``-mike99mac`` suffix, as scripts are coded that way.
 
@@ -422,7 +422,7 @@ To download and copy Minimy, perform the following steps:
     ```
     cd
     ```
-    
+
     ```
     git clone https://github.com/mike99mac/minimy-mike99mac
     ```
@@ -432,29 +432,29 @@ To download and copy Minimy, perform the following steps:
     ```
     cp -a minimy-mike99mac minimy
     ```
-    
+
 - Remove the ``.git`` directory from the copy.
 
     ```
     cd minimy
     ```
-    
+
     ```
     rm -fr .git
     ```
-    
+
     Now the code will run and you can work in ``minimy`` and keep ``minimy-mike99mac`` as a reference copy.
-    
-### Install Minimy    
-    
+
+### Install Minimy
+
 - Run the following script to install Minimy and direct ``stdout`` and ``stderr`` to a file. **TAKE A BREAK?** This step can take up to 15 minutes.
-    
+
     ```
-    ./install/installminimy 
+    ./install/installminimy
     ```
-    
+
     It is recommended that you review the output file, checking for warnings or errors.
-    
+
 ### Configure Minimy
 
 The system can use local or remote services for speech to text (STT), text to speech (TTS)
@@ -464,32 +464,32 @@ the CMU link parser using a simpe enumerated approach referred to as shallow par
 As a result you will be asked during configuration if you would like to use remote or local STT, TTS
 and NLP. Unless you have a good reason, for now you should always select local mode (``remote=n``) for NLP.
 
-Remote TTS using polly requires an Amazon ID and key.  If you prefer to not use polly for remote TTS you may 
-choose mimic2 from Mycroft which is a free remote TTS alternative. You could also select local only TTS in 
+Remote TTS using polly requires an Amazon ID and key. If you prefer to not use polly for remote TTS you may
+choose mimic2 from Mycroft which is a free remote TTS alternative. You could also select local only TTS in
 which case mimic3 should work fine.
 
 By deault the system will fallback to local mode if a remote service fails. This will happen
 automatically and result in a slower overall response. If the internet is going to be out
-often you should probably just select local mode.  The differences are that remote STT is more accurate
+often you should probably just select local mode. The differences are that remote STT is more accurate
 and remote TTS sounds better. Both are slower but only slightly when given a reasonable internet
 connection. Devices with decent connectivity should use remote for both.
 
-You will also be asked for operating environment.  Currently the options are (p) for piOS, (l) for 
+You will also be asked for operating environment. Currently the options are (p) for piOS, (l) for
 Ubuntu or (m) for the Mycroft MarkII.
 
 Three syllable or more wake words are best. Words like 'computer' or words with distinct sounds like 'expression' (the 'x') or 'kamakazi' (two hard
-'k's) will always work better than words like 'hey' or 'Joe'. 
+'k's) will always work better than words like 'hey' or 'Joe'.
 
 You will also be asked to provide an input device index. If you do not know what this means enter the
 value 0. If you would like to see your options you can run 'python framework/tests/list_input_devices.py'.
-Remember, if you do not source your virtual environment first, things will not go well for you. 
+Remember, if you do not source your virtual environment first, things will not go well for you.
 
 The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properly in your ``~/.bash_profile``.
 
-- Run the following configuration script. In this example all defaults were accepted by pressing **Enter** for each question (except the log level was set to debug). At the end **y** was entered to save the changes.  
- 
+- Run the following configuration script. In this example all defaults were accepted by pressing **Enter** for each question (except the log level was set to debug). At the end **y** was entered to save the changes.
+
     **``./mmconfig.py sa``**
-    
+
     ```
     Advanced Options Selected sa
     ... all defaults taken except debug level ...
@@ -509,25 +509,25 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
       Basic
         ('AWSId', '')
         ('AWSKey', '')
-        ('BaseDir', '/home/pi/minimy')
+        ('BaseDir', '$HOME/minimy')
         ('GoogleApiKeyPath', 'install/my_google_key.json')
         ('Version', '1.0.4')
         ('WakeWords', ['hey computer', 'computer'])
     ```
 
 ## Run Minimy
-The scripts **``startminimy``** and **``stopminimy``** are used to start and stop processes. 
-Each skill and service run as process and use the message bus or file system to synchronize. 
-Their output is written to the ``logs/`` directory under the main install directory. 
+The scripts **``startminimy``** and **``stopminimy``** are used to start and stop processes.
+Each skill and service run as process and use the message bus or file system to synchronize.
+Their output is written to the ``logs/`` directory under the main install directory.
 
 - Start Minimy, ensuring it is run from the base directory, as follows.
 
-    ``` 
+    ```
     startminimy
     ```
-    
-    
-- Run **``lsenv``** again to see how your environment has changed.    
+
+
+- Run **``lsenv``** again to see how your environment has changed.
 
     ```
     lsenv
@@ -557,8 +557,8 @@ Their output is written to the ``logs/`` directory under the main install direct
       Swap:          1.0Gi       4.0Mi       1.0Gi
     tmpfs filesystem?
                           /var/log       Linux logs : yes
-              /home/pi/minimy/logs      Minimy logs : yes
-               /home/pi/minimy/tmp  Minimy temp dir : yes
+              $HOME/minimy/logs      Minimy logs : yes
+               $HOME/minimy/tmp  Minimy temp dir : yes
     ```
 You should see two changes:
 
@@ -567,7 +567,7 @@ You should see two changes:
 
 ## The buttons process
 
-The smart boombox model with the RasPi on-board has three pushbuttons on the front panel to allow quick access to *previous track*, *pause/resume*, and *next track* operations. If you hold the middle button for more that two seconds, it does a *stop* function, which also clears the music queue.  A new **``buttons``** system skill traps button presses and sends corresponding messages to the bus.
+The *Smart Boombox* model with the RasPi on-board has three pushbuttons on the front panel to allow quick access to *previous track*, *pause/resume*, and *next track* operations. If you hold the middle button for more that two seconds, it does a *stop* function, which also clears the music queue. A new **``buttons``** system skill traps button presses and sends corresponding messages to the bus.
 
 If you want to add buttons to your enclosure, attach them to the following GPIO pins:
 
@@ -579,34 +579,34 @@ If you want to add buttons to your enclosure, attach them to the following GPIO 
     | 13  | GPIO27 | Pause/resume                  |
     | 15  | GPIO22 | Next track                    |
     +-----+--------+-------------------------------+
-    
-Here is a source of purchasing pushbuttons: https://www.amazon.com/dp/B09C8C53DM  
+
+Here is a source of purchasing pushbuttons: https://www.amazon.com/dp/B09C8C53DM
 
 # Debugging
 Maybe everything will work perfectly the first time, and you won't have to debug (but we know how that goes :))
 
 Following are some debugging resources.
 
-- Many, many debug statements have been added to the code.  In most classes, every function has at least one log statement when in debug mode with the class, the function, and the parameters passed. 
+- Many, many debug statements have been added to the code. In most classes, every function has at least one log statement when in debug mode with the class, the function, and the parameters passed.
 
-- Log files are in ``$HOME/minimy/logs``.  
+- Log files are in ``$HOME/minimy/logs``.
     - Show the log files.
-   
+
         ```
         cd $HOME/minimy/logs
         ls
         ```
-        
+
         ``intent.log  media_player.log  skills.log  stt.log  tts.log``
-   
+
     - When Minimy is running, you can watch all the log files get populated in real time with the following command:
 
         **``tail -f *``**
-        
+
 - There is an HTML file with JavaScript code that displays the message bus in real time. If you do not have a Web server running, you must view it from the local host.
-    - Start a browser on the box you're installing on and point it to ``file:///home/pi/minimy/display/sysmon.html``
+    - Start a browser on the box you're installing on and point it to ``file://$HOME/minimy/display/sysmon.html``
     - You should see all messages written to the message bus and the associated data.
-      
+
 - The **``sortlogs``** script - merges and sorts all the log files by timestamp and saves them to ``/tmp``. The merged output is often easier to peruse than the individual files.
 
 - The **``stopminimy``** script calls **``sortlogs``** so every time you stop Minimy, there is a new log file copied to ``/tmp/`` which persists across the starting and stopping of Minimy, unlike ``$HOME/minimy/tmp/``.
@@ -634,10 +634,10 @@ In the samples that follow, (words) in parenthesis are the actual words spoken, 
 ### Connectivity skill
 
 Following is the Connectivity skill vocabulary.
- 
+
 Following are examples of Connectivity skill requests:
 
- 
+
 ### Email skill
 
 Following is the Email skill vocabulary.
@@ -652,23 +652,23 @@ Following are examples of Email skill requests:
 - **``start email``**
 - ... dialog continues ...
 - **``send email``**
- 
+
 ### Example1 skill
 
 Following is the Example1 skill vocabulary.
 
 ``(run|test|execute) example one``
- 
+
 Following are examples of Example1 skill requests:
- 
+
 - **``run exmple one``**
- 
+
 ### Help skill
 
 Following is the Help skill vocabulary.
 
 Following are examples of Help skill requests:
- 
+
 ### MPC skill
 
 The MPC skill can:
@@ -677,8 +677,8 @@ The MPC skill can:
 - Play Internet radio stations
 - Play Internet music
 - Play NPR news
-- Create, delete, manage and play playlists 
-- Perform basic player operations 
+- Create, delete, manage and play playlists
+- Perform basic player operations
 
 Following are the vocabularies for the MPC skill:
 
@@ -686,9 +686,9 @@ Following are the vocabularies for the MPC skill:
     ```
     play (track|song|title|) {track} by (artist|band|) {artist}
     play (album|record) {album} by (artist|band) {artist}
-    play (any|all|my|random|some|) music 
+    play (any|all|my|random|some|) music
     play (playlist) {playlist}
-    play (genre|johnra) {genre}    
+    play (genre|johnra) {genre}
     ```
 
 - Internet radio vocabulary:
@@ -703,20 +703,20 @@ Following are the vocabularies for the MPC skill:
     play (the|) radio (spoken|) (in|in language|in the language) {language}
     play (another|a different|next) (radio|) station
     (different|next) (radio|) station
-    ```  
-    
+    ```
+
 - Internet music vocabulary:
 
     ```
     play (track|artist|album|) {music} (from|on) (the|) internet
     ```
-    
-- NPR News vocabulary: 
+
+- NPR News vocabulary:
 
     ```
     play (NPR|the|) news
     ```
-    
+
 - Playlist vocabulary:
 
     ```
@@ -728,8 +728,8 @@ Following are the vocabularies for the MPC skill:
     list (my|) playlists
     what playlists (do i have|are there)
     what are (my|the) playlists
-    ```  
-    
+    ```
+
 - Basic player commands vocabulary:
 
     ```
@@ -738,7 +738,7 @@ Following are the vocabularies for the MPC skill:
     pause                               # stop music but maintain queue
     resume
     stop                                # stop music and clear queue
-    
+
     increase volume
     decrease volume
     ```
@@ -767,7 +767,7 @@ Following are examples of  skill's requests:
 - What time is it?
 - What is today's date
 - What day of the week is it
- 
+
 ### Weather skill
 
 Following is the Weather skill vocabulary:
@@ -775,7 +775,7 @@ Following is the Weather skill vocabulary:
 ```
 (what's|what is) (the|) weather (forecast|)
 ```
- 
+
 Following are examples of Weather skill requests:
 
 - What's the weather?
@@ -784,52 +784,104 @@ Following are examples of Weather skill requests:
 
 The Wiki skill is a fallback skill. As such it does not have a vocabulary
 
-# Local Speech to Text <a name="localstt"></a> 
+# Local Speech to Text <a name="localstt"></a>
 In late 2024 there was work done on running Speech to Text (STT) locally.
 
 If it takes more than three or four seconds to translate your speech, the personal voice assistant seems quite slow. People are used to responses in less than two seconds, ideally less than a second.
 
 Internet services, such as Google offer STT transcription. In addition to custom hardware, such as tensor processors, audio streams are split into smaller segments and processed in parallel, significantly speeding up transcription.
 
-However, this greatly reduces people's privacy.  Ideally the STT can be performed locally and nothing goes out on the Ineternet.
+However, this greatly reduces people's privacy. Ideally the STT can be performed locally and nothing goes out on the Ineternet.
 
 Three SoC platforms are tested for speed:
 - Raspberry Pi 4
-- Raspberry Pi 5 
-- Nvidia Jetson GPU
+- Raspberry Pi 5
+- Nvidia Jetson Orin Nano
 
-The Raspberry Pi's are less than $100.  The Nvidia GPU is about $500.
+The Raspberry Pi's are $80 (8 GB) or $120 (16 GB). The Jetson Orin Nano is $249 (Prices as of 11/11/2025).
 
-## Preparing the Nvidia GPU
-Getting the Nvidia Jetson Orin Nano working took quite a bit of time.
+## Preparing the Nvidia SoC
+JetPack is Nvidia's comprehensive SDK for Jetson systems. It contains Jetson Linux, drivers, libraries, and tools. Since JetPack 6, it is possible to boot conventional ARM Linux images besides Jetson Linux. However, for the sake of simplicity, this guide will assume you are running the aforementioned distribution and walk through the process of installing Nvidia JetPack.
 
-It does not appear possible to boot conventional ARM Linux images on it.  Rather, the Nvidia *JetPack* has to be used.  I tried Jetpack 6 which was the latest, but it would not boot.  I downgraded and installed it as follows:
+The Nvidia Jetson Orin Nano has one M.2 port for NVMe SSDs and one micro SD card slot. NVMe SSDs are both faster and more reliable than SD cards, so it is highly recommended to use one. If you have a means of connecting the NVMe SSD to your installation computer, this will allow you to skip the bootstrapping step of flashing to the micro SD card.
 
-- Download Jetpack 5.1.3 from https://developer.nvidia.com/downloads/embedded/l4t/r35\_release\_v5.0/jp513-orin-nano-sd-card-image.zip
-- Uncompress it to a ``.img`` file
-- Copy the ``.img`` file to a micro SD card
-- Plug the card in the GPU
-- Boot the GPU
+- Download the latest version of JetPack which supports the Jetson Orin Nano from the [Nvidia JetPack Archive](https://developer.nvidia.com/embedded/jetpack-archive). This is version 6.2.1 as of 11/11/2025.
+- Extract the `.img` file.
+- If you are able to connect the NVMe SSD to you your installation computer:
+    - Flash the `.img` file to NVMe SSD. **MAKE SURE TO FLASH THE CORRECT DEVICE!**
+    - Install the NVMe SSD to the Orin Nano's M.2 slot on the bottom of the board.
+    - Boot the system.
+    - Proceed to the next section.
+- If you do not have a method of connecting the NVMe SSD to your installation computer, you will need to bootstrap with a micro SD card:
+    - Flash the `.img` file to the micro SD card. **MAKE SURE TO FLASH THE CORRECT DEVICE!**
+    - Put the `.img` file on the micro SD card if it is big enough or an external USB drive if not.
+    - Insert the card into the slot underneath the GPU module. Also insert the USB drive if needed.
+    - Install the NVMe SSD to the Orin Nano's M.2 slot on the bottom of the board.
+    - Boot the system.
+    - Close out of the Ubuntu installer.
+    - Open a terminal and flash the `.img` file to the NVMe SSD with the following command. Be sure to verify the correct device name. `sudo dd if={PATH TO .img FILE} of=/dev/nvme0n1 bs=64M conv=sync,noerror status=progress`
+    - Mount the root partition of the NVMe SSD to /mnt/ssd: `sudo mkdir /mnt/ssd; sudo mount /dev/nvme0n1p1 /mnt/ssd`
+    - Edit `/mnt/ssd/boot/extlinux/extlinux.conf` to replace `root=/dev/mmcblk0p10` with `root=/dev/nvme0n1p10`
+    - Power off the system.
+    - Remove the micro SD card.
+    - Boot the system.
 
-Now the box finally booted.  However, it was running Ubuntu 20.04 which was 4.5 years old at the time.  The Python version was 3.8 which was too old for some packages. The solution was to upgrade the firmware with the following command:
+### Updating the QSPI firmware
+You should now be greeted with the Ubuntu installer. Go through the steps as you would normally and allow the system to reboot when prompted. Once you're back in, you should be greeted with a green Nvidia wallpaper. Now, it's time to update the QSPI firmware:
 
 ```
-sudo apt-get install nvidia-l4t-jetson-orin-nano-qspi-updater
+sudo apt install nvidia-l4t-jetson-orin-nano-qspi-updater
 ```
 
-With the firmware upgraded, it was finally able to boot Jetpack 6. Here are the steps to upgrade to Jetpack 6:
-- Shutdown Linux
-- Download Jetpack 6.1 from https://developer.nvidia.com/downloads/embedded/l4t/r36\_release\_v4.0/jp61-orin-nano-sd-card-image.zip
-- Uncompress it
-- Flash the ``.img`` file to a micro SD card 
-- Boot the GPU from the card
+It's time for another reboot. Make sure to let the bootloader update complete without any interruptions to the power supply. 
 
-Now Ubuntu 22.04 is running which has a Python version of 3.10.12. However,  more care and feeding will be needed to utilize the GPUs.
+### Setting a power mode
+Prior to January 2025, the Orin Nano only had two preset power configurations without requiring one to write their own. The default was a 15 watt power cap, and the other option was an ultra low power 7 watt power cap. Now, since the release of Jetpack 6, we have two new configurations: 25W and MAXN SUPER, an uncapped mode. I highly recommended setting either 25W or MAXN_SUPER. Performance between the two tends to be pretty close, though be sure to keep an eye on the thermals if using the latter.
+
+The current power mode can be queried with the command `nvpmodel -q`
+Bellow are the commands to set each power mode:
+
+```
+sudo nvpmodel -m 0   # 15W
+sudo nvpmodel -m 1   # 25W
+sudo nvpmodel -m 2   # MAXN SUPER
+sudo nvpmodel -m 3   # 7W (Requires a reboot. Not practical for much beyond hosting a web server.)
+```
+
+### Memory Optimization
+Disable the nvargus-daemon service (used for cameras):
+
+```
+sudo systemctl disable nvargus-daemon
+sudo systemctl stop nvargus-daemon
+```
+
+Enable the SSH daemon:
+```
+sudo systemctl enable ssh
+sudo systemctl start ssh
+```
+
+Disable the desktop:
+
+```
+sudo systemctl set-default multi-user.target
+sudo init 3
+```
+
+Disable ZRAM and create 16GB of swap space:
+
+```
+sudo systemctl disable nvzramconfig
+sudo fallocate -l 16G /var/16GB.swap
+sudo mkswap /var/16GB.swap
+sudo swapon /var/16GB.swap
+```
 
 ## Creating virtual environments
 Python virtual environments (venvs) are highly recommended for testing and to maintain the integrity of your development environment.
 
-A script to create a venv for the Raspberry Pis is here: https://github.com/mike99mac/minimy-mike99mac/blob/main/mksttvenv 
+A script to create a venv for the Raspberry Pis is here: https://github.com/mike99mac/minimy-mike99mac/blob/main/mksttvenv
 It creates the venv ``stt_venv`` in your home directory. It must be enabled with:
 
 ```
@@ -838,10 +890,10 @@ cd
 ```
 You should see a prefix of ``(stt_venv)`` on your command prompt (PS1).
 
-The file ``jfk.wav``, hard-coded in the above code, is an 11 second audio clip of John F Kennedy's famous words at his inaguration: 
+The file ``jfk.wav``, hard-coded in the above code, is an 11 second audio clip of John F Kennedy's famous words at his inaguration:
 "And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
 
-The first two tests were the Raspberry Pi 4 and the Nvidia GPU.  The GPU was only 7 or 8 percent faster.  It seems the 1024 GPU cores were not being utilized.
+The first two tests were the Raspberry Pi 4 and the Jetson Orin Nano. The Nano was only 7 or 8 percent faster. It seems the 1024 GPU cores were not being utilized.
 
 This code tests whether the GPU cores are working:
 
@@ -852,126 +904,22 @@ print("CUDA available:", torch.cuda.is_available())
 if torch.cuda.is_available():
     print("CUDA device:", torch.cuda.get_device_name(0))
 ```
-Many, many different ways of getting the GPUs enabled were tried. Every time the results were:
+Many, many different ways of getting the GPU enabled were tried. Every time the results were:
 
 ```
 CUDA available: False
 ```
 
-Finally a script was written to create a venv for the Nvidia GPU here: https://github.com/mike99mac/minimy-mike99mac/blob/main/mksttvenvgpu 
+Finally a script was written to create a venv for the Nvidia SoC here: https://github.com/mike99mac/minimy-mike99mac/blob/main/mksttvenvgpu
 
-This script downloads *wheel files* for Python torch, torchaudio and torchvision, then installs them in the venv. Finally the output was good: 
+This script downloads PyTorch, torchaudio, and torchvision, then installs them in the venv. Finally the output was good:
 
 ```
 CUDA available: True
 CUDA device: Orin
 ```
-## Setting NVMe drive to be the root file system <a name="nvmedrive"></a> 
-The Nvidia Jetson Nano must boot off of a micro-SD card.  It also has slots for NVMe drives which are both faster and more reliable.  So it is recommended to run the root file system on the NVMe and use only ``/boot/`` from the SD card.  To do so, perform the following steps:
 
-- Become root.
-
-```
-$ sudo -i
-```
-
-- Make the label "gpt" on the NVMe drive.
-
-```
-# parted /dev/nvme0n1 -- mklabel gpt
-Information: You may need to update /etc/fstab.
-```
-
-- Partition the disk.
-
-```
-# sudo parted -a optimal /dev/nvme0n1 -- mkpart primary ext4 0% 100%
-Information: You may need to update /etc/fstab.
-```
-
-- Create an ext4 file system.
-
-```
-root@pi:~# mkfs.ext4 /dev/nvme0n1p1
-mke2fs 1.46.5 (30-Dec-2021)
-...
-Writing superblocks and filesystem accounting information: done
-```
-
-- Confirm new devices.
-
-```
-# lsblk -o NAME,MAJ:MIN,SIZE,FSTYPE,MOUNTPOINT /dev/nvme0n*
-NAME        MAJ:MIN   SIZE FSTYPE MOUNTPOINT
-nvme0n1     259:0   931.5G
-└─nvme0n1p1 259:2   931.5G ext4
-nvme0n1p1   259:2   931.5G ext4
-```
-
-- Make a temporary directory and mount the NVMe over it.
-
-```
-# mkdir /mnt/nvme-root
-# mount /dev/nvme0n1p1 /mnt/nvme-root
-```
-
-- Copy the root file system, skipping in memory file systems and preserving permissions, links, and special files:
-
-```
-time rsync -aAXHv --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/lost+found"} / /mnt/nvme-root
-
-real    5m50.891s
-user    0m34.865s
-sys     2m13.414s
-```
-
-- Make a backup of, then update the new /etc/fstab so the root file system is the NVMe:
-
-```
-# cd /mnt/nvme-root/etc/
-# cp fstab fstab.orig
-# vi fstab
-
-# Root on NVMe
-/dev/nvme0n1p1   /           ext4    defaults    0 1
-
-# Boot on SD
-UUID=6FFC-FC56   /boot/efi   vfat    defaults    0 1
-```
-
-- Make backup of then update extlinux.conf to load ``/boot`` from SD card.
-
-```
-# cd /boot/extlinux/
-root@pi:/boot/extlinux# cp extlinux.conf extlinux.conf.orig
-# vi extlinux.conf 
-...
-# cat extlinux.conf
-TIMEOUT 30
-DEFAULT primary
-
-MENU TITLE L4T boot options
-
-LABEL primary
-      MENU LABEL primary kernel
-      LINUX /boot/Image
-      INITRD /boot/initrd
-      APPEND ${cbootargs} root=/dev/nvme0n1p1rw rootwait rootfstype=ext4 mminit_loglevel=4 console=ttyTCU0,115200 firmware_class.path=/etc/firmware fbcon=map:0 net.ifnames=0 nospectre_bhb video=efifb:off console=tty0
-```
-
-- Reboot and verify the root file system and ``/boot`` are mounted correctly.
-
-```
-$ df -h | grep -v tmpfs
-Filesystem       Size  Used Avail Use% Mounted on
-/dev/nvme0n1p1   916G   22G  848G   3% /
-/dev/mmcblk0p10   63M  118K   63M   1% /boot/efi
-/dev/mmcblk0p1    57G   22G   33G  40% /media/pi/e2c80031-d800-4c44-8cc5-346f05b0e59c
-```
-
-
-
-## Getting STT running locally <a name="localstt"></a> 
+## Getting STT running locally <a name="localstt"></a>
 
 The code used to test the performance is below. I believe tracking the elapsed time of just the ``transcribe()`` function is correct. Here's the code:
 
@@ -1021,18 +969,18 @@ if __name__ == "__main__":
 
 ### The results
 
-Here are the performance times on the three "boxes":   
+Here are the performance times on the three "boxes":
 
 
 | Platform                | Memory | Python | tiny.en | base.en | small.en |
 |-------------------------|--------|--------|---------|---------|----------|
 | Raspberry Pi 4          |  4 GB  |  3.11  |  8.0s   |  15.1s  |  75.0s   |
 | Raspberry Pi 5          |  8 GB  |  3.11  |  6.5s   |   6.7s  |  21.3s   |
-| Nvidia Jetson Orin Nano |  8 GB  |  3.10  |  1.3s   |   0.9s  |   1.7s   |
+| Nvidia Jetson Orin Nano |  8 GB  |  3.10  |  0.6s   |   0.8s  |   1.4s   |
 
 
-The best option seems to be the ``base.en`` model running on the Nvidia GPU.
+The best option seems to be the ``base.en`` model running on the Jetson Orin Nano.
 
-Here's a picture of the three boxes.  The Raspberry Pi 4 on the left and Pi 5 on the right are both in boomboxes for superior sound.  The GPU is to the right of the keyboard. A boombox carcass for it is coming soon...
+Here's a picture of the three boxes. The Raspberry Pi 4 on the left and Pi 5 on the right are both in boomboxes for superior sound. The Jetson Orin Nano is to the right of the keyboard. A boombox carcass for it is coming soon...
 
 ![](STT-3-box-shootout.png)

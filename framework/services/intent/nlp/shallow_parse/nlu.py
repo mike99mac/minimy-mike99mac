@@ -139,7 +139,8 @@ class SentenceInfo:
         if self.insight.subject == '':
           self.insight.subject = info['np']
         self.insight.np = self.insight.subject
-        self.insight.value = info['value']
+        if info.get('value') is not None:
+          self.insight.value = info['value']
         sa = self.original_sentence.split(" ")
         for s in sa:
           if s in concepts:

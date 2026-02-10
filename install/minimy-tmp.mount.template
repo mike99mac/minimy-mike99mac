@@ -1,9 +1,8 @@
-# systemd unit file that mounts /home/pi/minimy/logs as a tmpfs 
+# systemd unit file that mounts {{BASE_DIR}}/tmp as a tmpfs
 [Unit]
-Description=Mount tmpfs file system over /var/log
+Description=Mount tmpfs file system over Minimy tmp directory
 Documentation=man:hier(7)
 Documentation=http://www.freedesktop.org/wiki/Software/systemd/APIFileSystems
-ConditionPathIsSymbolicLink=!/var/log
 DefaultDependencies=no
 Conflicts=umount.target
 Before=local-fs.target umount.target
@@ -11,10 +10,9 @@ After=swap.target
 
 [Mount]
 What=tmpfs
-Where=/home/pi/minimy/logs
+Where={{BASE_DIR}}/tmp
 Type=tmpfs
 Options=mode=1777,strictatime,nosuid,nodev
 
 [Install]
 WantedBy=multi-user.target
-

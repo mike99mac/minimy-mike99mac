@@ -265,7 +265,7 @@ def vp_np(node):
   value = 'derived from verb'
 
   squal = ''
-  first_digit = re.search('\d', subject)
+  first_digit = re.search(r'\d', subject)
   if first_digit:
     squal = subject[first_digit.start():]
     subject = subject[:first_digit.start()].strip()

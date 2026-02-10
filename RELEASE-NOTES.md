@@ -8,6 +8,30 @@ It only knows English - there is little internationalization code.
 
 The version numbers are simply *yy.mm.dd*.
 
+### Version 26.02.10
+- **Major overhaul**
+- Implemented the hub/spoke model:
+  - Added Basic.{Hub, HubModel, SpokeModel} in mmconfig.yml
+  - Added code for remote STT
+  - Added code to request remote STT/LLM first and fallback to local STT/LLM when remote is down
+- Made the installer compatible with more generic systems:
+  - User is no longer required to be named "pi"
+  - Added templates for service/config files
+- Added a maximum utterance length parameter in mic.py
+- Added a WAV energy filter to reject background noise in stt.py
+- Speed improvements in stt.py and mic.py
+- Stop OOBs now kill all aplay processes
+- Got the GPU working in PyTorch on the Nvidia Jetson Orin Nano for STT
+- Fixed async code and process termination in stt.py
+- Fixed WAV file pileups caused by spamming Whisper with large files
+- Fixed NLP bug causing error before sending certain queries to Ollama
+- Fixed some LLM bugs
+- Updated README.md to be up-to-date:
+  - Overhauled section on preparing an Nvidia Jetson Orin Nano
+- Updated PyTorch to 2.10.0
+- Rebased codebase on Python 3.13
+- Removed some unreachable code and unused imports
+
 ### Version 25.10.23
 - Added Basic.hub to config file install/mmconfig.yml
   - This points to the fastest machine running whisper STT
@@ -60,7 +84,7 @@ The version numbers are simply *yy.mm.dd*.
 - Fixed a couple of small bugs
 
 ### Version 23.06.11
-- Initial release
+- **Initial release**
 - Complete documentation in README.md - details on all steps to install, configure and use
 - Works with an associated repo, mycroft-tools, to speed install and add a box of useful tools
 - A new music playing skill that uses the mpc/mpd packages. It can:
@@ -73,4 +97,3 @@ The version numbers are simply *yy.mm.dd*.
 - Code to mount /var/log and two Minimy directories over a tmpfs so as to extend the life of the SD card
 - A *buttons* system skill enables 3 pushbuttons: 'previous', 'pause/resume' and 'next'.
 - Many debug statements were added so log files will be more helpful
-

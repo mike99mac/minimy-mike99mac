@@ -1,14 +1,15 @@
-import threading, urllib3, time, os, re
+import threading
+import os
 from se_tts_session import TTSSession
-from threading import Event, Thread
+from threading import Event
 from framework.util.utils import LOG, chunk_text, aplay
 from bus.MsgBus import MsgBus
 from se_tts_constants import (
-    INTERNAL_EVENT_PAUSED,
-    INTERNAL_EVENT_ACTIVATED,
-    INTERNAL_EVENT_CANCELLED, 
-    INTERNAL_EVENT_ENDED
-    )
+  INTERNAL_EVENT_PAUSED,
+  INTERNAL_EVENT_ACTIVATED,
+  INTERNAL_EVENT_CANCELLED, 
+  INTERNAL_EVENT_ENDED
+)
 
 # the engine pushes these events to the session
 from se_tts_constants import EVENT_STOP as SESSION_EVENT_STOP
