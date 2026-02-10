@@ -1,8 +1,8 @@
 from skills.sva_base import SimpleVoiceAssistant
 from framework.util.utils import Config, aplay
 from threading import Event
-import os
 import time
+import psutil
 
 INTERNAL_PAUSE = 1
 EXTERNAL_PAUSE = 2
@@ -160,6 +160,9 @@ class SystemSkill(SimpleVoiceAssistant):
       self.log.debug(f"SystemSkill:handle_message() verb = {verb}")
       if verb in self.stop_aliases:
         self.log.info(f"SystemSkill.handle_message(): Detected System Level Stop, active_skills = {self.active_skills}")
+        for proc in psutil.process_iter(): # Killall current aplay processes (annoying!)
+          if proc.name() == "aplay":
+            proc.kill()
         aplay(self.play_filename)
         if len(self.conversant_skills) > 0: # deal with conversants
           self.log.info(f"SystemSkill:handle_message() conversand_skills: {self.conversant_skills}")
