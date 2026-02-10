@@ -182,7 +182,8 @@ function buildVenv
   runCmd $pipCmd install datasets
   runCmd $pipCmd install gpiozero
   runCmd $pipCmd install keyboard
-  runCmd $pipCmd install swig
+  # runCmd $pipCmd install swig
+  runCmd sudo apt install -y swig
   runCmd sudo apt install -y liblgpio-dev
   runCmd $pipCmd install lgpio
   runCmd $pipCmd install optimum
