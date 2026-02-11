@@ -2,6 +2,7 @@ PyYAML
 requests
 inflect
 pytz
+setuptools
 webrtcvad
 scipy
 PyAudio
