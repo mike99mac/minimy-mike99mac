@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+minimy_venv/
+
+# Logs (keep directory structure via tracked READMEs)
+logs/*
+!logs/README
+
+# Temp files (keep directory structure via tracked READMEs)
+tmp/*
+!tmp/
+!tmp/save_audio/
+!tmp/save_audio/README
+!tmp/save_text/
+!tmp/save_text/README
+!tmp/save_tts/
+!tmp/save_tts/README
+
+# Runtime data
+db/
+
+# Piper TTS binaries (not the piper.py source)
+piper/
+piper_amd64.tar.gz
+piper_arm64.tar.gz
+
+# Symlinks / build artifacts
+link-4.1b/
+
+# Local config (use mmconfig.yml.template instead)
+install/mmconfig.yml
+
+# Editor / IDE
+pyrightconfig.json
+.lgd-nfy0
+
+# OS artifacts
+.DS_Store
+
+# Local mpd config
+mpd/
