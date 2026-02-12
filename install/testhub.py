@@ -16,9 +16,15 @@ sys.path.append(f"{home_dir}/minimy") # running under the venv Python, import mo
 from framework.util.utils import Config
 
 def test_hub_stt(wav_filename, hub):
+
   cmd = [
     "curl",
-    f"http://{hub}:5002/stt", "-s", "-H", "Content-Type: audio/wav", "--data-binary", f"@{wav_filename}"
+    f"http://{hub}:5002/stt",
+    "-s",
+    "--connect-timeout", "5",
+    "--max-time", "10",
+    "-H", "Content-Type: audio/wav",
+    "--data-binary", f"@{wav_filename}" 
   ]
   try:
     result = subprocess.run(cmd, capture_output=True, text=True)
