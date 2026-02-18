@@ -23,7 +23,6 @@
     Hub: localhost
     HubModel: base.en
     SpokeModel: tiny.en
-    MusicDir:
     WakeWords:
     - 'computer'
     - 'internet'
