@@ -3,7 +3,6 @@
 ## Software
 ### Bugs
 1. Fix media skill error message.
-1. Fix "play radio" not working but "play radio in english" does. Also, remove defunct Internet radio stations.
 ### Features
 1. Rewrite cmpcode script to use diff command to avoid skipping any files.
 1. Improve TTS number pronuncaition.
@@ -20,4 +19,4 @@
 
 ## Hardware on the Smart Boombox
 ### Low Priority
-1. If stop button is held more than 2 seconds, do a "stop" (clear queue) rather than "pause/resume" 
+1. If stop button is held more than 2 seconds, do a "stop" (clear queue) rather than "pause/resume"
