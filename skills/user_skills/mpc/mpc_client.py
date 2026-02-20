@@ -16,7 +16,7 @@ from youtube_search import YoutubeSearch
 class MpcClient(SimpleVoiceAssistant):
   # Accept voice commands to communicate with mpd using mpc calls 
   # Support cataloging of music files and accessing Internet radio stations
-  music_dir: str                           # directory where music files are 
+  news_dir: str                    
   max_queued: int                          # maximum number of tracks or stations to queue
   station_name: str                   
   station_genre: str  
@@ -27,10 +27,12 @@ class MpcClient(SimpleVoiceAssistant):
   request_type: str                        # "genre", "country", "language", "random" or "next_station"
   list_lines: list                         # all radio stations in the CSV file
   
-  def __init__(self, music_dir: Path):
+  # putting NPR news files in with .mp3 song files is kludgy
+  #def __init__(self, music_dir: Path):
+  def __init__(self):
     super().__init__(skill_id="mpc_skill", skill_category="media")
     self.log = logging.getLogger(__name__)
-    self.music_dir = music_dir
+    self.news_dir = "/tmp"                
     self.max_queued = 20                                         
     self.station_name = "unknown"                   
     self.station_genre = "unknown"
@@ -42,7 +44,7 @@ class MpcClient(SimpleVoiceAssistant):
     self.list_lines = []
     self.temp_dir = self.base_dir + "/tmp/save_audio" # save audio files here 
 
-  def initialize(self, music_dir: Path):  
+  def initialize(self, news_dir: Path):  
     """ 
     Turn mpc "single" off so player keeps playing music   
     Return: boolean
@@ -966,7 +968,7 @@ class MpcClient(SimpleVoiceAssistant):
     self.log.debug(f"MpcClient.search_news() start_indx: {start_indx} end_indx: {end_indx} ")       
     new_url = page[:end_indx]
     new_url = new_url.replace("\\","")
-    os.chdir(self.music_dir)               # write file to music directory
+    os.chdir(self.news_dir)                # write file to news directory
     cmd = f"wget {new_url}"
     self.log.debug(f"MpcClient.search_news() cwd: {os.getcwd()} cmd: {cmd}")
     os.system(cmd)                         # get the file with wget

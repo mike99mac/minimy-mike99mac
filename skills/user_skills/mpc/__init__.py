@@ -15,8 +15,10 @@ class MpcSkill(MediaSkill):
     self.url = ""                          # has to be returned from get_media_confidence()
     self.lang = "en-us"                    # just US English for now
     cfg = Config()                         # get config file
-    self.music_dir = cfg.get_cfg_val("Basic.MusicDir")
-    self.mpc_client = MpcClient(self.music_dir) # search for music under <music_dir>
+    # comment this out as updating mpc/mpd songs (mpc update) can be done outside of minimy
+    # self.music_dir = cfg.get_cfg_val("Basic.MusicDir")
+    # self.mpc_client = MpcClient(self.music_dir) # search for music under <music_dir>
+    self.mpc_client = MpcClient()          # search for music under <music_dir>
     self.log.debug(f"MpcSkill.__init__(): skill_base_dir: {self.skill_base_dir}")
     self.music_info = Music_info("none", "", {}, []) # music to play
     self.sentence = None 
