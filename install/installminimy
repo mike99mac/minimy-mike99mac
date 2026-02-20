@@ -297,15 +297,16 @@ function setMinimyVars
   if [ ${#hub} != 0 ]; then                # new value was supplied
     sed -i "s/    Hub: .*/    Hub: $hub/g" $configFile # reset hub server
   fi
-  if [ ${#MusicDir} = 0 ]; then            # music dir not set with args
-    musicDir=`grep "    MusicDir:" $configFile | awk '{print $2}'` # get music dir in config file
-    echo -n "Directory with music files [$musicDir]: "
-    read newMusicDir
-    if [ ${#newMusicDir} != 0 ]; then      # new music dir was supplied
-      musicDir="$newMusicDir"              # update global for installMpd
-      sed -i "s/    MusicDir: .*/    MusicDir: $newMusicDir/g" $configFile # reset music dir
-    fi
-  fi
+  # comment out MusicDir as it is set in /etc/mpd.conf and can be outside the scope of minimy  -Mike Mac
+  # if [ ${#MusicDir} = 0 ]; then            # music dir not set with args
+  #   musicDir=`grep "    MusicDir:" $configFile | awk '{print $2}'` # get music dir in config file
+  #   echo -n "Directory with music files [$musicDir]: "
+  #   read newMusicDir
+  #   if [ ${#newMusicDir} != 0 ]; then      # new music dir was supplied
+  #     musicDir="$newMusicDir"              # update global for installMpd
+  #     sed -i "s/    MusicDir: .*/    MusicDir: $newMusicDir/g" $configFile # reset music dir
+  #   fi
+  # fi
  }                                         # setMinimyVars()
 
 #+--------------------------------------------------------------------------+
@@ -428,6 +429,7 @@ function buildVenv
   runCmd $pipCmd install git+https://github.com/wiseman/py-webrtcvad.git
   runCmd $pipCmd install --upgrade --upgrade-strategy eager "optimum[neural-compressor]"
   echo | tee -a $logFile
+  runCmd $pipCmd install "setuptools==68.2.2"
 
   echo "Installing local ytplay/ytadd in /usr/local/sbin ..." | tee -a $logFile
   runCmd sudo cp install/ytplay /usr/local/sbin
@@ -491,7 +493,8 @@ function buildVenv
   cd $baseDir
 
   # Install and configure MPD
-  installMpd
+  # commenting out as this is done in ovos-tools/install1  -Mike Mac
+  # installMpd
 
   # Generate and install systemd service files dynamically
   generateServiceFiles
