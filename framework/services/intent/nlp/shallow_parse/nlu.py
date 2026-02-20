@@ -118,13 +118,13 @@ class SentenceInfo:
     self.structure = Structure(self.normalized_sentence)
     self.insight = Insight(self.normalized_sentence)
     #print("PARSE_UTT: type=%s" % (self.sentence_type,))
-    if self.structure.shallow == "VP" or (self.structure.shallow == "" and len(sentence.split(" ")) == 1):
-      # if one or two word utterance handle it and bail
-      return self.handle_less_than_three_words(sentence)
     start_verb = self.original_sentence.split(" ")[0].lower()
     if start_verb in self.media_verbs:     # this is a media sentence 
       self.sentence_type = 'M'
       return True
+    if self.structure.shallow == "VP" or (self.structure.shallow == "" and len(sentence.split(" ")) == 1):
+      # if one or two word utterance handle it and bail
+      return self.handle_less_than_three_words(sentence)
     if self.sentence_type == 'Q':          # question parse differently 
       info = parse_question(self.structure.tree, self.structure.shallow, sentence, False) 
       if info['error'] == '':
