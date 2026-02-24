@@ -15,7 +15,7 @@
 ### Low Priority
 1. Finish the connectivity skill.
 1. Write a skill to set global variables in $HOME/install/mmconfig.yml
-1. Bluetooth audio cuts off at the start - Determine if this can be solved in Minimy or if the problem lies elsewhere.
+1. Bluetooth audio is handled by DAC/AMP. Could we implement this in minimy?
 
 ## Hardware on the Smart Boombox
 ### Low Priority
