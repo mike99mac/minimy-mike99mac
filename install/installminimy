@@ -410,7 +410,10 @@ function buildVenv
   cd $baseDir
   runCmd pip install --no-binary :all: regex # force pip to ignore old wheels and build fresh
   runCmd $pipCmd install lingua_franca
-  runCmd sudo apt-get install python3-lingua-franca
+  # do not call runCmd because this fails on Nvidia 
+  # runCmd sudo apt-get install python3-lingua-franca
+  echo "Installing python3-lingua-franca ..." | tee -a $logFile
+  sudo apt-get install python3-lingua-franca | tee -a $logFile
   runCmd $pipCmd install -r install/requirements.txt
   echo "Installing local STT whisper" | tee -a $logFile
   runCmd $pipCmd install git+https://github.com/openai/whisper.git
@@ -485,10 +488,27 @@ function buildVenv
     echo "Skipping piper - already installed ..."| tee -a $logFile
   fi
 
-  echo "Installing Ollama ..."| tee -a $logFile
+  echo "Installing Ollama ..." | tee -a $logFile
   echo | tee -a $logFile
   curl -fsSL https://ollama.com/install.sh | sh
-  ollama pull llama3
+  if [ ! -f /etc/systemd/system/ollama.service ]; then # not expected
+    echo "WARNING: file /etc/systemd/system/ollama.service not found" | tee -a $logFile
+  else                                     # add env var to allow all hosts in local subnet
+    subnet=`route | tail -1 | awk '{print $1}'` # assume this host is on the same subnet
+    if [ $? != 0 ]; then                   # not expected
+      echo "WARNING: cannot get subnet for Ollama - using 0.0.0.0"
+      subnet="0.0.0.0"
+    fi
+    echo "Setting Ollama subnet to $subnet ..." | tee -a $logFile
+    cd /etc/systemd/system
+    sudo sed -i "/\[Service\]/a Environment=OLLAMA_HOST=$subnet" ollama.service
+    echo "rc from sudo: $?"
+  fi
+  echo "getting llama3 model ..." | tee -a $logFile
+  ollama pull llama3                       # get this model
+  runCmd sudo systemctl daemon-reload
+  runCmd sudo systemctl enable ollama
+  runCmd sudo systemctl restart ollama
 
   cd $baseDir
 
