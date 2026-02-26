@@ -241,12 +241,9 @@ function generateServiceFiles
   runCmd sudo cp "$tmpDir/${mountUnitPath}-logs.mount" "/etc/systemd/system/${mountUnitPath}-logs.mount"
   runCmd sudo cp "$tmpDir/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
 
-  # Cleanup temporary directory
-  rm -rf "$tmpDir"
-
-  # Reload systemd to pick up new files
-  runCmd sudo systemctl daemon-reload
-
+  rm -rf "$tmpDir"                         # cleanup temporary directory
+  runCmd sudo systemctl daemon-reload      # reload systemd to pick up new files
+  runCmd sudo systemctl start whisper      # start whisper for this session 
   echo "Systemd service files installed successfully" | tee -a $logFile
  }                                         # generateServiceFiles()
 
