@@ -491,11 +491,16 @@ function buildVenv
   if [ ! -f /etc/systemd/system/ollama.service ]; then # not expected
     echo "WARNING: file /etc/systemd/system/ollama.service not found" | tee -a $logFile
   else                                     # add env var to allow all hosts in local subnet
-    subnet="0.0.0.0"
-    echo "Setting Ollama subnet to $subnet ..." | tee -a $logFile
+    ipAddr=`ip -o -f inet addr show | awk '/en/ {print $4; exit} /wl/ {print $4}' | tail -1 | cut -d'/' -f1`
+    if [ $? != 0 ]; then
+      ipAddr="0.0.0.0"
+    fi
+    echo "Setting Ollama IP address to $ipAddr ..." | tee -a $logFile
     cd /etc/systemd/system
-    sudo sed -i "/\[Service\]/a Environment=OLLAMA_HOST=$subnet" ollama.service # put subnet in OLLAMA_HOST env var
-    echo "rc from sudo: $?"
+    sudo sed -i "/\[Service\]/a Environment=OLLAMA_HOST=$ipAddr" ollama.service # put IP@ in OLLAMA_HOST env var
+    if [ $? != 0 ]; then
+      echo "WARNING! sed to ollama.service returned $?" | tee -a $logFile
+    fi
   fi
   ollamaModel="llama3.2:3b"
   echo "getting model $ollamaModel ..." | tee -a $logFile
