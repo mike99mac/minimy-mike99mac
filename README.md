@@ -21,9 +21,15 @@ The Hub box might be powered by an Nvidia Jetson Orin Nano and the spoke boxes w
 
 ## The build
 
-The environment used to develop the code and write this document is a RasPi 4/4GB and 5/8GB. It was tested with
+The hardware environment used to develop the code and write this document is 
+- Raspberry Pi 4 with 4GB
+- Raspberry Pi 5 with 8GB
+- Nvidia Jetson Orin Nano
+
+The software environment  tested with
 - Ubuntu Desktop 24.10
-- Rasperry Pi OS Lite, 19 Nov 2024
+- Rasperry Pi OS Lite, 1 Oct 2025
+- Jetpack 6.x on Ubuntu 22.04.5
 
 The overall steps to build a *Smart Boombox* are:
 
@@ -348,11 +354,19 @@ To run **``intall1``**, perform the following steps:
     lsenv
     ```
 
-The output should show:
+The output of running services should show:
 
+```
+lsenv
+...
+Services:
+              pipewire: inactive (dead)
+                   mpd: inactive (dead)
+                 redis: Unit redis.service could not be found.
+               whisper: Unit whisper.service could not be found.
+                ollama: Unit ollama.service could not be found.
+```
 - Processes with ``minimy`` in their name are not running.
-- The Music Playing Daemon, **``mpd``** is not running.
-- There is one **``pulseaudio``** process running, but it does not have **``--system``** as a parameter.
 - Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage.
 - None of the file systems frequently written to are mounted as in-memory ``tmpfs`` file systems.
 
@@ -368,15 +382,18 @@ Some of the changes made by **``install1``** will not be realized until boot tim
 - Restart your SSH session when it comes back up.
 - Run the same script again to see how the environment has changed.
 
-    ```
-    lsenv
-    ```
+```
+lsenv
+...
+Services:
+              pipewire: active (running)
+                   mpd: active (running)
+                 redis: Unit redis.service could not be found.
+               whisper: Unit whisper.service could not be found.
+                ollama: Unit ollama.service could not be found.
+```
 
-You should see three changes:
-
-- The Music Playing Daemon, **``mpd``** is now running.
-- The one **``pulseaudio``** process shows a **``--system``** parameter which is vital to audio output working correctly.
-- The **``/var/log/``** directory is now an in-memory ``tmpfs`` file system.
+You should see pipewire and mpd running.  The other three services will be running after installing minimy.
 
 ## Test microphone and speakers
 
@@ -530,35 +547,40 @@ Their output is written to the ``logs/`` directory under the main install direct
 - Run **``lsenv``** again to see how your environment has changed.
 
     ```
-    lsenv
+lsenv
+---------------------------------------
+      Minimy processes: buttons help intent media_player mic mpc skill_system skill_alarm skill_fallback skill_media skill_volume stt timedate tts weather
+---------------------------------------
+Services:
+              pipewire: active (running)
+                   mpd: active (running)
+                 redis: active (running)
+               whisper: active (running)
+                ollama: active (running)
+---------------------------------------
+                Distro: Debian GNU/Linux 13 (trixie)
+                Kernel: 6.12.62+rpt-rpi-2712
+        Minimy version: 26.02.10
+            IP address: 192.168.40.102
+       CPU temperature: 48C / 118F
+         Root fs usage: 50%
+----------------------------------------------------------------------------------
+Memory usage:
+                 total        used        free      shared  buff/cache   available
+  Mem:           7.9Gi       1.3Gi       2.2Gi        13Mi       4.5Gi       6.6Gi
+  Swap:          2.0Gi       2.0Mi       2.0Gi
+----------------------------------------------------------------------------------
+tmpfs filesystems:
+          /home/pi/minimy/logs          Minimy logs : yes
+           /home/pi/minimy/tmp      Minimy temp dir : yes
+----------------------------------------------------------------------------------
+Mic     : card 0: Device [USB Audio Device]
+          device 0: USB Audio [USB Audio]
+Speakers: card 1: sndrpihifiberry [snd_rpi_hifiberry_dacplus]
+          device 0: HiFiBerry DAC+ HiFi pcm512x-hifi-0 [HiFiBerry DAC+ HiFi pcm512x-hifi-0]
+Playing : /usr/share/sounds/alsa/Front_Center.wav
+----------------------------------------------------------------------------------
 
-    Status of minimy:
-     -) WARNING: minimy is not running as a service ... checking for processes ...
-        Minimy user skills: connectivity email example1 help mpc timedate weather wiki
-             System skills: buttons intent media_player mic skill_alarm skill_fallback skill_media skill_volume stt tts
-    ---------------------------------------------------------------------------------
-    Status of mpd:
-     -) mpd is running as a service:
-        Active: active (running) since Sat 2023-06-10 10:13:24 EDT; 2h 3min ago
-    ---------------------------------------------------------------------------------
-    Status of pulseaudio:
-     -) pulseaudio is running as a service:
-        Active: active (running) since Sat 2023-06-10 10:13:22 EDT; 2h 3min ago
-        pulseaudio processes:
-        pulse        850       1  2 10:13 ?        00:03:35 /usr/bin/pulseaudio --system --disallow-exit --disallow-module-loading --disable-shm --exit-idle-time=-1
-    ---------------------------------------------------------------------------------
-         IP address : 192.168.1.148
-    CPU temperature : 72C / 161F
-      Root fs usage : 18%
-          CPU usage : 58%
-    Memory usage    :
-                     total        used        free      shared  buff/cache   available
-      Mem:           3.7Gi       1.8Gi       224Mi        44Mi       1.7Gi       1.7Gi
-      Swap:          1.0Gi       4.0Mi       1.0Gi
-    tmpfs filesystem?
-                          /var/log       Linux logs : yes
-              $HOME/minimy/logs      Minimy logs : yes
-               $HOME/minimy/tmp  Minimy temp dir : yes
     ```
 You should see two changes:
 
