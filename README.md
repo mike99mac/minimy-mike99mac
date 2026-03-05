@@ -21,15 +21,15 @@ The Hub box might be powered by an Nvidia Jetson Orin Nano and the spoke boxes w
 
 ## The build
 
-The hardware environment used to develop the code and write this document is 
-- Raspberry Pi 4 with 4GB
-- Raspberry Pi 5 with 8GB
-- Nvidia Jetson Orin Nano
+The hardware environment used to develop the code is: 
+- Raspberry Pi 4 w/4GB of memory
+- Raspberry Pi 5 w/8GB
+- Nvidia Jetson Orin Nano w/8GB
 
-The software environment  tested with
+The Linux distributions used are: 
 - Ubuntu Desktop 24.10
 - Rasperry Pi OS Lite, 1 Oct 2025
-- Jetpack 6.x on Ubuntu 22.04.5
+- Jetpack 6.x on Ubuntu 22.04.5 on Nvidia GPU
 
 The overall steps to build a *Smart Boombox* are:
 
@@ -546,7 +546,7 @@ Their output is written to the ``logs/`` directory under the main install direct
 
 - Run **``lsenv``** again to see how your environment has changed.
 
-    ```
+```
 lsenv
 ---------------------------------------
       Minimy processes: buttons help intent media_player mic mpc skill_system skill_alarm skill_fallback skill_media skill_volume stt timedate tts weather
@@ -580,8 +580,8 @@ Speakers: card 1: sndrpihifiberry [snd_rpi_hifiberry_dacplus]
           device 0: HiFiBerry DAC+ HiFi pcm512x-hifi-0 [HiFiBerry DAC+ HiFi pcm512x-hifi-0]
 Playing : /usr/share/sounds/alsa/Front_Center.wav
 ----------------------------------------------------------------------------------
+```
 
-    ```
 You should see two changes:
 
 - Minimy is now running - the output showing user and system skill processes.
