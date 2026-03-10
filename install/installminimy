@@ -572,6 +572,7 @@ hub=""                                     # hub server
 let lastSecs=$SECONDS
 timeSt=`date +"%y-%m-%d-%H-%M-%S"`
 logFile="$HOME/$timeSt-installminimy.out"  # output file
+[ $MINIMY_SAVELOGS = "false" ] && logFile="/dev/null" # If logging is disabled, log to /dev/null
 musicDir=""                                # directory with music files
 let stepNum=0
 
