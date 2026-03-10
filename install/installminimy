@@ -103,12 +103,14 @@ function installMpd
   echo "Installing MPD (Music Player Daemon) as a user service ..." | tee -a $logFile
 
   # Install mpd and mpc (command-line client)
-  runCmd sudo apt-get install -y mpd mpc
+  command -v apt &>/dev/null && runCmd sudo apt-get install -y mpd mpc
 
   # Disable and mask the system-level mpd so it does not conflict
-  sudo systemctl stop mpd 2>/dev/null
-  sudo systemctl disable mpd 2>/dev/null
-  sudo systemctl mask mpd.service mpd.socket 2>/dev/null
+  if command -v systemctl &>/dev/null; then
+    runCmd sudo systemctl stop mpd 2>/dev/null
+    runCmd sudo systemctl disable mpd 2>/dev/null
+    runCmd sudo systemctl mask mpd.service mpd.socket 2>/dev/null
+  fi
   echo "Masked system-level mpd service" | tee -a $logFile
 
   # Create local MPD data directories under the minimy base dir
@@ -150,9 +152,11 @@ function installMpd
   runCmd sudo loginctl enable-linger $CURRENT_USER
 
   # Enable and start MPD as a user service
-  systemctl --user daemon-reload
-  runCmd systemctl --user enable mpd
-  runCmd systemctl --user start mpd
+  if command -v systemctl &>/dev/null; then
+    runCmd systemctl --user daemon-reload
+    runCmd systemctl --user enable mpd
+    runCmd systemctl --user start mpd
+  fi
 
   # Verify MPD is running
   sleep 1
@@ -235,15 +239,19 @@ function generateServiceFiles
   TMP_MOUNT_UNIT="${mountUnitPath}-tmp.mount"
 
   # Copy generated files to /etc/systemd/system
-  echo "Installing systemd service files..." | tee -a $logFile
-  runCmd sudo cp "$tmpDir/minimy.service" /etc/systemd/system/minimy.service
-  runCmd sudo cp "$tmpDir/whisper.service" /etc/systemd/system/whisper.service
-  runCmd sudo cp "$tmpDir/${mountUnitPath}-logs.mount" "/etc/systemd/system/${mountUnitPath}-logs.mount"
-  runCmd sudo cp "$tmpDir/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
+  if command -v systemctl &>/dev/null; then
+    echo "Installing systemd service files..." | tee -a $logFile
+    runCmd sudo cp "$tmpDir/minimy.service" /etc/systemd/system/minimy.service
+    runCmd sudo cp "$tmpDir/whisper.service" /etc/systemd/system/whisper.service
+    runCmd sudo cp "$tmpDir/${mountUnitPath}-logs.mount" "/etc/systemd/system/${mountUnitPath}-logs.mount"
+    runCmd sudo cp "$tmpDir/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
+  fi
 
   rm -rf "$tmpDir"                         # cleanup temporary directory
-  runCmd sudo systemctl daemon-reload      # reload systemd to pick up new files
-  runCmd sudo systemctl start whisper      # start whisper for this session 
+  if command -v systemctl &>/dev/null; then
+    runCmd sudo systemctl daemon-reload    # reload systemd to pick up new files
+    runCmd sudo systemctl start whisper    # start whisper for this session 
+  fi
   echo "Systemd service files installed successfully" | tee -a $logFile
  }                                         # generateServiceFiles()
 
@@ -382,8 +390,10 @@ function buildVenv
   cd $baseDir
   echo | tee -a $logFile
   echo "Installing virtual environment ..." | tee -a $logFile
-  runCmd sudo apt-get install -y python3-venv
-  runCmd sudo apt-get install -y python3-dev
+  if command -v apt &>/dev/null; then
+    runCmd sudo apt-get install -y python3-venv
+    runCmd sudo apt-get install -y python3-dev
+  fi
   runCmd python3 -m venv minimy_venv
   echo | tee -a $logFile
   echo "Upgrading pip ..." | tee -a $logFile
@@ -395,9 +405,11 @@ function buildVenv
   echo | tee -a $logFile
   echo "Upgrading wheel and setuptools ..." | tee -a $logFile
   runCmd $pipCmd install --upgrade wheel setuptools
-  runCmd sudo apt-get install -y python3-dev build-essential portaudio19-dev mpg123 ffmpeg curl wget mpc
-  runCmd sudo apt-get install -y libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
-  runCmd sudo apt-get install -y libavcodec-dev libavformat-dev libavdevice-dev redis
+  if command -v apt &>/dev/null; then
+    runCmd sudo apt-get install -y python3-dev build-essential portaudio19-dev mpg123 ffmpeg curl wget mpc
+    runCmd sudo apt-get install -y libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
+    runCmd sudo apt-get install -y libavcodec-dev libavformat-dev libavdevice-dev redis
+  fi
   echo | tee -a $logFile
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
   echo "Python version: $pythonVer ..." | tee -a $logFile
@@ -407,19 +419,18 @@ function buildVenv
   cd $baseDir
   runCmd pip install --no-binary :all: regex # force pip to ignore old wheels and build fresh
   runCmd $pipCmd install lingua_franca
-  # do not call runCmd because this fails on Nvidia 
-  # runCmd sudo apt-get install python3-lingua-franca
   echo "Installing python3-lingua-franca ..." | tee -a $logFile
-  sudo apt-get install python3-lingua-franca | tee -a $logFile
+  command -v apt &>/dev/null && runCmd sudo apt-get install python3-lingua-franca | tee -a $logFile
   runCmd $pipCmd install -r install/requirements.txt
   echo "Installing local STT whisper" | tee -a $logFile
   runCmd $pipCmd install git+https://github.com/openai/whisper.git
   runCmd $pipCmd install datasets
   runCmd $pipCmd install gpiozero
   runCmd $pipCmd install keyboard
-  # runCmd $pipCmd install swig
-  runCmd sudo apt-get install -y swig
-  runCmd sudo apt-get install -y liblgpio-dev
+  if command -v apt &>/dev/null; then
+    runCmd sudo apt-get install -y swig
+    runCmd sudo apt-get install -y liblgpio-dev
+  fi
   runCmd $pipCmd install lgpio
   runCmd $pipCmd install optimum
   runCmd $pipCmd install quart
@@ -502,9 +513,11 @@ function buildVenv
   ollamaModel="llama3.2:3b"
   echo "getting model $ollamaModel ..." | tee -a $logFile
   ollama pull $ollamaModel                 # get this model
-  runCmd sudo systemctl daemon-reload
-  runCmd sudo systemctl enable ollama
-  runCmd sudo systemctl restart ollama
+  if command -v systemctl &>/dev/null; then
+    runCmd sudo systemctl daemon-reload
+    runCmd sudo systemctl enable ollama
+    runCmd sudo systemctl restart ollama
+  fi
 
   cd $baseDir
 
@@ -516,16 +529,18 @@ function buildVenv
   generateServiceFiles
 
   # Enable the services
-  echo "Enabling systemd services..." | tee -a $logFile
-  runCmd sudo systemctl enable "$LOGS_MOUNT_UNIT"
-  runCmd sudo systemctl enable "$TMP_MOUNT_UNIT"
-  runCmd sudo systemctl enable minimy
+  if command -v systemctl &>/dev/null; then
+    echo "Enabling systemd services..." | tee -a $logFile
+    runCmd sudo systemctl enable "$LOGS_MOUNT_UNIT"
+    runCmd sudo systemctl enable "$TMP_MOUNT_UNIT"
+    runCmd sudo systemctl enable minimy
+  fi
 
   # Set whisper to run as a system daemon and log to /var/log/whisper.log
   runCmd sudo touch /var/log/whisper.log
   runCmd sudo chown $CURRENT_USER:$CURRENT_GROUP /var/log/whisper.log
   runCmd sudo chmod 664 /var/log/whisper.log
-  runCmd sudo systemctl enable whisper
+  command -v systemctl &>/dev/null && runCmd sudo systemctl enable whisper
   echo | tee -a $logFile
 
   echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile

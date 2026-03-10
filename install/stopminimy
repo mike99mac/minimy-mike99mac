@@ -2,7 +2,6 @@
 #
 # stopminimy - kill processes with 'minimy' in them, sort log files, copy to $HOME and unmount tmpfs
 #
-
 # Detect base directory dynamically
 if [ -n "$SVA_BASE_DIR" ]; then
   baseDir="$SVA_BASE_DIR"
@@ -10,17 +9,15 @@ else
   baseDir="$HOME/minimy"
 fi
 logDir="$baseDir/logs"
-
 # Detect current user information
 CURRENT_USER=$(whoami)
-
-
-
+# Detect if logs should be saved (on by default)
+SAVELOGS="true"
+[ "$MINIMY_SAVELOGS" = "false" ] && SAVELOGS="false"
 # main()
 echo "Stopping Minimy ..."
 echo "User: $CURRENT_USER"
 echo "Base directory: $baseDir"
-
 procs=$(ps -ef | grep -E 'minimy/skills|skills/system_skills|framework/services|MsgBus|mimic3|skill_system.py' | grep -v grep | grep -v local_whisper | grep -v vim)
 if [ ${#procs} = 0 ]; then
   echo "Minimy does not appear to be running"
@@ -31,29 +28,23 @@ else
     sudo kill $pid
   done
 fi
-
 # Sort logs if the sortlogs command exists
-if command -v sortlogs &> /dev/null; then
+if command -v sortlogs &> /dev/null && [ "$SAVELOGS" = "true" ]; then
   sortlogs                                 # create a time sorted file of all logs
 fi
-
 rm -fr /tmp/pymp*                          # clean up socket temp directories
 cd $HOME
-
 # Copy log files if the log directory exists
-if [ -d "$logDir" ]; then
-  cp "$logDir"/* "$HOME" 2>/dev/null           # copy each log file
+if [ -d "$logDir" ] && [ "$SAVELOGS" = "true" ]; then
+  cp "$logDir"/* "$HOME" 2>/dev/null       # copy each log file
 fi
-
 if [ ${#procs} != 0 ]; then
   waitSecs=4
   echo "Waiting $waitSecs seconds for processes to finish ..."
   sleep $waitSecs                          # wait for processes to die before unmounting tmpfs
-
   # Unmount log directory using dynamic path
   if mount | grep -q "$logDir"; then
-    sudo umount "$logDir"                    # unmount log directory - and logs disappear
+    sudo umount "$logDir"                  # unmount log directory - and logs disappear
   fi
 fi
-
 echo "Minimy stopped."
