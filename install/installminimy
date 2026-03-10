@@ -103,7 +103,7 @@ function installMpd
   echo "Installing MPD (Music Player Daemon) as a user service ..." | tee -a $logFile
 
   # Install mpd and mpc (command-line client)
-  command -v apt &>/dev/null && runCmd sudo apt-get install -y mpd mpc
+  command -v apt-get &>/dev/null && runCmd sudo apt-get install -y mpd mpc
 
   # Disable and mask the system-level mpd so it does not conflict
   if command -v systemctl &>/dev/null; then
@@ -239,19 +239,15 @@ function generateServiceFiles
   TMP_MOUNT_UNIT="${mountUnitPath}-tmp.mount"
 
   # Copy generated files to /etc/systemd/system
-  if command -v systemctl &>/dev/null; then
-    echo "Installing systemd service files..." | tee -a $logFile
-    runCmd sudo cp "$tmpDir/minimy.service" /etc/systemd/system/minimy.service
-    runCmd sudo cp "$tmpDir/whisper.service" /etc/systemd/system/whisper.service
-    runCmd sudo cp "$tmpDir/${mountUnitPath}-logs.mount" "/etc/systemd/system/${mountUnitPath}-logs.mount"
-    runCmd sudo cp "$tmpDir/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
-  fi
+  echo "Installing systemd service files..." | tee -a $logFile
+  runCmd sudo cp "$tmpDir/minimy.service" /etc/systemd/system/minimy.service
+  runCmd sudo cp "$tmpDir/whisper.service" /etc/systemd/system/whisper.service
+  runCmd sudo cp "$tmpDir/${mountUnitPath}-logs.mount" "/etc/systemd/system/${mountUnitPath}-logs.mount"
+  runCmd sudo cp "$tmpDir/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
 
   rm -rf "$tmpDir"                         # cleanup temporary directory
-  if command -v systemctl &>/dev/null; then
-    runCmd sudo systemctl daemon-reload    # reload systemd to pick up new files
-    runCmd sudo systemctl start whisper    # start whisper for this session 
-  fi
+  runCmd sudo systemctl daemon-reload      # reload systemd to pick up new files
+  runCmd sudo systemctl start whisper      # start whisper for this session 
   echo "Systemd service files installed successfully" | tee -a $logFile
  }                                         # generateServiceFiles()
 
@@ -390,7 +386,7 @@ function buildVenv
   cd $baseDir
   echo | tee -a $logFile
   echo "Installing virtual environment ..." | tee -a $logFile
-  if command -v apt &>/dev/null; then
+  if command -v apt-get &>/dev/null; then
     runCmd sudo apt-get install -y python3-venv
     runCmd sudo apt-get install -y python3-dev
   fi
@@ -405,7 +401,7 @@ function buildVenv
   echo | tee -a $logFile
   echo "Upgrading wheel and setuptools ..." | tee -a $logFile
   runCmd $pipCmd install --upgrade wheel setuptools
-  if command -v apt &>/dev/null; then
+  if command -v apt-get &>/dev/null; then
     runCmd sudo apt-get install -y python3-dev build-essential portaudio19-dev mpg123 ffmpeg curl wget mpc
     runCmd sudo apt-get install -y libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
     runCmd sudo apt-get install -y libavcodec-dev libavformat-dev libavdevice-dev redis
@@ -420,18 +416,18 @@ function buildVenv
   runCmd pip install --no-binary :all: regex # force pip to ignore old wheels and build fresh
   runCmd $pipCmd install lingua_franca
   echo "Installing python3-lingua-franca ..." | tee -a $logFile
-  command -v apt &>/dev/null && runCmd sudo apt-get install python3-lingua-franca | tee -a $logFile
+  command -v apt-get &>/dev/null && runCmd sudo apt-get install python3-lingua-franca | tee -a $logFile
   runCmd $pipCmd install -r install/requirements.txt
   echo "Installing local STT whisper" | tee -a $logFile
   runCmd $pipCmd install git+https://github.com/openai/whisper.git
   runCmd $pipCmd install datasets
   runCmd $pipCmd install gpiozero
   runCmd $pipCmd install keyboard
-  if command -v apt &>/dev/null; then
+  if command -v apt-get &>/dev/null; then
     runCmd sudo apt-get install -y swig
     runCmd sudo apt-get install -y liblgpio-dev
   fi
-  runCmd $pipCmd install lgpio
+  [ $(uname -m) = "aarch64" ] && runCmd $pipCmd install lgpio # Only builds on ARM
   runCmd $pipCmd install optimum
   runCmd $pipCmd install quart
   runCmd $pipCmd install redis
@@ -478,8 +474,14 @@ function buildVenv
   echo | tee -a $logFile
   cd $baseDir/framework/services/tts/local # piper is built in the source tree
   if [ ! -d piper ]; then                  # not downloaded yet
-    runCmd wget -q https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_arm64.tar.gz
-    runCmd tar xzf piper_arm64.tar.gz      # creates piper dir
+    [ $(uname -m) = "aarch64" ] &&
+    if [ $(uname -m) = "aarch64" ]; then
+      runCmd wget -q https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_arm64.tar.gz
+      runCmd tar xzf piper_arm64.tar.gz    # creates piper dir
+    else
+      runCmd wget -q https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_amd64.tar.gz
+      runCmd tar xzf piper_amd64.tar.gz    # creates piper dir
+    fi
     cd piper                               # get a male and a female voice
     runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx
     runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx.json
@@ -526,7 +528,7 @@ function buildVenv
   # installMpd
 
   # Generate and install systemd service files dynamically
-  generateServiceFiles
+  command -v systemctl &>/dev/null && generateServiceFiles
 
   # Enable the services
   if command -v systemctl &>/dev/null; then
