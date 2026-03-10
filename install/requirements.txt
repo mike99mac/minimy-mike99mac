@@ -2,7 +2,7 @@ PyYAML
 requests
 inflect
 pytz
-setuptools
+setuptools==81.0.0
 webrtcvad
 scipy
 PyAudio
