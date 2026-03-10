@@ -41,14 +41,8 @@ function makeVenv                          # make the virtual environment
   fi
   cd $HOME                                 # build in home directory
   
-  echo "Installing co-reqs for a virtual environment..."
-  # runCmd sudo apt-get -qq install -y python3.10-venv
-  # runCmd sudo apt-get -qq install -y python3.10-dev
-  # runCmd sudo apt-get -qq install -y build-essential
-  # runCmd sudo apt-get -qq install -y portaudio19-dev
-  
   echo "Creating virtual environment at $theVenv"
-  runCmd /usr/bin/python3 -m venv $theVenv     # create a 3.10 venv
+  runCmd /usr/bin/python3 -m venv $theVenv # create a 3.10 venv
   source $theVenv/bin/activate             # activate venv
   local pipCmd="$theVenv/bin/pip"          # use the newly created pip
   echo "Installing STT requirements ..."
