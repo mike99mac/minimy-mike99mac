@@ -474,7 +474,6 @@ function buildVenv
   echo | tee -a $logFile
   cd $baseDir/framework/services/tts/local # piper is built in the source tree
   if [ ! -d piper ]; then                  # not downloaded yet
-    [ $(uname -m) = "aarch64" ] &&
     if [ $(uname -m) = "aarch64" ]; then
       runCmd wget -q https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_arm64.tar.gz
       runCmd tar xzf piper_arm64.tar.gz    # creates piper dir
