@@ -4,7 +4,8 @@
 ### Bugs
 1. Fix media skill error message.
 ### Features
-1. Rewrite cmpcode script to use diff command to avoid skipping any files.
+1. Rewrite cmpcode script to use diff command to avoid skipping any files. NO LONGER NEEDED?
+1. Add a "move music" intent to the mpc skill 
 1. Improve TTS number pronuncaition.
 1. Make logging cleaner - less printing to stdout.
 1. Fix software volume control related to the ALSA device numbers - allow volume to be 0 - 11.
