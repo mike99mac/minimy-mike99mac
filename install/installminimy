@@ -402,7 +402,7 @@ function buildVenv
   echo "Upgrading wheel and setuptools ..." | tee -a $logFile
   runCmd $pipCmd install --upgrade wheel setuptools
   if command -v apt-get &>/dev/null; then
-    runCmd sudo apt-get install -y python3-dev build-essential portaudio19-dev mpg123 ffmpeg curl wget mpc
+    runCmd sudo apt-get install -y build-essential portaudio19-dev mpg123 ffmpeg curl wget mpc
     runCmd sudo apt-get install -y libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
     runCmd sudo apt-get install -y libavcodec-dev libavformat-dev libavdevice-dev redis
   fi
