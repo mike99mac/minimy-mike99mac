@@ -18,7 +18,7 @@ function usage
   echo "OPTIONS:"
   echo "  -h|--help           Give help (this screen)"
   echo "  -H|--hub [HUB]      Specify the 'hub' server"
-  echo "  -m|--musicDir [DIR] Directory with music files"
+  echo "  -t|--torch          Install PyTorch"
   echo "  -v|--verbose        Verbose output"
   echo "  -x|--debug          Print commands and arguments as they are executed"
   exit 51
@@ -39,13 +39,16 @@ function parseArgs
       -h|--help)
         usage
         ;;
-      --hub)
+      -H|--hub)
         if [ $# = 0 ]; then                # hostname not passed in
           echo "ERROR! HUB not passed in after $1"
           usage                            # give help
         fi
         shift                              # get to next arg
         hub=$1
+        ;;
+      -t|--torch)
+        torch=1
         ;;
       -v|--verbose)
         verbose=2
@@ -298,16 +301,15 @@ function setMinimyVars
   if [ ${#hub} != 0 ]; then                # new value was supplied
     sed -i "s/    Hub: .*/    Hub: $hub/g" $configFile # reset hub server
   fi
-  # comment out MusicDir as it is set in /etc/mpd.conf and can be outside the scope of minimy  -Mike Mac
-  # if [ ${#MusicDir} = 0 ]; then            # music dir not set with args
-  #   musicDir=`grep "    MusicDir:" $configFile | awk '{print $2}'` # get music dir in config file
-  #   echo -n "Directory with music files [$musicDir]: "
-  #   read newMusicDir
-  #   if [ ${#newMusicDir} != 0 ]; then      # new music dir was supplied
-  #     musicDir="$newMusicDir"              # update global for installMpd
-  #     sed -i "s/    MusicDir: .*/    MusicDir: $newMusicDir/g" $configFile # reset music dir
-  #   fi
-  # fi
+  if [ "$torch" != 1 ]; then               # hub not set with args
+    echo -n "Should PyTorch be built? [y/N]: "
+    read torch
+  fi                                       # new value was supplied
+  if [ "$torch" = 'y' ] || [ "$torch" = 'Y' ]; then
+    torch=1
+  else
+    torch=0
+  fi
  }                                         # setMinimyVars()
 
 #+--------------------------------------------------------------------------+
@@ -410,6 +412,14 @@ function buildVenv
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
   echo "Python version: $pythonVer ..." | tee -a $logFile
   local pythonCmd="$baseDir/minimy_venv/bin/python$pythonVer" # use python from the venv
+  if [ "$torch" = 1 ]; then
+    echo "Installing PyTorch ..."
+    runCmd $pipCmd install torch==2.10.0 --index-url https://download.pytorch.org/whl/cu126 --pre --extra-index-url https://pypi.jetson-ai-lab.io/jp6/cu126
+    echo "Installing torchaudio ..."
+    runCmd $pipCmd install torchaudio==2.10.0 --index-url https://download.pytorch.org/whl/cu126 --pre --extra-index-url https://pypi.jetson-ai-lab.io/jp6/cu126
+    echo "Installing torchvision ..."
+    runCmd $pipCmd install torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cu126 --pre --extra-index-url https://pypi.jetson-ai-lab.io/jp6/cu126
+  fi
   runCmd $pythonCmd -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
   echo "Installing yt-dlp and requirements.txt ..." | tee -a $logFile
   cd $baseDir
