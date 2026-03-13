@@ -416,7 +416,6 @@ function buildVenv
   runCmd pip install --no-binary :all: regex # force pip to ignore old wheels and build fresh
   runCmd $pipCmd install lingua_franca
   echo "Installing python3-lingua-franca ..." | tee -a $logFile
-  command -v apt-get &>/dev/null && runCmd sudo apt-get install python3-lingua-franca | tee -a $logFile
   runCmd $pipCmd install -r install/requirements.txt
   echo "Installing local STT whisper" | tee -a $logFile
   runCmd $pipCmd install git+https://github.com/openai/whisper.git
