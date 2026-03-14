@@ -298,16 +298,6 @@ function setMinimyVars
   if [ ${#hub} != 0 ]; then                # new value was supplied
     sed -i "s/    Hub: .*/    Hub: $hub/g" $configFile # reset hub server
   fi
-  # comment out MusicDir as it is set in /etc/mpd.conf and can be outside the scope of minimy  -Mike Mac
-  # if [ ${#MusicDir} = 0 ]; then            # music dir not set with args
-  #   musicDir=`grep "    MusicDir:" $configFile | awk '{print $2}'` # get music dir in config file
-  #   echo -n "Directory with music files [$musicDir]: "
-  #   read newMusicDir
-  #   if [ ${#newMusicDir} != 0 ]; then      # new music dir was supplied
-  #     musicDir="$newMusicDir"              # update global for installMpd
-  #     sed -i "s/    MusicDir: .*/    MusicDir: $newMusicDir/g" $configFile # reset music dir
-  #   fi
-  # fi
  }                                         # setMinimyVars()
 
 #+--------------------------------------------------------------------------+
@@ -376,7 +366,7 @@ function buildVenv
   echo "Running $0 at `date` ..." > $logFile # create a new log file
   echo | tee -a $logFile
 
-  # Export environment variables needed by Python scripts (e.g. bldwhisper.py)
+  # Export environment variables needed by Python scripts 
   export SVA_BASE_DIR="$baseDir"
   export PYTHONPATH="$baseDir"
   echo "Set SVA_BASE_DIR=$baseDir" | tee -a $logFile
@@ -385,16 +375,38 @@ function buildVenv
   echo "cd to $baseDir ..." | tee -a $logFile
   cd $baseDir
   echo | tee -a $logFile
-  echo "Installing virtual environment ..." | tee -a $logFile
-  if command -v apt-get &>/dev/null; then
-    runCmd sudo apt-get install -y python3-venv
-    runCmd sudo apt-get install -y python3-dev
+  runCmd sudo apt-get install -y python3-venv
+  runCmd sudo apt-get install -y python3-dev
+  PI_MODEL=$(grep -q "Raspberry Pi 4" /proc/device-tree/model 2>/dev/null && echo "4" || echo "other")
+  if [ "$PI_MODEL" = "4" ]; then # Select Python version
+    PYTHON=python3.11
+    echo "Python 3.11 not found. Compiling for Pi 4..."
+    runCmd sudo apt update
+    runCmd sudo apt install -y build-essential wget libssl-dev zlib1g-dev libncurses5-dev \
+    libncursesw5-dev libreadline-dev libsqlite3-dev libffi-dev libbz2-dev
+    if [ ! -f Python-3.11.9.tgz ]; then
+      runCmd wget https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz
+    fi
+    runCmd tar xf Python-3.11.9.tgz
+    cd Python-3.11.9
+    runCmd ./configure --enable-optimizations
+    runCmd make -j$(nproc)
+    runCmd sudo make altinstall
+    cd $baseDir
+    echo "Installing virtual environment ..." | tee -a $logFile
+    runCmd python3.11 -m venv minimy_venv
+    runCmd $baseDir/minimy_venv/bin/python3.11 -m pip uninstall torch
+    runCmd $baseDir/minimy_venv/bin/python3.11 -m pip install torch==1.13.1 torchvision==0.14.1
+  else                                     # assume Ras Pi 5
+    PYTHON=python3
+    runCmd python3 -m venv minimy_venv
   fi
-  runCmd python3 -m venv minimy_venv
   echo | tee -a $logFile
   echo "Upgrading pip ..." | tee -a $logFile
   local pipCmd="$baseDir/minimy_venv/bin/pip" # use pip from the venv
-  runCmd $pipCmd install --upgrade pip
+  runCmd wget https://bootstrap.pypa.io/get-pip.py
+  runCmd $baseDir/minimy_venv/bin/$PYTHON get-pip.py
+  runCmd $baseDir/minimy_venv/bin/$PYTHON -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
   echo | tee -a $logFile
   echo "Activating virtual environment ..." | tee -a $logFile
   runCmd source minimy_venv/bin/activate   # start virtual environment
@@ -413,10 +425,10 @@ function buildVenv
   runCmd $pythonCmd -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
   echo "Installing yt-dlp and requirements.txt ..." | tee -a $logFile
   cd $baseDir
-  runCmd pip install --no-binary :all: regex # force pip to ignore old wheels and build fresh
-  runCmd $pipCmd install lingua_franca
+  runCmd $pipCmd install --no-binary :all: regex # force pip to ignore old wheels and build fresh
   echo "Installing python3-lingua-franca ..." | tee -a $logFile
-  command -v apt-get &>/dev/null && runCmd sudo apt-get install python3-lingua-franca | tee -a $logFile
+  runCmd $pipCmd install lingua_franca
+  # command -v apt-get &>/dev/null && runCmd sudo apt-get install python3-lingua-franca | tee -a $logFile
   runCmd $pipCmd install -r install/requirements.txt
   echo "Installing local STT whisper" | tee -a $logFile
   runCmd $pipCmd install git+https://github.com/openai/whisper.git
@@ -526,16 +538,11 @@ function buildVenv
   # commenting out as this is done in ovos-tools/install1  -Mike Mac
   # installMpd
 
-  # Generate and install systemd service files dynamically
-  command -v systemctl &>/dev/null && generateServiceFiles
-
-  # Enable the services
-  if command -v systemctl &>/dev/null; then
-    echo "Enabling systemd services..." | tee -a $logFile
-    runCmd sudo systemctl enable "$LOGS_MOUNT_UNIT"
-    runCmd sudo systemctl enable "$TMP_MOUNT_UNIT"
-    runCmd sudo systemctl enable minimy
-  fi
+  generateServiceFiles                     # generate and install systemd service files dynamically
+  echo "Enabling systemd services..." | tee -a $logFile
+  runCmd sudo systemctl enable "$LOGS_MOUNT_UNIT"
+  runCmd sudo systemctl enable "$TMP_MOUNT_UNIT"
+  runCmd sudo systemctl enable minimy
 
   # Set whisper to run as a system daemon and log to /var/log/whisper.log
   runCmd sudo touch /var/log/whisper.log
@@ -571,7 +578,12 @@ hub=""                                     # hub server
 let lastSecs=$SECONDS
 timeSt=`date +"%y-%m-%d-%H-%M-%S"`
 logFile="$HOME/$timeSt-installminimy.out"  # output file
-[ $MINIMY_SAVELOGS = "false" ] && logFile="/dev/null" # If logging is disabled, log to /dev/null
+if [ ${#MINIMY_SAVELOGS} = 0 ]; then       # env var not set
+  MINIMY_SAVELOGS="true"                     # default is to create a log file
+fi
+if [ "$MINIMY_SAVELOGS" = "false" ]; then 
+  logFile="/dev/null"                      # if logging is disabled, log to /dev/null
+fi
 musicDir=""                                # directory with music files
 let stepNum=0
 
