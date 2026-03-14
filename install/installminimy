@@ -18,7 +18,7 @@ function usage
   echo "OPTIONS:"
   echo "  -h|--help           Give help (this screen)"
   echo "  -H|--hub [HUB]      Specify the 'hub' server"
-  echo "  -m|--musicDir [DIR] Directory with music files"
+  echo "  -t|--torch          Install PyTorch"
   echo "  -v|--verbose        Verbose output"
   echo "  -x|--debug          Print commands and arguments as they are executed"
   exit 51
@@ -39,13 +39,16 @@ function parseArgs
       -h|--help)
         usage
         ;;
-      --hub)
+      -H|--hub)
         if [ $# = 0 ]; then                # hostname not passed in
           echo "ERROR! HUB not passed in after $1"
           usage                            # give help
         fi
         shift                              # get to next arg
         hub=$1
+        ;;
+      -t|--torch)
+        torch=1
         ;;
       -v|--verbose)
         verbose=2
@@ -298,6 +301,15 @@ function setMinimyVars
   if [ ${#hub} != 0 ]; then                # new value was supplied
     sed -i "s/    Hub: .*/    Hub: $hub/g" $configFile # reset hub server
   fi
+  if [ "$torch" != 1 ]; then    
+    echo -n "Should PyTorch be built? [y/N]: "
+    read torch
+  fi                                       # new value was supplied
+  if [ "$torch" = 'y' ] || [ "$torch" = 'Y' ]; then
+    torch=1
+  else
+    torch=0
+  fi
  }                                         # setMinimyVars()
 
 #+--------------------------------------------------------------------------+
@@ -414,7 +426,7 @@ function buildVenv
   echo "Upgrading wheel and setuptools ..." | tee -a $logFile
   runCmd $pipCmd install --upgrade wheel setuptools
   if command -v apt-get &>/dev/null; then
-    runCmd sudo apt-get install -y python3-dev build-essential portaudio19-dev mpg123 ffmpeg curl wget mpc
+    runCmd sudo apt-get install -y build-essential portaudio19-dev mpg123 ffmpeg curl wget mpc
     runCmd sudo apt-get install -y libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
     runCmd sudo apt-get install -y libavcodec-dev libavformat-dev libavdevice-dev redis
   fi
@@ -422,13 +434,20 @@ function buildVenv
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
   echo "Python version: $pythonVer ..." | tee -a $logFile
   local pythonCmd="$baseDir/minimy_venv/bin/python$pythonVer" # use python from the venv
+  if [ "$torch" = 1 ]; then
+    echo "Installing PyTorch ..."
+    runCmd $pipCmd install torch==2.10.0 --index-url https://download.pytorch.org/whl/cu126 --pre --extra-index-url https://pypi.jetson-ai-lab.io/jp6/cu126
+    echo "Installing torchaudio ..."
+    runCmd $pipCmd install torchaudio==2.10.0 --index-url https://download.pytorch.org/whl/cu126 --pre --extra-index-url https://pypi.jetson-ai-lab.io/jp6/cu126
+    echo "Installing torchvision ..."
+    runCmd $pipCmd install torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cu126 --pre --extra-index-url https://pypi.jetson-ai-lab.io/jp6/cu126
+  fi
   runCmd $pythonCmd -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
   echo "Installing yt-dlp and requirements.txt ..." | tee -a $logFile
   cd $baseDir
   runCmd $pipCmd install --no-binary :all: regex # force pip to ignore old wheels and build fresh
   echo "Installing python3-lingua-franca ..." | tee -a $logFile
   runCmd $pipCmd install lingua_franca
-  # command -v apt-get &>/dev/null && runCmd sudo apt-get install python3-lingua-franca | tee -a $logFile
   runCmd $pipCmd install -r install/requirements.txt
   echo "Installing local STT whisper" | tee -a $logFile
   runCmd $pipCmd install git+https://github.com/openai/whisper.git
@@ -531,7 +550,6 @@ function buildVenv
     runCmd sudo systemctl enable ollama
     runCmd sudo systemctl restart ollama
   fi
-
   cd $baseDir
 
   # Install and configure MPD
