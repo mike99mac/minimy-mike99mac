@@ -1,5 +1,4 @@
 import json
-import time
 from threading import Event
 
 from skills.sva_base import SimpleVoiceAssistant
@@ -10,7 +9,7 @@ class HelpSkill(SimpleVoiceAssistant):
         self.skill_id = "help_skill"
         super().__init__(
             msg_handler=self.handle_message,
-            skill_id="help_skill",
+            skill_id=self.skill_id,
             skill_category="user",
         )
         info = {
@@ -38,7 +37,8 @@ class HelpSkill(SimpleVoiceAssistant):
         }
 
     def handle_message(self, msg):
-        if msg["payload"]["subtype"] == "oob_detect":
+        payload = msg.get("payload", {}) if isinstance(msg, dict) else {}
+        if payload.get("subtype") == "oob_detect":
             print("\n\nHELP REQUESTED\n\n")
             self.speak("What can I help you with?")
             self.speak(
@@ -54,11 +54,18 @@ class HelpSkill(SimpleVoiceAssistant):
 
         try:
             response_dict = json.loads(user_response)
-            spoken_text = response_dict.get("text", "").lower()
+            spoken_text = response_dict.get("text", "").lower().strip()
         except json.JSONDecodeError:
             self.speak(
                 "Sorry, I had trouble understanding that. Please try asking for help again."
             )
+            return
+
+        if not spoken_text:
+            self.speak(
+                "I didn't catch the topic. You can ask for a list of topics or name one directly."
+            )
+            self.get_user_input(self.handle_help_topic)
             return
 
         # Check if the user just wants to hear the available topics
@@ -105,7 +112,8 @@ class HelpSkill(SimpleVoiceAssistant):
             self.speak(self.help_topics[topic])
 
     def stop(self):
-        pass
+        # No background resources to clean up for this skill.
+        return
 
 
 if __name__ == "__main__":
