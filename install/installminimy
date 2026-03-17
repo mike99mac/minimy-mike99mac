@@ -436,11 +436,11 @@ function buildVenv
   local pythonCmd="$baseDir/minimy_venv/bin/python$pythonVer" # use python from the venv
   if [ "$torch" = 1 ]; then
     echo "Installing PyTorch ..."
-    runCmd $pipCmd install torch==2.10.0 --index-url https://download.pytorch.org/whl/cu126 --pre --extra-index-url https://pypi.jetson-ai-lab.io/jp6/cu126
+    runCmd $pipCmd install https://pypi.jetson-ai-lab.io/jp6/cu126/+f/62a/1beee9f2f1470/torch-2.8.0-cp310-cp310-linux_aarch64.whl
     echo "Installing torchaudio ..."
-    runCmd $pipCmd install torchaudio==2.10.0 --index-url https://download.pytorch.org/whl/cu126 --pre --extra-index-url https://pypi.jetson-ai-lab.io/jp6/cu126
+    runCmd $pipCmd install https://pypi.jetson-ai-lab.io/jp6/cu126/%2Bf/81a/775c8af36ac85/torchaudio-2.8.0-cp310-cp310-linux_aarch64.whl
     echo "Installing torchvision ..."
-    runCmd $pipCmd install torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cu126 --pre --extra-index-url https://pypi.jetson-ai-lab.io/jp6/cu126
+    runCmd $pipCmd install https://pypi.jetson-ai-lab.io/jp6/cu126/%2Bf/907/c4c1933789645/torchvision-0.23.0-cp310-cp310-linux_aarch64.whl
   fi
   runCmd $pythonCmd -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
   echo "Installing yt-dlp and requirements.txt ..." | tee -a $logFile
