@@ -32,13 +32,14 @@ def msg_from_json(json_input):
     data = json_input
   else:
     raise TypeError("Input must be a JSON string or a dictionary")
-  return data                              # Return a dictionary
+  return data                              # return a dictionary
 
 class MsgBus:
   def __init__(self, client_id, redis_host="localhost", redis_port=6379):
     self.client_id = client_id
     self.redis_host = redis_host
     self.redis_port = redis_port
+    # Note: all log file code commented out as it sends ALL logs to messages.log file
     # self.base_dir = str(os.getenv("SVA_BASE_DIR"))
     # log_filename = self.base_dir + "/logs/messages.log"
     # self.log = LOG(log_filename).log

@@ -26,8 +26,8 @@ def has_speech(wav_filename, energy_threshold=0.001):
       # Normalize and calculate energy
       audio_normalized = audio_array / 32768.0
       energy = np.mean(audio_normalized ** 2)
-      # Add logging
-      print(f"DEBUG: File {os.path.basename(wav_filename)} energy: {energy:.6f}, threshold: {energy_threshold}")
+      # TO DO: add logging
+      # print(f"DEBUG: File {os.path.basename(wav_filename)} energy: {energy:.6f}, threshold: {energy_threshold}")
       return energy > energy_threshold
   except Exception:
     return True
@@ -59,8 +59,8 @@ def _local_transcribe_file(wav_filename, return_dict, completion_pipe):
       print("remote_transcribe_file(): ERROR - Empty response from curl", flush=True)
       completion_pipe.send("done")         # signal local transcription completed
       return
-    print(f"DEBUG: Raw curl output: '{stdout}'")
-    print(f"DEBUG: Output length: {len(stdout)}")
+    # print(f"DEBUG: Raw curl output: '{stdout}'")
+    # print(f"DEBUG: Output length: {len(stdout)}")
     res = json.loads(stdout)["text"]
     if res:
       res = res.strip()
