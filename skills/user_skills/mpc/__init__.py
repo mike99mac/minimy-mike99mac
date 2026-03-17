@@ -3,6 +3,7 @@ from mpc_client import MpcClient
 from music_info import Music_info
 from skills.sva_media_skill_base import MediaSkill
 from threading import Event
+import subprocess
 
 class MpcSkill(MediaSkill):  
   # Play music skill for minimy.  It uses mpc and mpd to play music from:
@@ -15,15 +16,43 @@ class MpcSkill(MediaSkill):
     self.url = ""                          # has to be returned from get_media_confidence()
     self.lang = "en-us"                    # just US English for now
     cfg = Config()                         # get config file
-    # comment this out as updating mpc/mpd songs (mpc update) can be done outside of minimy
-    # self.music_dir = cfg.get_cfg_val("Basic.MusicDir")
-    # self.mpc_client = MpcClient(self.music_dir) # search for music under <music_dir>
+    self.log.debug("MpcSkill.__init__(): Registering intents")
+    self.register_intent('C', 'move', 'music', self.move_music)
+    self.room_to_host = cfg.get_cfg_val("Basic.RoomToHost") or {}
+    self.log.debug(f"MpcSkill.__init__(): room_to_host: {self.room_to_host}")
     self.mpc_client = MpcClient()          # search for music under <music_dir>
     self.log.debug(f"MpcSkill.__init__(): skill_base_dir: {self.skill_base_dir}")
     self.music_info = Music_info("none", "", {}, []) # music to play
     self.sentence = None 
     self.music_info.mesg_file = "mpc_initialized"
     self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.fallback_internet) 
+
+  def move_music(self, msg):
+    self.log.debug(f"MpcSkill.move_music() msg: {msg}")
+    utt = msg['payload']['utt']
+    value = utt.get('value', '').lower()   # e.g. "to the bedroom"
+    for prefix in ('to the ', 'to '):      # strip leading preposition/article
+      if value.startswith(prefix):
+        value = value[len(prefix):]
+        break
+    room = value.strip()  
+    host = self.room_to_host.get(room)
+    if not host:
+      self.log.warning(f"MpcSkill.move_music(): unknown room '{room}'")
+      self.music_info.mesg_file = "unknown_room"
+      self.music_info.mesg_info = {"room": room}
+      self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.fallback_internet)
+      return
+    self.log.info(f"MpcSkill.move_music(): moving music to room: {room} host: {host}")
+    result = subprocess.run(['/usr/local/sbin/mvmusic', host], capture_output=True, text=True)
+    if result.returncode == 0:
+      self.music_info.mesg_file = "music_moved"
+      self.music_info.mesg_info = {"room": room}
+    else:
+      self.log.error(f"move_music(): mvmusic failed: {result.stderr}")
+      self.music_info.mesg_file = "move_music_failed"
+      self.music_info.mesg_info = {"room": room}
+    self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.fallback_internet)
 
   def fallback_internet(self):
     # Requested music was not found in library - fallback to Internet search

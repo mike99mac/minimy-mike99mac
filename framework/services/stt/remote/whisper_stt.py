@@ -33,8 +33,8 @@ def remote_transcribe_file(wav_filename, return_dict, hub_name, completion_pipe)
       print("remote_transcribe_file(): ERROR - Empty response from curl", flush=True)
       completion_pipe.send("done")         # signal remote transcription completed
       return
-    print(f"DEBUG: Raw curl output: '{stdout}'")
-    print(f"DEBUG: Output length: {len(stdout)}")
+    # print(f"DEBUG: Raw curl output: '{stdout}'")
+    # print(f"DEBUG: Output length: {len(stdout)}")
     res = json.loads(stdout)["text"]       # fix formatting
     if res is not None:
       res = res.strip()
