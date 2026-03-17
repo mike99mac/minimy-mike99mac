@@ -39,26 +39,16 @@ class HelpSkill(SimpleVoiceAssistant):
     def handle_message(self, msg):
         payload = msg.get("payload", {}) if isinstance(msg, dict) else {}
         if payload.get("subtype") == "oob_detect":
-            print("\n\nHELP REQUESTED\n\n")
             self.speak("What can I help you with?")
             self.speak(
                 "You can ask for help with music, radio, weather, time, alarms, volume, or ask me for a list of topics."
             )
             self.get_user_input(self.handle_help_topic)
 
-    def handle_help_topic(self, user_response):
+    def handle_help_topic(self, spoken_text):
         # user_response is passed back as a JSON string from the raw STT output
-        if not user_response:
+        if spoken_text == "":
             self.speak("I didn't hear anything. You can ask for help again later.")
-            return
-
-        try:
-            response_dict = json.loads(user_response)
-            spoken_text = response_dict.get("text", "").lower().strip()
-        except json.JSONDecodeError:
-            self.speak(
-                "Sorry, I had trouble understanding that. Please try asking for help again."
-            )
             return
 
         if not spoken_text:
