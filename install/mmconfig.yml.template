@@ -18,9 +18,9 @@
   Basic:
     AWSId: ''
     AWSKey: ''
-    BaseDir: /home/pi/minimy
+    BaseDir: {{BASE_DIR}}
     GoogleApiKeyPath: install/my_google_key.json
-    Hub: kinglion
+    Hub: localhost
     HubModel: base.en
     SpokeModel: tiny.en
     MusicDir:
@@ -28,6 +28,7 @@
     - 'computer'
     - 'internet'
     RoomToHost:
-      bedroom: model1500
-      living room: kinglion 
-      kitchen: model2000
+      # Examples:
+      # bedroom: hostname1
+      # living room: hostname2
+      # kitchen: hostname3
