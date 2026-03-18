@@ -27,3 +27,8 @@
     WakeWords:
     - 'computer'
     - 'internet'
+    RoomToHost:
+      # Examples:
+      # bedroom: hostname1
+      # living room: hostname2
+      # kitchen: hostname3
