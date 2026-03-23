@@ -449,8 +449,8 @@ function buildVenv
   echo "Installing python3-lingua-franca ..." | tee -a $logFile
   runCmd $pipCmd install lingua_franca
   runCmd $pipCmd install -r install/requirements.txt
-  echo "Installing local STT whisper" | tee -a $logFile
-  runCmd $pipCmd install git+https://github.com/openai/whisper.git
+  echo "Installing local STT faster-whisper" | tee -a $logFile
+  runCmd $pipCmd install faster-whisper
   runCmd $pipCmd install datasets
   runCmd $pipCmd install gpiozero
   runCmd $pipCmd install keyboard
