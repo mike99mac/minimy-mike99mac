@@ -361,7 +361,7 @@ function buildVenv
     cd CTranslate2
     mkdir build; cd build
     runCmd sudo apt-get install -y libomp-dev
-    runCmd cmake .. -DWITH_CUDA=ON -DWITH_CUDNN=ON -DWITH_MKL=ON -DWITH_RUY=ON
+    runCmd cmake .. -DWITH_CUDA=ON -DWITH_CUDNN=ON -DWITH_MKL=OFF -DWITH_RUY=ON
     runCmd make -j6
     runCmd sudo make install
     cd ../python
