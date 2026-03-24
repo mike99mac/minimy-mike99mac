@@ -105,85 +105,6 @@ function detectUserInfo
  }                                         # detectUserInfo()
 
 #+--------------------------------------------------------------------------+
-function installMpd
-# Install MPD (Music Player Daemon) and run it as a user service
-#+--------------------------------------------------------------------------+
- {
-  : SOURCE: ${BASH_SOURCE}
-  : STACK:  ${FUNCNAME[@]}
-
-  echo | tee -a $logFile
-  echo "Installing MPD (Music Player Daemon) as a user service ..." | tee -a $logFile
-
-  # Install mpd and mpc (command-line client)
-  command -v apt-get &>/dev/null && runCmd sudo apt-get install -y mpd mpc
-
-  # Disable and mask the system-level mpd so it does not conflict
-  if command -v systemctl &>/dev/null; then
-    runCmd sudo systemctl stop mpd 2>/dev/null
-    runCmd sudo systemctl disable mpd 2>/dev/null
-    runCmd sudo systemctl mask mpd.service mpd.socket 2>/dev/null
-  fi
-  echo "Masked system-level mpd service" | tee -a $logFile
-
-  # Create local MPD data directories under the minimy base dir
-  local mpdDir="$baseDir/mpd"
-  mkdir -p "$mpdDir/playlists"
-  echo "Created MPD directories under $mpdDir" | tee -a $logFile
-
-  # Use the global musicDir set by setMinimyVars, fall back to config, then default
-  local mpdMusicDir="$musicDir"
-  if [ -z "$mpdMusicDir" ] && [ -f "$configFile" ]; then
-    mpdMusicDir=$(grep "    MusicDir:" "$configFile" | awk '{print $2}')
-  fi
-  if [ -z "$mpdMusicDir" ]; then
-    mpdMusicDir="$HOME/Music"
-  fi
-  mkdir -p "$mpdMusicDir"
-  echo "Music directory: $mpdMusicDir" | tee -a $logFile
-
-  # Generate mpd.conf from template into the XDG config location
-  # The user-level mpd.service reads from ~/.config/mpd/mpd.conf
-  if [ ! -f "$baseDir/install/mpd.conf.template" ]; then
-    echo "ERROR: mpd.conf.template not found" | tee -a $logFile
-    exit 10
-  fi
-  local mpdConfigDir="$HOME/.config/mpd"
-  mkdir -p "$mpdConfigDir"
-  sed -e "s|{{BASE_DIR}}|$baseDir|g" \
-      -e "s|{{MUSIC_DIR}}|$mpdMusicDir|g" \
-      "$baseDir/install/mpd.conf.template" > "$mpdConfigDir/mpd.conf"
-  echo "Generated $mpdConfigDir/mpd.conf from template" | tee -a $logFile
-
-  # Copy playlist files into the local mpd playlists directory
-  if [ -f "$baseDir/install/great_songs.m3u" ]; then
-    cp "$baseDir/install/great_songs.m3u" "$mpdDir/playlists/"
-    echo "Copied great_songs.m3u to $mpdDir/playlists/" | tee -a $logFile
-  fi
-
-  # Enable lingering so user services start at boot without requiring login
-  runCmd sudo loginctl enable-linger $CURRENT_USER
-
-  # Enable and start MPD as a user service
-  if command -v systemctl &>/dev/null; then
-    runCmd systemctl --user daemon-reload
-    runCmd systemctl --user enable mpd
-    runCmd systemctl --user start mpd
-  fi
-
-  # Verify MPD is running
-  sleep 1
-  if mpc status > /dev/null 2>&1; then
-    echo "MPD user service is running and responding to commands" | tee -a $logFile
-    mpc update > /dev/null 2>&1            # trigger initial database scan
-  else
-    echo "WARNING: MPD started but mpc cannot connect - check $mpdDir/mpd.log" | tee -a $logFile
-  fi
-
-  echo "MPD installation complete (user service)" | tee -a $logFile
- }                                         # installMpd()
-
-#+--------------------------------------------------------------------------+
 function generateServiceFiles
 # Generate systemd service files from templates with dynamic user and paths
 #+--------------------------------------------------------------------------+
@@ -388,9 +309,7 @@ function buildVenv
   echo "cd to $baseDir ..." | tee -a $logFile
   cd $baseDir
   echo | tee -a $logFile
-  if command -v apt-get &>/dev/null; then
-    runCmd sudo apt-get install -y python3-venv python3-dev
-  fi
+  runCmd sudo apt-get install -y python3-venv python3-dev
   PI_MODEL=$(grep -q "Raspberry Pi 4" /proc/device-tree/model 2>/dev/null && echo "4" || echo "other")
   if [ "$PI_MODEL" = "4" ]; then # Select Python version
     PYTHON=python3.11
@@ -424,16 +343,13 @@ function buildVenv
   echo | tee -a $logFile
   echo "Upgrading wheel and setuptools ..." | tee -a $logFile
   runCmd $pipCmd install --upgrade wheel setuptools
-  if command -v apt-get &>/dev/null; then
-    runCmd sudo apt-get install -y build-essential portaudio19-dev mpg123 ffmpeg curl wget mpc \
-      libavutil-dev libswscale-dev libswresample-dev libavfilter-dev libavcodec-dev libavformat-dev \
-      libavdevice-dev redis
-  fi
+  runCmd sudo apt-get install -y build-essential portaudio19-dev mpg123 ffmpeg curl wget mpc libavutil-dev \
+    libswscale-dev libswresample-dev libavfilter-dev libavcodec-dev libavformat-dev libavdevice-dev redis
   echo | tee -a $logFile
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
   echo "Python version: $pythonVer ..." | tee -a $logFile
   local pythonCmd="$baseDir/minimy_venv/bin/python$pythonVer" # use python from the venv
-  if [ "$platform" = "NVIDIA Jetson" && ! -d "$baseDir/CTranslate2" ]; then
+  if [ "$platform" = "NVIDIA Jetson" ] && [ ! -d "$baseDir/CTranslate2" ]; then
     echo "Building CTranslate2 from source ..."
     cd $baseDir
     runCmd git clone --recurse-submodules https://github.com/OpenNMT/CTranslate2
@@ -454,17 +370,18 @@ function buildVenv
   runCmd $pipCmd install --no-binary :all: regex # force pip to ignore old wheels and build fresh
   echo "Installing python3-lingua-franca ..." | tee -a $logFile
   runCmd $pipCmd install lingua_franca
+  runCmd $pipCmd install psutil 
   runCmd $pipCmd install -r install/requirements.txt
   echo "Installing local STT faster-whisper" | tee -a $logFile
   runCmd $pipCmd install faster-whisper
   runCmd $pipCmd install datasets
   runCmd $pipCmd install gpiozero
   runCmd $pipCmd install keyboard
-  if command -v apt-get &>/dev/null; then
-    runCmd sudo apt-get install -y swig
-    runCmd sudo apt-get install -y liblgpio-dev
+  runCmd sudo apt-get install -y swig
+  runCmd sudo apt-get install -y liblgpio-dev
+  if [ $(uname -m) = "aarch64" ]; then
+    runCmd $pipCmd install lgpio           # Only builds on ARM
   fi
-  [ $(uname -m) = "aarch64" ] && runCmd $pipCmd install lgpio # Only builds on ARM
   runCmd $pipCmd install quart
   runCmd $pipCmd install redis
   runCmd $pipCmd install whisper
@@ -550,30 +467,21 @@ function buildVenv
   ollamaModel="llama3.2:3b"
   echo "getting model $ollamaModel ..." | tee -a $logFile
   ollama pull $ollamaModel                 # get this model
-  if command -v systemctl &>/dev/null; then
-    runCmd sudo systemctl daemon-reload
-    runCmd sudo systemctl enable ollama
-    runCmd sudo systemctl restart ollama
-  fi
+  runCmd sudo systemctl daemon-reload
+  runCmd sudo systemctl enable ollama
+  runCmd sudo systemctl restart ollama
   cd $baseDir
-
-  # Install and configure MPD
-  # commenting out as this is done in ovos-tools/install1  -Mike Mac
-  # installMpd
-
-  if command -v systemctl &>/dev/null; then
-    generateServiceFiles                   # generate and install systemd service files dynamically
-    echo "Enabling systemd services..." | tee -a $logFile
-    runCmd sudo systemctl enable "$LOGS_MOUNT_UNIT"
-    runCmd sudo systemctl enable "$TMP_MOUNT_UNIT"
-    runCmd sudo systemctl enable minimy
-  fi
+  generateServiceFiles                   # generate and install systemd service files dynamically
+  echo "Enabling systemd services..." | tee -a $logFile
+  runCmd sudo systemctl enable "$LOGS_MOUNT_UNIT"
+  runCmd sudo systemctl enable "$TMP_MOUNT_UNIT"
+  runCmd sudo systemctl enable minimy
 
   # Set whisper to run as a system daemon and log to /var/log/whisper.log
   runCmd sudo touch /var/log/whisper.log
   runCmd sudo chown $CURRENT_USER:$CURRENT_GROUP /var/log/whisper.log
   runCmd sudo chmod 664 /var/log/whisper.log
-  command -v systemctl &>/dev/null && runCmd sudo systemctl enable whisper
+  runCmd sudo systemctl enable whisper
   echo | tee -a $logFile
 
   echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile
