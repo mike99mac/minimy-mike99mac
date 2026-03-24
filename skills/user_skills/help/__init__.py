@@ -35,17 +35,29 @@ class HelpSkill(SimpleVoiceAssistant):
             "email": "You can ask me to check your messages by saying 'do I have any new email'.",
             "internet": "You can check my network connection by asking 'are you connected to the internet'.",
         }
+        for topic in self.help_topics.keys():
+            self.register_intent("O", "help", topic, self.handle_help_topic)
 
     def handle_message(self, msg):
         payload = msg.get("payload", {}) if isinstance(msg, dict) else {}
         if payload.get("subtype") == "oob_detect":
-            self.speak("What can I help you with?")
-            self.speak(
-                "You can ask for help with music, radio, weather, time, alarms, volume, or ask me for a list of topics."
-            )
-            self.get_user_input(self.handle_help_topic)
+            full_verb = payload.get("full_verb", payload.get("verb", ""))
+            # check if any topic is mentioned in the full verb
+            if any(topic in full_verb for topic in self.help_topics.keys()):
+                self.handle_help_topic(full_verb)
+            else:
+                self.speak("What can I help you with?")
+                self.speak(
+                    "You can ask for help with music, radio, weather, time, alarms, volume, or ask me for a list of topics."
+                )
+                self.get_user_input(self.handle_help_topic)
 
     def handle_help_topic(self, spoken_text):
+        if isinstance(spoken_text, dict):
+            spoken_text = (
+                spoken_text.get("payload", {}).get("utt", {}).get("sentence", "")
+            )
+
         # user_response is passed back as a JSON string from the raw STT output
         if spoken_text == "":
             self.speak("I didn't hear anything. You can ask for help again later.")
