@@ -1,43 +1,48 @@
 #!/usr/bin/env python3
 import argparse
 import time
-import whisper
 import sys
 import socket
-import torch
+import ctranslate2
+from faster_whisper import WhisperModel
 from framework.util.utils import Config
 
 class WhisperTranscriber:
-  """ Build whisper for local STT using the base.en model """
+  """ Build whisper for local STT using the provided model """
  
   def __init__(self, model):
-    self.model = model                     # tiny.en, base.en, or small.en
+    self.model_name = model                # tiny.en, base.en, or small.en
+    self.model = None                      # Will hold the WhisperModel instance
     self.parser = argparse.ArgumentParser(description="Transcribe audio using Whisper.")
     self.parser.add_argument("filename", type=str, help="Path to the audio file")
     self.args = self.parser.parse_args()
 
   def load_model(self):
-    print(f"Loading Whisper model {model} ...")
-    if torch.cuda.is_available():          # Check for CUDA GPU to use
-      self.model = whisper.load_model(model, device="cuda") # load model on GPU
+    # Check for CUDA GPU to decide device and compute type
+    if ctranslate2.get_cuda_device_count() > 0:
+      device = "cuda"
+      compute_type = "int8_float16"        # Faster on GPU
+      print(f"Loading Whisper model {self.model_name} on CUDA GPU...")
     else:
-      self.model = whisper.load_model(model) # load model on CPU
+      device = "cpu"
+      compute_type = "int8"                # Good performance on CPU
+      print(f"Loading Whisper model {self.model_name} on CPU...")
+    self.model = WhisperModel(self.model_name, device=device, compute_type=compute_type)
 
   def transcribe_audio(self, filename):
-    print("transcribe_audio(): loading audio ...")
-    audio = whisper.load_audio(filename)
-    print("transcribe_audio(): pad or trim audio ...")
-    audio = whisper.pad_or_trim(audio)
     print("transcribe_audio(): transcribing audio ...")
     start_time = time.time()
-    result = self.model.transcribe(audio, fp16=False)  # transcribe to text
+    # faster-whisper transcribe returns a generator of segments and info
+    segments, info = self.model.transcribe(filename, beam_size=5)
+    # Collect all segment texts
+    transcription = " ".join(segment.text for segment in segments)
     end_time = time.time()
     et = end_time - start_time
-    print("Transcription: ", result["text"])
+    print("Transcription: ", transcription)
     print(f"Elapsed time: {et}")
 
 if __name__ == "__main__":
-  cfg = Config()                           # get config file
+  cfg = Config()                           # Get config file
   cfg_val = "Basic.Hub"
   try:
     hub = cfg.get_cfg_val(cfg_val)
@@ -59,6 +64,6 @@ if __name__ == "__main__":
     print(f"ERROR calling cfg.get_cfg_val({cfg_val}): {e}")
     sys.exit(1)
   # Create an instance of the WhisperTranscriber class
-  transcriber = WhisperTranscriber(model)                 # create a singleton
-  transcriber.load_model()                                # load the model
-  transcriber.transcribe_audio(transcriber.args.filename) # transcribe a file
+  transcriber = WhisperTranscriber(model)                 # Create a singleton
+  transcriber.load_model()                                # Load the model
+  transcriber.transcribe_audio(transcriber.args.filename) # Transcribe a file

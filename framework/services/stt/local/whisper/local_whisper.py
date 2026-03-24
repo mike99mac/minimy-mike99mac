@@ -4,7 +4,7 @@ import socket
 import sys
 import wave
 import numpy as np
-import torch
+import ctranslate2
 from faster_whisper import WhisperModel
 from quart import Quart, request
 
@@ -34,7 +34,7 @@ try:
     sys.exit(1)
 except Exception as e:
   print(f"ERROR calling cfg.get_cfg_val({cfg_val}): {e}")
-if torch.cuda.is_available():  # Check for CUDA GPU to use
+if ctranslate2.get_cuda_device_count() > 0:  # Check for CUDA GPU to use
   print(f"Starting Whisper using CUDA GPU with model {model}...")
   model = WhisperModel(
     model, device="cuda", compute_type="int8_float16"

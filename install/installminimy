@@ -18,7 +18,6 @@ function usage
   echo "OPTIONS:"
   echo "  -h|--help           Give help (this screen)"
   echo "  -H|--hub [HUB]      Specify the 'hub' server"
-  echo "  -t|--torch          Install PyTorch"
   echo "  -v|--verbose        Verbose output"
   echo "  -x|--debug          Print commands and arguments as they are executed"
   exit 51
@@ -47,9 +46,6 @@ function parseArgs
         shift                              # get to next arg
         hub=$1
         ;;
-      -t|--torch)
-        torch=1
-        ;;
       -v|--verbose)
         verbose=2
         ;;
@@ -64,6 +60,20 @@ function parseArgs
     shift                                  # move to next arg
   done
  }                                         # parseArgs()
+
+#+--------------------------------------------------------------------------+
+function getPlatform
+# Set platform to either "Raspberry Pi" or "NVIDIA Jetson" else warn
+#+--------------------------------------------------------------------------+
+ {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+
+  platform=`cat /proc/device-tree/model | awk '{print $1 " " $2}'`
+  if [ "$platform" != "Raspberry Pi" -a "$platform" != "NVIDIA Jetson" ]; then
+    echo "WARNING: Only Nvidia Jetson and Raspberry Pi platforms are supported."
+  fi
+ }                                         # getPlatform()
 
 #+--------------------------------------------------------------------------+
 function detectUserInfo
@@ -301,15 +311,6 @@ function setMinimyVars
   if [ ${#hub} != 0 ]; then                # new value was supplied
     sed -i "s/    Hub: .*/    Hub: $hub/g" $configFile # reset hub server
   fi
-  if [ "$torch" != 1 ]; then    
-    echo -n "Should PyTorch be built? [y/N]: "
-    read torch
-  fi                                       # new value was supplied
-  if [ "$torch" = 'y' ] || [ "$torch" = 'Y' ]; then
-    torch=1
-  else
-    torch=0
-  fi
  }                                         # setMinimyVars()
 
 #+--------------------------------------------------------------------------+
@@ -387,8 +388,9 @@ function buildVenv
   echo "cd to $baseDir ..." | tee -a $logFile
   cd $baseDir
   echo | tee -a $logFile
-  runCmd sudo apt-get install -y python3-venv
-  runCmd sudo apt-get install -y python3-dev
+  if command -v apt-get &>/dev/null; then
+    runCmd sudo apt-get install -y python3-venv python3-dev
+  fi
   PI_MODEL=$(grep -q "Raspberry Pi 4" /proc/device-tree/model 2>/dev/null && echo "4" || echo "other")
   if [ "$PI_MODEL" = "4" ]; then # Select Python version
     PYTHON=python3.11
@@ -407,8 +409,6 @@ function buildVenv
     cd $baseDir
     echo "Installing virtual environment ..." | tee -a $logFile
     runCmd python3.11 -m venv minimy_venv
-    runCmd $baseDir/minimy_venv/bin/python3.11 -m pip uninstall torch
-    runCmd $baseDir/minimy_venv/bin/python3.11 -m pip install torch==1.13.1 torchvision==0.14.1
   else                                     # assume Ras Pi 5
     PYTHON=python3
     runCmd python3 -m venv minimy_venv
@@ -416,8 +416,7 @@ function buildVenv
   echo | tee -a $logFile
   echo "Upgrading pip ..." | tee -a $logFile
   local pipCmd="$baseDir/minimy_venv/bin/pip" # use pip from the venv
-  runCmd wget https://bootstrap.pypa.io/get-pip.py
-  runCmd $baseDir/minimy_venv/bin/$PYTHON get-pip.py
+  runCmd $pipCmd install --upgrade pip
   runCmd $baseDir/minimy_venv/bin/$PYTHON -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
   echo | tee -a $logFile
   echo "Activating virtual environment ..." | tee -a $logFile
@@ -426,21 +425,28 @@ function buildVenv
   echo "Upgrading wheel and setuptools ..." | tee -a $logFile
   runCmd $pipCmd install --upgrade wheel setuptools
   if command -v apt-get &>/dev/null; then
-    runCmd sudo apt-get install -y build-essential portaudio19-dev mpg123 ffmpeg curl wget mpc
-    runCmd sudo apt-get install -y libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
-    runCmd sudo apt-get install -y libavcodec-dev libavformat-dev libavdevice-dev redis
+    runCmd sudo apt-get install -y build-essential portaudio19-dev mpg123 ffmpeg curl wget mpc \
+      libavutil-dev libswscale-dev libswresample-dev libavfilter-dev libavcodec-dev libavformat-dev \
+      libavdevice-dev redis
   fi
   echo | tee -a $logFile
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
   echo "Python version: $pythonVer ..." | tee -a $logFile
   local pythonCmd="$baseDir/minimy_venv/bin/python$pythonVer" # use python from the venv
-  if [ "$torch" = 1 ]; then
-    echo "Installing PyTorch ..."
-    runCmd $pipCmd install https://pypi.jetson-ai-lab.io/jp6/cu126/+f/62a/1beee9f2f1470/torch-2.8.0-cp310-cp310-linux_aarch64.whl
-    echo "Installing torchaudio ..."
-    runCmd $pipCmd install https://pypi.jetson-ai-lab.io/jp6/cu126/%2Bf/81a/775c8af36ac85/torchaudio-2.8.0-cp310-cp310-linux_aarch64.whl
-    echo "Installing torchvision ..."
-    runCmd $pipCmd install https://pypi.jetson-ai-lab.io/jp6/cu126/%2Bf/907/c4c1933789645/torchvision-0.23.0-cp310-cp310-linux_aarch64.whl
+  if [ "$platform" = "NVIDIA Jetson" ]; then
+    echo "Building CTranslate2 from source ..."
+    cd $baseDir
+    runCmd git clone --recurse-submodules https://github.com/OpenNMT/CTranslate2
+    cd CTranslate2
+    mkdir build; cd build
+    runCmd sudo apt-get install -y libomp-dev
+    runCmd cmake .. -DWITH_CUDA=ON -DWITH_CUDNN=ON -DWITH_MKL=OFF
+    runCmd make -j6
+    runCmd sudo make install
+    cd ../python
+    runCmd $pipCmd install -r install_requirements.txt
+    runCmd python setup.py bdist_wheel
+    runCmd $pipCmd install --force-reinstall dist/*.whl
   fi
   runCmd $pythonCmd -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
   echo "Installing yt-dlp and requirements.txt ..." | tee -a $logFile
@@ -459,16 +465,13 @@ function buildVenv
     runCmd sudo apt-get install -y liblgpio-dev
   fi
   [ $(uname -m) = "aarch64" ] && runCmd $pipCmd install lgpio # Only builds on ARM
-  runCmd $pipCmd install optimum
   runCmd $pipCmd install quart
   runCmd $pipCmd install redis
   runCmd $pipCmd install whisper
   runCmd $pipCmd install youtube-search
   runCmd $pipCmd install git+https://github.com/wiseman/py-webrtcvad.git
-  runCmd $pipCmd install --upgrade --upgrade-strategy eager "optimum[neural-compressor]"
-  echo | tee -a $logFile
-  runCmd $pipCmd install "setuptools==68.2.2"
 
+  echo | tee -a $logFile
   echo "Installing local ytplay/ytadd in /usr/local/sbin ..." | tee -a $logFile
   runCmd sudo cp install/ytplay /usr/local/sbin
   if [ ! -f /usr/local/sbin/ytadd ]; then
@@ -556,11 +559,13 @@ function buildVenv
   # commenting out as this is done in ovos-tools/install1  -Mike Mac
   # installMpd
 
-  generateServiceFiles                     # generate and install systemd service files dynamically
-  echo "Enabling systemd services..." | tee -a $logFile
-  runCmd sudo systemctl enable "$LOGS_MOUNT_UNIT"
-  runCmd sudo systemctl enable "$TMP_MOUNT_UNIT"
-  runCmd sudo systemctl enable minimy
+  if command -v systemctl &>/dev/null; then
+    generateServiceFiles                   # generate and install systemd service files dynamically
+    echo "Enabling systemd services..." | tee -a $logFile
+    runCmd sudo systemctl enable "$LOGS_MOUNT_UNIT"
+    runCmd sudo systemctl enable "$TMP_MOUNT_UNIT"
+    runCmd sudo systemctl enable minimy
+  fi
 
   # Set whisper to run as a system daemon and log to /var/log/whisper.log
   runCmd sudo touch /var/log/whisper.log
@@ -596,9 +601,6 @@ hub=""                                     # hub server
 let lastSecs=$SECONDS
 timeSt=`date +"%y-%m-%d-%H-%M-%S"`
 logFile="$HOME/$timeSt-installminimy.out"  # output file
-if [ ${#MINIMY_SAVELOGS} = 0 ]; then       # env var not set
-  MINIMY_SAVELOGS="true"                     # default is to create a log file
-fi
 if [ "$MINIMY_SAVELOGS" = "false" ]; then 
   logFile="/dev/null"                      # if logging is disabled, log to /dev/null
 fi
@@ -614,6 +616,7 @@ TMP_MOUNT_UNIT=""
 
 # main()
 detectUserInfo                             # detect user information first
+getPlatform                                # verify supported platform
 checkEnv                                   # check the environment
 generateConfigFile                         # generate config file from template
 parseArgs $@                               # parse arguments
