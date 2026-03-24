@@ -27,6 +27,9 @@ piper/
 piper_amd64.tar.gz
 piper_arm64.tar.gz
 
+# CTranslate2
+CTranslate2
+
 # Symlinks / build artifacts
 link-4.1b/
 
