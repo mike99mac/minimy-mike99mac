@@ -433,7 +433,7 @@ function buildVenv
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
   echo "Python version: $pythonVer ..." | tee -a $logFile
   local pythonCmd="$baseDir/minimy_venv/bin/python$pythonVer" # use python from the venv
-  if [ "$platform" = "NVIDIA Jetson" ]; then
+  if [ "$platform" = "NVIDIA Jetson" && ! -d "$baseDir/CTranslate2" ]; then
     echo "Building CTranslate2 from source ..."
     cd $baseDir
     runCmd git clone --recurse-submodules https://github.com/OpenNMT/CTranslate2
@@ -533,7 +533,8 @@ function buildVenv
 
   echo "Installing Ollama ..." | tee -a $logFile
   echo | tee -a $logFile
-  curl -fsSL https://ollama.com/install.sh | sh
+  if [ ! -d /usr/local/lib/ollama ]
+    curl -fsSL https://ollama.com/install.sh | sh
   if [ ! -f /etc/systemd/system/ollama.service ]; then # not expected
     echo "WARNING: file /etc/systemd/system/ollama.service not found" | tee -a $logFile
   else                                     # add env var to allow all hosts in local subnet
