@@ -29,6 +29,6 @@
     - 'internet'
     RoomToHost:
       # Examples:
-      # bedroom: hostname1
-      # living room: hostname2
-      # kitchen: hostname3
+      # bedroom: 192.168.4.50
+      # living room: 192.168.4.40
+      # kitchen: 192.168.4.42
