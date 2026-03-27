@@ -63,10 +63,10 @@ class Intent:
     self.log.debug(f"Intent.is_oob(): recognized_verbs: {self.recognized_verbs}")
 
     # add tests for two-word OOBs -MM
-    if len(ua) == 1:           # one word utterance
-      if ua[0] in self.recognized_verbs or ua[0] in self.stop_aliases or ua[0] == "pause" or ua[0] == "resume":
-        self.log.debug("Intent.is_oob(): Intent Barge-In Normal OOB Detected")
-        return "t"
+    base_verb = ua[0]
+    if base_verb in self.recognized_verbs or base_verb in self.stop_aliases or base_verb == "pause" or base_verb == "resume":
+      self.log.debug("Intent.is_oob(): Intent Barge-In Normal OOB Detected")
+      return "t"
     elif len(ua) == 2:         # check for two-word OOBs
       for next_key in self.intents:
         next_key = next_key.split(":") # split next key into words
@@ -261,7 +261,8 @@ class Intent:
             self.send_media(info) 
           elif si.sentence_type == "O":
             print("Intent.run(): OOB Command")
-            if utt in self.recognized_verbs:
+            base_verb = utt.split(" ", 1)[0]
+            if base_verb in self.recognized_verbs:
               self.send_oob_to_system(utt, contents)
             else:
               self.log.warning(f"Intent.run() Ignoring unrecognized OOB si.sentence_type {si.sentence_type} not found in {self.recognized_verbs}")

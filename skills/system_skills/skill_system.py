@@ -155,9 +155,9 @@ class SystemSkill(SimpleVoiceAssistant):
       self.log.debug(f"SystemSkill:handle_message() msg_type = {msg_type} is not system - returning False")
       return False
     if subtype == "oob":                   # single word verb ...
-      verb = msg["payload"]["verb"]
-      verb = verb.split(" ", 1)[0]         # use just first word - i.e. "next track" just means "next"  -MM
-      self.log.debug(f"SystemSkill:handle_message() verb = {verb}")
+      full_verb = msg["payload"]["verb"]
+      verb = full_verb.split(" ", 1)[0]         # use just first word - i.e. "next track" just means "next"  -MM
+      self.log.debug(f"SystemSkill:handle_message() verb = {verb} full_verb = {full_verb}")
       if verb in self.stop_aliases:
         self.log.info(f"SystemSkill.handle_message(): Detected System Level Stop, active_skills = {self.active_skills}")
         for proc in psutil.process_iter(): # Killall current aplay processes (annoying!)
@@ -191,7 +191,8 @@ class SystemSkill(SimpleVoiceAssistant):
         info = {"subtype": "oob_detect",
                 "skill_id": skill_id,
                 "from_skill_id": self.skill_id,
-                "verb": verb
+                "verb": verb,
+                "full_verb": full_verb
                }
         self.log.debug(f"SystemSkill.handle_message(): skill_id: {skill_id} sending info: {info}")
         self.bus.send("skill", skill_id, info)
