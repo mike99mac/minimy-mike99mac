@@ -18,7 +18,6 @@ function usage
   echo "OPTIONS:"
   echo "  -h|--help           Give help (this screen)"
   echo "  -H|--hub [HUB]      Specify the 'hub' server"
-  echo "  -t|--torch          Install PyTorch"
   echo "  -v|--verbose        Verbose output"
   echo "  -x|--debug          Print commands and arguments as they are executed"
   exit 51
@@ -47,9 +46,6 @@ function parseArgs
         shift                              # get to next arg
         hub=$1
         ;;
-      -t|--torch)
-        torch=1
-        ;;
       -v|--verbose)
         verbose=2
         ;;
@@ -64,6 +60,20 @@ function parseArgs
     shift                                  # move to next arg
   done
  }                                         # parseArgs()
+
+#+--------------------------------------------------------------------------+
+function getPlatform
+# Set platform to either "Raspberry Pi" or "NVIDIA Jetson" else warn
+#+--------------------------------------------------------------------------+
+ {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+
+  platform=`cat /proc/device-tree/model | awk '{print $1 " " $2}'`
+  if [ "$platform" != "Raspberry Pi" -a "$platform" != "NVIDIA Jetson" ]; then
+    echo "WARNING: Only Nvidia Jetson and Raspberry Pi platforms are supported."
+  fi
+ }                                         # getPlatform()
 
 #+--------------------------------------------------------------------------+
 function detectUserInfo
@@ -93,85 +103,6 @@ function detectUserInfo
     exit 2
   fi
  }                                         # detectUserInfo()
-
-#+--------------------------------------------------------------------------+
-function installMpd
-# Install MPD (Music Player Daemon) and run it as a user service
-#+--------------------------------------------------------------------------+
- {
-  : SOURCE: ${BASH_SOURCE}
-  : STACK:  ${FUNCNAME[@]}
-
-  echo | tee -a $logFile
-  echo "Installing MPD (Music Player Daemon) as a user service ..." | tee -a $logFile
-
-  # Install mpd and mpc (command-line client)
-  command -v apt-get &>/dev/null && runCmd sudo apt-get install -y mpd mpc
-
-  # Disable and mask the system-level mpd so it does not conflict
-  if command -v systemctl &>/dev/null; then
-    runCmd sudo systemctl stop mpd 2>/dev/null
-    runCmd sudo systemctl disable mpd 2>/dev/null
-    runCmd sudo systemctl mask mpd.service mpd.socket 2>/dev/null
-  fi
-  echo "Masked system-level mpd service" | tee -a $logFile
-
-  # Create local MPD data directories under the minimy base dir
-  local mpdDir="$baseDir/mpd"
-  mkdir -p "$mpdDir/playlists"
-  echo "Created MPD directories under $mpdDir" | tee -a $logFile
-
-  # Use the global musicDir set by setMinimyVars, fall back to config, then default
-  local mpdMusicDir="$musicDir"
-  if [ -z "$mpdMusicDir" ] && [ -f "$configFile" ]; then
-    mpdMusicDir=$(grep "    MusicDir:" "$configFile" | awk '{print $2}')
-  fi
-  if [ -z "$mpdMusicDir" ]; then
-    mpdMusicDir="$HOME/Music"
-  fi
-  mkdir -p "$mpdMusicDir"
-  echo "Music directory: $mpdMusicDir" | tee -a $logFile
-
-  # Generate mpd.conf from template into the XDG config location
-  # The user-level mpd.service reads from ~/.config/mpd/mpd.conf
-  if [ ! -f "$baseDir/install/mpd.conf.template" ]; then
-    echo "ERROR: mpd.conf.template not found" | tee -a $logFile
-    exit 10
-  fi
-  local mpdConfigDir="$HOME/.config/mpd"
-  mkdir -p "$mpdConfigDir"
-  sed -e "s|{{BASE_DIR}}|$baseDir|g" \
-      -e "s|{{MUSIC_DIR}}|$mpdMusicDir|g" \
-      "$baseDir/install/mpd.conf.template" > "$mpdConfigDir/mpd.conf"
-  echo "Generated $mpdConfigDir/mpd.conf from template" | tee -a $logFile
-
-  # Copy playlist files into the local mpd playlists directory
-  if [ -f "$baseDir/install/great_songs.m3u" ]; then
-    cp "$baseDir/install/great_songs.m3u" "$mpdDir/playlists/"
-    echo "Copied great_songs.m3u to $mpdDir/playlists/" | tee -a $logFile
-  fi
-
-  # Enable lingering so user services start at boot without requiring login
-  runCmd sudo loginctl enable-linger $CURRENT_USER
-
-  # Enable and start MPD as a user service
-  if command -v systemctl &>/dev/null; then
-    runCmd systemctl --user daemon-reload
-    runCmd systemctl --user enable mpd
-    runCmd systemctl --user start mpd
-  fi
-
-  # Verify MPD is running
-  sleep 1
-  if mpc status > /dev/null 2>&1; then
-    echo "MPD user service is running and responding to commands" | tee -a $logFile
-    mpc update > /dev/null 2>&1            # trigger initial database scan
-  else
-    echo "WARNING: MPD started but mpc cannot connect - check $mpdDir/mpd.log" | tee -a $logFile
-  fi
-
-  echo "MPD installation complete (user service)" | tee -a $logFile
- }                                         # installMpd()
 
 #+--------------------------------------------------------------------------+
 function generateServiceFiles
@@ -301,15 +232,6 @@ function setMinimyVars
   if [ ${#hub} != 0 ]; then                # new value was supplied
     sed -i "s/    Hub: .*/    Hub: $hub/g" $configFile # reset hub server
   fi
-  if [ "$torch" != 1 ]; then    
-    echo -n "Should PyTorch be built? [y/N]: "
-    read torch
-  fi                                       # new value was supplied
-  if [ "$torch" = 'y' ] || [ "$torch" = 'Y' ]; then
-    torch=1
-  else
-    torch=0
-  fi
  }                                         # setMinimyVars()
 
 #+--------------------------------------------------------------------------+
@@ -387,8 +309,9 @@ function buildVenv
   echo "cd to $baseDir ..." | tee -a $logFile
   cd $baseDir
   echo | tee -a $logFile
-  runCmd sudo apt-get install -y python3-venv
-  runCmd sudo apt-get install -y python3-dev
+  if command -v apt-get &>/dev/null; then
+    runCmd sudo apt-get install -y python3-venv python3-dev
+  fi
   PI_MODEL=$(grep -q "Raspberry Pi 4" /proc/device-tree/model 2>/dev/null && echo "4" || echo "other")
   if [ "$PI_MODEL" = "4" ]; then # Select Python version
     PYTHON=python3.11
@@ -407,8 +330,6 @@ function buildVenv
     cd $baseDir
     echo "Installing virtual environment ..." | tee -a $logFile
     runCmd python3.11 -m venv minimy_venv
-    runCmd $baseDir/minimy_venv/bin/python3.11 -m pip uninstall torch
-    runCmd $baseDir/minimy_venv/bin/python3.11 -m pip install torch==1.13.1 torchvision==0.14.1
   else                                     # assume Ras Pi 5
     PYTHON=python3
     runCmd python3 -m venv minimy_venv
@@ -416,8 +337,7 @@ function buildVenv
   echo | tee -a $logFile
   echo "Upgrading pip ..." | tee -a $logFile
   local pipCmd="$baseDir/minimy_venv/bin/pip" # use pip from the venv
-  runCmd wget https://bootstrap.pypa.io/get-pip.py
-  runCmd $baseDir/minimy_venv/bin/$PYTHON get-pip.py
+  runCmd $pipCmd install --upgrade pip
   runCmd $baseDir/minimy_venv/bin/$PYTHON -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
   echo | tee -a $logFile
   echo "Activating virtual environment ..." | tee -a $logFile
@@ -426,21 +346,28 @@ function buildVenv
   echo "Upgrading wheel and setuptools ..." | tee -a $logFile
   runCmd $pipCmd install --upgrade wheel setuptools
   if command -v apt-get &>/dev/null; then
-    runCmd sudo apt-get install -y build-essential portaudio19-dev mpg123 ffmpeg curl wget mpc
-    runCmd sudo apt-get install -y libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
-    runCmd sudo apt-get install -y libavcodec-dev libavformat-dev libavdevice-dev redis
+    runCmd sudo apt-get install -y build-essential portaudio19-dev mpg123 ffmpeg curl wget mpc \
+      libavutil-dev libswscale-dev libswresample-dev libavfilter-dev libavcodec-dev libavformat-dev \
+      libavdevice-dev redis
   fi
   echo | tee -a $logFile
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
   echo "Python version: $pythonVer ..." | tee -a $logFile
   local pythonCmd="$baseDir/minimy_venv/bin/python$pythonVer" # use python from the venv
-  if [ "$torch" = 1 ]; then
-    echo "Installing PyTorch ..."
-    runCmd $pipCmd install https://pypi.jetson-ai-lab.io/jp6/cu126/+f/62a/1beee9f2f1470/torch-2.8.0-cp310-cp310-linux_aarch64.whl
-    echo "Installing torchaudio ..."
-    runCmd $pipCmd install https://pypi.jetson-ai-lab.io/jp6/cu126/%2Bf/81a/775c8af36ac85/torchaudio-2.8.0-cp310-cp310-linux_aarch64.whl
-    echo "Installing torchvision ..."
-    runCmd $pipCmd install https://pypi.jetson-ai-lab.io/jp6/cu126/%2Bf/907/c4c1933789645/torchvision-0.23.0-cp310-cp310-linux_aarch64.whl
+  if [ "$platform" = "NVIDIA Jetson" ] && [ ! -d "$baseDir/CTranslate2" ]; then
+    echo "Building CTranslate2 from source ..."
+    cd $baseDir
+    runCmd git clone --recurse-submodules https://github.com/OpenNMT/CTranslate2
+    cd CTranslate2
+    mkdir build; cd build
+    runCmd sudo apt-get install -y libomp-dev
+    runCmd cmake .. -DWITH_CUDA=ON -DWITH_CUDNN=ON -DWITH_MKL=OFF -DWITH_RUY=ON
+    runCmd make -j6
+    runCmd sudo make install
+    cd ../python
+    runCmd $pipCmd install -r install_requirements.txt
+    runCmd python setup.py bdist_wheel
+    runCmd $pipCmd install --force-reinstall dist/*.whl
   fi
   runCmd $pythonCmd -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
   echo "Installing yt-dlp and requirements.txt ..." | tee -a $logFile
@@ -448,27 +375,26 @@ function buildVenv
   runCmd $pipCmd install --no-binary :all: regex # force pip to ignore old wheels and build fresh
   echo "Installing python3-lingua-franca ..." | tee -a $logFile
   runCmd $pipCmd install lingua_franca
+  runCmd $pipCmd install psutil 
   runCmd $pipCmd install -r install/requirements.txt
-  echo "Installing local STT whisper" | tee -a $logFile
-  runCmd $pipCmd install git+https://github.com/openai/whisper.git
+  echo "Installing local STT faster-whisper" | tee -a $logFile
+  runCmd $pipCmd install faster-whisper
   runCmd $pipCmd install datasets
   runCmd $pipCmd install gpiozero
   runCmd $pipCmd install keyboard
   if command -v apt-get &>/dev/null; then
-    runCmd sudo apt-get install -y swig
-    runCmd sudo apt-get install -y liblgpio-dev
+    runCmd sudo apt-get install -y swig liblgpio-dev
   fi
-  [ $(uname -m) = "aarch64" ] && runCmd $pipCmd install lgpio # Only builds on ARM
-  runCmd $pipCmd install optimum
+  if [ $(uname -m) = "aarch64" ]; then
+    runCmd $pipCmd install lgpio           # Only builds on ARM
+  fi
   runCmd $pipCmd install quart
   runCmd $pipCmd install redis
   runCmd $pipCmd install whisper
   runCmd $pipCmd install youtube-search
   runCmd $pipCmd install git+https://github.com/wiseman/py-webrtcvad.git
-  runCmd $pipCmd install --upgrade --upgrade-strategy eager "optimum[neural-compressor]"
-  echo | tee -a $logFile
-  runCmd $pipCmd install "setuptools==68.2.2"
 
+  echo | tee -a $logFile
   echo "Installing local ytplay/ytadd in /usr/local/sbin ..." | tee -a $logFile
   runCmd sudo cp install/ytplay /usr/local/sbin
   if [ ! -f /usr/local/sbin/ytadd ]; then
@@ -530,7 +456,9 @@ function buildVenv
 
   echo "Installing Ollama ..." | tee -a $logFile
   echo | tee -a $logFile
-  curl -fsSL https://ollama.com/install.sh | sh
+  if [ ! -d /usr/local/lib/ollama ]; then  # get ollama install script
+    curl -fsSL https://ollama.com/install.sh | sh
+  fi
   if [ ! -f /etc/systemd/system/ollama.service ]; then # not expected
     echo "WARNING: file /etc/systemd/system/ollama.service not found" | tee -a $logFile
   else                                     # add env var to allow all hosts in local subnet
@@ -549,24 +477,21 @@ function buildVenv
     runCmd sudo systemctl daemon-reload
     runCmd sudo systemctl enable ollama
     runCmd sudo systemctl restart ollama
+    cd $baseDir
+    generateServiceFiles                   # generate and install systemd service files dynamically
+    echo "Enabling systemd services..." | tee -a $logFile
+    runCmd sudo systemctl enable "$LOGS_MOUNT_UNIT"
+    runCmd sudo systemctl enable "$TMP_MOUNT_UNIT"
+    runCmd sudo systemctl enable minimy
   fi
-  cd $baseDir
-
-  # Install and configure MPD
-  # commenting out as this is done in ovos-tools/install1  -Mike Mac
-  # installMpd
-
-  generateServiceFiles                     # generate and install systemd service files dynamically
-  echo "Enabling systemd services..." | tee -a $logFile
-  runCmd sudo systemctl enable "$LOGS_MOUNT_UNIT"
-  runCmd sudo systemctl enable "$TMP_MOUNT_UNIT"
-  runCmd sudo systemctl enable minimy
 
   # Set whisper to run as a system daemon and log to /var/log/whisper.log
   runCmd sudo touch /var/log/whisper.log
   runCmd sudo chown $CURRENT_USER:$CURRENT_GROUP /var/log/whisper.log
   runCmd sudo chmod 664 /var/log/whisper.log
-  command -v systemctl &>/dev/null && runCmd sudo systemctl enable whisper
+  if command -v systemctl &>/dev/null; then
+    runCmd sudo systemctl enable whisper
+  fi
   echo | tee -a $logFile
 
   echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile
@@ -596,9 +521,6 @@ hub=""                                     # hub server
 let lastSecs=$SECONDS
 timeSt=`date +"%y-%m-%d-%H-%M-%S"`
 logFile="$HOME/$timeSt-installminimy.out"  # output file
-if [ ${#MINIMY_SAVELOGS} = 0 ]; then       # env var not set
-  MINIMY_SAVELOGS="true"                     # default is to create a log file
-fi
 if [ "$MINIMY_SAVELOGS" = "false" ]; then 
   logFile="/dev/null"                      # if logging is disabled, log to /dev/null
 fi
@@ -614,6 +536,7 @@ TMP_MOUNT_UNIT=""
 
 # main()
 detectUserInfo                             # detect user information first
+getPlatform                                # verify supported platform
 checkEnv                                   # check the environment
 generateConfigFile                         # generate config file from template
 parseArgs $@                               # parse arguments

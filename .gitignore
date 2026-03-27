@@ -24,8 +24,10 @@ db/
 
 # Piper TTS binaries (not the piper.py source)
 piper/
-piper_amd64.tar.gz
-piper_arm64.tar.gz
+piper_*.tar.gz*
+
+# CTranslate2
+CTranslate2/
 
 # Symlinks / build artifacts
 link-4.1b/
