@@ -62,7 +62,17 @@ class FallbackSkill(SimpleVoiceAssistant):
           )
 
         ans = output['choices'][0]['message']['content'].strip()
-        print(ans)        
+        
+        # log outputs alongside inputs to logs/llm.txt
+        import os
+        log_path = os.path.expanduser("~/minimy/logs/llm.txt")
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+        try:
+            with open(log_path, "a", encoding="utf-8") as f:
+                f.write(f"Q: {ques}\nA: {ans}\n{'-'*40}\n")
+        except Exception as log_err:
+            self.log.error(f"FallbackSkill: Failed to write to {log_path}: {log_err}")
+            
       except Exception as e:
         self.log.error(f"FallbackSkill: Error querying local LLM: {e}")
         ans = "I encountered an error trying to process your request."
