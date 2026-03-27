@@ -8,15 +8,13 @@ if [ -n "$SVA_BASE_DIR" ]; then
 else
   baseDir="$HOME/minimy"
 fi
-logDir="$baseDir/logs"
-# Detect current user information
-CURRENT_USER=$(whoami)
 # Detect if logs should be saved (on by default)
 SAVELOGS="true"
-[ "$MINIMY_SAVELOGS" = "false" ] && SAVELOGS="false"
-# main()
+if [ "$MINIMY_SAVELOGS" = "false" ]; then
+  SAVELOGS="false"
+fi
 echo "Stopping Minimy ..."
-echo "User: $CURRENT_USER"
+echo "User: $USER"
 echo "Base directory: $baseDir"
 procs=$(ps -ef | grep -E 'minimy/skills|skills/system_skills|framework/services|MsgBus|mimic3|skill_system.py' | grep -v grep | grep -v local_whisper | grep -v vim)
 if [ ${#procs} = 0 ]; then
@@ -28,23 +26,27 @@ else
     sudo kill $pid
   done
 fi
-# Sort logs if the sortlogs command exists
-if command -v sortlogs &> /dev/null && [ "$SAVELOGS" = "true" ]; then
+if command -v sortlogs &> /dev/null && [ "$SAVELOGS" = "true" ]; then # sortlogs command exists and logs are being saved
   sortlogs                                 # create a time sorted file of all logs
 fi
 rm -fr /tmp/pymp*                          # clean up socket temp directories
 cd $HOME
-# Copy log files if the log directory exists
-if [ -d "$logDir" ] && [ "$SAVELOGS" = "true" ]; then
-  cp "$logDir"/* "$HOME" 2>/dev/null       # copy each log file
+logDir="$baseDir/logs"
+logDir="$tmpDir/tmp"
+if [ -d "$logDir" ] && [ "$SAVELOGS" = "true" ]; then # log directory exists
+  cp "$logDir"/* "$HOME" 2>/dev/null       # copy all log files
+fi
+findmount $logDir >/dev/null 2>&1
+if [ $? = 0 ]; then                        # log dir is mounted
+  sudo umount "$logDir"                    # unmount log directory - and logs disappear
+fi
+findmount $tmpDir >/dev/null 2>&1
+if [ $? = 0 ]; then                        # tmp dir is mounted
+  sudo umount "$tmpDir"                    # unmount tmp directory - and logs disappear
 fi
 if [ ${#procs} != 0 ]; then
   waitSecs=4
   echo "Waiting $waitSecs seconds for processes to finish ..."
   sleep $waitSecs                          # wait for processes to die before unmounting tmpfs
-  # Unmount log directory using dynamic path
-  if mount | grep -q "$logDir"; then
-    sudo umount "$logDir"                  # unmount log directory - and logs disappear
-  fi
 fi
 echo "Minimy stopped."
