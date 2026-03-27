@@ -12,9 +12,9 @@ home_dir = os.environ.get("HOME")
 sys.path.append(f"{home_dir}/minimy")
 from framework.util.utils import Config
 
-app = Quart(__name__)  # Initialize the Quart app
+app = Quart(__name__)                      # Initialize the Quart app
 # Read the model from config file
-cfg = Config()  # Get config file
+cfg = Config()                             # Get config file
 cfg_val = "Basic.Hub"
 try:
   hub = cfg.get_cfg_val(cfg_val)
@@ -34,33 +34,33 @@ try:
     sys.exit(1)
 except Exception as e:
   print(f"ERROR calling cfg.get_cfg_val({cfg_val}): {e}")
-if ctranslate2.get_cuda_device_count() > 0:  # Check for CUDA GPU to use
+if ctranslate2.get_cuda_device_count() > 0: # Check for CUDA GPU to use
   print(f"Starting Whisper using CUDA GPU with model {model}...")
   model = WhisperModel(
     model, device="cuda", compute_type="int8_float16"
-  )  # load model on gpu
+  )                                        # load model on gpu
 else:
   print(f"Starting Whisper using CPU with model {model}...")
-  model = WhisperModel(model, device="cpu", compute_type="int8")  # load model on CPU
+  model = WhisperModel(model, device="cpu", compute_type="int8") # load model on CPU
 
 
 @app.route("/stt", methods=["POST"])
 async def transcribe():
   # STT transcription - expects raw WAV file data in the request body
   wav_bytes = await request.data
-  try:  # to load WAV data
+  try:                                     # to load WAV data
     with io.BytesIO(wav_bytes) as wav_io:
-      with wave.open(wav_io, "rb") as wav_file:  # Ensure correct WAV format
+      with wave.open(wav_io, "rb") as wav_file: # Ensure correct WAV format
         audio_bytes = wav_file.readframes(
           wav_file.getnframes()
-        )  # read audio frames and convert to NumPy array
+        )                                  # read audio frames and convert to NumPy array
         audio_array = (
           np.frombuffer(audio_bytes, dtype=np.int16).astype(np.float32)
             / 32768.0
-        )  # Normalize audio
+        )                                  # Normalize audio
     segments, info = model.transcribe(
       audio_array, beam_size=5
-    )  # transcribe audio using Whisper
+    )                                      # transcribe audio using Whisper
 
     # fold text to lower case, remove leading spaces, ','s and '?'s
     transcription = ""
@@ -84,7 +84,7 @@ async def stream_transcription():
   try:
     async for (
       chunk
-    ) in request.body:  # convert chunk to NumPy array and feed into model
+    ) in request.body:                     # convert chunk to NumPy array and feed into model
       chunk_array = (
         np.frombuffer(chunk, dtype=np.int16).astype(np.float32) / 32768.0
       )
