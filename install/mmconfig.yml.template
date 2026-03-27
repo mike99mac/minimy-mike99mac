@@ -23,6 +23,8 @@
     Hub: localhost
     HubModel: base.en
     SpokeModel: tiny.en
+    LLMRepo: 'unsloth/Qwen3.5-2B-GGUF'
+    LLMFile: 'Qwen3.5-2B-Q6_K.gguf'
     MusicDir:
     WakeWords:
     - 'computer'
