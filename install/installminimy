@@ -181,7 +181,7 @@ function generateServiceFiles
 
   rm -rf "$tmpDir"                         # cleanup temporary directory
   runCmd sudo systemctl daemon-reload      # reload systemd to pick up new files
-  runCmd sudo systemctl start whisper      # start whisper for this session 
+  runCmd sudo systemctl start whisper      # start whisper for this session
   echo "Systemd service files installed successfully" | tee -a $logFile
  }                                         # generateServiceFiles()
 
@@ -300,7 +300,7 @@ function buildVenv
   echo "Running $0 at `date` ..." > $logFile # create a new log file
   echo | tee -a $logFile
 
-  # Export environment variables needed by Python scripts 
+  # Export environment variables needed by Python scripts
   export SVA_BASE_DIR="$baseDir"
   export PYTHONPATH="$baseDir"
   echo "Set SVA_BASE_DIR=$baseDir" | tee -a $logFile
@@ -375,7 +375,7 @@ function buildVenv
   runCmd $pipCmd install --no-binary :all: regex # force pip to ignore old wheels and build fresh
   echo "Installing python3-lingua-franca ..." | tee -a $logFile
   runCmd $pipCmd install lingua_franca
-  runCmd $pipCmd install psutil 
+  runCmd $pipCmd install psutil
   runCmd $pipCmd install -r install/requirements.txt
   echo "Installing local STT faster-whisper" | tee -a $logFile
   runCmd $pipCmd install faster-whisper
@@ -454,35 +454,28 @@ function buildVenv
     echo "Skipping piper - already installed ..."| tee -a $logFile
   fi
 
-  echo "Installing Ollama ..." | tee -a $logFile
+  echo "Installing llama-cpp-python ..." | tee -a $logFile
   echo | tee -a $logFile
-  if [ ! -d /usr/local/lib/ollama ]; then  # get ollama install script
-    curl -fsSL https://ollama.com/install.sh | sh
-  fi
-  if [ ! -f /etc/systemd/system/ollama.service ]; then # not expected
-    echo "WARNING: file /etc/systemd/system/ollama.service not found" | tee -a $logFile
-  else                                     # add env var to allow all hosts in local subnet
-    ipAddr="0.0.0.0"                       # answer all requests
-    echo "Setting Ollama IP address to $ipAddr ..." | tee -a $logFile
-    cd /etc/systemd/system
-    sudo sed -i "/\[Service\]/a Environment=OLLAMA_HOST=$ipAddr" ollama.service # put IP@ in OLLAMA_HOST env var
-    if [ $? != 0 ]; then
-      echo "WARNING! sed to ollama.service returned $?" | tee -a $logFile
+  if grep -qi "Jetson" /proc/device-tree/model 2>/dev/null || grep -qi "Orin" /proc/device-tree/model 2>/dev/null; then
+    echo "Jetson Orin Nano detected. Installing with CUDA ..." | tee -a $logFile
+    runCmd CUDACXX=/usr/local/cuda/bin/nvcc CMAKE_ARGS="-DGGML_CUDA=on" FORCE_CMAKE=1 $pipCmd install llama-cpp-python huggingface_hub
+  else
+    echo "Installing with OpenBLAS ..." | tee -a $logFile
+    if command -v apt-get &>/dev/null; then
+      runCmd sudo apt-get install -y libopenblas-dev
     fi
+    runCmd CMAKE_ARGS="-DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS" FORCE_CMAKE=1 $pipCmd install llama-cpp-python huggingface_hub
   fi
-  ollamaModel="llama3.2:3b"
-  echo "getting model $ollamaModel ..." | tee -a $logFile
-  ollama pull $ollamaModel                 # get this model
-  if command -v systemctl &>/dev/null; then
-    runCmd sudo systemctl daemon-reload
-    runCmd sudo systemctl enable ollama
-    runCmd sudo systemctl restart ollama
-    cd $baseDir
-    generateServiceFiles                   # generate and install systemd service files dynamically
-    echo "Enabling systemd services..." | tee -a $logFile
-    runCmd sudo systemctl enable "$LOGS_MOUNT_UNIT"
-    runCmd sudo systemctl enable "$TMP_MOUNT_UNIT"
-    runCmd sudo systemctl enable minimy
+
+  echo "Pre-caching the LLM model from HuggingFace..." | tee -a $logFile
+  local llmRepo=$(grep "LLMRepo:" "$configFile" | awk '{print $2}' | tr -d \''"')
+  local llmFile=$(grep "LLMFile:" "$configFile" | awk '{print $2}' | tr -d \''"')
+
+  if [ -n "$llmRepo" ] && [ -n "$llmFile" ]; then
+    echo "Downloading model $llmRepo ($llmFile) ..." | tee -a $logFile
+    runCmd $pythonCmd -c "from huggingface_hub import hf_hub_download; hf_hub_download(repo_id='$llmRepo', filename='$llmFile')"
+  else
+    echo "Warning: LLMRepo or LLMFile not found in config. Skipping pre-cache." | tee -a $logFile
   fi
 
   # Set whisper to run as a system daemon and log to /var/log/whisper.log
@@ -521,7 +514,7 @@ hub=""                                     # hub server
 let lastSecs=$SECONDS
 timeSt=`date +"%y-%m-%d-%H-%M-%S"`
 logFile="$HOME/$timeSt-installminimy.out"  # output file
-if [ "$MINIMY_SAVELOGS" = "false" ]; then 
+if [ "$MINIMY_SAVELOGS" = "false" ]; then
   logFile="/dev/null"                      # if logging is disabled, log to /dev/null
 fi
 musicDir=""                                # directory with music files
