@@ -11,7 +11,7 @@ def local_speak_dialog(text, file_name, wait_q):
     model_file = "en_US-hfc_male-medium.onnx"
   piper_dir = f"{base_dir}/framework/services/tts/local/piper"
   config_file = f"{base_dir}/install/mmconfig.yml"
-  cmd = f"echo {text} | {piper_dir}/piper --model {piper_dir}/{model_file}.onnx --output_file speech.wav; aplay speech.wav"
+  cmd = f"echo {text} | piper --model {piper_dir}/{model_file}.onnx --output_file speech.wav; aplay speech.wav"
   print(f"local_speak_dialog() cmd: {cmd}")
   os.system(cmd)                           # piper creates speech.wav then plays it
   os.system("rm speech.wav")
