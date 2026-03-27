@@ -453,22 +453,22 @@ function buildVenv
   echo | tee -a $logFile
   if grep -qi "Jetson" /proc/device-tree/model 2>/dev/null || grep -qi "Orin" /proc/device-tree/model 2>/dev/null; then
     echo "Jetson Orin Nano detected. Installing with CUDA ..." | tee -a $logFile
-    runCmd CUDACXX=/usr/local/cuda/bin/nvcc CMAKE_ARGS="-DGGML_CUDA=on" FORCE_CMAKE=1 $pipCmd install llama-cpp-python huggingface_hub
+    runCmd "CUDACXX=/usr/local/cuda/bin/nvcc CMAKE_ARGS='-DGGML_CUDA=on' FORCE_CMAKE=1 $pipCmd install llama-cpp-python huggingface_hub"
   else
     echo "Installing with OpenBLAS ..." | tee -a $logFile
     if command -v apt-get &>/dev/null; then
       runCmd sudo apt-get install -y libopenblas-dev
     fi
-    runCmd CMAKE_ARGS="-DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS" FORCE_CMAKE=1 $pipCmd install llama-cpp-python huggingface_hub
+    runCmd "CMAKE_ARGS='-DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS' FORCE_CMAKE=1 $pipCmd install llama-cpp-python huggingface_hub"
   fi
 
   echo "Pre-caching the LLM model from HuggingFace..." | tee -a $logFile
-  local llmRepo=$(grep "LLMRepo:" "$configFile" | awk '{print $2}' | tr -d \''"')
-  local llmFile=$(grep "LLMFile:" "$configFile" | awk '{print $2}' | tr -d \''"')
+  llmRepo=$(grep "LLMRepo:" "$configFile" | awk '{print $2}' | tr -d \''"')
+  llmFile=$(grep "LLMFile:" "$configFile" | awk '{print $2}' | tr -d \''"')
 
   if [ -n "$llmRepo" ] && [ -n "$llmFile" ]; then
     echo "Downloading model $llmRepo ($llmFile) ..." | tee -a $logFile
-    runCmd $pythonCmd -c "from huggingface_hub import hf_hub_download; hf_hub_download(repo_id='$llmRepo', filename='$llmFile')"
+    runCmd "$pythonCmd -c \"from huggingface_hub import hf_hub_download; hf_hub_download(repo_id=\\\"$llmRepo\\\", filename=\\\"$llmFile\\\")\""
   else
     echo "Warning: LLMRepo or LLMFile not found in config. Skipping pre-cache." | tee -a $logFile
   fi
