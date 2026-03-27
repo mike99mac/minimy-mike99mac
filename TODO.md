@@ -5,6 +5,7 @@
 1. Fix media skill "radio station name station name of genre station genre" bug. - Ryan is working on
 1. Fix "stop" OOB msgbus_processorloop() error message.
 ### Features
+1. Update Piper to 1.4.1 to enable GPU support - Ryan is working on
 1. Add variables HubLLMmodel and SpokeLLMmodel to config file
 1. Add a "move music" intent to the mpc skill - partially done - Mike is working on
 1. Fix software volume control related to the ALSA device numbers - allow volume to be 0 - 11.
