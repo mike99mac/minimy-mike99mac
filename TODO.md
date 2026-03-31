@@ -4,6 +4,7 @@
 ### Bugs
 1. Fix media skill "radio station name station name of genre station genre" bug. - Ryan is working on
 1. Fix "stop" OOB msgbus_processorloop() error message.
+1. Fix some messages going to the fallback skill/LLM instead of being processed correctly. 
 ### Features
 1. Add variables HubLLMmodel and SpokeLLMmodel to config file
 1. Add a "move music" intent to the mpc skill - partially done - Mike is working on
