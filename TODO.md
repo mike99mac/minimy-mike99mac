@@ -2,7 +2,7 @@
 
 ## Software
 ### Bugs
-1. Fix media skill "radio station name station name of genre station genre" bug. - Ryan is working on
+1. Fix "/bin/sh: -c: line 1: unexpected EOF while looking for matching `"'" error found in weather and radio skills.
 1. Fix some messages going to the fallback skill/LLM instead of being processed correctly. 
 ### Features
 1. Add variables HubLLMmodel and SpokeLLMmodel to config file
@@ -14,7 +14,6 @@
 1. Work on "barge in" and microphone directionality 
 ### Lower Priority
 1. Make logging cleaner - less printing to stdout.
-1. Improve TTS number pronuncaition.
 1. Finish the connectivity skill.
 1. Write a skill to set global variables in $HOME/install/mmconfig.yml
 1. Bluetooth audio is handled by DAC/AMP. Could we implement this in minimy?
