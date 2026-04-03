@@ -24,10 +24,8 @@
     GoogleApiKeyPath: install/my_google_key.json
     Hub: localhost
     HubModel: base.en
-    HubLLMFile: 'Qwen3.5-2B-Q6_K.gguf'
-    HubLLMRepo: 'unsloth/Qwen3.5-2B-GGUF'
-    SpokeLLMFile: 'Qwen3.5-2B-Q6_K.gguf'
-    SpokeLLMRepo: 'unsloth/Qwen3.5-2B-GGUF'
+    LLMFile: 'Qwen3.5-2B-Q6_K.gguf'
+    LLMRepo: 'unsloth/Qwen3.5-2B-GGUF'
     SpokeModel: tiny.en
     MusicDir:
     WakeWords:
