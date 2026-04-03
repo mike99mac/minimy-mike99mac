@@ -5,7 +5,6 @@ boto3[crt]
 google-cloud-speech
 inflect
 lingua-franca
-pathvalidate
 pytube
 pytz
 requests

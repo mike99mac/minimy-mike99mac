@@ -2,7 +2,6 @@
 
 ## Software
 ### Bugs
-1. Fix "/bin/sh: -c: line 1: unexpected EOF while looking for matching `"'" error found in weather and radio skills.
 1. Fix some messages going to the fallback skill/LLM instead of being processed correctly. 
 ### Features
 1. Add variables HubLLMmodel and SpokeLLMmodel to config file
