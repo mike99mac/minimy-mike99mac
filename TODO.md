@@ -2,7 +2,7 @@
 
 ## Software
 ### Bugs
-1. Fix some messages going to the fallback skill/LLM instead of being processed correctly. 
+1. Organize mmconfig.yml better
 ### Features
 1. Add variables HubLLMmodel and SpokeLLMmodel to config file
 1. Add a "move music" intent to the mpc skill - partially done - Mike is working on
