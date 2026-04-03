@@ -33,6 +33,7 @@ link-4.1b/
 
 # Local config (use mmconfig.yml.template instead)
 install/mmconfig.yml
+install/my-google-key.json
 
 # Editor / IDE
 pyrightconfig.json
