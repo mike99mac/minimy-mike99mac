@@ -40,10 +40,8 @@ class Config:
       'Hub': 'localhost',
       'HubModel': 'base.en',
       'SpokeModel': 'tiny.en',
-      'HubLLMRepo': 'unsloth/Qwen3.5-2B-GGUF',
-      'HubLLMFile': 'Qwen3.5-2B-Q6_K.gguf',
-      'SpokeLLMRepo': 'unsloth/Qwen3.5-2B-GGUF',
-      'SpokeLLMFile': 'Qwen3.5-2B-Q6_K.gguf',
+      'LLMRepo': 'unsloth/Qwen3.5-2B-GGUF',
+      'LLMFile': 'Qwen3.5-2B-Q6_K.gguf',
       'GoogleApiKeyPath' : 'install/my_google_key.json',
       'AWSId': '',
       'AWSKey': ''
@@ -127,13 +125,6 @@ class Config:
   def is_hub(self):
     hub = self.get_cfg_val("Basic.Hub")
     return hub == socket.gethostname() or hub == "localhost"
-
-  def get_hub_spoke_cfg_val(self, hub_key, spoke_key, legacy_key=None):
-    key = hub_key if self.is_hub() else spoke_key
-    value = self.get_cfg_val(key)
-    if (value is None or value == '') and legacy_key is not None:
-      value = self.get_cfg_val(legacy_key)
-    return value
 
   def dump_cfg(self):
     tmp_cfg = self.cfg[0]

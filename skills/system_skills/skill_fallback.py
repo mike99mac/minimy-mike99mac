@@ -20,6 +20,11 @@ except ImportError:
     Llama = None
 
 try:
+    from llama_cpp import _internals as llama_internals
+except ImportError:
+    llama_internals = None
+
+try:
     from quart import Quart
     from quart import request as quart_request
 except ImportError:
@@ -48,23 +53,18 @@ class FallbackSkill(SimpleVoiceAssistant):
         self.hub_host = self.cfg.get_cfg_val("Basic.Hub") or "localhost"
         self.use_remote_llm = self.cfg.get_cfg_val("Advanced.LLM.UseRemote") == "y"
         self.remote_app = None
+        self._patch_llama_cleanup_bug()
 
         should_load_local_llm = (not self.use_remote_llm) or self.cfg.is_hub()
         if should_load_local_llm and Llama is not None and hf_hub_download is not None:
-            llm_role = "hub" if self.cfg.is_hub() else "spoke"
-            self.llm_repo = self.cfg.get_hub_spoke_cfg_val(
-                "Basic.HubLLMRepo", "Basic.SpokeLLMRepo", "Basic.LLMRepo"
-            )
-            self.llm_file = self.cfg.get_hub_spoke_cfg_val(
-                "Basic.HubLLMFile", "Basic.SpokeLLMFile", "Basic.LLMFile"
-            )
+            llm_role = "hub" if self.cfg.is_hub() else "local"
+            self.llm_repo = self.cfg.get_cfg_val("Basic.LLMRepo")
+            self.llm_file = self.cfg.get_cfg_val("Basic.LLMFile")
 
             if not self.llm_repo or not self.llm_file:
                 self.log.error(
                     "FallbackSkill: LLM configuration missing "
-                    f"({llm_role}: Basic.HubLLMRepo/Basic.HubLLMFile or "
-                    "Basic.SpokeLLMRepo/Basic.SpokeLLMFile; legacy: "
-                    "Basic.LLMRepo/Basic.LLMFile) in mmconfig.yml. Cannot load model."
+                    "(Basic.LLMRepo or Basic.LLMFile) in mmconfig.yml. Cannot load model."
                 )
             else:
                 self.log.info(
@@ -87,6 +87,39 @@ class FallbackSkill(SimpleVoiceAssistant):
 
         if self.use_remote_llm and self.cfg.is_hub():
             self._start_remote_server()
+
+    def _patch_llama_cleanup_bug(self):
+        model_cls = getattr(llama_internals, "LlamaModel", None)
+        if model_cls is None or getattr(model_cls, "_minimy_cleanup_patch", False):
+            return
+
+        original_close = getattr(model_cls, "close", None)
+        if not callable(original_close):
+            return
+
+        def safe_close(instance):
+            try:
+                return original_close(instance)
+            except AttributeError as e:
+                if "sampler" not in str(e):
+                    raise
+                for attr_name in ("sampler", "context", "batch", "model", "vocab"):
+                    resource = getattr(instance, attr_name, None)
+                    if resource is None:
+                        continue
+                    close_fn = getattr(resource, "close", None)
+                    if callable(close_fn):
+                        try:
+                            close_fn()
+                        except Exception:
+                            pass
+                    try:
+                        setattr(instance, attr_name, None)
+                    except Exception:
+                        pass
+
+        model_cls.close = safe_close
+        model_cls._minimy_cleanup_patch = True
 
     def _create_llm(self, model_path):
         llm_kwargs = {
