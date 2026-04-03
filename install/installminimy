@@ -463,14 +463,14 @@ function buildVenv
   fi
 
   echo "Pre-caching the LLM model from HuggingFace..." | tee -a $logFile
-  llmRepo=$(grep "LLMRepo:" "$configFile" | awk '{print $2}' | tr -d \''"')
-  llmFile=$(grep "LLMFile:" "$configFile" | awk '{print $2}' | tr -d \''"')
+  llmRepo=$($pythonCmd -c "import socket, yaml; cfg = yaml.safe_load(open('$configFile'))[0]; basic = cfg['Basic']; advanced = cfg.get('Advanced', {}); llm_cfg = advanced.get('LLM', {}); is_hub = basic.get('Hub') in (socket.gethostname(), 'localhost'); use_remote = llm_cfg.get('UseRemote') == 'y'; key = 'HubLLMRepo' if is_hub else 'SpokeLLMRepo'; value = '' if (use_remote and not is_hub) else (basic.get(key) or basic.get('LLMRepo') or ''); print(str(value).strip())")
+  llmFile=$($pythonCmd -c "import socket, yaml; cfg = yaml.safe_load(open('$configFile'))[0]; basic = cfg['Basic']; advanced = cfg.get('Advanced', {}); llm_cfg = advanced.get('LLM', {}); is_hub = basic.get('Hub') in (socket.gethostname(), 'localhost'); use_remote = llm_cfg.get('UseRemote') == 'y'; key = 'HubLLMFile' if is_hub else 'SpokeLLMFile'; value = '' if (use_remote and not is_hub) else (basic.get(key) or basic.get('LLMFile') or ''); print(str(value).strip())")
 
   if [ -n "$llmRepo" ] && [ -n "$llmFile" ]; then
     echo "Downloading model $llmRepo ($llmFile) ..." | tee -a $logFile
     runCmd "$pythonCmd -c \"from huggingface_hub import hf_hub_download; hf_hub_download(repo_id=\\\"$llmRepo\\\", filename=\\\"$llmFile\\\")\""
   else
-    echo "Warning: LLMRepo or LLMFile not found in config. Skipping pre-cache." | tee -a $logFile
+    echo "Warning: HubLLMRepo/HubLLMFile or SpokeLLMRepo/SpokeLLMFile not found in config. Skipping pre-cache." | tee -a $logFile
   fi
 
   # Set whisper to run as a system daemon and log to /var/log/whisper.log
