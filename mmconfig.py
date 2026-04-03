@@ -26,6 +26,7 @@ def handle_advanced(cfg):
     update_value(cfg, 'Advanced.STT.UseRemote', "Use Remote STT (y/n)")
     update_value(cfg, 'Advanced.TTS.UseRemote', "Use Remote TTS (y/n)")
     update_value(cfg, 'Advanced.NLP.UseRemote', "Use Remote NLP (y/n)")
+    update_value(cfg, 'Advanced.LLM.UseRemote', "Use Remote LLM (y/n)")
     update_value(cfg, 'Advanced.CrappyAEC', "Crappy AEC (y/n)")
 
 def handle_basic(cfg):
@@ -34,6 +35,10 @@ def handle_basic(cfg):
     update_value(cfg, 'Basic.Hub', "Hub Hostname")
     update_value(cfg, 'Basic.HubModel', "Hub STT Model: tiny.en, base.en, or small.en")
     update_value(cfg, 'Basic.SpokeModel', "Spoke STT Model: tiny.en, base.en, or small.en")
+    update_value(cfg, 'Basic.HubLLMRepo', "Hub LLM HuggingFace Repo")
+    update_value(cfg, 'Basic.HubLLMFile', "Hub LLM GGUF File")
+    update_value(cfg, 'Basic.SpokeLLMRepo', "Spoke LLM HuggingFace Repo")
+    update_value(cfg, 'Basic.SpokeLLMFile', "Spoke LLM GGUF File")
     update_value(cfg, 'Basic.GoogleApiKeyPath', "Google API Key File Location")
     update_value(cfg, 'Basic.AWSId', "AWS ID")
     update_value(cfg, 'Basic.AWSKey', "AWS Key")

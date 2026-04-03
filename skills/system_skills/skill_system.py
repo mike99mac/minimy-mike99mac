@@ -42,6 +42,7 @@ class SystemSkill(SimpleVoiceAssistant):
     self.cfg_remote_stt = cfg.get_cfg_val("Advanced.STT.UseRemote")
     self.cfg_remote_tts = cfg.get_cfg_val("Advanced.TTS.UseRemote")
     self.cfg_remote_nlp = cfg.get_cfg_val("Advanced.NLP.UseRemote")
+    self.cfg_remote_llm = cfg.get_cfg_val("Advanced.LLM.UseRemote")
     self.cfg_platform = cfg.get_cfg_val("Advanced.Platform")
     self.cfg_wake_words = cfg.get_cfg_val("Basic.WakeWords")
     self.base_dir = cfg.get_cfg_val("Basic.BaseDir")
@@ -74,6 +75,7 @@ class SystemSkill(SimpleVoiceAssistant):
             "remote_stt": self.cfg_remote_stt,
             "remote_tts": self.cfg_remote_tts,
             "remote_nlp": self.cfg_remote_nlp,
+            "remote_llm": self.cfg_remote_llm,
             "platform": self.cfg_platform,
             "wake_words": self.cfg_wake_words
            }
@@ -365,4 +367,3 @@ class SystemSkill(SimpleVoiceAssistant):
 if __name__ == "__main__":
   ss = SystemSkill()
   Event().wait()                           # wait forever
-
