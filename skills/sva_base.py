@@ -302,7 +302,8 @@ class SimpleVoiceAssistant:
 
     def speak(self, text, wait_callback=None):
         # Short-circuited to directly call piper then return -MM
-        text = text.replace("\n", " ")  # remove trailing newline
+        text = text.replace("\n", " ")     # remove trailing newline
+        text = text.replace('"', "")       # remove quotes
         text_file = f"{self.base_dir}/tmp/save_text/speech.wav"
         piper_dir = f"{self.base_dir}/framework/services/tts/local/piper"
         cmd = f'echo "{text}" | {piper_dir}/piper --model {piper_dir}/{self.model_file}.onnx --output_file {text_file}; aplay {text_file}'
