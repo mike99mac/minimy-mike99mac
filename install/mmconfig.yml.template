@@ -11,8 +11,7 @@
       UseRemote: n
     STT:
       UseRemote: n
-      HubModel: base.en
-      SpokeModel: tiny.en
+      Model: base.en
     TTS:
       Local: p
       Remote: p
