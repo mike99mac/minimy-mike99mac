@@ -9,6 +9,7 @@ from urllib import request as urlrequest
 
 from framework.util.utils import Config
 from skills.sva_base import SimpleVoiceAssistant
+import re
 
 try:
     import llama_cpp
@@ -396,11 +397,13 @@ Rules:
         os.makedirs(os.path.dirname(log_path), exist_ok=True)
         try:
             with open(log_path, "a", encoding="utf-8") as f:
-                f.write(
-                    f"[{label}] Q: {prompt_text}\n[{label}] A: {answer_text}\n{'-' * 40}\n"
-                )
+                f.write(f"Q: {ques}\nA: {ans}\n{'-'*40}\n")
         except Exception as log_err:
             self.log.error(f"FallbackSkill: Failed to write to {log_path}: {log_err}")
+            
+      except Exception as e:
+        self.log.error(f"FallbackSkill: Error querying local LLM: {e}")
+        ans = "I encountered an error trying to process your request."
 
     def _chat(self, system_prompt, user_prompt, max_tokens=220):
         if not self.llm:
@@ -693,6 +696,7 @@ Rules:
         self.speak(answer)
 
 
+# main()
 if __name__ == "__main__":
     fs = FallbackSkill()
     if fs.run_remote_server:
