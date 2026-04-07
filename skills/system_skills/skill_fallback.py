@@ -54,6 +54,7 @@ class FallbackSkill(SimpleVoiceAssistant):
         self.use_remote_llm = self.cfg.get_cfg_val("Advanced.LLM.UseRemote") == "y"
         self.remote_app = None
         self._patch_llama_cleanup_bug()
+        self.run_remote_server = False
 
         should_load_local_llm = (not self.use_remote_llm) or self.cfg.is_hub()
         if should_load_local_llm and Llama is not None and hf_hub_download is not None:
@@ -86,7 +87,7 @@ class FallbackSkill(SimpleVoiceAssistant):
             )
 
         if self.use_remote_llm and self.cfg.is_hub():
-            self._start_remote_server()
+            self._setup_remote_server()
 
     def _patch_llama_cleanup_bug(self):
         model_cls = getattr(llama_internals, "LlamaModel", None)
@@ -151,13 +152,14 @@ class FallbackSkill(SimpleVoiceAssistant):
 
         return Llama(**llm_kwargs)
 
-    def _start_remote_server(self):
+    def _setup_remote_server(self):
         if Quart is None:
             self.log.error(
                 "FallbackSkill: quart is not installed, cannot start remote LLM server on hub"
             )
             return
         self.remote_app = Quart(__name__)
+        self.run_remote_server = True
 
         @self.remote_app.route("/fallback", methods=["POST"])
         async def fallback_endpoint():
@@ -176,9 +178,6 @@ class FallbackSkill(SimpleVoiceAssistant):
                 rewritten_utterance=str(payload.get("rewritten_utterance", "") or ""),
             )
             return result
-
-        server_thread = Thread(target=self._run_remote_server, daemon=True)
-        server_thread.start()
 
     def _run_remote_server(self):
         try:
@@ -639,4 +638,7 @@ Rules:
 
 if __name__ == "__main__":
     fs = FallbackSkill()
-    Event().wait()
+    if fs.run_remote_server:
+        fs._run_remote_server()
+    else:
+        Event().wait()
