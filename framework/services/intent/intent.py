@@ -23,7 +23,7 @@ class Intent:
     self.is_running = False                # set to True before calling run()
     cfg = Config()                         # get configuration
     self.crappy_aec = cfg.get_cfg_val("Advanced.CrappyAEC")
-    remote_nlp = cfg.get_cfg_val("Advanced.NLP.UseRemote")
+    remote_nlp = cfg.get_cfg_val("Basic.NLP.UseRemote")
     self.use_remote_nlp = True
     if remote_nlp and remote_nlp == "n":
       self.use_remote_nlp = False

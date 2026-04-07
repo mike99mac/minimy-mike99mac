@@ -52,9 +52,9 @@ if __name__ == "__main__":
   except Exception as e:
     print(f"ERROR calling cfg.get_cfg_val(Basic.Hub): {e}")
   if hub == socket.gethostname() or hub == "localhost":
-    cfg_val = "Basic.HubModel"
+    cfg_val = "Basic.STT.HubModel"
   else:
-    cfg_val = "Basic.SpokeModel"
+    cfg_val = "Basic.STT.SpokeModel"
   try:
     model = cfg.get_cfg_val(cfg_val)
     if model is None:
