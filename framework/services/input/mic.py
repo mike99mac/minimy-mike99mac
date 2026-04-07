@@ -180,9 +180,11 @@ def main():
   # rate 16k, 44k, etc
   base_dir = os.getenv("SVA_BASE_DIR")
   if base_dir is None:
-    print("ERROR: SVA_BASE_DIR environment variable not set!")
+    print("mic.py.main() ERROR: SVA_BASE_DIR environment variable not set!")
     sys.exit(1)
   tmp_file_path = base_dir + "/tmp/save_audio/"
+  log_filename = base_dir + "/logs/audio.log"
+  log = LOG(log_filename).log
 
   # for now, just grab device index from config file but really need to get all params or its unusable
   # need format, sample rate, etc. Mic should probably have its own cfg file
@@ -194,7 +196,7 @@ def main():
     try:
       device_indx = int(str(device_indx))
     except Exception:
-      print("Invalid device index = %s, using None!" % (device_indx,))
+      print("mic.py.main() Invalid device index = %s, using None!" % (device_indx,))
       device_indx = None
   # general linux 
   # aggressiveness = 2
@@ -212,8 +214,8 @@ def main():
   except Exception as e:
     print("\nError - Mic Not Started!\n\n%s\n\nAborting!" % (e,))
     sys.exit(-1)
-  print("Using device index %s, aggressive:%s, padding:%s, ratio:%s" % (device_indx,aggressiveness, padding, ratio))
-  print("Listening (ctrl-C to exit)...")
+  print("mic.py.main() Using device index %s, aggressive:%s, padding:%s, ratio:%s" % (device_indx,aggressiveness, padding, ratio))
+  print("mic.py.main() Listening (ctrl-C to exit)...")
   frames = vad_audio.vad_collector(
     padding_ms = padding,
     ratio = ratio,
@@ -235,19 +237,14 @@ def main():
           )
           vad_audio.write_wav(filename, wav_data)
         else:
-          base_dir = str(os.getenv("SVA_BASE_DIR"))
-          log_filename = base_dir + "/logs/audio.log"
-          log = LOG(log_filename).log
-          log.debug(f"Discarded utterance: {duration_sec:.2f}s (outside 0.3 - {max_utterance_sec}s range)")
+          log.debug(f"mic.py.main() Discarded utterance: {duration_sec:.2f}s (outside 0.3 - {max_utterance_sec}s range)")
       wav_data = bytearray()
   if len(wav_data) > 0:                    # Handle any remaining data
     duration_sec = len(wav_data) / (2 * DEFAULT_SAMPLE_RATE)
     if 0.3 <= duration_sec <= max_utterance_sec:
-      filename = os.path.join(
-        tmp_file_path,
-        datetime.now().strftime("savewav_%Y-%m-%d_%H-%M-%S_%f.wav")
-      )
+      filename = os.path.join(tmp_file_path, datetime.now().strftime("savewav_%Y-%m-%d_%H-%M-%S_%f.wav"))
       vad_audio.write_wav(filename, wav_data)
 
 if __name__ == "__main__":
   main()
+
