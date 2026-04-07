@@ -3,32 +3,22 @@
     InputDeviceId: '0'
     InputLevelControlName: Mic
     LogLevel: d
+    AWSId: ''
+    AWSKey: ''
+    GoogleApiKeyPath: install/my_google_key.json
+- Basic:
+    BaseDir: {{BASE_DIR}}
+    Hub: localhost
     LLM:
       UseRemote: n
+    LLMFile: 'Qwen3.5-2B-Q6_K.gguf'
+    LLMRepo: 'unsloth/Qwen3.5-2B-GGUF'
+    MusicDir:
     NLP:
       UseRemote: n
     OutputDeviceName: ''
     OutputLevelControlName: Speaker
     Platform: u
-    STT:
-      UseRemote: n
-      Model: base.en
-    TTS:
-      Local: p
-      Remote: p
-      UseRemote: n
-      LocalVoice: en_US-hfc_male-medium
-  Basic:
-    AWSId: ''
-    AWSKey: ''
-    BaseDir: {{BASE_DIR}}
-    GoogleApiKeyPath: install/my_google_key.json
-    Hub: localhost
-    HubModel: base.en
-    LLMFile: 'Qwen3.5-2B-Q6_K.gguf'
-    LLMRepo: 'unsloth/Qwen3.5-2B-GGUF'
-    SpokeModel: tiny.en
-    MusicDir:
     WakeWords:
     - 'computer'
     - 'internet'
@@ -37,4 +27,11 @@
       # bedroom: 192.168.4.50
       # living room: 192.168.4.40
       # kitchen: 192.168.4.42
-
+    STT:
+      UseRemote: n
+      Model: base.en
+    TTS:
+      Local: p
+      Remote: p
+      UseRemote: n
+      LocalVoice: en_US-hfc_male-medium
