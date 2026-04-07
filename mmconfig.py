@@ -35,8 +35,7 @@ def handle_basic(cfg):
     print("Basic Settings\n--------------")
     update_value(cfg, 'Basic.WakeWords', "Comma Separated List of Wake Words")
     update_value(cfg, 'Basic.Hub', "Hub Hostname")
-    update_value(cfg, 'Basic.STT.HubModel', "Hub STT Model: tiny.en, base.en, or small.en")
-    update_value(cfg, 'Basic.STT.SpokeModel', "Spoke STT Model: tiny.en, base.en, or small.en")
+    update_value(cfg, 'Basic.STT.Model', "STT Model: tiny.en, base.en, or small.en")
 
 
 if __name__ == "__main__":

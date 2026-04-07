@@ -50,8 +50,7 @@ class Config:
       'Platform': 'l',
       'STT' : {
            'UseRemote': 'y',
-           'HubModel': 'base.en',
-           'SpokeModel': 'tiny.en'
+           'Model': 'base.en'
           },
       'TTS' : {
            'UseRemote': 'y',
@@ -70,8 +69,6 @@ class Config:
     'Basic.AWSId': 'Advanced.AWSId',
     'Basic.AWSKey': 'Advanced.AWSKey',
     'Basic.GoogleApiKeyPath': 'Advanced.GoogleApiKeyPath',
-    'Basic.HubModel': 'Basic.STT.HubModel',
-    'Basic.SpokeModel': 'Basic.STT.SpokeModel',
     'Advanced.Platform': 'Basic.Platform',
     'Advanced.OutputDeviceName': 'Basic.OutputDeviceName',
     'Advanced.OutputLevelControlName': 'Basic.OutputLevelControlName',
