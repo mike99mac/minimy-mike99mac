@@ -77,11 +77,7 @@ class FallbackSkill(SimpleVoiceAssistant):
             if not self.llm_repo or not self.llm_file:
                 self.log.error(
                     "FallbackSkill: LLM configuration missing "
-<<<<<<< HEAD
                     "(Basic.LLMRepo or Basic.LLMFile) in mmconfig.yml. Cannot load model."
-=======
-                    "(Basic.LLMRepo or Basic.LLMFile) in mmconfig.yml. Cannot load model."
->>>>>>> 892174f (continue to merge main -> llama-cpp-python)
                 )
             else:
                 self.log.info(
