@@ -369,8 +369,8 @@ Return exactly one JSON object with these keys:
 Additional hard rules:
 - If route is "rewrite_command", the command must be something the deterministic command system could plausibly parse.
 - If route is "rewrite_command", never include a wake word, explanations, or multiple commands.
-- If route is "answer", answer concisely and truthfully.
-- If route is "cannot_execute", explain what is missing, unsupported, or uncertain without pretending anything happened.
+- If route is "answer", answer concisely and truthfully, and the answer field must not be empty.
+- If route is "cannot_execute", explain what is missing, unsupported, or uncertain without pretending anything happened, and the answer field must not be empty.
 - Do not ask the user a follow-up question. This is a single-turn decision.
 - If the user is asking for live boombox information such as time, date, day, weather, forecast, temperature, or current device state, prefer "rewrite_command" over "answer".
 - Never claim you performed an action.
@@ -531,6 +531,9 @@ Rules:
             "Please try saying it another way."
         )
 
+    def _default_answer_failure_answer(self):
+        return "I am sorry, I could not answer that right now."
+
     def _answer_user(
         self, original_utterance, failed_rewrite=False, rewritten_utterance=""
     ):
@@ -559,7 +562,7 @@ Rules:
                 "route": "answer",
                 "confidence": 0.0,
                 "canonical_utterance": "",
-                "answer": self._answer_user(sentence),
+                "answer": self._default_answer_failure_answer(),
                 "reason": "controller_parse_failure",
             }
         payload.setdefault("route", "answer")
@@ -622,7 +625,7 @@ Rules:
                 answer = answer or self._default_command_failure_answer(sentence)
 
             if not answer:
-                answer = self._answer_user(sentence)
+                answer = self._default_answer_failure_answer()
 
             return {
                 "action": "answer",
