@@ -452,8 +452,10 @@ function buildVenv
   echo "Installing llama-cpp-python ..." | tee -a $logFile
   echo | tee -a $logFile
   if grep -qi "Jetson" /proc/device-tree/model 2>/dev/null || grep -qi "Orin" /proc/device-tree/model 2>/dev/null; then
-    echo "Jetson Orin Nano detected. Installing with CUDA ..." | tee -a $logFile
-    runCmd "CUDACXX=/usr/local/cuda/bin/nvcc CMAKE_ARGS='-DGGML_CUDA=on' FORCE_CMAKE=1 $pipCmd install llama-cpp-python huggingface_hub"
+    llamaCppVersion="0.3.19"
+    echo "Jetson Orin Nano detected. Building llama-cpp-python $llamaCppVersion from source with CUDA ..." | tee -a $logFile
+    runCmd "$pipCmd install --upgrade huggingface_hub"
+    runCmd "PATH=/usr/local/cuda/bin:\$PATH CUDA_HOME=/usr/local/cuda CUDACXX=/usr/local/cuda/bin/nvcc CMAKE_ARGS='-DGGML_CUDA=on -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCUDAToolkit_ROOT=/usr/local/cuda' FORCE_CMAKE=1 $pipCmd install --force-reinstall --no-cache-dir --no-binary=llama-cpp-python --index-url https://pypi.org/simple llama-cpp-python==$llamaCppVersion"
   else
     echo "Installing with OpenBLAS ..." | tee -a $logFile
     if command -v apt-get &>/dev/null; then
