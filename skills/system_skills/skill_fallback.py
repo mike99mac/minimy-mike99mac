@@ -14,10 +14,14 @@ try:
     import llama_cpp
     from huggingface_hub import hf_hub_download
     from llama_cpp import Llama
+    from llama_cpp import llama_chat_format
+    from llama_cpp.llama_cache import LlamaRAMCache
 except ImportError:
     llama_cpp = None
     hf_hub_download = None
     Llama = None
+    llama_chat_format = None
+    LlamaRAMCache = None
 
 try:
     from llama_cpp import _internals as llama_internals
@@ -53,6 +57,8 @@ class FallbackSkill(SimpleVoiceAssistant):
         self.hub_host = self.cfg.get_cfg_val("Basic.Hub") or "localhost"
         self.use_remote_llm = self.cfg.get_cfg_val("Advanced.LLM.UseRemote") == "y"
         self.remote_app = None
+        self.prompt_cache = None
+        self.system_prompt_formatters = {}
         self._patch_llama_cleanup_bug()
         self.run_remote_server = False
 
@@ -77,6 +83,7 @@ class FallbackSkill(SimpleVoiceAssistant):
                         repo_id=self.llm_repo, filename=self.llm_file
                     )
                     self.llm = self._create_llm(model_path)
+                    self._warm_system_prompt_cache()
                 except Exception as e:
                     self.log.error(f"FallbackSkill: Failed to load Llama model: {e}")
         elif should_load_local_llm:
@@ -151,6 +158,88 @@ class FallbackSkill(SimpleVoiceAssistant):
             )
 
         return Llama(**llm_kwargs)
+
+    def _get_chat_formatter(self, add_generation_prompt):
+        if llama_chat_format is None or self.llm is None:
+            return None
+
+        formatter = self.system_prompt_formatters.get(add_generation_prompt)
+        if formatter is not None:
+            return formatter
+
+        template = self.llm.metadata.get("tokenizer.chat_template")
+        if not template:
+            return None
+
+        eos_token_id = self.llm.token_eos()
+        bos_token_id = self.llm.token_bos()
+        eos_token = (
+            self.llm._model.token_get_text(eos_token_id) if eos_token_id != -1 else ""
+        )
+        bos_token = (
+            self.llm._model.token_get_text(bos_token_id) if bos_token_id != -1 else ""
+        )
+
+        formatter = llama_chat_format.Jinja2ChatFormatter(
+            template=template,
+            eos_token=eos_token,
+            bos_token=bos_token,
+            add_generation_prompt=add_generation_prompt,
+            stop_token_ids=[eos_token_id] if eos_token_id != -1 else None,
+        )
+        self.system_prompt_formatters[add_generation_prompt] = formatter
+        return formatter
+
+    def _tokenize_chat_messages(self, messages, add_generation_prompt):
+        formatter = self._get_chat_formatter(add_generation_prompt)
+        if formatter is None or self.llm is None:
+            return None
+
+        formatted = formatter(messages=messages)
+        return self.llm.tokenize(
+            formatted.prompt.encode("utf-8"),
+            add_bos=not formatted.added_special,
+            special=True,
+        )
+
+    def _warm_system_prompt_cache(self):
+        if self.llm is None or LlamaRAMCache is None:
+            return
+
+        try:
+            # Store prompt-prefix KV state so the first real request does not have to
+            # re-evaluate the full system prompt from scratch.
+            self.prompt_cache = LlamaRAMCache(capacity_bytes=256 << 20)
+            self.llm.set_cache(self.prompt_cache)
+
+            system_prompts = (
+                ("controller", self.controller_prompt),
+                ("answer", self.answer_prompt),
+            )
+
+            for label, system_prompt in system_prompts:
+                prompt_tokens = self._tokenize_chat_messages(
+                    [{"role": "system", "content": system_prompt}],
+                    add_generation_prompt=False,
+                )
+                if not prompt_tokens:
+                    self.log.warning(
+                        f"FallbackSkill: Unable to build {label} system prompt cache prefix"
+                    )
+                    continue
+
+                self.llm.reset()
+                self.llm.eval(prompt_tokens)
+                self.prompt_cache[prompt_tokens] = self.llm.save_state()
+                self.log.info(
+                    f"FallbackSkill: Warmed KV cache for {label} system prompt ({len(prompt_tokens)} tokens)"
+                )
+
+            self.llm.reset()
+        except Exception as e:
+            self.log.warning(
+                f"FallbackSkill: Failed to warm system prompt KV cache: {e}"
+            )
 
     def _setup_remote_server(self):
         if Quart is None:
