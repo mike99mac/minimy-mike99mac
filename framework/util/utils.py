@@ -144,13 +144,6 @@ class Config:
     hub = self.get_cfg_val("Basic.Hub")
     return hub == socket.gethostname() or hub == "localhost"
 
-  def get_hub_spoke_cfg_val(self, hub_key, spoke_key, legacy_key=None):
-    key = hub_key if self.is_hub() else spoke_key
-    value = self.get_cfg_val(key)
-    if (value is None or value == '') and legacy_key is not None:
-      value = self.get_cfg_val(legacy_key)
-    return value
-
   def dump_cfg(self):
     tmp_cfg = self.cfg[0]
     for section in tmp_cfg.keys():
