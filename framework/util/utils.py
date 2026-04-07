@@ -55,7 +55,8 @@ class Config:
       'InputLevelControlName': '',
       'OutputLevelControlName': '',
       'STT' : {
-           'UseRemote': 'y'
+           'UseRemote': 'y',
+           'Model': 'base.en'
           },
       'TTS' : {
            'UseRemote': 'y',
@@ -69,8 +70,21 @@ class Config:
            'UseRemote': 'y'
           },
       }
-    }
-  ]
+  }
+  legacy_key_map = {
+    'Basic.AWSId': 'Advanced.AWSId',
+    'Basic.AWSKey': 'Advanced.AWSKey',
+    'Basic.GoogleApiKeyPath': 'Advanced.GoogleApiKeyPath',
+    'Advanced.Platform': 'Basic.Platform',
+    'Advanced.OutputDeviceName': 'Basic.OutputDeviceName',
+    'Advanced.OutputLevelControlName': 'Basic.OutputLevelControlName',
+    'Advanced.STT.UseRemote': 'Basic.STT.UseRemote',
+    'Advanced.TTS.UseRemote': 'Basic.TTS.UseRemote',
+    'Advanced.TTS.Local': 'Basic.TTS.Local',
+    'Advanced.TTS.Remote': 'Basic.TTS.Remote',
+    'Advanced.TTS.LocalVoice': 'Basic.TTS.LocalVoice',
+    'Advanced.NLP.UseRemote': 'Basic.NLP.UseRemote'
+  }
 
   def __init__(self):
     base_dir = os.getenv('SVA_BASE_DIR')

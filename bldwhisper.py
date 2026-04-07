@@ -2,7 +2,6 @@
 import argparse
 import time
 import sys
-import socket
 import ctranslate2
 from faster_whisper import WhisperModel
 from framework.util.utils import Config
@@ -43,25 +42,13 @@ class WhisperTranscriber:
 
 if __name__ == "__main__":
   cfg = Config()                           # Get config file
-  cfg_val = "Basic.Hub"
   try:
-    hub = cfg.get_cfg_val(cfg_val)
-    if hub is None:
-      print(f"ERROR {cfg_val} not found in config file: {cfg.config_file}")
-      sys.exit(1)
-  except Exception as e:
-    print(f"ERROR calling cfg.get_cfg_val(Basic.Hub): {e}")
-  if hub == socket.gethostname() or hub == "localhost":
-    cfg_val = "Basic.HubModel"
-  else:
-    cfg_val = "Basic.SpokeModel"
-  try:
-    model = cfg.get_cfg_val(cfg_val)
+    model = cfg.get_cfg_val("Basic.STT.Model")
     if model is None:
-      print(f"ERROR {cfg_val} not found in config file: {cfg.config_file}")
+      print(f"ERROR Basic.STT.Model not found in config file: {cfg.config_file}")
       sys.exit(1)
   except Exception as e:
-    print(f"ERROR calling cfg.get_cfg_val({cfg_val}): {e}")
+    print(f"ERROR calling cfg.get_cfg_val(Basic.STT.Model): {e}")
     sys.exit(1)
   # Create an instance of the WhisperTranscriber class
   transcriber = WhisperTranscriber(model)                 # Create a singleton
