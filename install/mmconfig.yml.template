@@ -12,6 +12,7 @@
     Platform: u
     STT:
       UseRemote: n
+      Model: base.en
     TTS:
       Local: p
       Remote: p
