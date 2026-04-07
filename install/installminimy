@@ -470,8 +470,8 @@ function buildVenv
   fi
 
   echo "Pre-caching the LLM model from HuggingFace..." | tee -a $logFile
-  llmRepo=$($pythonCmd -c "import socket, yaml; cfg = yaml.safe_load(open('$configFile'))[0]; basic = cfg['Basic']; advanced = cfg.get('Advanced', {}); llm_cfg = advanced.get('LLM', {}); is_hub = basic.get('Hub') in (socket.gethostname(), 'localhost'); use_remote = llm_cfg.get('UseRemote') == 'y'; value = '' if (use_remote and not is_hub) else (basic.get('LLMRepo') or ''); print(str(value).strip())")
-  llmFile=$($pythonCmd -c "import socket, yaml; cfg = yaml.safe_load(open('$configFile'))[0]; basic = cfg['Basic']; advanced = cfg.get('Advanced', {}); llm_cfg = advanced.get('LLM', {}); is_hub = basic.get('Hub') in (socket.gethostname(), 'localhost'); use_remote = llm_cfg.get('UseRemote') == 'y'; value = '' if (use_remote and not is_hub) else (basic.get('LLMFile') or ''); print(str(value).strip())")
+  llmRepo=$($pythonCmd -c "import socket, yaml; raw = yaml.safe_load(open('$configFile')); cfg = {}; [cfg.update(item) for item in raw if isinstance(item, dict)]; basic = cfg.get('Basic', {}); advanced = cfg.get('Advanced', {}); llm_cfg = basic.get('LLM', advanced.get('LLM', {})); is_hub = basic.get('Hub') in (socket.gethostname(), 'localhost'); use_remote = llm_cfg.get('UseRemote') == 'y'; value = '' if (use_remote and not is_hub) else (basic.get('LLMRepo') or ''); print(str(value).strip())")
+  llmFile=$($pythonCmd -c "import socket, yaml; raw = yaml.safe_load(open('$configFile')); cfg = {}; [cfg.update(item) for item in raw if isinstance(item, dict)]; basic = cfg.get('Basic', {}); advanced = cfg.get('Advanced', {}); llm_cfg = basic.get('LLM', advanced.get('LLM', {})); is_hub = basic.get('Hub') in (socket.gethostname(), 'localhost'); use_remote = llm_cfg.get('UseRemote') == 'y'; value = '' if (use_remote and not is_hub) else (basic.get('LLMFile') or ''); print(str(value).strip())")
 
   if [ -n "$llmRepo" ] && [ -n "$llmFile" ]; then
     echo "Downloading model $llmRepo ($llmFile) ..." | tee -a $logFile

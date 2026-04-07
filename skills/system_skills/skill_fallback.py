@@ -3,13 +3,12 @@ import os
 import re
 import uuid
 from datetime import datetime
-from threading import Event, Lock, Thread
+from threading import Event, Lock
 from urllib import error as urlerror
 from urllib import request as urlrequest
 
 from framework.util.utils import Config
 from skills.sva_base import SimpleVoiceAssistant
-import re
 
 try:
     import llama_cpp
@@ -23,11 +22,6 @@ except ImportError:
     Llama = None
     llama_chat_format = None
     LlamaRAMCache = None
-
-try:
-    from llama_cpp import _internals as llama_internals
-except ImportError:
-    llama_internals = None
 
 try:
     from llama_cpp import _internals as llama_internals
@@ -101,39 +95,6 @@ class FallbackSkill(SimpleVoiceAssistant):
 
         if self.use_remote_llm and self.cfg.is_hub():
             self._setup_remote_server()
-
-    def _patch_llama_cleanup_bug(self):
-        model_cls = getattr(llama_internals, "LlamaModel", None)
-        if model_cls is None or getattr(model_cls, "_minimy_cleanup_patch", False):
-            return
-
-        original_close = getattr(model_cls, "close", None)
-        if not callable(original_close):
-            return
-
-        def safe_close(instance):
-            try:
-                return original_close(instance)
-            except AttributeError as e:
-                if "sampler" not in str(e):
-                    raise
-                for attr_name in ("sampler", "context", "batch", "model", "vocab"):
-                    resource = getattr(instance, attr_name, None)
-                    if resource is None:
-                        continue
-                    close_fn = getattr(resource, "close", None)
-                    if callable(close_fn):
-                        try:
-                            close_fn()
-                        except Exception:
-                            pass
-                    try:
-                        setattr(instance, attr_name, None)
-                    except Exception:
-                        pass
-
-        model_cls.close = safe_close
-        model_cls._minimy_cleanup_patch = True
 
     def _patch_llama_cleanup_bug(self):
         model_cls = getattr(llama_internals, "LlamaModel", None)
@@ -349,6 +310,11 @@ Core boombox capabilities you may rely on
 - General question answering:
   answer ordinary factual questions that are not boombox control requests.
 
+Live boombox state and environment queries
+- Current time, current day, current date, weather, forecast, temperature, and current device state are not facts you may invent.
+- If the user asks for current live boombox information that the deterministic system can provide, you must prefer rewriting to a canonical boombox query rather than answering from model knowledge.
+- Never guess the current time, date, day, weather, forecast, temperature, alarm state, or current volume level.
+
 Optional or uncertain capabilities
 - Home Assistant control and email may exist in some deployments, but do not promise them unless the provided context explicitly says they are available.
 - Do not invent internet browsing, app launching, messaging, purchasing, or arbitrary external integrations.
@@ -406,6 +372,7 @@ Additional hard rules:
 - If route is "answer", answer concisely and truthfully, and the answer field must not be empty.
 - If route is "cannot_execute", explain what is missing, unsupported, or uncertain without pretending anything happened, and the answer field must not be empty.
 - Do not ask the user a follow-up question. This is a single-turn decision.
+- If the user is asking for live boombox information such as time, date, day, weather, forecast, temperature, or current device state, prefer "rewrite_command" over "answer".
 - Never claim you performed an action.
 - When in doubt, choose "cannot_execute" rather than inventing a command."""
 
@@ -421,6 +388,7 @@ Rules:
 - If the user asked for device control and execution did not happen, say that clearly and do not pretend the action occurred.
 - This is single-turn only. Do not ask the user a follow-up question.
 - If information is missing, explain exactly what is missing in one answer instead of asking interactively.
+- Never answer by guessing live boombox information such as the current time, date, day, weather, forecast, temperature, or device state.
 - Never invent capabilities.
 - Never say you already completed a boombox action unless that success was explicitly provided to you.
 - Prefer short, concrete answers over broad assistant-style explanations."""
@@ -435,13 +403,11 @@ Rules:
         os.makedirs(os.path.dirname(log_path), exist_ok=True)
         try:
             with open(log_path, "a", encoding="utf-8") as f:
-                f.write(f"Q: {ques}\nA: {ans}\n{'-'*40}\n")
+                f.write(
+                    f"[{label}] Q: {prompt_text}\n[{label}] A: {answer_text}\n{'-' * 40}\n"
+                )
         except Exception as log_err:
             self.log.error(f"FallbackSkill: Failed to write to {log_path}: {log_err}")
-            
-      except Exception as e:
-        self.log.error(f"FallbackSkill: Error querying local LLM: {e}")
-        ans = "I encountered an error trying to process your request."
 
     def _chat(self, system_prompt, user_prompt, max_tokens=220):
         if not self.llm:
@@ -493,6 +459,44 @@ Rules:
         text = re.sub(r"\s+", " ", text)
         text = re.sub(r"^[\"']+|[\"']+$", "", text)
         return text
+
+    def _deterministic_query_rewrite(self, sentence):
+        normalized = sentence.lower().strip()
+        normalized = normalized.replace("what's", "what is")
+        normalized = normalized.replace("whats", "what is")
+        normalized = normalized.replace("todays", "today")
+        normalized = normalized.replace("today's", "today")
+        normalized = re.sub(r"\s+", " ", normalized)
+
+        if "time" in normalized and (
+            normalized.startswith("what")
+            or normalized.startswith("can you tell")
+            or normalized.startswith("tell me")
+            or "time is it" in normalized
+        ):
+            return "what time is it"
+
+        if "date" in normalized or normalized in ["what day is today", "what is today"]:
+            return "what is the date"
+
+        if "day" in normalized and (
+            "today" in normalized
+            or normalized.startswith("what")
+            or "day is it" in normalized
+            or "day today" in normalized
+        ):
+            return "what day is it"
+
+        if "forecast" in normalized:
+            return "what is the forecast"
+
+        if "weather" in normalized:
+            return "what is the weather"
+
+        if "temperature" in normalized:
+            return "what is the temperature"
+
+        return None
 
     def _get_rewrite_nonce(self, raw_input):
         if not raw_input.startswith(f"[{self.REWRITE_HEADER_PREFIX}|"):
@@ -708,22 +712,12 @@ Rules:
             self.speak(ans)
             return
 
-        decision = self._run_controller(sentence)
-        route = str(decision.get("route", "answer")).strip()
-        confidence = float(decision.get("confidence", 0.0) or 0.0)
-        canonical_utterance = self._normalize_rewrite(
-            decision.get("canonical_utterance", "")
-        )
-        answer = str(decision.get("answer", "") or "").strip()
-
-        if route == "rewrite_command":
-            if confidence < 0.55:
-                answer = answer or self._default_command_failure_answer(sentence)
-            elif not canonical_utterance:
-                answer = answer or self._default_command_failure_answer(sentence)
-            elif canonical_utterance.lower() == sentence.lower():
-                answer = answer or self._default_command_failure_answer(sentence)
-            else:
+        result = self._process_request(sentence=sentence)
+        if result.get("action") == "rewrite":
+            canonical_utterance = self._normalize_rewrite(
+                result.get("canonical_utterance", "")
+            )
+            if canonical_utterance:
                 self._enqueue_rewrite(canonical_utterance, sentence)
                 return
 
@@ -732,9 +726,6 @@ Rules:
             answer = "I am sorry, the language model is not available right now."
         self.log.debug(f"FallbackSkill:handle_fallback(): ans: {answer}")
         self.speak(answer)
-
-
-# main()
 if __name__ == "__main__":
     fs = FallbackSkill()
     if fs.run_remote_server:
