@@ -30,6 +30,11 @@ except ImportError:
     llama_internals = None
 
 try:
+    from llama_cpp import _internals as llama_internals
+except ImportError:
+    llama_internals = None
+
+try:
     from quart import Quart
     from quart import request as quart_request
 except ImportError:
@@ -75,10 +80,8 @@ class FallbackSkill(SimpleVoiceAssistant):
 <<<<<<< HEAD
                     "(Basic.LLMRepo or Basic.LLMFile) in mmconfig.yml. Cannot load model."
 =======
-                    f"({llm_role}: Basic.HubLLMRepo/Basic.HubLLMFile or "
-                    "Basic.SpokeLLMRepo/Basic.SpokeLLMFile; legacy: "
-                    "Basic.LLMRepo/Basic.LLMFile) in mmconfig.yml. Cannot load model."
->>>>>>> 03df93d (merge main -> llama-cpp-python)
+                    "(Basic.LLMRepo or Basic.LLMFile) in mmconfig.yml. Cannot load model."
+>>>>>>> 892174f (continue to merge main -> llama-cpp-python)
                 )
             else:
                 self.log.info(
@@ -102,6 +105,39 @@ class FallbackSkill(SimpleVoiceAssistant):
 
         if self.use_remote_llm and self.cfg.is_hub():
             self._setup_remote_server()
+
+    def _patch_llama_cleanup_bug(self):
+        model_cls = getattr(llama_internals, "LlamaModel", None)
+        if model_cls is None or getattr(model_cls, "_minimy_cleanup_patch", False):
+            return
+
+        original_close = getattr(model_cls, "close", None)
+        if not callable(original_close):
+            return
+
+        def safe_close(instance):
+            try:
+                return original_close(instance)
+            except AttributeError as e:
+                if "sampler" not in str(e):
+                    raise
+                for attr_name in ("sampler", "context", "batch", "model", "vocab"):
+                    resource = getattr(instance, attr_name, None)
+                    if resource is None:
+                        continue
+                    close_fn = getattr(resource, "close", None)
+                    if callable(close_fn):
+                        try:
+                            close_fn()
+                        except Exception:
+                            pass
+                    try:
+                        setattr(instance, attr_name, None)
+                    except Exception:
+                        pass
+
+        model_cls.close = safe_close
+        model_cls._minimy_cleanup_patch = True
 
     def _patch_llama_cleanup_bug(self):
         model_cls = getattr(llama_internals, "LlamaModel", None)
