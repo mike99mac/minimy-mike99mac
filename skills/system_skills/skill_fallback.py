@@ -81,11 +81,6 @@ Core boombox capabilities you may rely on
 - General question answering:
   answer ordinary factual questions that are not boombox control requests.
 
-Live boombox state and environment queries
-- Current time, current day, current date, weather, forecast, temperature, and current device state are not facts you may invent.
-- If the user asks for current live boombox information that the deterministic system can provide, you must prefer rewriting to a canonical boombox query rather than answering from model knowledge.
-- Never guess the current time, date, day, weather, forecast, temperature, alarm state, or current volume level.
-
 Optional or uncertain capabilities
 - Home Assistant control and email may exist in some deployments, but do not promise them unless the provided context explicitly says they are available.
 - Do not invent internet browsing, app launching, messaging, purchasing, or arbitrary external integrations.
@@ -143,7 +138,6 @@ Additional hard rules:
 - If route is "answer", answer concisely and truthfully.
 - If route is "cannot_execute", explain what is missing, unsupported, or uncertain without pretending anything happened.
 - Do not ask the user a follow-up question. This is a single-turn decision.
-- If the user is asking for live boombox information such as time, date, day, weather, forecast, temperature, or current device state, prefer "rewrite_command" over "answer".
 - Never claim you performed an action.
 - When in doubt, choose "cannot_execute" rather than inventing a command."""
 
@@ -159,7 +153,6 @@ Rules:
 - If the user asked for device control and execution did not happen, say that clearly and do not pretend the action occurred.
 - This is single-turn only. Do not ask the user a follow-up question.
 - If information is missing, explain exactly what is missing in one answer instead of asking interactively.
-- Never answer by guessing live boombox information such as the current time, date, day, weather, forecast, temperature, or device state.
 - Never invent capabilities.
 - Never say you already completed a boombox action unless that success was explicitly provided to you.
 - Prefer short, concrete answers over broad assistant-style explanations."""
@@ -230,44 +223,6 @@ Rules:
         text = re.sub(r"\s+", " ", text)
         text = re.sub(r"^[\"']+|[\"']+$", "", text)
         return text
-
-    def _deterministic_query_rewrite(self, sentence):
-        normalized = sentence.lower().strip()
-        normalized = normalized.replace("what's", "what is")
-        normalized = normalized.replace("whats", "what is")
-        normalized = normalized.replace("todays", "today")
-        normalized = normalized.replace("today's", "today")
-        normalized = re.sub(r"\s+", " ", normalized)
-
-        if "time" in normalized and (
-            normalized.startswith("what")
-            or normalized.startswith("can you tell")
-            or normalized.startswith("tell me")
-            or "time is it" in normalized
-        ):
-            return "what time is it"
-
-        if "date" in normalized or normalized in ["what day is today", "what is today"]:
-            return "what is the date"
-
-        if "day" in normalized and (
-            "today" in normalized
-            or normalized.startswith("what")
-            or "day is it" in normalized
-            or "day today" in normalized
-        ):
-            return "what day is it"
-
-        if "forecast" in normalized:
-            return "what is the forecast"
-
-        if "weather" in normalized:
-            return "what is the weather"
-
-        if "temperature" in normalized:
-            return "what is the temperature"
-
-        return None
 
     def _get_rewrite_nonce(self, raw_input):
         if not raw_input.startswith(f"[{self.REWRITE_HEADER_PREFIX}|"):
@@ -366,11 +321,6 @@ Rules:
                 f"FallbackSkill:handle_fallback(): rewrite failure ans: {ans}"
             )
             self.speak(ans)
-            return
-
-        fast_rewrite = self._deterministic_query_rewrite(sentence)
-        if fast_rewrite and fast_rewrite.lower() != sentence.lower():
-            self._enqueue_rewrite(fast_rewrite, sentence)
             return
 
         decision = self._run_controller(sentence)
