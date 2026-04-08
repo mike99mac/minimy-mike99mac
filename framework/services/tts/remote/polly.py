@@ -4,8 +4,8 @@ from framework.util.utils import Config
 class remote_tts:
     def __init__(self):
         cfg = Config()
-        self.cfg_aws_id = cfg.get_cfg_val('Basic.AWSId')
-        self.cfg_aws_key = cfg.get_cfg_val('Basic.AWSKey') 
+        self.cfg_aws_id = cfg.get_cfg_val('Advanced.AWSId')
+        self.cfg_aws_key = cfg.get_cfg_val('Advanced.AWSKey') 
 
     def remote_speak(self, text, filename, wait_q):
         status = 'fail'
@@ -39,4 +39,3 @@ class remote_tts:
             WAVEFORMAT.close()
 
         wait_q.put({'service':'remote', 'status':status})
-

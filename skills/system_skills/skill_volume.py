@@ -14,9 +14,9 @@ class VolumeSkill(SimpleVoiceAssistant):
     cfg = Config()
     input_device_id = cfg.get_cfg_val("Advanced.InputDeviceId")
     input_level_control_name = cfg.get_cfg_val("Advanced.InputLevelControlName")
-    output_device_name = cfg.get_cfg_val("Advanced.OutputDeviceName")
-    output_level_control_name = cfg.get_cfg_val("Advanced.OutputLevelControlName")
-    cfg_platform = cfg.get_cfg_val("Advanced.Platform")
+    output_device_name = cfg.get_cfg_val("Basic.OutputDeviceName")
+    output_level_control_name = cfg.get_cfg_val("Basic.OutputLevelControlName")
+    cfg_platform = cfg.get_cfg_val("Basic.Platform")
     if cfg_platform == "p":
       from framework.hal.executables.pios import Platform
     else:   
@@ -155,4 +155,3 @@ class VolumeSkill(SimpleVoiceAssistant):
 if __name__ == "__main__":
   vs = VolumeSkill()
   Event().wait()                           # wait forever
-
