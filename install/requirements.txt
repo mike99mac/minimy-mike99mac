@@ -9,7 +9,6 @@ pytube
 pytz
 requests
 scipy
-setuptools==81.0.0
-webrtcvad
+webrtcvad-wheels
 websocket-client
 websockets
