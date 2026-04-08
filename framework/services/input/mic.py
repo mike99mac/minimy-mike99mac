@@ -221,15 +221,10 @@ def main():
     os.close(saved_stderr)
     print("\nError - Mic Not Started!\n\n%s\n\nAborting!" % (e,))
     sys.exit(-1)
-<<<<<<< HEAD
   os.dup2(saved_stderr, 2)                 # Restore stderr
   os.close(saved_stderr)
-  print("Using device index %s, aggressive:%s, padding:%s, ratio:%s" % (device_indx,aggressiveness, padding, ratio))
-  print("Listening (ctrl-C to exit)...")
-=======
   print("mic.py.main() Using device index %s, aggressive:%s, padding:%s, ratio:%s" % (device_indx,aggressiveness, padding, ratio))
   print("mic.py.main() Listening (ctrl-C to exit)...")
->>>>>>> 83f566fa35abc8e183debe223855b56155512523
   frames = vad_audio.vad_collector(
     padding_ms = padding,
     ratio = ratio,
