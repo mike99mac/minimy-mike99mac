@@ -204,14 +204,23 @@ def main():
   padding = 300                            # Previously 500
   ratio = 0.85                             # Previously 0.5, want higher confidence level # .75 and we split sentences with minor delay
   max_utterance_sec = 4.0                  # Maximum 4 second utterance, modify if necessary
+  # Supress stderr ALSA warnings
+  saved_stderr = os.dup(2)
+  devnull = os.open(os.devnull, os.O_WRONLY)
+  os.dup2(devnull, 2)
+  os.close(devnull)
   try:                                     # Start audio with VAD
     vad_audio = VADAudio(aggressiveness=aggressiveness,
              device=device_indx,
              input_rate=DEFAULT_SAMPLE_RATE,
              file=None)
   except Exception as e:
+    os.dup2(saved_stderr, 2)               # Restore stderr
+    os.close(saved_stderr)
     print("\nError - Mic Not Started!\n\n%s\n\nAborting!" % (e,))
     sys.exit(-1)
+  os.dup2(saved_stderr, 2)                 # Restore stderr
+  os.close(saved_stderr)
   print("Using device index %s, aggressive:%s, padding:%s, ratio:%s" % (device_indx,aggressiveness, padding, ratio))
   print("Listening (ctrl-C to exit)...")
   frames = vad_audio.vad_collector(

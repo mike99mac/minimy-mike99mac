@@ -4,8 +4,6 @@ from framework.util.utils import LOG
 import os
 from signal import pause
 import sys
-from gpiozero.pins.lgpio import LGPIOFactory
-from gpiozero import Device, Button
 
 def is_raspberry_pi():
   try:
@@ -95,7 +93,7 @@ class Buttons:
   def signal_handler(self, sig, frame):    
     # Trap Ctrl-C and cleanup before exiting
     sys.exit(0)
-          
+
 # main()
 # TO DO: Get buttons working on Nvidia Jetson Nano
 # Their own package for GPIO: Jetson.GPIO (based on the RPi.GPIO API).
@@ -105,6 +103,8 @@ class Buttons:
 
 if __name__ == '__main__':
   if is_raspberry_pi():
+    from gpiozero.pins.lgpio import LGPIOFactory
+    from gpiozero import Device, Button
     Device.pin_factory = LGPIOFactory(chip=4)
     buttons = Buttons()                      # create the singleton
     try:
@@ -112,5 +112,4 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
       ws.bus.client.disconnect()
   else:
-    print("The hardware is not a Raspberry Pi - GPIO buttons disabled")
-
+    print("\nThe hardware is not a Raspberry Pi - GPIO buttons disabled")
