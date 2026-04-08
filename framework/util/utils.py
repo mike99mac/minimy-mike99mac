@@ -31,37 +31,54 @@ def get_hal_obj(which):
 
 class Config:
   # minimal yaml based config file support class - must coordinate this with mmconfig.py
-  config_defaults = [
-    {
-    'Basic': {
-      'BaseDir':'',
-      'WakeWords': ['computer', 'internet'],
-      'GoogleApiKeyPath' : 'install/my_google_key.json',
-      'AWSId': '',
-      'AWSKey': ''
-      },
+  config_defaults = {
     'Advanced': {
-      'Platform': 'l',
-      'LogLevel': 'i',
       'CrappyAEC': 'n',
       'InputDeviceId': '0',
-      'OutputDeviceName': '',
       'InputLevelControlName': '',
+      'LogLevel': 'i',
+      'AWSId': '',
+      'AWSKey': '',
+      'GoogleApiKeyPath': 'install/my_google_key.json'
+    },
+    'Basic': {
+      'NLP': {
+           'UseRemote': 'n'
+          },
+      'OutputDeviceName': '',
       'OutputLevelControlName': '',
+      'Platform': 'l',
       'STT' : {
-           'UseRemote': 'y'
+           'UseRemote': 'y',
+           'Model': 'base.en'
           },
       'TTS' : {
            'UseRemote': 'y',
            'Local': 'm',
-           'Remote': 'p'
+           'Remote': 'p',
+           'LocalVoice': 'en_US-hfc_male-medium'
           },
-      'NLP' : {
-           'UseRemote': 'n'
-          },
+      'BaseDir':'',
+      'Hub': 'localhost',
+      'WakeWords': ['computer', 'internet'],
+      'MusicDir': None,
+      'RoomToHost': None
       }
-    }
-  ]
+  }
+  legacy_key_map = {
+    'Basic.AWSId': 'Advanced.AWSId',
+    'Basic.AWSKey': 'Advanced.AWSKey',
+    'Basic.GoogleApiKeyPath': 'Advanced.GoogleApiKeyPath',
+    'Advanced.Platform': 'Basic.Platform',
+    'Advanced.OutputDeviceName': 'Basic.OutputDeviceName',
+    'Advanced.OutputLevelControlName': 'Basic.OutputLevelControlName',
+    'Advanced.STT.UseRemote': 'Basic.STT.UseRemote',
+    'Advanced.TTS.UseRemote': 'Basic.TTS.UseRemote',
+    'Advanced.TTS.Local': 'Basic.TTS.Local',
+    'Advanced.TTS.Remote': 'Basic.TTS.Remote',
+    'Advanced.TTS.LocalVoice': 'Basic.TTS.LocalVoice',
+    'Advanced.NLP.UseRemote': 'Basic.NLP.UseRemote'
+  }
 
   def __init__(self):
     base_dir = os.getenv('SVA_BASE_DIR')
@@ -70,6 +87,7 @@ class Config:
       print("Warning, SVA_BASE_DIR environment variable is not set. Defaulting it to %s" % (base_dir,))
     self.config_file = base_dir + '/install/mmconfig.yml'
     self.cfg = None          # if not exists create
+    self._cfg_loaded_from_legacy = False
     try:
       self.cfg = self.load_cfg()
     except Exception:
@@ -77,24 +95,30 @@ class Config:
     if self.cfg is None:
       #print("Warning, install/mmconfig.yml not found, creating one!\n")
       self.reset_config()
+    elif self._cfg_loaded_from_legacy:
+      # Rewrite legacy configs into the current on-disk layout.
+      self.save_cfg()
     self.set_cfg_val('Basic.BaseDir', base_dir)
 
   def load_cfg(self):
     with open(self.config_file, "r") as ymlfile:
-      return yaml.safe_load(ymlfile)
+      raw_cfg = yaml.safe_load(ymlfile)
+    cfg, was_legacy = self._normalize_cfg(raw_cfg)
+    self._cfg_loaded_from_legacy = was_legacy
+    return cfg
 
   def save_cfg(self):
     with open(self.config_file, 'w') as yamlfile:
-      yaml.dump(self.cfg, yamlfile)
+      yaml.dump(self._serialize_cfg(self.cfg), yamlfile, sort_keys=False)
 
   def reset_config(self):
-    self.cfg = self.config_defaults
+    self.cfg = self._copy_defaults()
     self.save_cfg()
     self.cfg = self.load_cfg()
 
   def get_cfg_val(self, key):
-    ka = key.split(".")
-    sect = self.cfg[0]
+    ka = self._resolve_key(key).split(".")
+    sect = self.cfg
     for k in ka:
       try:
         sect = sect[k]
@@ -103,22 +127,82 @@ class Config:
     return sect
 
   def set_cfg_val(self, key, value):
-    ka = key.split(".")
-    cmd = "self.cfg[0]"
-    for k in ka:
-      cmd = cmd + "['%s']" % (k,)
-    if isinstance(value, str):
-      cmd = cmd + " = '%s'" % (value,)
-    else:
-      cmd = cmd + " = %s" % (value,)
-    exec(cmd)
+    ka = self._resolve_key(key).split(".")
+    sect = self.cfg
+    for k in ka[:-1]:
+      if k not in sect or not isinstance(sect[k], dict):
+        sect[k] = {}
+      sect = sect[k]
+    sect[ka[-1]] = value
 
   def dump_cfg(self):
-    tmp_cfg = self.cfg[0]
+    tmp_cfg = self.cfg
     for section in tmp_cfg.keys():
       print("  %s" % (section,))
       for item in (tmp_cfg[section]).items():
         print("  %s" % (item,))
+
+  def _copy_defaults(self):
+    return yaml.safe_load(yaml.dump(self.config_defaults))
+
+  def _resolve_key(self, key):
+    if self._has_path(self.cfg, key.split(".")):
+      return key
+    return self.legacy_key_map.get(key, key)
+
+  def _has_path(self, cfg, keys):
+    sect = cfg
+    for key in keys:
+      if not isinstance(sect, dict) or key not in sect:
+        return False
+      sect = sect[key]
+    return True
+
+  def _lookup_path(self, cfg, keys):
+    sect = cfg
+    for key in keys:
+      if not isinstance(sect, dict) or key not in sect:
+        return None
+      sect = sect[key]
+    return sect
+
+  def _normalize_cfg(self, raw_cfg):
+    cfg = self._copy_defaults()
+    was_legacy = False
+    if isinstance(raw_cfg, list):
+      if len(raw_cfg) == 1 and isinstance(raw_cfg[0], dict):
+        raw_sections = raw_cfg[0]
+        was_legacy = True
+      else:
+        raw_sections = {}
+        for item in raw_cfg:
+          if isinstance(item, dict):
+            raw_sections.update(item)
+    elif isinstance(raw_cfg, dict):
+      raw_sections = raw_cfg
+      was_legacy = True
+    else:
+      raw_sections = {}
+
+    for section, values in raw_sections.items():
+      if isinstance(values, dict):
+        self._merge_dict(cfg.setdefault(section, {}), values)
+      else:
+        cfg[section] = values
+    return cfg, was_legacy
+
+  def _merge_dict(self, target, source):
+    for key, value in source.items():
+      if isinstance(value, dict) and isinstance(target.get(key), dict):
+        self._merge_dict(target[key], value)
+      else:
+        target[key] = value
+
+  def _serialize_cfg(self, cfg):
+    return [
+      {'Advanced': cfg.get('Advanced', {})},
+      {'Basic': cfg.get('Basic', {})}
+    ]
 
 class LOG:
   def __init__(self, filename):
@@ -151,7 +235,7 @@ class MediaSession:
 def aplay(file):
   # one place where the raw aplay is used which uses proper device entry from the config file
   cfg = Config()
-  device_id = cfg.get_cfg_val('Advanced.OutputDeviceName')
+  device_id = cfg.get_cfg_val('Basic.OutputDeviceName')
   cmd = "aplay " + file
   if device_id is not None and device_id != '':
     cmd = "aplay -D" + device_id + " " + file
