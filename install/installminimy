@@ -172,17 +172,19 @@ function generateServiceFiles
   LOGS_MOUNT_UNIT="${mountUnitPath}-logs.mount"
   TMP_MOUNT_UNIT="${mountUnitPath}-tmp.mount"
 
-  # Copy generated files to /etc/systemd/system
-  echo "Installing systemd service files..." | tee -a $logFile
-  runCmd sudo cp "$tmpDir/minimy.service" /etc/systemd/system/minimy.service
-  runCmd sudo cp "$tmpDir/whisper.service" /etc/systemd/system/whisper.service
-  runCmd sudo cp "$tmpDir/${mountUnitPath}-logs.mount" "/etc/systemd/system/${mountUnitPath}-logs.mount"
-  runCmd sudo cp "$tmpDir/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
+  if command -v systemctl &>/dev/null; then
+    # Copy generated files to /etc/systemd/system
+    echo "Installing systemd service files..." | tee -a $logFile
+    runCmd sudo cp "$tmpDir/minimy.service" /etc/systemd/system/minimy.service
+    runCmd sudo cp "$tmpDir/whisper.service" /etc/systemd/system/whisper.service
+    runCmd sudo cp "$tmpDir/${mountUnitPath}-logs.mount" "/etc/systemd/system/${mountUnitPath}-logs.mount"
+    runCmd sudo cp "$tmpDir/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
 
-  rm -rf "$tmpDir"                         # cleanup temporary directory
-  runCmd sudo systemctl daemon-reload      # reload systemd to pick up new files
-  runCmd sudo systemctl start whisper      # start whisper for this session
-  echo "Systemd service files installed successfully" | tee -a $logFile
+    rm -rf "$tmpDir"                         # cleanup temporary directory
+    runCmd sudo systemctl daemon-reload      # reload systemd to pick up new files
+    runCmd sudo systemctl start whisper      # start whisper for this session
+    echo "Systemd service files installed successfully" | tee -a $logFile
+  fi
  }                                         # generateServiceFiles()
 
 #+--------------------------------------------------------------------------+
