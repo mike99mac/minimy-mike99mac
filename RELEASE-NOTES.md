@@ -8,6 +8,28 @@ It only knows English - there is little internationalization code.
 
 The version numbers are simply *yy.mm.dd*.
 
+### Version 26.04.14
+- **Significant speed improvements & enhanced configuration**
+- Created templates for generating service & config files
+- Created a help skill
+- Replaced whisper with faster-whisper
+- Replaced ollama with llama-cpp-python
+- Replaced llama3.2:3b LLM model with Qwen3.5:2b-Q6_K
+- Improved log & config file organization
+- Improved barge-in handling
+- Made log sorting/saving optional using the MINIMY_SAVELOGS environment variable.
+- Integrated mksttvenv(gpu) scripts into installminimy
+- Fixed "Computer play radio" subcommands
+- Fixed message bus errors
+- Fixed python setuptools warning
+- Fixed various dependency problems
+- Fixed shell quote escape bug
+- Fixed ALSA warnings during minimy startup
+- Fixed lgpio error by only importing lgpio on ARM devices
+- Updated webrtcvad
+- Updated Internet radio stations database
+- Updated README.md
+
 ### Version 26.02.10
 - **Major overhaul**
 - Implemented the hub/spoke model:

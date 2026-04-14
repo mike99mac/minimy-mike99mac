@@ -3,7 +3,6 @@
 ## Software
 ### Bugs
 ### Features
-1. Revisit whether LLM config should remain per-machine or move to a centralized hub-only model policy
 1. Add a "move music" intent to the mpc skill - partially done - Mike is working on
 1. Fix software volume control related to the ALSA device numbers - allow volume to be 0 - 11.
 1. Write a regression test using GitHub actions, workflows and runners.
