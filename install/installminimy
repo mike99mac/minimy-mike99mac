@@ -395,7 +395,6 @@ function buildVenv
   runCmd $pipCmd install redis
   runCmd $pipCmd install whisper
   runCmd $pipCmd install youtube-search
-  runCmd $pipCmd install git+https://github.com/wiseman/py-webrtcvad.git
 
   echo | tee -a $logFile
   echo "Installing local ytplay/ytadd in /usr/local/sbin ..." | tee -a $logFile
