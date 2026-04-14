@@ -302,7 +302,7 @@ function buildVenv
   echo "Running $0 at `date` ..." > $logFile # create a new log file
   echo | tee -a $logFile
 
-  # Export environment variables needed by Python scripts
+  # Export environment variables needed by Python scripts 
   export SVA_BASE_DIR="$baseDir"
   export PYTHONPATH="$baseDir"
   echo "Set SVA_BASE_DIR=$baseDir" | tee -a $logFile
@@ -378,7 +378,7 @@ function buildVenv
   runCmd $pipCmd install --no-binary :all: regex # force pip to ignore old wheels and build fresh
   echo "Installing python3-lingua-franca ..." | tee -a $logFile
   runCmd $pipCmd install lingua_franca
-  runCmd $pipCmd install psutil
+  runCmd $pipCmd install psutil 
   runCmd $pipCmd install -r install/requirements.txt
   echo "Installing local STT faster-whisper" | tee -a $logFile
   runCmd $pipCmd install faster-whisper
@@ -457,7 +457,7 @@ function buildVenv
     echo "Skipping piper - already installed ..."| tee -a $logFile
   fi
 
-  echo "Installing llama-cpp-python ..." | tee -a $logFile
+  echo "Installing Ollama ..." | tee -a $logFile
   echo | tee -a $logFile
   if grep -qi "Jetson" /proc/device-tree/model 2>/dev/null || grep -qi "Orin" /proc/device-tree/model 2>/dev/null; then
     llamaCppVersion="0.3.19"
@@ -469,7 +469,6 @@ function buildVenv
     if command -v apt-get &>/dev/null; then
       runCmd sudo apt-get install -y libopenblas-dev
     fi
-    runCmd "CMAKE_ARGS='-DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS' FORCE_CMAKE=1 $pipCmd install llama-cpp-python huggingface_hub"
   fi
 
   echo "Pre-caching the LLM model from HuggingFace..." | tee -a $logFile
@@ -519,7 +518,7 @@ hub=""                                     # hub server
 let lastSecs=$SECONDS
 timeSt=`date +"%y-%m-%d-%H-%M-%S"`
 logFile="$HOME/$timeSt-installminimy.out"  # output file
-if [ "$MINIMY_SAVELOGS" = "false" ]; then
+if [ "$MINIMY_SAVELOGS" = "false" ]; then 
   logFile="/dev/null"                      # if logging is disabled, log to /dev/null
 fi
 musicDir=""                                # directory with music files

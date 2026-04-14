@@ -239,7 +239,7 @@ class MediaSession:
 def aplay(file):
   # one place where the raw aplay is used which uses proper device entry from the config file
   cfg = Config()
-  device_id = cfg.get_cfg_val('Advanced.OutputDeviceName')
+  device_id = cfg.get_cfg_val('Basic.OutputDeviceName')
   cmd = "aplay " + file
   if device_id is not None and device_id != '':
     cmd = "aplay -D" + device_id + " " + file

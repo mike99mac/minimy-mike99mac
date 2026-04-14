@@ -67,7 +67,7 @@ class SimpleVoiceAssistant:
         self.ignore_raw_ctr = 0
         cfg = Config()
         self.crappy_aec = cfg.get_cfg_val("Advanced.CrappyAEC")
-        self.model_file = cfg.get_cfg_val("Advanced.TTS.LocalVoice")
+        self.model_file = cfg.get_cfg_val("Basic.TTS.LocalVoice")
         self._converse_callback = None
         self.activate_response = ""
         self.tts_session_response = ""
