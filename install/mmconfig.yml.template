@@ -7,22 +7,18 @@
     AWSKey: ''
     GoogleApiKeyPath: install/my_google_key.json
 - Basic:
+    BaseDir: {{BASE_DIR}}
+    Hub: localhost
+    LLM:
+      UseRemote: n
+    LLMFile: 'Qwen3.5-2B-Q6_K.gguf'
+    LLMRepo: 'unsloth/Qwen3.5-2B-GGUF'
+    MusicDir:
     NLP:
       UseRemote: n
-    STT:
-      UseRemote: n
-      Model: base.en
-    TTS:
-      Local: p
-      Remote: p
-      UseRemote: n
-      LocalVoice: en_US-hfc_male-medium
     OutputDeviceName: ''
     OutputLevelControlName: Speaker
     Platform: u
-    BaseDir: {{BASE_DIR}}
-    Hub: localhost
-    MusicDir:
     WakeWords:
     - 'computer'
     - 'internet'
@@ -31,3 +27,11 @@
       # bedroom: 192.168.4.50
       # living room: 192.168.4.40
       # kitchen: 192.168.4.42
+    STT:
+      UseRemote: n
+      Model: base.en
+    TTS:
+      Local: p
+      Remote: p
+      UseRemote: n
+      LocalVoice: en_US-hfc_male-medium

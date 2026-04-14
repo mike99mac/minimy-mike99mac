@@ -22,10 +22,11 @@ def handle_super_advanced(cfg):
 def handle_advanced(cfg):
     print("Advanced Settings\n-----------------")
     # TODO - this is a list of files in the framework/hal-executables/ directory!
-    update_value(cfg, 'Basic.Platform', "ubuntu, pios or mark2")
-    update_value(cfg, 'Basic.STT.UseRemote', "Use Remote STT (y/n)")
-    update_value(cfg, 'Basic.TTS.UseRemote', "Use Remote TTS (y/n)")
-    update_value(cfg, 'Basic.NLP.UseRemote', "Use Remote NLP (y/n)")
+    update_value(cfg, 'Advanced.Platform', "ubuntu, pios or mark2")
+    update_value(cfg, 'Advanced.STT.UseRemote', "Use Remote STT (y/n)")
+    update_value(cfg, 'Advanced.TTS.UseRemote', "Use Remote TTS (y/n)")
+    update_value(cfg, 'Advanced.NLP.UseRemote', "Use Remote NLP (y/n)")
+    update_value(cfg, 'Advanced.LLM.UseRemote', "Use Remote LLM (y/n)")
     update_value(cfg, 'Advanced.CrappyAEC', "Crappy AEC (y/n)")
     update_value(cfg, 'Advanced.GoogleApiKeyPath', "Google API Key File Location")
     update_value(cfg, 'Advanced.AWSId', "AWS ID")
@@ -36,6 +37,11 @@ def handle_basic(cfg):
     update_value(cfg, 'Basic.WakeWords', "Comma Separated List of Wake Words")
     update_value(cfg, 'Basic.Hub', "Hub Hostname")
     update_value(cfg, 'Basic.STT.Model', "STT Model: tiny.en, base.en, or small.en")
+    update_value(cfg, 'Basic.LLMRepo', "LLM HuggingFace Repo")
+    update_value(cfg, 'Basic.LLMFile', "LLM GGUF File")
+    update_value(cfg, 'Basic.GoogleApiKeyPath', "Google API Key File Location")
+    update_value(cfg, 'Basic.AWSId', "AWS ID")
+    update_value(cfg, 'Basic.AWSKey', "AWS Key")
 
 
 if __name__ == "__main__":
