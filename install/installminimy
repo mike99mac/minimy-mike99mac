@@ -490,7 +490,7 @@ function buildVenv
   echo | tee -a $logFile
 
   echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile
-  minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver testhub.py testspoke.py"
+  minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver testhub.py testspoke.py qa.py"
   echo | tee -a $logFile
   echo "cd to $baseDir/install ..." | tee -a $logFile
   cd $baseDir/install
