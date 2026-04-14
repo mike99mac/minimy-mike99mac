@@ -476,7 +476,7 @@ function buildVenv
 
   if [ -n "$llmRepo" ] && [ -n "$llmFile" ]; then
     echo "Downloading model $llmRepo ($llmFile) ..." | tee -a $logFile
-    runCmd "$pythonCmd -c \"from huggingface_hub import hf_hub_download; hf_hub_download(repo_id=\\\"$llmRepo\\\", filename=\\\"$llmFile\\\")\""
+    runCmd "$pythonCmd $baseDir/install/cache_llm.py"
   else
     echo "Warning: LLMRepo or LLMFile not found in config. Skipping pre-cache." | tee -a $logFile
   fi

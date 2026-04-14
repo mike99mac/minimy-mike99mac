@@ -1,11 +1,11 @@
 - Advanced:
+    AWSId: ''
+    AWSKey: ''
     CrappyAEC: n
+    GoogleApiKeyPath: install/my_google_key.json
     InputDeviceId: '0'
     InputLevelControlName: Mic
     LogLevel: d
-    AWSId: ''
-    AWSKey: ''
-    GoogleApiKeyPath: install/my_google_key.json
 - Basic:
     BaseDir: {{BASE_DIR}}
     Hub: localhost
@@ -19,19 +19,19 @@
     OutputDeviceName: ''
     OutputLevelControlName: Speaker
     Platform: u
-    WakeWords:
-    - 'computer'
-    - 'internet'
     RoomToHost:
       # Examples:
       # bedroom: 192.168.4.50
       # living room: 192.168.4.40
       # kitchen: 192.168.4.42
     STT:
-      UseRemote: n
       Model: base.en
+      UseRemote: n
     TTS:
       Local: p
+      LocalVoice: en_US-hfc_male-medium
       Remote: p
       UseRemote: n
-      LocalVoice: en_US-hfc_male-medium
+    WakeWords:
+    - 'computer'
+    - 'internet'

@@ -206,7 +206,8 @@ function loadSystemSkills
   echo "Starting System Skills ..."
   cd "$baseDir"
   local venvPython="$baseDir/minimy_venv/bin/python3"
-  "$venvPython" skills/system_skills/skill_fallback.py &
+  "$venvPython" install/cache_llm.py >> "$logDir/llm_download.log" 2>&1 &
+  "$venvPython" skills/system_skills/skill_fallback.py >> "$logDir/skills.log" 2>&1 &
   "$venvPython" skills/system_skills/skill_media.py &
   "$venvPython" skills/system_skills/skill_volume.py &
   "$venvPython" skills/system_skills/skill_alarm.py &
