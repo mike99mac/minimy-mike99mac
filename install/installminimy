@@ -309,7 +309,9 @@ function buildVenv
   echo "cd to $baseDir ..." | tee -a $logFile
   cd $baseDir
   echo | tee -a $logFile
-  runCmd sudo apt-get install -y python3-venv python3-dev
+  if command -v apt-get &>/dev/null; then
+    runCmd sudo apt-get install -y python3-venv python3-dev
+  fi
   PI_MODEL=$(grep -q "Raspberry Pi 4" /proc/device-tree/model 2>/dev/null && echo "4" || echo "other")
   if [ "$PI_MODEL" = "4" ]; then # Select Python version
     PYTHON=python3.11
@@ -343,8 +345,10 @@ function buildVenv
   echo | tee -a $logFile
   echo "Upgrading wheel and setuptools ..." | tee -a $logFile
   runCmd $pipCmd install --upgrade wheel setuptools
-  runCmd sudo apt-get install -y build-essential portaudio19-dev mpg123 ffmpeg curl wget mpc \
+  if command -v apt-get &>/dev/null; then
+    runCmd sudo apt-get install -y build-essential portaudio19-dev mpg123 ffmpeg curl wget mpc \
     libavutil-dev libswscale-dev libswresample-dev libavfilter-dev libavcodec-dev libavformat-dev libavdevice-dev redis
+  fi
   echo | tee -a $logFile
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
   echo "Python version: $pythonVer ..." | tee -a $logFile
@@ -355,7 +359,9 @@ function buildVenv
     runCmd git clone --recurse-submodules https://github.com/OpenNMT/CTranslate2
     cd CTranslate2
     mkdir build; cd build
-    runCmd sudo apt-get install -y libomp-dev
+    if command -v apt-get &>/dev/null; then
+      runCmd sudo apt-get install -y libomp-dev
+    fi
     runCmd cmake .. -DWITH_CUDA=ON -DWITH_CUDNN=ON -DWITH_MKL=OFF -DWITH_RUY=ON
     runCmd make -j6
     runCmd sudo make install
@@ -377,7 +383,9 @@ function buildVenv
   runCmd $pipCmd install datasets
   runCmd $pipCmd install gpiozero
   runCmd $pipCmd install keyboard
-  runCmd sudo apt-get install -y swig liblgpio-dev
+  if command -v apt-get &>/dev/null; then
+    runCmd sudo apt-get install -y swig liblgpio-dev
+  fi
   if [ $(uname -m) = "aarch64" ]; then
     runCmd $pipCmd install lgpio           # Only builds on ARM
   fi
@@ -456,7 +464,9 @@ function buildVenv
     runCmd "PATH=/usr/local/cuda/bin:\$PATH CUDA_HOME=/usr/local/cuda CUDACXX=/usr/local/cuda/bin/nvcc CMAKE_ARGS='-DGGML_CUDA=on -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCUDAToolkit_ROOT=/usr/local/cuda' FORCE_CMAKE=1 $pipCmd install --force-reinstall --no-cache-dir --no-binary=llama-cpp-python --index-url https://pypi.org/simple llama-cpp-python==$llamaCppVersion"
   else
     echo "Installing with OpenBLAS ..." | tee -a $logFile
-    runCmd sudo apt-get install -y libopenblas-dev
+    if command -v apt-get &>/dev/null; then
+      runCmd sudo apt-get install -y libopenblas-dev
+    fi
     runCmd "CMAKE_ARGS='-DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS' FORCE_CMAKE=1 $pipCmd install llama-cpp-python huggingface_hub"
   fi
 
@@ -475,7 +485,9 @@ function buildVenv
   runCmd sudo touch /var/log/whisper.log
   runCmd sudo chown $CURRENT_USER:$CURRENT_GROUP /var/log/whisper.log
   runCmd sudo chmod 664 /var/log/whisper.log
-  runCmd sudo systemctl enable whisper
+  if command -v apt-get &>/dev/null; then
+    runCmd sudo systemctl enable whisper
+  fi
   echo | tee -a $logFile
 
   echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile
@@ -522,10 +534,10 @@ TMP_MOUNT_UNIT=""
 detectUserInfo                             # detect user information first
 getPlatform                                # verify supported platform
 checkEnv                                   # check the environment
+setMinimyVars                              # set config file variables
 parseArgs $@                               # parse arguments
 generateConfigFile                         # generate config file from template
 generateServiceFiles                       # generate systemctl service files
-setMinimyVars                              # set config file variables
 buildVenv                                  # do the work
 let min=$SECONDS/60
 let sec=$SECONDS%60
