@@ -40,20 +40,20 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
     # than a local fall back which is effectively a remote time out.
     self.remote_tts = None
     self.use_remote_tts = False
-    remote_tts_flag = cfg.get_cfg_val("Advanced.TTS.UseRemote")
+    remote_tts_flag = cfg.get_cfg_val("Basic.TTS.UseRemote")
     self.log.debug(f"TTSSession.__init__() remote_tts_flag: {remote_tts_flag}")
     if remote_tts_flag and remote_tts_flag == "y":
       self.use_remote_tts = True
-      which_remote_tts = cfg.get_cfg_val("Advanced.TTS.Remote")
+      which_remote_tts = cfg.get_cfg_val("Basic.TTS.Remote")
       if which_remote_tts == "m":          # mimic
         from framework.services.tts.remote.mimic2 import remote_tts
       else:                                # remote default is polly
         from framework.services.tts.remote.polly import remote_tts
       self.remote_tts = remote_tts()
     self.log.info(f"TTSSession.__init__() use_remote_tts: {self.use_remote_tts} remote_tts: {self.remote_tts}")
-    if cfg.get_cfg_val("Advanced.TTS.Local") == "c": # coqui
+    if cfg.get_cfg_val("Basic.TTS.Local") == "c": # coqui
       from framework.services.tts.local.coqui_tts import local_speak_dialog
-    elif cfg.get_cfg_val("Advanced.TTS.Local") == "p": # piper
+    elif cfg.get_cfg_val("Basic.TTS.Local") == "p": # piper
       self.log.debug(f"TTSSession.__init__() importing piper's local_speak_dialog()")
       from framework.services.tts.local.piper import local_speak_dialog
     else:
@@ -261,4 +261,3 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
           self.log.warning("TTSSession.handle_skill_msg() Internal Error 102 - the media player reported stop_session for no reason.")
         else:                              # not expected
           self.log.warning(f"TTSSession.handle_skill_msg() Internal Error 103 - unknown media response: {response}")
-

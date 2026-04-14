@@ -127,10 +127,10 @@ class STTSvc:
     self.beep_loc = "%s/framework/assets/what.wav" % (base_dir,)
     self.cfg = Config()
     self.hub = self.cfg.get_cfg_val("Basic.Hub")
-    remote_stt = self.cfg.get_cfg_val('Advanced.STT.UseRemote')
+    remote_stt = self.cfg.get_cfg_val('Basic.STT.UseRemote')
     if remote_stt == 'y':                  # use remote STT
       self.use_remote_stt = True
-      remote_stt = self.cfg.get_cfg_val('Advanced.STT.Remote')
+      remote_stt = self.cfg.get_cfg_val('Basic.STT.Remote')
       if remote_stt == 'g':                # use google
         # from google.cloud import speech
         from framework.services.stt.remote.google_stt import remote_transcribe_file

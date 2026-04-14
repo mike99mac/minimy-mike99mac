@@ -39,11 +39,11 @@ class SystemSkill(SimpleVoiceAssistant):
     self.pause_requesting_skill_category = None
     self.pause_reason = None
     cfg = Config()                         # get config file
-    self.cfg_remote_stt = cfg.get_cfg_val("Advanced.STT.UseRemote")
-    self.cfg_remote_tts = cfg.get_cfg_val("Advanced.TTS.UseRemote")
-    self.cfg_remote_nlp = cfg.get_cfg_val("Advanced.NLP.UseRemote")
-    self.cfg_remote_llm = cfg.get_cfg_val("Advanced.LLM.UseRemote")
-    self.cfg_platform = cfg.get_cfg_val("Advanced.Platform")
+    self.cfg_remote_stt = cfg.get_cfg_val("Basic.STT.UseRemote")
+    self.cfg_remote_tts = cfg.get_cfg_val("Basic.TTS.UseRemote")
+    self.cfg_remote_nlp = cfg.get_cfg_val("Basic.NLP.UseRemote")
+    self.cfg_remote_llm = cfg.get_cfg_val("Basic.LLM.UseRemote")
+    self.cfg_platform = cfg.get_cfg_val("Basic.Platform")
     self.cfg_wake_words = cfg.get_cfg_val("Basic.WakeWords")
     self.base_dir = cfg.get_cfg_val("Basic.BaseDir")
     self.play_filename = self.base_dir + "/framework/assets/stop.wav"

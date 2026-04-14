@@ -76,14 +76,16 @@ function mountTmpfs
     echo "$mountDir is already a tmpfs"
     return
   fi
-  echo "making directory $fileSystem a tmpfs ..."
-  cmd="sudo systemctl start $mountFile"
-  eval $cmd
-  rc=$?
-  if [ "$rc" != 0 ]; then
-    echo "WARNING $cmd returned $rc - proceeding without tmpfs $desc"
-  else
-    echo "$cmd was successful"
+  if command -v systemctl &>/dev/null; then
+    echo "making directory $fileSystem a tmpfs ..."
+    cmd="sudo systemctl start $mountFile"
+    eval $cmd
+    rc=$?
+    if [ "$rc" != 0 ]; then
+      echo "WARNING $cmd returned $rc - proceeding without tmpfs $desc"
+    else
+      echo "$cmd was successful"
+    fi
   fi
  }                                         # mountTmpfs()
 
