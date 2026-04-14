@@ -1,6 +1,8 @@
 import json
 import os
 import re
+import subprocess
+import sys
 import uuid
 from datetime import datetime
 from threading import Event, Lock
@@ -11,14 +13,16 @@ from framework.util.utils import Config
 from skills.sva_base import SimpleVoiceAssistant
 
 try:
-    import llama_cpp
     from huggingface_hub import hf_hub_download
+    from huggingface_hub import try_to_load_from_cache
+    import llama_cpp
     from llama_cpp import Llama
     from llama_cpp import llama_chat_format
     from llama_cpp.llama_cache import LlamaRAMCache
 except ImportError:
-    llama_cpp = None
     hf_hub_download = None
+    try_to_load_from_cache = None
+    llama_cpp = None
     Llama = None
     llama_chat_format = None
     LlamaRAMCache = None
@@ -61,31 +65,20 @@ class FallbackSkill(SimpleVoiceAssistant):
         self.system_prompt_formatters = {}
         self._patch_llama_cleanup_bug()
         self.run_remote_server = False
+        self.llm_repo = str(self.cfg.get_cfg_val("Basic.LLMRepo") or "").strip()
+        self.llm_file = str(self.cfg.get_cfg_val("Basic.LLMFile") or "").strip()
+        self.llm_download_log = os.path.join(self.base_dir, "logs", "llm_download.log")
+        self.llm_download_lock = os.path.join(self.base_dir, "tmp", "llm_download.lock")
 
         should_load_local_llm = (not self.use_remote_llm) or self.cfg.is_hub()
         if should_load_local_llm and Llama is not None and hf_hub_download is not None:
-            llm_role = "hub" if self.cfg.is_hub() else "local"
-            self.llm_repo = self.cfg.get_cfg_val("Basic.LLMRepo")
-            self.llm_file = self.cfg.get_cfg_val("Basic.LLMFile")
-
             if not self.llm_repo or not self.llm_file:
                 self.log.error(
                     "FallbackSkill: LLM configuration missing "
                     "(Basic.LLMRepo or Basic.LLMFile) in mmconfig.yml. Cannot load model."
                 )
             else:
-                self.log.info(
-                    f"FallbackSkill: Downloading/Loading {llm_role} LLM model from "
-                    f"{self.llm_repo} ({self.llm_file})"
-                )
-                try:
-                    model_path = hf_hub_download(
-                        repo_id=self.llm_repo, filename=self.llm_file
-                    )
-                    self.llm = self._create_llm(model_path)
-                    self._warm_system_prompt_cache()
-                except Exception as e:
-                    self.log.error(f"FallbackSkill: Failed to load Llama model: {e}")
+                self._ensure_llm_ready()
         elif should_load_local_llm:
             self.log.error("FallbackSkill: llama_cpp or huggingface_hub not installed")
         else:
@@ -158,6 +151,120 @@ class FallbackSkill(SimpleVoiceAssistant):
             )
 
         return Llama(**llm_kwargs)
+
+    def _resolve_cached_model_path(self):
+        if not self.llm_repo or not self.llm_file or hf_hub_download is None:
+            return None
+
+        if try_to_load_from_cache is not None:
+            cached_path = try_to_load_from_cache(
+                repo_id=self.llm_repo,
+                filename=self.llm_file,
+            )
+            if isinstance(cached_path, str) and os.path.exists(cached_path):
+                return cached_path
+
+        try:
+            cached_path = hf_hub_download(
+                repo_id=self.llm_repo,
+                filename=self.llm_file,
+                local_files_only=True,
+            )
+            if isinstance(cached_path, str) and os.path.exists(cached_path):
+                return cached_path
+        except Exception:
+            return None
+
+        return None
+
+    def _launch_model_prefetch(self):
+        helper_path = os.path.join(self.base_dir, "install", "cache_llm.py")
+        if not os.path.exists(helper_path):
+            self.log.error(
+                f"FallbackSkill: Missing LLM cache helper at {helper_path}"
+            )
+            return False
+
+        os.makedirs(os.path.dirname(self.llm_download_log), exist_ok=True)
+        env = os.environ.copy()
+        env["SVA_BASE_DIR"] = self.base_dir
+
+        try:
+            with open(self.llm_download_log, "a", encoding="utf-8") as log_handle:
+                proc = subprocess.Popen(
+                    [sys.executable, helper_path],
+                    stdout=log_handle,
+                    stderr=subprocess.STDOUT,
+                    cwd=self.base_dir,
+                    env=env,
+                    start_new_session=True,
+                    close_fds=True,
+                )
+            self.log.info(
+                "FallbackSkill: Started background LLM cache worker "
+                f"(pid={proc.pid}) for {self.llm_repo} ({self.llm_file})"
+            )
+            return True
+        except Exception as e:
+            self.log.error(f"FallbackSkill: Failed to start LLM cache worker: {e}")
+            return False
+
+    def _ensure_model_download_requested(self):
+        if os.path.exists(self.llm_download_lock):
+            return True
+        return self._launch_model_prefetch()
+
+    def _ensure_llm_ready(self):
+        if self.llm is not None:
+            return True
+
+        if not self.llm_repo or not self.llm_file:
+            return False
+
+        model_path = self._resolve_cached_model_path()
+        if model_path:
+            llm_role = "hub" if self.cfg.is_hub() else "local"
+            self.log.info(
+                f"FallbackSkill: Loading cached {llm_role} LLM model from "
+                f"{self.llm_repo} ({self.llm_file})"
+            )
+            try:
+                self.llm = self._create_llm(model_path)
+                self._warm_system_prompt_cache()
+                return True
+            except Exception as e:
+                self.log.error(f"FallbackSkill: Failed to load cached Llama model: {e}")
+                return False
+
+        self.log.warning(
+            f"FallbackSkill: LLM model {self.llm_repo} ({self.llm_file}) is not cached locally yet"
+        )
+        self._ensure_model_download_requested()
+        return False
+
+    def _llm_unavailable_answer(self):
+        if not self.llm_repo or not self.llm_file:
+            return (
+                "I am sorry, my local language model is not available right now due "
+                "to a configuration error."
+            )
+
+        if os.path.exists(self.llm_download_lock):
+            return (
+                "I am sorry, my local language model is still downloading. "
+                "Please try again in a few minutes."
+            )
+
+        download_started = self._ensure_model_download_requested()
+        if not download_started:
+            return (
+                "I am sorry, my local language model is not ready yet, and I could not "
+                "start the background download automatically."
+            )
+        return (
+            "I am sorry, my local language model is not ready yet. "
+            "I have started downloading it in the background, so please try again in a few minutes."
+        )
 
     def _get_chat_formatter(self, add_generation_prompt):
         if llama_chat_format is None or self.llm is None:
@@ -580,13 +687,10 @@ Rules:
         rewritten_utterance="",
     ):
         with self.processing_lock:
-            if not self.llm:
+            if not self._ensure_llm_ready():
                 return {
                     "action": "answer",
-                    "answer": (
-                        "I am sorry, my language model is not available right now due "
-                        "to a configuration error."
-                    ),
+                    "answer": self._llm_unavailable_answer(),
                 }
 
             if failed_rewrite:
