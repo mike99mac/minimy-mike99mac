@@ -2,6 +2,8 @@
 
 ## Software
 ### Bugs
+1. clean up mmconfig.py to use only the new format
+1. organize mmconfig.yml.template
 ### Features
 1. Revisit whether LLM config should remain per-machine or move to a centralized hub-only model policy
 1. Add a "move music" intent to the mpc skill - partially done - Mike is working on

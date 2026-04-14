@@ -15,7 +15,7 @@ Following is a block diagram:
 
 ![](blockDiagram.svg)
 
-The Hub & Spoke model is the idea that one device in the building has to have the best performance to support Speech To Text (STT) and AI general question answering.
+The Hub & Spoke model is the idea that one device in the building has to have the best performance to support Speech To Text (STT) and AI general question answering via the internal LLM.
 
 The Hub box might be powered by an Nvidia Jetson Orin Nano and the spoke boxes with Raspberry Pi 5s.
 
@@ -43,11 +43,9 @@ The overall steps to build a *Smart Boombox* are:
 - Start Minimy and use it!
 
 ## Acquire the hardware
-The recommended hardware is a Raspberry Pi (RasPi) 5B with 4 or 8 GB of memory.
+The recommended hardware is a Raspberry Pi (RasPi) 5 with 8 GB of memory or a jetson orin nano.
 
 A Rasberry Pi 400 is another option. It allows the CPU to be *offboard* which frees up space onboard to house batteries. The CPUs also run a lot cooler due to the massive heat sink.
-
-Hopefully the RasPi 5 will be out soon and will be more powerful, run cooler, and be easier to procure.
 
 For a microphone, a flat, disk type with a mute/unmute switch for visible privacy is recommended. Don't use a cheap one.
 It is best to move the microphone away from the speakers and closer to the center of the room.
@@ -57,7 +55,7 @@ You can start with just about any speaker(s) with a 3.5mm jack that will plug in
 ## Flash Linux to a memory device
 The RasPi boots from a micro-SD card that plugs into its underside. A 32 GB card or larger is recommended. You need to *prime the pump* and copy a Linux distribution to it.
 
-The following Linux distributions have been tested:
+The following Linux distributions have been tested, though any ubuntu based distro *should* work:
 - Ubuntu Desktop 24.10 - https://cdimage.ubuntu.com/releases/24.10/release/ubuntu-24.10-preinstalled-desktop-arm64+raspi.img.xz
 - Raspberry Pi OS Lite - https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2024-11-19/2024-11-19-raspios-bookworm-arm64-lite.img.xz
 
@@ -364,7 +362,6 @@ Services:
                    mpd: inactive (dead)
                  redis: Unit redis.service could not be found.
                whisper: Unit whisper.service could not be found.
-                ollama: Unit ollama.service could not be found.
 ```
 - Processes with ``minimy`` in their name are not running.
 - Useful information such as IP address, the CPU temperature, root file system, CPU and memory usage.
@@ -422,49 +419,30 @@ At this point your system should have a solid sound and microphone stack running
 If you want to install OVOS instead of Minimy, go here: https://github.com/mike99mac/mycroft-tools/tree/master/ovos
 
 In this section you will perform the following steps:
-- Download and copy Minimy
+- Download Minimy
 - Install Minimy
 - Configure Minimy
-- Get a Google API key
 
-### Download and copy Minimy
-It is recommended that you make a second copy of Minimy after you download it. This way, if you make some changes to the running code, you'll have a reference copy. Also the copy of the code that you run should not have a ``.git/`` directory, thus removing any connection to github.
+### Download Minimy
+To download Minimy, perform the following steps:
 
-The new directory ***must*** be named ``minimy``, removing the ``-mike99mac`` suffix, as scripts are coded that way.
-
-To download and copy Minimy, perform the following steps:
-
-- Change to your home directory and clone the repo from github.
+- Change to your home directory and clone the repo from github. minimy must be located in the home directory.
 
     ```
     cd
     ```
 
     ```
-    git clone https://github.com/mike99mac/minimy-mike99mac
+    git clone https://github.com/mike99mac/minimy-mike99mac minimy
     ```
-
-- Copy the directory recursively from ``minimy-mike99mac`` to ``minimy``.
-
-    ```
-    cp -a minimy-mike99mac minimy
-    ```
-
-- Remove the ``.git`` directory from the copy.
-
-    ```
-    cd minimy
-    ```
-
-    ```
-    rm -fr .git
-    ```
-
-    Now the code will run and you can work in ``minimy`` and keep ``minimy-mike99mac`` as a reference copy.
 
 ### Install Minimy
 
 - Run the following script to install Minimy and direct ``stdout`` and ``stderr`` to a file. **TAKE A BREAK?** This step can take up to 15 minutes.
+
+    ```
+    cd minimy
+    ```
 
     ```
     ./install/installminimy
@@ -482,14 +460,14 @@ As a result you will be asked during configuration if you would like to use remo
 and NLP. Unless you have a good reason, for now you should always select local mode (``remote=n``) for NLP.
 
 Remote TTS using polly requires an Amazon ID and key. If you prefer to not use polly for remote TTS you may
-choose mimic2 from Mycroft which is a free remote TTS alternative. You could also select local only TTS in
-which case mimic3 should work fine.
+choose whisper from openai which is a free local TTS. You could also select local only TTS in
+which case whisper should work fine. 
 
-By deault the system will fallback to local mode if a remote service fails. This will happen
+By default the system will fallback to local mode if a remote service fails. This will happen
 automatically and result in a slower overall response. If the internet is going to be out
 often you should probably just select local mode. The differences are that remote STT is more accurate
 and remote TTS sounds better. Both are slower but only slightly when given a reasonable internet
-connection. Devices with decent connectivity should use remote for both.
+connection. Unless you have a reason to use remote, you should use local.
 
 You will also be asked for operating environment. Currently the options are (p) for piOS, (l) for
 Ubuntu or (m) for the Mycroft MarkII.
@@ -534,8 +512,9 @@ The ``SVA_BASE_DIR`` and ``PYTHONPATH`` environment variables should set properl
 
 ## Run Minimy
 The scripts **``startminimy``** and **``stopminimy``** are used to start and stop processes.
-Each skill and service run as process and use the message bus or file system to synchronize.
-Their output is written to the ``logs/`` directory under the main install directory.
+There is also **``restartminimy``** to restart the processes. Each skill and service run as 
+process and use the message bus or file system to synchronize. Their output is written to 
+the ``logs/`` directory under the main install directory.
 
 - Start Minimy, ensuring it is run from the base directory, as follows.
 
@@ -556,7 +535,6 @@ Services:
                    mpd: active (running)
                  redis: active (running)
                whisper: active (running)
-                ollama: active (running)
 ---------------------------------------
                 Distro: Debian GNU/Linux 13 (trixie)
                 Kernel: 6.12.62+rpt-rpi-2712
@@ -675,21 +653,22 @@ Following are examples of Email skill requests:
 - ... dialog continues ...
 - **``send email``**
 
-### Example1 skill
-
-Following is the Example1 skill vocabulary.
-
-``(run|test|execute) example one``
-
-Following are examples of Example1 skill requests:
-
-- **``run exmple one``**
-
 ### Help skill
 
 Following is the Help skill vocabulary.
 
+```
+help
+```
+```
+help (music|radio|weather|time|alarm|volume|home assistant|email|internet)
+```
 Following are examples of Help skill requests:
+
+- **``help me``**
+- **``help``**
+- **``help radio``**
+
 
 ### MPC skill
 
@@ -802,18 +781,13 @@ Following are examples of Weather skill requests:
 
 - What's the weather?
 
-### Wiki skill
+### LLM fallback skill
 
-The Wiki skill is a fallback skill. As such it does not have a vocabulary
+The fallback skill goes to an LLM, which is able to generate a single turn response to any input that isnt recognized. It is also able to rephrase the users response to be recognizable and run it back through the NLP parser. 
 
 # Local Speech to Text <a name="localstt"></a>
-In late 2024 there was work done on running Speech to Text (STT) locally.
+Speech to text is now done locally using whisper. While remote options are still available if needed, whisper is fast enough and accurate enough that the increased privacy outweighs the benefits of remote solutions.
 
-If it takes more than three or four seconds to translate your speech, the personal voice assistant seems quite slow. People are used to responses in less than two seconds, ideally less than a second.
-
-Internet services, such as Google offer STT transcription. In addition to custom hardware, such as tensor processors, audio streams are split into smaller segments and processed in parallel, significantly speeding up transcription.
-
-However, this greatly reduces people's privacy. Ideally the STT can be performed locally and nothing goes out on the Ineternet.
 
 Three SoC platforms are tested for speed:
 - Raspberry Pi 4
@@ -901,21 +875,13 @@ sudo swapon /var/16GB.swap
 ```
 
 ## Creating virtual environments
-Python virtual environments (venvs) are highly recommended for testing and to maintain the integrity of your development environment.
-
-A script to create a venv for the Raspberry Pis is here: https://github.com/mike99mac/minimy-mike99mac/blob/main/mksttvenv
-It creates the venv ``stt_venv`` in your home directory. It must be enabled with:
+Python virtual environments (venvs) are highly recommended for testing and to maintain the integrity of your development environment. ``installminimy`` now automatically creates a configured ``minimy_venv`` venv. it can be activated with:
 
 ```
-cd
-. stt_env/bin/activate
+cd ~/minimy/
+. minimy_venv/bin/activate
 ```
-You should see a prefix of ``(stt_venv)`` on your command prompt (PS1).
-
-The file ``jfk.wav``, hard-coded in the above code, is an 11 second audio clip of John F Kennedy's famous words at his inaguration:
-"And so my fellow Americans ask not what your country can do for you ask what you can do for your country."
-
-The first two tests were the Raspberry Pi 4 and the Jetson Orin Nano. The Nano was only 7 or 8 percent faster. It seems the 1024 GPU cores were not being utilized.
+You should see a prefix of ``(minimy_venv)`` on your command prompt (PS1).
 
 This code tests whether the GPU cores are working:
 
@@ -926,82 +892,6 @@ print("CUDA available:", torch.cuda.is_available())
 if torch.cuda.is_available():
     print("CUDA device:", torch.cuda.get_device_name(0))
 ```
-Many, many different ways of getting the GPU enabled were tried. Every time the results were:
-
-```
-CUDA available: False
-```
-
-Finally a script was written to create a venv for the Nvidia SoC here: https://github.com/mike99mac/minimy-mike99mac/blob/main/mksttvenvgpu
-
-This script downloads PyTorch, torchaudio, and torchvision, then installs them in the venv. Finally the output was good:
-
-```
-CUDA available: True
-CUDA device: Orin
-```
-
-## Getting STT running locally <a name="localstt"></a>
-
-The code used to test the performance is below. I believe tracking the elapsed time of just the ``transcribe()`` function is correct. Here's the code:
-
-```
-$ cat bldwhisper.py
-#!/usr/bin/env python3
-import argparse
-import numpy as np
-import pyaudio
-import time
-import whisper
-import wave
-
-class WhisperTranscriber:
-  """ Build whisper for local STT using the base.en model """
-
-  def __init__(self):
-    self.model = "base.en"                 # tiny.en and small.en are also possible
-    self.parser = argparse.ArgumentParser(description="Transcribe audio using Whisper.")
-    self.parser.add_argument("filename", type=str, help="Path to the audio file")
-    self.args = self.parser.parse_args()
-
-  def load_model(self):
-    print("Loading Whisper model ...")
-    self.model = whisper.load_model(self.model)  # Load the quantized model
-
-  def transcribe_audio(self, filename):
-    print("transcribe_audio(): loading audio ...")
-    audio = whisper.load_audio(filename)
-    print("transcribe_audio(): pad or trim audio ...")
-    audio = whisper.pad_or_trim(audio)
-    print("transcribe_audio(): transcribing audio ...")
-    start_time = time.time()
-    result = self.model.transcribe(audio, fp16=False)  # transcribe to text
-    end_time = time.time()
-    et = end_time - start_time
-    print("Transcription: ", result["text"])
-    print(f"Elapsed time: {et}")
-
-if __name__ == "__main__":
-
-  # Create an instance of the WhisperTranscriber class
-  transcriber = WhisperTranscriber()                      # create a singleton
-  transcriber.load_model()                                # load the model
-  transcriber.transcribe_audio(transcriber.args.filename) # transcribe a file
-```
-
-### The results
-
-Here are the performance times on the three "boxes":
-
-
-| Platform                | Memory | Python | tiny.en | base.en | small.en |
-|-------------------------|--------|--------|---------|---------|----------|
-| Raspberry Pi 4          |  4 GB  |  3.11  |  8.0s   |  15.1s  |  75.0s   |
-| Raspberry Pi 5          |  8 GB  |  3.11  |  6.5s   |   6.7s  |  21.3s   |
-| Nvidia Jetson Orin Nano |  8 GB  |  3.10  |  0.6s   |   0.8s  |   1.4s   |
-
-
-The best option seems to be the ``base.en`` model running on the Jetson Orin Nano.
 
 Here's a picture of the three boxes. The Raspberry Pi 4 on the left and Pi 5 on the right are both in boomboxes for superior sound. The Jetson Orin Nano is to the right of the keyboard. A boombox carcass for it is coming soon...
 
