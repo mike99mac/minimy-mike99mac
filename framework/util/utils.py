@@ -3,6 +3,7 @@ import re
 import time
 import json
 import datetime
+import socket
 from subprocess import Popen, PIPE
 from lingua_franca.parse import extract_datetime
 from lingua_franca.time import to_local
@@ -42,6 +43,9 @@ class Config:
       'GoogleApiKeyPath': 'install/my_google_key.json'
     },
     'Basic': {
+      'LLM': {
+           'UseRemote': 'n'
+          },
       'NLP': {
            'UseRemote': 'n'
           },
@@ -60,6 +64,8 @@ class Config:
           },
       'BaseDir':'',
       'Hub': 'localhost',
+      'LLMRepo': 'unsloth/Qwen3.5-2B-GGUF',
+      'LLMFile': 'Qwen3.5-2B-Q6_K.gguf',
       'WakeWords': ['computer', 'internet'],
       'MusicDir': None,
       'RoomToHost': None
@@ -69,6 +75,8 @@ class Config:
     'Basic.AWSId': 'Advanced.AWSId',
     'Basic.AWSKey': 'Advanced.AWSKey',
     'Basic.GoogleApiKeyPath': 'Advanced.GoogleApiKeyPath',
+    'Basic.HubModel': 'Basic.STT.Model',
+    'Basic.SpokeModel': 'Basic.STT.Model',
     'Advanced.Platform': 'Basic.Platform',
     'Advanced.OutputDeviceName': 'Basic.OutputDeviceName',
     'Advanced.OutputLevelControlName': 'Basic.OutputLevelControlName',
@@ -77,7 +85,8 @@ class Config:
     'Advanced.TTS.Local': 'Basic.TTS.Local',
     'Advanced.TTS.Remote': 'Basic.TTS.Remote',
     'Advanced.TTS.LocalVoice': 'Basic.TTS.LocalVoice',
-    'Advanced.NLP.UseRemote': 'Basic.NLP.UseRemote'
+    'Advanced.NLP.UseRemote': 'Basic.NLP.UseRemote',
+    'Advanced.LLM.UseRemote': 'Basic.LLM.UseRemote'
   }
 
   def __init__(self):
@@ -96,7 +105,6 @@ class Config:
       #print("Warning, install/mmconfig.yml not found, creating one!\n")
       self.reset_config()
     elif self._cfg_loaded_from_legacy:
-      # Rewrite legacy configs into the current on-disk layout.
       self.save_cfg()
     self.set_cfg_val('Basic.BaseDir', base_dir)
 
@@ -135,6 +143,10 @@ class Config:
       sect = sect[k]
     sect[ka[-1]] = value
 
+  def is_hub(self):
+    hub = self.get_cfg_val("Basic.Hub")
+    return hub == socket.gethostname() or hub == "localhost"
+
   def dump_cfg(self):
     tmp_cfg = self.cfg
     for section in tmp_cfg.keys():
@@ -157,14 +169,6 @@ class Config:
         return False
       sect = sect[key]
     return True
-
-  def _lookup_path(self, cfg, keys):
-    sect = cfg
-    for key in keys:
-      if not isinstance(sect, dict) or key not in sect:
-        return None
-      sect = sect[key]
-    return sect
 
   def _normalize_cfg(self, raw_cfg):
     cfg = self._copy_defaults()

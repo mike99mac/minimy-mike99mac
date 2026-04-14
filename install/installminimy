@@ -172,17 +172,19 @@ function generateServiceFiles
   LOGS_MOUNT_UNIT="${mountUnitPath}-logs.mount"
   TMP_MOUNT_UNIT="${mountUnitPath}-tmp.mount"
 
-  # Copy generated files to /etc/systemd/system
-  echo "Installing systemd service files..." | tee -a $logFile
-  runCmd sudo cp "$tmpDir/minimy.service" /etc/systemd/system/minimy.service
-  runCmd sudo cp "$tmpDir/whisper.service" /etc/systemd/system/whisper.service
-  runCmd sudo cp "$tmpDir/${mountUnitPath}-logs.mount" "/etc/systemd/system/${mountUnitPath}-logs.mount"
-  runCmd sudo cp "$tmpDir/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
+  if command -v systemctl &>/dev/null; then
+    # Copy generated files to /etc/systemd/system
+    echo "Installing systemd service files..." | tee -a $logFile
+    runCmd sudo cp "$tmpDir/minimy.service" /etc/systemd/system/minimy.service
+    runCmd sudo cp "$tmpDir/whisper.service" /etc/systemd/system/whisper.service
+    runCmd sudo cp "$tmpDir/${mountUnitPath}-logs.mount" "/etc/systemd/system/${mountUnitPath}-logs.mount"
+    runCmd sudo cp "$tmpDir/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
 
-  rm -rf "$tmpDir"                         # cleanup temporary directory
-  runCmd sudo systemctl daemon-reload      # reload systemd to pick up new files
-  runCmd sudo systemctl start whisper      # start whisper for this session 
-  echo "Systemd service files installed successfully" | tee -a $logFile
+    rm -rf "$tmpDir"                         # cleanup temporary directory
+    runCmd sudo systemctl daemon-reload      # reload systemd to pick up new files
+    runCmd sudo systemctl start whisper      # start whisper for this session
+    echo "Systemd service files installed successfully" | tee -a $logFile
+  fi
  }                                         # generateServiceFiles()
 
 #+--------------------------------------------------------------------------+
@@ -347,8 +349,7 @@ function buildVenv
   runCmd $pipCmd install --upgrade wheel setuptools
   if command -v apt-get &>/dev/null; then
     runCmd sudo apt-get install -y build-essential portaudio19-dev mpg123 ffmpeg curl wget mpc \
-      libavutil-dev libswscale-dev libswresample-dev libavfilter-dev libavcodec-dev libavformat-dev \
-      libavdevice-dev redis
+    libavutil-dev libswscale-dev libswresample-dev libavfilter-dev libavcodec-dev libavformat-dev libavdevice-dev redis
   fi
   echo | tee -a $logFile
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
@@ -360,7 +361,9 @@ function buildVenv
     runCmd git clone --recurse-submodules https://github.com/OpenNMT/CTranslate2
     cd CTranslate2
     mkdir build; cd build
-    runCmd sudo apt-get install -y libomp-dev
+    if command -v apt-get &>/dev/null; then
+      runCmd sudo apt-get install -y libomp-dev
+    fi
     runCmd cmake .. -DWITH_CUDA=ON -DWITH_CUDNN=ON -DWITH_MKL=OFF -DWITH_RUY=ON
     runCmd make -j6
     runCmd sudo make install
@@ -456,46 +459,40 @@ function buildVenv
 
   echo "Installing Ollama ..." | tee -a $logFile
   echo | tee -a $logFile
-  if [ ! -d /usr/local/lib/ollama ]; then  # get ollama install script
-    curl -fsSL https://ollama.com/install.sh | sh
-  fi
-  if [ ! -f /etc/systemd/system/ollama.service ]; then # not expected
-    echo "WARNING: file /etc/systemd/system/ollama.service not found" | tee -a $logFile
-  else                                     # add env var to allow all hosts in local subnet
-    ipAddr="0.0.0.0"                       # answer all requests
-    echo "Setting Ollama IP address to $ipAddr ..." | tee -a $logFile
-    cd /etc/systemd/system
-    sudo sed -i "/\[Service\]/a Environment=OLLAMA_HOST=$ipAddr" ollama.service # put IP@ in OLLAMA_HOST env var
-    if [ $? != 0 ]; then
-      echo "WARNING! sed to ollama.service returned $?" | tee -a $logFile
+  if grep -qi "Jetson" /proc/device-tree/model 2>/dev/null || grep -qi "Orin" /proc/device-tree/model 2>/dev/null; then
+    llamaCppVersion="0.3.19"
+    echo "Jetson Orin Nano detected. Building llama-cpp-python $llamaCppVersion from source with CUDA ..." | tee -a $logFile
+    runCmd "$pipCmd install --upgrade huggingface_hub"
+    runCmd "PATH=/usr/local/cuda/bin:\$PATH CUDA_HOME=/usr/local/cuda CUDACXX=/usr/local/cuda/bin/nvcc CMAKE_ARGS='-DGGML_CUDA=on -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCUDAToolkit_ROOT=/usr/local/cuda' FORCE_CMAKE=1 $pipCmd install --force-reinstall --no-cache-dir --no-binary=llama-cpp-python --index-url https://pypi.org/simple llama-cpp-python==$llamaCppVersion"
+  else
+    echo "Installing with OpenBLAS ..." | tee -a $logFile
+    if command -v apt-get &>/dev/null; then
+      runCmd sudo apt-get install -y libopenblas-dev
     fi
   fi
-  ollamaModel="llama3.2:3b"
-  echo "getting model $ollamaModel ..." | tee -a $logFile
-  ollama pull $ollamaModel                 # get this model
-  if command -v systemctl &>/dev/null; then
-    runCmd sudo systemctl daemon-reload
-    runCmd sudo systemctl enable ollama
-    runCmd sudo systemctl restart ollama
-    cd $baseDir
-    generateServiceFiles                   # generate and install systemd service files dynamically
-    echo "Enabling systemd services..." | tee -a $logFile
-    runCmd sudo systemctl enable "$LOGS_MOUNT_UNIT"
-    runCmd sudo systemctl enable "$TMP_MOUNT_UNIT"
-    runCmd sudo systemctl enable minimy
+
+  echo "Pre-caching the LLM model from HuggingFace..." | tee -a $logFile
+  llmRepo=$($pythonCmd -c "import socket, yaml; raw = yaml.safe_load(open('$configFile')); cfg = {}; [cfg.update(item) for item in raw if isinstance(item, dict)]; basic = cfg.get('Basic', {}); advanced = cfg.get('Advanced', {}); llm_cfg = basic.get('LLM', advanced.get('LLM', {})); is_hub = basic.get('Hub') in (socket.gethostname(), 'localhost'); use_remote = llm_cfg.get('UseRemote') == 'y'; value = '' if (use_remote and not is_hub) else (basic.get('LLMRepo') or ''); print(str(value).strip())")
+  llmFile=$($pythonCmd -c "import socket, yaml; raw = yaml.safe_load(open('$configFile')); cfg = {}; [cfg.update(item) for item in raw if isinstance(item, dict)]; basic = cfg.get('Basic', {}); advanced = cfg.get('Advanced', {}); llm_cfg = basic.get('LLM', advanced.get('LLM', {})); is_hub = basic.get('Hub') in (socket.gethostname(), 'localhost'); use_remote = llm_cfg.get('UseRemote') == 'y'; value = '' if (use_remote and not is_hub) else (basic.get('LLMFile') or ''); print(str(value).strip())")
+
+  if [ -n "$llmRepo" ] && [ -n "$llmFile" ]; then
+    echo "Downloading model $llmRepo ($llmFile) ..." | tee -a $logFile
+    runCmd "$pythonCmd -c \"from huggingface_hub import hf_hub_download; hf_hub_download(repo_id=\\\"$llmRepo\\\", filename=\\\"$llmFile\\\")\""
+  else
+    echo "Warning: LLMRepo or LLMFile not found in config. Skipping pre-cache." | tee -a $logFile
   fi
 
   # Set whisper to run as a system daemon and log to /var/log/whisper.log
   runCmd sudo touch /var/log/whisper.log
   runCmd sudo chown $CURRENT_USER:$CURRENT_GROUP /var/log/whisper.log
   runCmd sudo chmod 664 /var/log/whisper.log
-  if command -v systemctl &>/dev/null; then
+  if command -v apt-get &>/dev/null; then
     runCmd sudo systemctl enable whisper
   fi
   echo | tee -a $logFile
 
   echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile
-  minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver testhub.py testspoke.py"
+  minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver testhub.py testspoke.py qa.py"
   echo | tee -a $logFile
   echo "cd to $baseDir/install ..." | tee -a $logFile
   cd $baseDir/install
@@ -538,9 +535,10 @@ TMP_MOUNT_UNIT=""
 detectUserInfo                             # detect user information first
 getPlatform                                # verify supported platform
 checkEnv                                   # check the environment
-generateConfigFile                         # generate config file from template
-parseArgs $@                               # parse arguments
 setMinimyVars                              # set config file variables
+parseArgs $@                               # parse arguments
+generateConfigFile                         # generate config file from template
+generateServiceFiles                       # generate systemctl service files
 buildVenv                                  # do the work
 let min=$SECONDS/60
 let sec=$SECONDS%60
