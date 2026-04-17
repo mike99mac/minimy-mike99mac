@@ -153,7 +153,19 @@ class FallbackSkill(SimpleVoiceAssistant):
         return Llama(**llm_kwargs)
 
     def _resolve_cached_model_path(self):
+        self.log.debug(
+            "FallbackSkill: Resolving cached LLM path "
+            f"(repo={self.llm_repo}, file={self.llm_file}, "
+            f"hf_hub_download={hf_hub_download is not None}, "
+            f"try_to_load_from_cache={try_to_load_from_cache is not None})"
+        )
         if not self.llm_repo or not self.llm_file or hf_hub_download is None:
+            self.log.warning(
+                "FallbackSkill: Cannot resolve cached model path because LLM config "
+                f"is incomplete or huggingface_hub is missing "
+                f"(repo={self.llm_repo}, file={self.llm_file}, "
+                f"hf_hub_download={hf_hub_download is not None})"
+            )
             return None
 
         if try_to_load_from_cache is not None:
@@ -162,6 +174,9 @@ class FallbackSkill(SimpleVoiceAssistant):
                 filename=self.llm_file,
             )
             if isinstance(cached_path, str) and os.path.exists(cached_path):
+                self.log.info(
+                    f"FallbackSkill: Found cached model via huggingface cache at {cached_path}"
+                )
                 return cached_path
 
         try:
@@ -171,10 +186,19 @@ class FallbackSkill(SimpleVoiceAssistant):
                 local_files_only=True,
             )
             if isinstance(cached_path, str) and os.path.exists(cached_path):
+                self.log.info(
+                    f"FallbackSkill: Found cached model via hf_hub_download local lookup at {cached_path}"
+                )
                 return cached_path
         except Exception:
+            self.log.debug(
+                "FallbackSkill: Local-only hf_hub_download lookup did not find the model"
+            )
             return None
 
+        self.log.debug(
+            f"FallbackSkill: Cached model path not found for {self.llm_repo} ({self.llm_file})"
+        )
         return None
 
     def _launch_model_prefetch(self):
@@ -190,6 +214,11 @@ class FallbackSkill(SimpleVoiceAssistant):
         env["SVA_BASE_DIR"] = self.base_dir
 
         try:
+            self.log.info(
+                "FallbackSkill: Launching background LLM cache worker "
+                f"for {self.llm_repo} ({self.llm_file}); worker output will be "
+                f"appended to {self.llm_download_log}"
+            )
             with open(self.llm_download_log, "a", encoding="utf-8") as log_handle:
                 proc = subprocess.Popen(
                     [sys.executable, helper_path],
@@ -209,16 +238,75 @@ class FallbackSkill(SimpleVoiceAssistant):
             self.log.error(f"FallbackSkill: Failed to start LLM cache worker: {e}")
             return False
 
-    def _ensure_model_download_requested(self):
-        if os.path.exists(self.llm_download_lock):
+    def _read_download_lock(self):
+        try:
+            with open(self.llm_download_lock, "r", encoding="utf-8") as lock_handle:
+                return json.load(lock_handle)
+        except Exception:
+            return None
+
+    def _is_pid_alive(self, pid):
+        if not pid:
+            return False
+        try:
+            os.kill(int(pid), 0)
             return True
+        except Exception:
+            return False
+
+    def _ensure_model_download_requested(self):
+        self.log.debug(
+            "FallbackSkill: Checking whether background LLM download should be requested "
+            f"(lock={self.llm_download_lock})"
+        )
+        if os.path.exists(self.llm_download_lock):
+            lock_info = self._read_download_lock()
+            if lock_info:
+                pid = lock_info.get("pid")
+                repo_id = lock_info.get("repo_id", self.llm_repo)
+                filename = lock_info.get("filename", self.llm_file)
+                if self._is_pid_alive(pid):
+                    self.log.info(
+                        "FallbackSkill: Background LLM cache worker already running "
+                        f"(pid={pid}, repo={repo_id}, file={filename})"
+                    )
+                    return True
+
+                self.log.warning(
+                    "FallbackSkill: Found stale LLM cache lock; removing it and "
+                    f"restarting download (pid={pid}, repo={repo_id}, file={filename})"
+                )
+            else:
+                self.log.warning(
+                    "FallbackSkill: Found unreadable LLM cache lock; removing it "
+                    "and restarting background download"
+                )
+            try:
+                os.remove(self.llm_download_lock)
+            except FileNotFoundError:
+                pass
+
+        self.log.info(
+            f"FallbackSkill: Requesting background download for {self.llm_repo} ({self.llm_file})"
+        )
         return self._launch_model_prefetch()
 
     def _ensure_llm_ready(self):
+        self.log.debug(
+            "FallbackSkill: Ensuring local LLM is ready "
+            f"(llm_loaded={self.llm is not None}, repo={self.llm_repo}, "
+            f"file={self.llm_file}, use_remote_llm={self.use_remote_llm}, "
+            f"is_hub={self.cfg.is_hub()})"
+        )
         if self.llm is not None:
+            self.log.debug("FallbackSkill: Local LLM already loaded")
             return True
 
         if not self.llm_repo or not self.llm_file:
+            self.log.error(
+                "FallbackSkill: LLM configuration is missing; cannot load local model "
+                f"(repo={self.llm_repo}, file={self.llm_file})"
+            )
             return False
 
         model_path = self._resolve_cached_model_path()
@@ -243,24 +331,56 @@ class FallbackSkill(SimpleVoiceAssistant):
         return False
 
     def _llm_unavailable_answer(self):
+        self.log.debug(
+            "FallbackSkill: Building unavailable-answer response "
+            f"(repo={self.llm_repo}, file={self.llm_file}, "
+            f"lock_exists={os.path.exists(self.llm_download_lock)}, "
+            f"llm_loaded={self.llm is not None})"
+        )
         if not self.llm_repo or not self.llm_file:
+            self.log.error(
+                "FallbackSkill: Returning unavailable-answer because LLM config is missing"
+            )
             return (
                 "I am sorry, my local language model is not available right now due "
                 "to a configuration error."
             )
 
         if os.path.exists(self.llm_download_lock):
-            return (
-                "I am sorry, my local language model is still downloading. "
-                "Please try again in a few minutes."
+            lock_info = self._read_download_lock()
+            if lock_info and self._is_pid_alive(lock_info.get("pid")):
+                self.log.info(
+                    "FallbackSkill: Local LLM is still downloading "
+                    f"(pid={lock_info.get('pid')}, repo={lock_info.get('repo_id', self.llm_repo)}, "
+                    f"file={lock_info.get('filename', self.llm_file)})"
+                )
+                return (
+                    "I am sorry, my local language model is still downloading. "
+                    "Please try again in a few minutes."
+                )
+
+            self.log.warning(
+                "FallbackSkill: LLM download lock exists but no worker is alive; "
+                "clearing stale lock and requesting a fresh download"
             )
+            try:
+                os.remove(self.llm_download_lock)
+            except FileNotFoundError:
+                pass
 
         download_started = self._ensure_model_download_requested()
         if not download_started:
+            self.log.error(
+                "FallbackSkill: Returning unavailable-answer because background download "
+                "could not be started"
+            )
             return (
                 "I am sorry, my local language model is not ready yet, and I could not "
                 "start the background download automatically."
             )
+        self.log.info(
+            "FallbackSkill: Returning unavailable-answer after starting background download"
+        )
         return (
             "I am sorry, my local language model is not ready yet. "
             "I have started downloading it in the background, so please try again in a few minutes."
@@ -686,8 +806,16 @@ Rules:
         original_utterance="",
         rewritten_utterance="",
     ):
+        self.log.debug(
+            "FallbackSkill: Processing local fallback request "
+            f"(sentence={sentence!r}, failed_rewrite={failed_rewrite}, "
+            f"original_utterance={original_utterance!r}, rewritten_utterance={rewritten_utterance!r})"
+        )
         with self.processing_lock:
             if not self._ensure_llm_ready():
+                self.log.warning(
+                    "FallbackSkill: Local LLM is not ready; using unavailable-answer path"
+                )
                 return {
                     "action": "answer",
                     "answer": self._llm_unavailable_answer(),
