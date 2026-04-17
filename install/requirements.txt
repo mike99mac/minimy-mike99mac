@@ -3,6 +3,7 @@ PyYAML
 boto3
 boto3[crt]
 google-cloud-speech
+hypercorn
 inflect
 lingua-franca
 pytube
