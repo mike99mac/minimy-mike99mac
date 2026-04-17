@@ -70,17 +70,23 @@ class FallbackSkill(SimpleVoiceAssistant):
         self.llm_download_log = os.path.join(self.base_dir, "logs", "llm_download.log")
         self.llm_download_lock = os.path.join(self.base_dir, "tmp", "llm_download.lock")
 
+        can_manage_local_llm = (
+            Llama is not None and hf_hub_download is not None and self.llm_repo and self.llm_file
+        )
         should_load_local_llm = (not self.use_remote_llm) or self.cfg.is_hub()
-        if should_load_local_llm and Llama is not None and hf_hub_download is not None:
-            if not self.llm_repo or not self.llm_file:
-                self.log.error(
-                    "FallbackSkill: LLM configuration missing "
-                    "(Basic.LLMRepo or Basic.LLMFile) in mmconfig.yml. Cannot load model."
-                )
-            else:
+        if can_manage_local_llm:
+            if should_load_local_llm:
                 self._ensure_llm_ready()
+            else:
+                self.log.info(
+                    "FallbackSkill: Remote LLM is enabled on a spoke; requesting local "
+                    "model cache so remote failures can fall back to local"
+                )
+                self._ensure_model_download_requested()
         elif should_load_local_llm:
-            self.log.error("FallbackSkill: llama_cpp or huggingface_hub not installed")
+            self.log.error(
+                "FallbackSkill: llama_cpp or huggingface_hub not installed, cannot manage local LLM"
+            )
         else:
             self.log.info(
                 f"FallbackSkill: Using remote hub LLM at {self.hub_host}:{self.REMOTE_PORT}"
@@ -894,10 +900,17 @@ Rules:
             self.log.error(f"FallbackSkill: Remote LLM request failed: {e}")
         except Exception as e:
             self.log.error(f"FallbackSkill: Unexpected remote LLM failure: {e}")
-        return {
-            "action": "answer",
-            "answer": "I am sorry, the hub language model is not available right now.",
-        }
+        self.log.warning(
+            "FallbackSkill: Falling back to local LLM path after remote request failure "
+            f"(sentence={sentence!r}, failed_rewrite={failed_rewrite}, "
+            f"original_utterance={original_utterance!r}, rewritten_utterance={rewritten_utterance!r})"
+        )
+        return self._process_request_local(
+            sentence=sentence,
+            failed_rewrite=failed_rewrite,
+            original_utterance=original_utterance,
+            rewritten_utterance=rewritten_utterance,
+        )
 
     def _process_request(
         self,
