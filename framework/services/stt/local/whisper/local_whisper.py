@@ -84,4 +84,11 @@ async def stream_transcription():
 
 # main()
 if __name__ == "__main__":
-  app.run(host="0.0.0.0", port=5002, debug=False, use_reloader=False)
+  import asyncio
+  from hypercorn.asyncio import serve
+  from hypercorn.config import Config as HyperConfig
+  config = HyperConfig()
+  config.bind = ["0.0.0.0:5002"]
+  config.use_reloader = False              # equivalent to debug=False
+  config.debug = False
+  asyncio.run(serve(app, config))

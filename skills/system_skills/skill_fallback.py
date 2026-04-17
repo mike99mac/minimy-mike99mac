@@ -13,384 +13,387 @@ from framework.util.utils import Config
 from skills.sva_base import SimpleVoiceAssistant
 
 try:
-    from huggingface_hub import hf_hub_download
-    from huggingface_hub import try_to_load_from_cache
-    import llama_cpp
-    from llama_cpp import Llama
-    from llama_cpp import llama_chat_format
-    from llama_cpp.llama_cache import LlamaRAMCache
+  from huggingface_hub import hf_hub_download
+  from huggingface_hub import try_to_load_from_cache
+  import llama_cpp
+  from llama_cpp import Llama
+  from llama_cpp import llama_chat_format
+  from llama_cpp.llama_cache import LlamaRAMCache
 except ImportError:
-    hf_hub_download = None
-    try_to_load_from_cache = None
-    llama_cpp = None
-    Llama = None
-    llama_chat_format = None
-    LlamaRAMCache = None
+  hf_hub_download = None
+  try_to_load_from_cache = None
+  llama_cpp = None
+  Llama = None
+  llama_chat_format = None
+  LlamaRAMCache = None
 
 try:
-    from llama_cpp import _internals as llama_internals
+  from llama_cpp import _internals as llama_internals
 except ImportError:
-    llama_internals = None
+  llama_internals = None
 
 try:
-    from quart import Quart
-    from quart import request as quart_request
+  from quart import Quart
+  from quart import request as quart_request
 except ImportError:
-    Quart = None
-    quart_request = None
+  Quart = None
+  quart_request = None
 
 
 class FallbackSkill(SimpleVoiceAssistant):
-    REWRITE_HEADER_PREFIX = "LLM_REWRITE"
-    REMOTE_PORT = 5003
-    REMOTE_TIMEOUT = 15
+  REWRITE_HEADER_PREFIX = "LLM_REWRITE"
+  REMOTE_PORT = 5003
+  REMOTE_TIMEOUT = 15
 
-    def __init__(self, bus=None, timeout=5):
-        super().__init__(
-            msg_handler=self.handle_message,
-            skill_id="fallback_skill",
-            skill_category="fallback",
+  def __init__(self, bus=None, timeout=5):
+    super().__init__(
+      msg_handler=self.handle_message,
+      skill_id="fallback_skill",
+      skill_category="fallback",
+    )
+    self.cfg = Config()
+    self.llm = None
+    self.rewrite_origins = {}
+    self.capability_manifest = self._build_capability_manifest()
+    self.controller_prompt = self._build_controller_prompt()
+    self.answer_prompt = self._build_answer_prompt()
+    self.processing_lock = Lock()
+    self.hub_host = self.cfg.get_cfg_val("Basic.Hub") or "localhost"
+    self.use_remote_llm = self.cfg.get_cfg_val("Advanced.LLM.UseRemote") == "y"
+    self.remote_app = None
+    self.prompt_cache = None
+    self.system_prompt_formatters = {}
+    self._patch_llama_cleanup_bug()
+    self.run_remote_server = False
+    self.llm_repo = str(self.cfg.get_cfg_val("Basic.LLMRepo") or "").strip()
+    self.llm_file = str(self.cfg.get_cfg_val("Basic.LLMFile") or "").strip()
+    self.llm_download_log = os.path.join(self.base_dir, "logs", "llm_download.log")
+    self.llm_download_lock = os.path.join(self.base_dir, "tmp", "llm_download.lock")
+
+    should_load_local_llm = (not self.use_remote_llm) or self.cfg.is_hub()
+    if should_load_local_llm and Llama is not None and hf_hub_download is not None:
+      if not self.llm_repo or not self.llm_file:
+        self.log.error(
+          "FallbackSkill: LLM configuration missing "
+          "(Basic.LLMRepo or Basic.LLMFile) in mmconfig.yml. Cannot load model."
         )
-        self.cfg = Config()
-        self.llm = None
-        self.rewrite_origins = {}
-        self.capability_manifest = self._build_capability_manifest()
-        self.controller_prompt = self._build_controller_prompt()
-        self.answer_prompt = self._build_answer_prompt()
-        self.processing_lock = Lock()
-        self.hub_host = self.cfg.get_cfg_val("Basic.Hub") or "localhost"
-        self.use_remote_llm = self.cfg.get_cfg_val("Advanced.LLM.UseRemote") == "y"
-        self.remote_app = None
-        self.prompt_cache = None
-        self.system_prompt_formatters = {}
-        self._patch_llama_cleanup_bug()
-        self.run_remote_server = False
-        self.llm_repo = str(self.cfg.get_cfg_val("Basic.LLMRepo") or "").strip()
-        self.llm_file = str(self.cfg.get_cfg_val("Basic.LLMFile") or "").strip()
-        self.llm_download_log = os.path.join(self.base_dir, "logs", "llm_download.log")
-        self.llm_download_lock = os.path.join(self.base_dir, "tmp", "llm_download.lock")
+      else:
+        self._ensure_llm_ready()
+    elif should_load_local_llm:
+      self.log.error("FallbackSkill: llama_cpp or huggingface_hub not installed")
+    else:
+      self.log.info(
+        f"FallbackSkill: Using remote hub LLM at {self.hub_host}:{self.REMOTE_PORT}"
+      )
 
-        should_load_local_llm = (not self.use_remote_llm) or self.cfg.is_hub()
-        if should_load_local_llm and Llama is not None and hf_hub_download is not None:
-            if not self.llm_repo or not self.llm_file:
-                self.log.error(
-                    "FallbackSkill: LLM configuration missing "
-                    "(Basic.LLMRepo or Basic.LLMFile) in mmconfig.yml. Cannot load model."
-                )
-            else:
-                self._ensure_llm_ready()
-        elif should_load_local_llm:
-            self.log.error("FallbackSkill: llama_cpp or huggingface_hub not installed")
+    if self.use_remote_llm and self.cfg.is_hub():
+      self._setup_remote_server()
+
+  def _patch_llama_cleanup_bug(self):
+    model_cls = getattr(llama_internals, "LlamaModel", None)
+    if model_cls is None or getattr(model_cls, "_minimy_cleanup_patch", False):
+      return
+
+    original_close = getattr(model_cls, "close", None)
+    if not callable(original_close):
+      return
+
+    def safe_close(instance):
+      try:
+        return original_close(instance)
+      except AttributeError as e:
+        if "sampler" not in str(e):
+          raise
+        for attr_name in ("sampler", "context", "batch", "model", "vocab"):
+          resource = getattr(instance, attr_name, None)
+          if resource is None:
+            continue
+          close_fn = getattr(resource, "close", None)
+          if callable(close_fn):
+            try:
+              close_fn()
+            except Exception:
+              pass
+          try:
+            setattr(instance, attr_name, None)
+          except Exception:
+            pass
+
+    model_cls.close = safe_close
+    model_cls._minimy_cleanup_patch = True
+
+  def _create_llm(self, model_path):
+    llm_kwargs = {
+      "model_path": model_path,
+      "n_ctx": 2048,
+      "verbose": False,
+    }
+
+    gpu_probe = getattr(llama_cpp, "llama_supports_gpu_offload", None)
+    if callable(gpu_probe):
+      try:
+        if gpu_probe():
+          llm_kwargs["n_gpu_layers"] = -1
+          self.log.info(
+            "FallbackSkill: GPU offload available, enabling llama.cpp CUDA with n_gpu_layers=-1"
+          )
         else:
-            self.log.info(
-                f"FallbackSkill: Using remote hub LLM at {self.hub_host}:{self.REMOTE_PORT}"
-            )
-
-        if self.use_remote_llm and self.cfg.is_hub():
-            self._setup_remote_server()
-
-    def _patch_llama_cleanup_bug(self):
-        model_cls = getattr(llama_internals, "LlamaModel", None)
-        if model_cls is None or getattr(model_cls, "_minimy_cleanup_patch", False):
-            return
-
-        original_close = getattr(model_cls, "close", None)
-        if not callable(original_close):
-            return
-
-        def safe_close(instance):
-            try:
-                return original_close(instance)
-            except AttributeError as e:
-                if "sampler" not in str(e):
-                    raise
-                for attr_name in ("sampler", "context", "batch", "model", "vocab"):
-                    resource = getattr(instance, attr_name, None)
-                    if resource is None:
-                        continue
-                    close_fn = getattr(resource, "close", None)
-                    if callable(close_fn):
-                        try:
-                            close_fn()
-                        except Exception:
-                            pass
-                    try:
-                        setattr(instance, attr_name, None)
-                    except Exception:
-                        pass
-
-        model_cls.close = safe_close
-        model_cls._minimy_cleanup_patch = True
-
-    def _create_llm(self, model_path):
-        llm_kwargs = {
-            "model_path": model_path,
-            "n_ctx": 2048,
-            "verbose": False,
-        }
-
-        gpu_probe = getattr(llama_cpp, "llama_supports_gpu_offload", None)
-        if callable(gpu_probe):
-            try:
-                if gpu_probe():
-                    llm_kwargs["n_gpu_layers"] = -1
-                    self.log.info(
-                        "FallbackSkill: GPU offload available, enabling llama.cpp CUDA with n_gpu_layers=-1"
-                    )
-                else:
-                    self.log.info(
-                        "FallbackSkill: llama.cpp GPU offload not available, using CPU"
-                    )
-            except Exception as e:
-                self.log.warning(
-                    f"FallbackSkill: GPU capability probe failed, using CPU fallback: {e}"
-                )
-        else:
-            self.log.info(
-                "FallbackSkill: llama.cpp GPU capability probe unavailable, using CPU fallback"
-            )
-
-        return Llama(**llm_kwargs)
-
-    def _resolve_cached_model_path(self):
-        if not self.llm_repo or not self.llm_file or hf_hub_download is None:
-            return None
-
-        if try_to_load_from_cache is not None:
-            cached_path = try_to_load_from_cache(
-                repo_id=self.llm_repo,
-                filename=self.llm_file,
-            )
-            if isinstance(cached_path, str) and os.path.exists(cached_path):
-                return cached_path
-
-        try:
-            cached_path = hf_hub_download(
-                repo_id=self.llm_repo,
-                filename=self.llm_file,
-                local_files_only=True,
-            )
-            if isinstance(cached_path, str) and os.path.exists(cached_path):
-                return cached_path
-        except Exception:
-            return None
-
-        return None
-
-    def _launch_model_prefetch(self):
-        helper_path = os.path.join(self.base_dir, "install", "cache_llm.py")
-        if not os.path.exists(helper_path):
-            self.log.error(
-                f"FallbackSkill: Missing LLM cache helper at {helper_path}"
-            )
-            return False
-
-        os.makedirs(os.path.dirname(self.llm_download_log), exist_ok=True)
-        env = os.environ.copy()
-        env["SVA_BASE_DIR"] = self.base_dir
-
-        try:
-            with open(self.llm_download_log, "a", encoding="utf-8") as log_handle:
-                proc = subprocess.Popen(
-                    [sys.executable, helper_path],
-                    stdout=log_handle,
-                    stderr=subprocess.STDOUT,
-                    cwd=self.base_dir,
-                    env=env,
-                    start_new_session=True,
-                    close_fds=True,
-                )
-            self.log.info(
-                "FallbackSkill: Started background LLM cache worker "
-                f"(pid={proc.pid}) for {self.llm_repo} ({self.llm_file})"
-            )
-            return True
-        except Exception as e:
-            self.log.error(f"FallbackSkill: Failed to start LLM cache worker: {e}")
-            return False
-
-    def _ensure_model_download_requested(self):
-        if os.path.exists(self.llm_download_lock):
-            return True
-        return self._launch_model_prefetch()
-
-    def _ensure_llm_ready(self):
-        if self.llm is not None:
-            return True
-
-        if not self.llm_repo or not self.llm_file:
-            return False
-
-        model_path = self._resolve_cached_model_path()
-        if model_path:
-            llm_role = "hub" if self.cfg.is_hub() else "local"
-            self.log.info(
-                f"FallbackSkill: Loading cached {llm_role} LLM model from "
-                f"{self.llm_repo} ({self.llm_file})"
-            )
-            try:
-                self.llm = self._create_llm(model_path)
-                self._warm_system_prompt_cache()
-                return True
-            except Exception as e:
-                self.log.error(f"FallbackSkill: Failed to load cached Llama model: {e}")
-                return False
-
+          self.log.info(
+            "FallbackSkill: llama.cpp GPU offload not available, using CPU"
+          )
+      except Exception as e:
         self.log.warning(
-            f"FallbackSkill: LLM model {self.llm_repo} ({self.llm_file}) is not cached locally yet"
+          f"FallbackSkill: GPU capability probe failed, using CPU fallback: {e}"
         )
-        self._ensure_model_download_requested()
+    else:
+      self.log.info(
+        "FallbackSkill: llama.cpp GPU capability probe unavailable, using CPU fallback"
+      )
+
+    return Llama(**llm_kwargs)
+
+  def _resolve_cached_model_path(self):
+    if not self.llm_repo or not self.llm_file or hf_hub_download is None:
+      return None
+
+    if try_to_load_from_cache is not None:
+      cached_path = try_to_load_from_cache(
+        repo_id=self.llm_repo,
+        filename=self.llm_file,
+      )
+      if isinstance(cached_path, str) and os.path.exists(cached_path):
+        return cached_path
+
+    try:
+      cached_path = hf_hub_download(
+        repo_id=self.llm_repo,
+        filename=self.llm_file,
+        local_files_only=True,
+      )
+      if isinstance(cached_path, str) and os.path.exists(cached_path):
+        return cached_path
+    except Exception:
+      return None
+
+    return None
+
+  def _launch_model_prefetch(self):
+    helper_path = os.path.join(self.base_dir, "install", "cache_llm.py")
+    if not os.path.exists(helper_path):
+      self.log.error(
+        f"FallbackSkill: Missing LLM cache helper at {helper_path}"
+      )
+      return False
+
+    os.makedirs(os.path.dirname(self.llm_download_log), exist_ok=True)
+    env = os.environ.copy()
+    env["SVA_BASE_DIR"] = self.base_dir
+
+    try:
+      with open(self.llm_download_log, "a", encoding="utf-8") as log_handle:
+        proc = subprocess.Popen(
+          [sys.executable, helper_path],
+          stdout=log_handle,
+          stderr=subprocess.STDOUT,
+          cwd=self.base_dir,
+          env=env,
+          start_new_session=True,
+          close_fds=True,
+        )
+      self.log.info(
+        "FallbackSkill: Started background LLM cache worker "
+        f"(pid={proc.pid}) for {self.llm_repo} ({self.llm_file})"
+      )
+      return True
+    except Exception as e:
+      self.log.error(f"FallbackSkill: Failed to start LLM cache worker: {e}")
+      return False
+
+  def _ensure_model_download_requested(self):
+    if os.path.exists(self.llm_download_lock):
+      return True
+    return self._launch_model_prefetch()
+
+  def _ensure_llm_ready(self):
+    if self.llm is not None:
+      return True
+
+    if not self.llm_repo or not self.llm_file:
+      return False
+
+    model_path = self._resolve_cached_model_path()
+    if model_path:
+      llm_role = "hub" if self.cfg.is_hub() else "local"
+      self.log.info(
+        f"FallbackSkill: Loading cached {llm_role} LLM model from "
+        f"{self.llm_repo} ({self.llm_file})"
+      )
+      try:
+        self.llm = self._create_llm(model_path)
+        self._warm_system_prompt_cache()
+        return True
+      except Exception as e:
+        self.log.error(f"FallbackSkill: Failed to load cached Llama model: {e}")
         return False
 
-    def _llm_unavailable_answer(self):
-        if not self.llm_repo or not self.llm_file:
-            return (
-                "I am sorry, my local language model is not available right now due "
-                "to a configuration error."
-            )
+    self.log.warning(
+      f"FallbackSkill: LLM model {self.llm_repo} ({self.llm_file}) is not cached locally yet"
+    )
+    self._ensure_model_download_requested()
+    return False
 
-        if os.path.exists(self.llm_download_lock):
-            return (
-                "I am sorry, my local language model is still downloading. "
-                "Please try again in a few minutes."
-            )
+  def _llm_unavailable_answer(self):
+    if not self.llm_repo or not self.llm_file:
+      return (
+        "I am sorry, my local language model is not available right now due "
+        "to a configuration error."
+      )
 
-        download_started = self._ensure_model_download_requested()
-        if not download_started:
-            return (
-                "I am sorry, my local language model is not ready yet, and I could not "
-                "start the background download automatically."
-            )
-        return (
-            "I am sorry, my local language model is not ready yet. "
-            "I have started downloading it in the background, so please try again in a few minutes."
+    if os.path.exists(self.llm_download_lock):
+      return (
+        "I am sorry, my local language model is still downloading. "
+        "Please try again in a few minutes."
+      )
+
+    download_started = self._ensure_model_download_requested()
+    if not download_started:
+      return (
+        "I am sorry, my local language model is not ready yet, and I could not "
+        "start the background download automatically."
+      )
+    return (
+      "I am sorry, my local language model is not ready yet. "
+      "I have started downloading it in the background, so please try again in a few minutes."
+    )
+
+  def _get_chat_formatter(self, add_generation_prompt):
+    if llama_chat_format is None or self.llm is None:
+      return None
+
+    formatter = self.system_prompt_formatters.get(add_generation_prompt)
+    if formatter is not None:
+      return formatter
+
+    template = self.llm.metadata.get("tokenizer.chat_template")
+    if not template:
+      return None
+
+    eos_token_id = self.llm.token_eos()
+    bos_token_id = self.llm.token_bos()
+    eos_token = (
+      self.llm._model.token_get_text(eos_token_id) if eos_token_id != -1 else ""
+    )
+    bos_token = (
+      self.llm._model.token_get_text(bos_token_id) if bos_token_id != -1 else ""
+    )
+
+    formatter = llama_chat_format.Jinja2ChatFormatter(
+      template=template,
+      eos_token=eos_token,
+      bos_token=bos_token,
+      add_generation_prompt=add_generation_prompt,
+      stop_token_ids=[eos_token_id] if eos_token_id != -1 else None,
+    )
+    self.system_prompt_formatters[add_generation_prompt] = formatter
+    return formatter
+
+  def _tokenize_chat_messages(self, messages, add_generation_prompt):
+    formatter = self._get_chat_formatter(add_generation_prompt)
+    if formatter is None or self.llm is None:
+      return None
+
+    formatted = formatter(messages=messages)
+    return self.llm.tokenize(
+      formatted.prompt.encode("utf-8"),
+      add_bos=not formatted.added_special,
+      special=True,
+    )
+
+  def _warm_system_prompt_cache(self):
+    if self.llm is None or LlamaRAMCache is None:
+      return
+
+    try:
+      # Store prompt-prefix KV state so the first real request does not have to
+      # re-evaluate the full system prompt from scratch.
+      self.prompt_cache = LlamaRAMCache(capacity_bytes=256 << 20)
+      self.llm.set_cache(self.prompt_cache)
+
+      system_prompts = (
+        ("controller", self.controller_prompt),
+        ("answer", self.answer_prompt),
+      )
+
+      for label, system_prompt in system_prompts:
+        prompt_tokens = self._tokenize_chat_messages(
+          [{"role": "system", "content": system_prompt}],
+          add_generation_prompt=False,
+        )
+        if not prompt_tokens:
+          self.log.warning(
+            f"FallbackSkill: Unable to build {label} system prompt cache prefix"
+          )
+          continue
+
+        self.llm.reset()
+        self.llm.eval(prompt_tokens)
+        self.prompt_cache[prompt_tokens] = self.llm.save_state()
+        self.log.info(
+          f"FallbackSkill: Warmed KV cache for {label} system prompt ({len(prompt_tokens)} tokens)"
         )
 
-    def _get_chat_formatter(self, add_generation_prompt):
-        if llama_chat_format is None or self.llm is None:
-            return None
+      self.llm.reset()
+    except Exception as e:
+      self.log.warning(
+        f"FallbackSkill: Failed to warm system prompt KV cache: {e}"
+      )
 
-        formatter = self.system_prompt_formatters.get(add_generation_prompt)
-        if formatter is not None:
-            return formatter
+  def _setup_remote_server(self):
+    if Quart is None:
+      self.log.error(
+        "FallbackSkill: quart is not installed, cannot start remote LLM server on hub"
+      )
+      return
+    self.remote_app = Quart(__name__)
+    self.run_remote_server = True
 
-        template = self.llm.metadata.get("tokenizer.chat_template")
-        if not template:
-            return None
+    @self.remote_app.route("/fallback", methods=["POST"])
+    async def fallback_endpoint():
+      payload = await quart_request.get_json(silent=True)
+      if not payload:
+        return {"error": "missing JSON payload"}, 400
 
-        eos_token_id = self.llm.token_eos()
-        bos_token_id = self.llm.token_bos()
-        eos_token = (
-            self.llm._model.token_get_text(eos_token_id) if eos_token_id != -1 else ""
-        )
-        bos_token = (
-            self.llm._model.token_get_text(bos_token_id) if bos_token_id != -1 else ""
-        )
+      sentence = str(payload.get("sentence", "") or "").strip()
+      if not sentence:
+        return {"error": "missing sentence"}, 400
 
-        formatter = llama_chat_format.Jinja2ChatFormatter(
-            template=template,
-            eos_token=eos_token,
-            bos_token=bos_token,
-            add_generation_prompt=add_generation_prompt,
-            stop_token_ids=[eos_token_id] if eos_token_id != -1 else None,
-        )
-        self.system_prompt_formatters[add_generation_prompt] = formatter
-        return formatter
+      result = self._process_request_local(
+        sentence=sentence,
+        failed_rewrite=bool(payload.get("failed_rewrite", False)),
+        original_utterance=str(payload.get("original_utterance", "") or ""),
+        rewritten_utterance=str(payload.get("rewritten_utterance", "") or ""),
+      )
+      return result
 
-    def _tokenize_chat_messages(self, messages, add_generation_prompt):
-        formatter = self._get_chat_formatter(add_generation_prompt)
-        if formatter is None or self.llm is None:
-            return None
+  def _run_remote_server(self):
+    try:
+      self.log.info(
+        f"FallbackSkill: Starting remote LLM server on 0.0.0.0:{self.REMOTE_PORT}"
+      )
+      import asyncio
+      from hypercorn.asyncio import serve
+      from hypercorn.config import Config as HyperConfig
+      config = HyperConfig()
+      config.bind = [f"0.0.0.0:{self.REMOTE_PORT}"]
+      config.use_reloader = False
+      config.debug = False
+      assert self.remote_app is not None, "Remote app not initialized"
+      asyncio.run(serve(self.remote_app, config))
+    except Exception as e:
+      self.log.error(f"FallbackSkill: Remote LLM server failed: {e}")
 
-        formatted = formatter(messages=messages)
-        return self.llm.tokenize(
-            formatted.prompt.encode("utf-8"),
-            add_bos=not formatted.added_special,
-            special=True,
-        )
-
-    def _warm_system_prompt_cache(self):
-        if self.llm is None or LlamaRAMCache is None:
-            return
-
-        try:
-            # Store prompt-prefix KV state so the first real request does not have to
-            # re-evaluate the full system prompt from scratch.
-            self.prompt_cache = LlamaRAMCache(capacity_bytes=256 << 20)
-            self.llm.set_cache(self.prompt_cache)
-
-            system_prompts = (
-                ("controller", self.controller_prompt),
-                ("answer", self.answer_prompt),
-            )
-
-            for label, system_prompt in system_prompts:
-                prompt_tokens = self._tokenize_chat_messages(
-                    [{"role": "system", "content": system_prompt}],
-                    add_generation_prompt=False,
-                )
-                if not prompt_tokens:
-                    self.log.warning(
-                        f"FallbackSkill: Unable to build {label} system prompt cache prefix"
-                    )
-                    continue
-
-                self.llm.reset()
-                self.llm.eval(prompt_tokens)
-                self.prompt_cache[prompt_tokens] = self.llm.save_state()
-                self.log.info(
-                    f"FallbackSkill: Warmed KV cache for {label} system prompt ({len(prompt_tokens)} tokens)"
-                )
-
-            self.llm.reset()
-        except Exception as e:
-            self.log.warning(
-                f"FallbackSkill: Failed to warm system prompt KV cache: {e}"
-            )
-
-    def _setup_remote_server(self):
-        if Quart is None:
-            self.log.error(
-                "FallbackSkill: quart is not installed, cannot start remote LLM server on hub"
-            )
-            return
-        self.remote_app = Quart(__name__)
-        self.run_remote_server = True
-
-        @self.remote_app.route("/fallback", methods=["POST"])
-        async def fallback_endpoint():
-            payload = await quart_request.get_json(silent=True)
-            if not payload:
-                return {"error": "missing JSON payload"}, 400
-
-            sentence = str(payload.get("sentence", "") or "").strip()
-            if not sentence:
-                return {"error": "missing sentence"}, 400
-
-            result = self._process_request_local(
-                sentence=sentence,
-                failed_rewrite=bool(payload.get("failed_rewrite", False)),
-                original_utterance=str(payload.get("original_utterance", "") or ""),
-                rewritten_utterance=str(payload.get("rewritten_utterance", "") or ""),
-            )
-            return result
-
-    def _run_remote_server(self):
-        try:
-            self.log.info(
-                f"FallbackSkill: Starting remote LLM server on 0.0.0.0:{self.REMOTE_PORT}"
-            )
-            self.remote_app.run(
-                host="0.0.0.0",
-                port=self.REMOTE_PORT,
-                debug=False,
-                use_reloader=False,
-            )
-        except Exception as e:
-            self.log.error(f"FallbackSkill: Remote LLM server failed: {e}")
-
-    def _build_capability_manifest(self):
-        return """Smart Boombox capability manifest
+  def _build_capability_manifest(self):
+    return """Smart Boombox capability manifest
 
 Identity and architecture
 - You are the language reasoning layer for Minimy, a smart boombox.
@@ -449,8 +452,8 @@ Behavior rules
 - If more information would normally be needed, state the missing information in one answer instead of asking an interactive follow-up.
 - If a rewritten command later fails deterministic execution, the follow-up answer must discuss the original user request, not the rewritten command only."""
 
-    def _build_controller_prompt(self):
-        return f"""{self.capability_manifest}
+  def _build_controller_prompt(self):
+    return f"""{self.capability_manifest}
 
 Your task is to act as a hidden controller for the smart boombox fallback layer.
 
@@ -483,8 +486,8 @@ Additional hard rules:
 - Never claim you performed an action.
 - When in doubt, choose "cannot_execute" rather than inventing a command."""
 
-    def _build_answer_prompt(self):
-        return f"""{self.capability_manifest}
+  def _build_answer_prompt(self):
+    return f"""{self.capability_manifest}
 
 You are now producing the user-facing fallback answer for the smart boombox.
 
@@ -500,339 +503,339 @@ Rules:
 - Never say you already completed a boombox action unless that success was explicitly provided to you.
 - Prefer short, concrete answers over broad assistant-style explanations."""
 
-    def handle_message(self, msg):
-        self.log.info(
-            "FallbackSkill.handle_message() NOT EXPECTING THIS IS EVER CALLED!!!"
+  def handle_message(self, msg):
+    self.log.info(
+      "FallbackSkill.handle_message() NOT EXPECTING THIS IS EVER CALLED!!!"
+    )
+
+  def _log_llm(self, label, prompt_text, answer_text):
+    log_path = os.path.expanduser("~/minimy/logs/llm.txt")
+    os.makedirs(os.path.dirname(log_path), exist_ok=True)
+    try:
+      with open(log_path, "a", encoding="utf-8") as f:
+        f.write(
+          f"[{label}] Q: {prompt_text}\n[{label}] A: {answer_text}\n{'-' * 40}\n"
         )
+    except Exception as log_err:
+      self.log.error(f"FallbackSkill: Failed to write to {log_path}: {log_err}")
 
-    def _log_llm(self, label, prompt_text, answer_text):
-        log_path = os.path.expanduser("~/minimy/logs/llm.txt")
-        os.makedirs(os.path.dirname(log_path), exist_ok=True)
-        try:
-            with open(log_path, "a", encoding="utf-8") as f:
-                f.write(
-                    f"[{label}] Q: {prompt_text}\n[{label}] A: {answer_text}\n{'-' * 40}\n"
-                )
-        except Exception as log_err:
-            self.log.error(f"FallbackSkill: Failed to write to {log_path}: {log_err}")
-
-    def _chat(self, system_prompt, user_prompt, max_tokens=220):
-        if not self.llm:
-            return None
-        try:
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ]
-            try:
-                output = self.llm.create_chat_completion(
-                    messages=messages,
-                    max_tokens=max_tokens,
-                    temperature=0.1,
-                    chat_template_kwargs={"enable_thinking": False},
-                )
-            except TypeError:
-                output = self.llm.create_chat_completion(
-                    messages=messages,
-                    max_tokens=max_tokens,
-                    temperature=0.1,
-                )
-            ans = output["choices"][0]["message"]["content"].strip()
-            self._log_llm("fallback", user_prompt, ans)
-            return ans
-        except Exception as e:
-            self.log.error(f"FallbackSkill: Error querying local LLM: {e}")
-            return None
-
-    def _extract_json_object(self, text):
-        if not text:
-            return None
-        try:
-            return json.loads(text)
-        except Exception:
-            pass
-        match = re.search(r"\{.*\}", text, re.DOTALL)
-        if not match:
-            return None
-        try:
-            return json.loads(match.group(0))
-        except Exception:
-            return None
-
-    def _normalize_rewrite(self, text):
-        if not text:
-            return ""
-        text = text.replace("\n", " ").strip()
-        text = re.sub(r"\s+", " ", text)
-        text = re.sub(r"^[\"']+|[\"']+$", "", text)
-        return text
-
-    def _deterministic_query_rewrite(self, sentence):
-        normalized = sentence.lower().strip()
-        normalized = normalized.replace("what's", "what is")
-        normalized = normalized.replace("whats", "what is")
-        normalized = normalized.replace("todays", "today")
-        normalized = normalized.replace("today's", "today")
-        normalized = re.sub(r"\s+", " ", normalized)
-
-        if "time" in normalized and (
-            normalized.startswith("what")
-            or normalized.startswith("can you tell")
-            or normalized.startswith("tell me")
-            or "time is it" in normalized
-        ):
-            return "what time is it"
-
-        if "date" in normalized or normalized in ["what day is today", "what is today"]:
-            return "what is the date"
-
-        if "day" in normalized and (
-            "today" in normalized
-            or normalized.startswith("what")
-            or "day is it" in normalized
-            or "day today" in normalized
-        ):
-            return "what day is it"
-
-        if "forecast" in normalized:
-            return "what is the forecast"
-
-        if "weather" in normalized:
-            return "what is the weather"
-
-        if "temperature" in normalized:
-            return "what is the temperature"
-
-        return None
-
-    def _get_rewrite_nonce(self, raw_input):
-        if not raw_input.startswith(f"[{self.REWRITE_HEADER_PREFIX}|"):
-            return None
-        end_idx = raw_input.find("]")
-        if end_idx == -1:
-            return None
-        header = raw_input[1:end_idx]
-        parts = header.split("|", 1)
-        if len(parts) != 2:
-            return None
-        return parts[1]
-
-    def _enqueue_rewrite(self, canonical_utterance, original_utterance):
-        nonce = uuid.uuid4().hex[:12]
-        self.rewrite_origins[nonce] = original_utterance
-        text_path = os.path.join(self.base_dir, "tmp", "save_text")
-        fname = os.path.join(
-            text_path,
-            f"savetxt_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S_%f')}_{nonce}.txt",
+  def _chat(self, system_prompt, user_prompt, max_tokens=220):
+    if not self.llm:
+      return None
+    try:
+      messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+      ]
+      try:
+        output = self.llm.create_chat_completion(
+          messages=messages,
+          max_tokens=max_tokens,
+          temperature=0.1,
+          chat_template_kwargs={"enable_thinking": False},
         )
-        entry = f"[{self.REWRITE_HEADER_PREFIX}|{nonce}]{canonical_utterance}"
-        with open(fname, "w", encoding="utf-8") as fh:
-            fh.write(entry)
-        self.log.info(
-            f"FallbackSkill._enqueue_rewrite() queued canonical utterance: {canonical_utterance}"
+      except TypeError:
+        output = self.llm.create_chat_completion(
+          messages=messages,
+          max_tokens=max_tokens,
+          temperature=0.1,
         )
+      ans = output["choices"][0]["message"]["content"].strip()
+      self._log_llm("fallback", user_prompt, ans)
+      return ans
+    except Exception as e:
+      self.log.error(f"FallbackSkill: Error querying local LLM: {e}")
+      return None
 
-    def _default_command_failure_answer(self, original_utterance):
-        return (
-            "I understood that as a smart boombox request, but I could not turn it into a supported command. "
-            "Please try saying it another way."
-        )
+  def _extract_json_object(self, text):
+    if not text:
+      return None
+    try:
+      return json.loads(text)
+    except Exception:
+      pass
+    match = re.search(r"\{.*\}", text, re.DOTALL)
+    if not match:
+      return None
+    try:
+      return json.loads(match.group(0))
+    except Exception:
+      return None
 
-    def _default_answer_failure_answer(self):
-        return "I am sorry, I could not answer that right now."
+  def _normalize_rewrite(self, text):
+    if not text:
+      return ""
+    text = text.replace("\n", " ").strip()
+    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"^[\"']+|[\"']+$", "", text)
+    return text
 
-    def _answer_user(
-        self, original_utterance, failed_rewrite=False, rewritten_utterance=""
+  def _deterministic_query_rewrite(self, sentence):
+    normalized = sentence.lower().strip()
+    normalized = normalized.replace("what's", "what is")
+    normalized = normalized.replace("whats", "what is")
+    normalized = normalized.replace("todays", "today")
+    normalized = normalized.replace("today's", "today")
+    normalized = re.sub(r"\s+", " ", normalized)
+
+    if "time" in normalized and (
+      normalized.startswith("what")
+      or normalized.startswith("can you tell")
+      or normalized.startswith("tell me")
+      or "time is it" in normalized
     ):
-        user_prompt = f"Original user utterance: {original_utterance}\n"
-        if failed_rewrite:
-            user_prompt += (
-                "A previous command rewrite was attempted and deterministic execution did not succeed.\n"
-                f"Rewritten command that failed: {rewritten_utterance}\n"
-                "Respond to the original user utterance. Do not pretend any action happened.\n"
-            )
-        answer = self._chat(self.answer_prompt, user_prompt, max_tokens=170)
-        if answer:
-            return answer
-        if failed_rewrite:
-            return self._default_command_failure_answer(original_utterance)
-        return "I am sorry, my local language model is not available right now due to a configuration error."
+      return "what time is it"
 
-    def _run_controller(self, sentence):
-        controller_output = self._chat(self.controller_prompt, sentence, max_tokens=220)
-        payload = self._extract_json_object(controller_output)
-        if payload is None:
-            self.log.warning(
-                f"FallbackSkill._run_controller() failed to parse JSON from: {controller_output}"
-            )
-            return {
-                "route": "answer",
-                "confidence": 0.0,
-                "canonical_utterance": "",
-                "answer": self._default_answer_failure_answer(),
-                "reason": "controller_parse_failure",
-            }
-        payload.setdefault("route", "answer")
-        payload.setdefault("confidence", 0.0)
-        payload.setdefault("canonical_utterance", "")
-        payload.setdefault("answer", "")
-        payload.setdefault("reason", "")
-        return payload
+    if "date" in normalized or normalized in ["what day is today", "what is today"]:
+      return "what is the date"
 
-    def _process_request_local(
-        self,
-        sentence,
-        failed_rewrite=False,
-        original_utterance="",
-        rewritten_utterance="",
+    if "day" in normalized and (
+      "today" in normalized
+      or normalized.startswith("what")
+      or "day is it" in normalized
+      or "day today" in normalized
     ):
-        with self.processing_lock:
-            if not self._ensure_llm_ready():
-                return {
-                    "action": "answer",
-                    "answer": self._llm_unavailable_answer(),
-                }
+      return "what day is it"
 
-            if failed_rewrite:
-                source_utterance = original_utterance or sentence
-                return {
-                    "action": "answer",
-                    "answer": self._answer_user(
-                        source_utterance,
-                        failed_rewrite=True,
-                        rewritten_utterance=rewritten_utterance or sentence,
-                    ),
-                }
+    if "forecast" in normalized:
+      return "what is the forecast"
 
-            fast_rewrite = self._deterministic_query_rewrite(sentence)
-            if fast_rewrite and fast_rewrite.lower() != sentence.lower():
-                return {
-                    "action": "rewrite",
-                    "canonical_utterance": fast_rewrite,
-                }
+    if "weather" in normalized:
+      return "what is the weather"
 
-            decision = self._run_controller(sentence)
-            route = str(decision.get("route", "answer")).strip()
-            confidence = float(decision.get("confidence", 0.0) or 0.0)
-            canonical_utterance = self._normalize_rewrite(
-                decision.get("canonical_utterance", "")
-            )
-            answer = str(decision.get("answer", "") or "").strip()
+    if "temperature" in normalized:
+      return "what is the temperature"
 
-            if route == "rewrite_command":
-                if confidence >= 0.55 and canonical_utterance:
-                    if canonical_utterance.lower() != sentence.lower():
-                        return {
-                            "action": "rewrite",
-                            "canonical_utterance": canonical_utterance,
-                        }
-                answer = answer or self._default_command_failure_answer(sentence)
+    return None
 
-            if not answer:
-                answer = self._default_answer_failure_answer()
+  def _get_rewrite_nonce(self, raw_input):
+    if not raw_input.startswith(f"[{self.REWRITE_HEADER_PREFIX}|"):
+      return None
+    end_idx = raw_input.find("]")
+    if end_idx == -1:
+      return None
+    header = raw_input[1:end_idx]
+    parts = header.split("|", 1)
+    if len(parts) != 2:
+      return None
+    return parts[1]
 
-            return {
-                "action": "answer",
-                "answer": answer,
-            }
+  def _enqueue_rewrite(self, canonical_utterance, original_utterance):
+    nonce = uuid.uuid4().hex[:12]
+    self.rewrite_origins[nonce] = original_utterance
+    text_path = os.path.join(self.base_dir, "tmp", "save_text")
+    fname = os.path.join(
+      text_path,
+      f"savetxt_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S_%f')}_{nonce}.txt",
+    )
+    entry = f"[{self.REWRITE_HEADER_PREFIX}|{nonce}]{canonical_utterance}"
+    with open(fname, "w", encoding="utf-8") as fh:
+      fh.write(entry)
+    self.log.info(
+      f"FallbackSkill._enqueue_rewrite() queued canonical utterance: {canonical_utterance}"
+    )
 
-    def _process_request_remote(
-        self,
-        sentence,
-        failed_rewrite=False,
-        original_utterance="",
-        rewritten_utterance="",
-    ):
-        req_body = json.dumps(
-            {
-                "sentence": sentence,
-                "failed_rewrite": failed_rewrite,
-                "original_utterance": original_utterance,
-                "rewritten_utterance": rewritten_utterance,
-            }
-        ).encode("utf-8")
-        req = urlrequest.Request(
-            f"http://{self.hub_host}:{self.REMOTE_PORT}/fallback",
-            data=req_body,
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-        try:
-            with urlrequest.urlopen(req, timeout=self.REMOTE_TIMEOUT) as response:
-                payload = json.loads(response.read().decode("utf-8"))
-            if isinstance(payload, dict):
-                return payload
-        except (urlerror.URLError, TimeoutError, json.JSONDecodeError) as e:
-            self.log.error(f"FallbackSkill: Remote LLM request failed: {e}")
-        except Exception as e:
-            self.log.error(f"FallbackSkill: Unexpected remote LLM failure: {e}")
+  def _default_command_failure_answer(self, original_utterance):
+    return (
+      "I understood that as a smart boombox request, but I could not turn it into a supported command. "
+      "Please try saying it another way."
+    )
+
+  def _default_answer_failure_answer(self):
+    return "I am sorry, I could not answer that right now."
+
+  def _answer_user(
+    self, original_utterance, failed_rewrite=False, rewritten_utterance=""
+  ):
+    user_prompt = f"Original user utterance: {original_utterance}\n"
+    if failed_rewrite:
+      user_prompt += (
+        "A previous command rewrite was attempted and deterministic execution did not succeed.\n"
+        f"Rewritten command that failed: {rewritten_utterance}\n"
+        "Respond to the original user utterance. Do not pretend any action happened.\n"
+      )
+    answer = self._chat(self.answer_prompt, user_prompt, max_tokens=170)
+    if answer:
+      return answer
+    if failed_rewrite:
+      return self._default_command_failure_answer(original_utterance)
+    return "I am sorry, my local language model is not available right now due to a configuration error."
+
+  def _run_controller(self, sentence):
+    controller_output = self._chat(self.controller_prompt, sentence, max_tokens=220)
+    payload = self._extract_json_object(controller_output)
+    if payload is None:
+      self.log.warning(
+        f"FallbackSkill._run_controller() failed to parse JSON from: {controller_output}"
+      )
+      return {
+        "route": "answer",
+        "confidence": 0.0,
+        "canonical_utterance": "",
+        "answer": self._default_answer_failure_answer(),
+        "reason": "controller_parse_failure",
+      }
+    payload.setdefault("route", "answer")
+    payload.setdefault("confidence", 0.0)
+    payload.setdefault("canonical_utterance", "")
+    payload.setdefault("answer", "")
+    payload.setdefault("reason", "")
+    return payload
+
+  def _process_request_local(
+    self,
+    sentence,
+    failed_rewrite=False,
+    original_utterance="",
+    rewritten_utterance="",
+  ):
+    with self.processing_lock:
+      if not self._ensure_llm_ready():
         return {
-            "action": "answer",
-            "answer": "I am sorry, the hub language model is not available right now.",
+          "action": "answer",
+          "answer": self._llm_unavailable_answer(),
         }
 
-    def _process_request(
-        self,
-        sentence,
-        failed_rewrite=False,
-        original_utterance="",
-        rewritten_utterance="",
-    ):
-        if self.use_remote_llm and not self.cfg.is_hub():
-            return self._process_request_remote(
-                sentence=sentence,
-                failed_rewrite=failed_rewrite,
-                original_utterance=original_utterance,
-                rewritten_utterance=rewritten_utterance,
-            )
-        return self._process_request_local(
-            sentence=sentence,
-            failed_rewrite=failed_rewrite,
-            original_utterance=original_utterance,
-            rewritten_utterance=rewritten_utterance,
-        )
+      if failed_rewrite:
+        source_utterance = original_utterance or sentence
+        return {
+          "action": "answer",
+          "answer": self._answer_user(
+            source_utterance,
+            failed_rewrite=True,
+            rewritten_utterance=rewritten_utterance or sentence,
+          ),
+        }
 
-    def handle_fallback(self, msg):
-        self.log.debug(
-            f"FallbackSkill:handle_fallback(): msg: \n{json.dumps(msg, indent=2)}"
-        )
-        utt = msg["payload"]["utt"]
-        sentence = utt["sentence"].strip()
-        raw_input = utt.get("raw_input", "")
+      fast_rewrite = self._deterministic_query_rewrite(sentence)
+      if fast_rewrite and fast_rewrite.lower() != sentence.lower():
+        return {
+          "action": "rewrite",
+          "canonical_utterance": fast_rewrite,
+        }
 
-        rewrite_nonce = self._get_rewrite_nonce(raw_input)
-        if rewrite_nonce is not None:
-            original_utterance = self.rewrite_origins.pop(rewrite_nonce, sentence)
-            result = self._process_request(
-                sentence=original_utterance,
-                failed_rewrite=True,
-                original_utterance=original_utterance,
-                rewritten_utterance=sentence,
-            )
-            ans = str(result.get("answer", "") or "").strip()
-            self.log.debug(
-                f"FallbackSkill:handle_fallback(): rewrite failure ans: {ans}"
-            )
-            self.speak(ans)
-            return
+      decision = self._run_controller(sentence)
+      route = str(decision.get("route", "answer")).strip()
+      confidence = float(decision.get("confidence", 0.0) or 0.0)
+      canonical_utterance = self._normalize_rewrite(
+        decision.get("canonical_utterance", "")
+      )
+      answer = str(decision.get("answer", "") or "").strip()
 
-        result = self._process_request(sentence=sentence)
-        if result.get("action") == "rewrite":
-            canonical_utterance = self._normalize_rewrite(
-                result.get("canonical_utterance", "")
-            )
-            if canonical_utterance:
-                self._enqueue_rewrite(canonical_utterance, sentence)
-                return
+      if route == "rewrite_command":
+        if confidence >= 0.55 and canonical_utterance:
+          if canonical_utterance.lower() != sentence.lower():
+            return {
+              "action": "rewrite",
+              "canonical_utterance": canonical_utterance,
+            }
+        answer = answer or self._default_command_failure_answer(sentence)
 
-        answer = str(result.get("answer", "") or "").strip()
-        if not answer:
-            answer = "I am sorry, the language model is not available right now."
-        self.log.debug(f"FallbackSkill:handle_fallback(): ans: {answer}")
-        self.speak(answer)
+      if not answer:
+        answer = self._default_answer_failure_answer()
+
+      return {
+        "action": "answer",
+        "answer": answer,
+      }
+
+  def _process_request_remote(
+    self,
+    sentence,
+    failed_rewrite=False,
+    original_utterance="",
+    rewritten_utterance="",
+  ):
+    req_body = json.dumps(
+      {
+        "sentence": sentence,
+        "failed_rewrite": failed_rewrite,
+        "original_utterance": original_utterance,
+        "rewritten_utterance": rewritten_utterance,
+      }
+    ).encode("utf-8")
+    req = urlrequest.Request(
+      f"http://{self.hub_host}:{self.REMOTE_PORT}/fallback",
+      data=req_body,
+      headers={"Content-Type": "application/json"},
+      method="POST",
+    )
+    try:
+      with urlrequest.urlopen(req, timeout=self.REMOTE_TIMEOUT) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+      if isinstance(payload, dict):
+        return payload
+    except (urlerror.URLError, TimeoutError, json.JSONDecodeError) as e:
+      self.log.error(f"FallbackSkill: Remote LLM request failed: {e}")
+    except Exception as e:
+      self.log.error(f"FallbackSkill: Unexpected remote LLM failure: {e}")
+    return {
+      "action": "answer",
+      "answer": "I am sorry, the hub language model is not available right now.",
+    }
+
+  def _process_request(
+    self,
+    sentence,
+    failed_rewrite=False,
+    original_utterance="",
+    rewritten_utterance="",
+  ):
+    if self.use_remote_llm and not self.cfg.is_hub():
+      return self._process_request_remote(
+        sentence=sentence,
+        failed_rewrite=failed_rewrite,
+        original_utterance=original_utterance,
+        rewritten_utterance=rewritten_utterance,
+      )
+    return self._process_request_local(
+      sentence=sentence,
+      failed_rewrite=failed_rewrite,
+      original_utterance=original_utterance,
+      rewritten_utterance=rewritten_utterance,
+    )
+
+  def handle_fallback(self, msg):
+    self.log.debug(
+      f"FallbackSkill:handle_fallback(): msg: \n{json.dumps(msg, indent=2)}"
+    )
+    utt = msg["payload"]["utt"]
+    sentence = utt["sentence"].strip()
+    raw_input = utt.get("raw_input", "")
+
+    rewrite_nonce = self._get_rewrite_nonce(raw_input)
+    if rewrite_nonce is not None:
+      original_utterance = self.rewrite_origins.pop(rewrite_nonce, sentence)
+      result = self._process_request(
+        sentence=original_utterance,
+        failed_rewrite=True,
+        original_utterance=original_utterance,
+        rewritten_utterance=sentence,
+      )
+      ans = str(result.get("answer", "") or "").strip()
+      self.log.debug(
+        f"FallbackSkill:handle_fallback(): rewrite failure ans: {ans}"
+      )
+      self.speak(ans)
+      return
+
+    result = self._process_request(sentence=sentence)
+    if result.get("action") == "rewrite":
+      canonical_utterance = self._normalize_rewrite(
+        result.get("canonical_utterance", "")
+      )
+      if canonical_utterance:
+        self._enqueue_rewrite(canonical_utterance, sentence)
+        return
+
+    answer = str(result.get("answer", "") or "").strip()
+    if not answer:
+      answer = "I am sorry, the language model is not available right now."
+    self.log.debug(f"FallbackSkill:handle_fallback(): ans: {answer}")
+    self.speak(answer)
 if __name__ == "__main__":
-    fs = FallbackSkill()
-    if fs.run_remote_server:
-        fs._run_remote_server()
-    else:
-        Event().wait()
+  fs = FallbackSkill()
+  if fs.run_remote_server:
+    fs._run_remote_server()
+  else:
+    Event().wait()
