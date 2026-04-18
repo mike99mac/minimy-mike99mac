@@ -112,4 +112,4 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
       ws.bus.client.disconnect()
   else:
-    print("\nThe hardware is not a Raspberry Pi - GPIO buttons disabled")
+    print("The hardware is not a Raspberry Pi - GPIO buttons disabled")

@@ -434,11 +434,11 @@ function buildVenv
   cd $baseDir/framework/services/tts/local # piper is built in the source tree
   if [ ! -d piper ]; then                  # not downloaded yet
     if [ $(uname -m) = "aarch64" ]; then
-      runCmd wget -q https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_arm64.tar.gz
-      runCmd tar xzf piper_arm64.tar.gz    # creates piper dir
+      runCmd wget -q "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_aarch64.tar.gz"
+      runCmd tar xzf piper_linux_aarch64.tar.gz # creates piper dir
     else
-      runCmd wget -q https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_amd64.tar.gz
-      runCmd tar xzf piper_amd64.tar.gz    # creates piper dir
+      runCmd wget -q "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz"
+      runCmd tar xzf piper_linux_x86_64.tar.gz # creates piper dir
     fi
     cd piper                               # get a male and a female voice
     runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx

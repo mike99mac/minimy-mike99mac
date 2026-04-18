@@ -6,6 +6,8 @@
     InputDeviceId: '0'
     InputLevelControlName: Mic
     LogLevel: d
+    OutputDeviceName: ''
+    OutputLevelControlName: Speaker
 - Basic:
     BaseDir: {{BASE_DIR}}
     Hub: localhost
@@ -16,9 +18,6 @@
     MusicDir:
     NLP:
       UseRemote: n
-    OutputDeviceName: ''
-    OutputLevelControlName: Speaker
-    Platform: u
     RoomToHost:
       # Examples:
       # bedroom: 192.168.4.50

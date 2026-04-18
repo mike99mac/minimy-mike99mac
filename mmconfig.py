@@ -16,13 +16,9 @@ def handle_basic(cfg):
   update_value(cfg, "Basic.STT.Model", "STT Model: tiny.en, base.en, or small.en")
   update_value(cfg, "Basic.LLMRepo", "LLM HuggingFace Repo")
   update_value(cfg, "Basic.LLMFile", "LLM GGUF File")
-  update_value(cfg, "Basic.GoogleApiKeyPath", "Google API Key File Location")
-  update_value(cfg, "Basic.AWSId", "AWS ID")
-  update_value(cfg, "Basic.AWSKey", "AWS Key")
 
 def handle_advanced(cfg):
   print("Advanced Settings\n-----------------")
-  update_value(cfg, "Advanced.Platform", "ubuntu, pios or mark2")
   update_value(cfg, "Basic.STT.UseRemote", "Use Remote STT (y/n)")
   update_value(cfg, "Basic.TTS.UseRemote", "Use Remote TTS (y/n)")
   update_value(cfg, "Basic.NLP.UseRemote", "Use Remote NLP (y/n)")
@@ -40,7 +36,7 @@ def handle_super_advanced(cfg):
   update_value(cfg, "Advanced.InputDeviceId", "Input Device ID (0 means use default)")
   update_value(
     cfg,
-    "Basic.OutputDeviceName",
+    "Advanced.OutputDeviceName",
     "Output Device Name (empty string means use default)",
   )
   update_value(
@@ -50,7 +46,7 @@ def handle_super_advanced(cfg):
   )
   update_value(
     cfg,
-    "Basic.OutputLevelControlName",
+    "Advanced.OutputLevelControlName",
     "Output Level Control Name (typically Playback or Speaker)",
   )
 
