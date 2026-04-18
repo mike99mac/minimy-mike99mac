@@ -72,14 +72,13 @@ class Config:
       }
   }
   legacy_key_map = {
-    'Basic.AWSId': 'Advanced.AWSId',
-    'Basic.AWSKey': 'Advanced.AWSKey',
-    'Basic.GoogleApiKeyPath': 'Advanced.GoogleApiKeyPath',
+    'Advanced.AWSId': 'Advanced.AWSId',
+    'Advanced.AWSKey': 'Advanced.AWSKey',
+    'Advanced.GoogleApiKeyPath': 'Advanced.GoogleApiKeyPath',
     'Basic.HubModel': 'Basic.STT.Model',
     'Basic.SpokeModel': 'Basic.STT.Model',
-    'Advanced.Platform': 'Basic.Platform',
-    'Advanced.OutputDeviceName': 'Basic.OutputDeviceName',
-    'Advanced.OutputLevelControlName': 'Basic.OutputLevelControlName',
+    'Advanced.OutputDeviceName': 'Advanced.OutputDeviceName',
+    'Advanced.OutputLevelControlName': 'Advanced.OutputLevelControlName',
     'Advanced.STT.UseRemote': 'Basic.STT.UseRemote',
     'Advanced.TTS.UseRemote': 'Basic.TTS.UseRemote',
     'Advanced.TTS.Local': 'Basic.TTS.Local',
@@ -239,7 +238,7 @@ class MediaSession:
 def aplay(file):
   # one place where the raw aplay is used which uses proper device entry from the config file
   cfg = Config()
-  device_id = cfg.get_cfg_val('Basic.OutputDeviceName')
+  device_id = cfg.get_cfg_val('Advanced.OutputDeviceName')
   cmd = "aplay " + file
   if device_id is not None and device_id != '':
     cmd = "aplay -D" + device_id + " " + file

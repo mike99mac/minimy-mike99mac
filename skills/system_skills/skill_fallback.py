@@ -509,7 +509,7 @@ Rules:
     )
 
   def _log_llm(self, label, prompt_text, answer_text):
-    log_path = os.path.expanduser("~/minimy/logs/llm.txt")
+    log_path = os.path.expanduser("~/minimy/logs/llm.log")
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
     try:
       with open(log_path, "a", encoding="utf-8") as f:

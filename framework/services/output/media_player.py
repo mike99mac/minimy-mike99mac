@@ -381,7 +381,7 @@ class SVAMediaPlayerSkill:
         fa = file_uri.split(".")
         file_ext = fa[len(fa) - 1]
         cfg = Config()
-        device_id = cfg.get_cfg_val("Basic.OutputDeviceName")
+        device_id = cfg.get_cfg_val("Advanced.OutputDeviceName")
         cmd = ""
         if media_type is None or media_type == "":
           self.log.warning(f"SVAMediaPlayerSkill.run() invalid media type: {media_type}")

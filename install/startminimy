@@ -154,11 +154,9 @@ function startSystem
   logDir="$baseDir/logs"
 
   echo "Starting system skills ..."
-  echo "Starting system skills ..."
   cd "$baseDir/skills/system_skills"
   "$venvPython" skill_system.py >> "$logDir/skills.log" &
   sleep 1
-  echo "Starting intent service ..."
   echo "Starting intent service ..."
   cd "$baseDir"
   "$venvPython" framework/services/intent/intent.py >> "$logDir/intent.log" &
@@ -192,7 +190,7 @@ function loadOneSkill
   fi
   cd "$theDir"
   echo "Starting $desc from directory $theDir ..."
-  "$baseDir/minimy_venv/bin/python3" __init__.py "$PWD" &
+  "$baseDir/minimy_venv/bin/python3" __init__.py "$PWD" >> "$baseDir/logs/skills.log" 2>&1 &
  }                                         # loadOneSkill{}
 
 #+--------------------------------------------------------------------------+
@@ -208,9 +206,9 @@ function loadSystemSkills
   local venvPython="$baseDir/minimy_venv/bin/python3"
   "$venvPython" install/cache_llm.py >> "$logDir/llm_download.log" 2>&1 &
   "$venvPython" skills/system_skills/skill_fallback.py >> "$logDir/skills.log" 2>&1 &
-  "$venvPython" skills/system_skills/skill_media.py &
-  "$venvPython" skills/system_skills/skill_volume.py &
-  "$venvPython" skills/system_skills/skill_alarm.py &
+  "$venvPython" skills/system_skills/skill_media.py >> "$logDir/skills.log" 2>&1 &
+  "$venvPython" skills/system_skills/skill_volume.py >> "$logDir/skills.log" 2>&1 &
+  "$venvPython" skills/system_skills/skill_alarm.py >> "$logDir/skills.log" 2>&1 &
   sleep 2
  }                                       # loadSystemSkills()
 
@@ -252,9 +250,9 @@ function loadOtherServices
   cd "$baseDir"
   local venvPython="$baseDir/minimy_venv/bin/python3"
   echo "Starting buttons ..."
-  "$venvPython" framework/services/input/buttons.py &
+  "$venvPython" framework/services/input/buttons.py >> "$logDir/buttons.log" 2>&1 &
   echo "Starting the mic ..."
-  "$venvPython" framework/services/input/mic.py &
+  "$venvPython" framework/services/input/mic.py >> "$logDir/mic.log" 2>&1 &
  }                                       # loadOtherServices()
 
 # main()
