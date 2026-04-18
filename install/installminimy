@@ -226,13 +226,14 @@ function setMinimyVars
   : SOURCE: ${BASH_SOURCE}
   : STACK:  ${FUNCNAME[@]}
 
+  local configTemplate="$configFile.template"
   if [ ${#hub} = 0 ]; then                 # hub not set with args
-    hub=`grep "    Hub:" $configFile | awk '{print $2}'` # get hub in config file
+    hub=`grep "    Hub:" $configTemplate | awk '{print $2}'` # get hub in config file
     echo -n "Host name of hub server [$hub]: "
     read hub
   fi
   if [ ${#hub} != 0 ]; then                # new value was supplied
-    sed -i "s/    Hub: .*/    Hub: $hub/g" $configFile # reset hub server
+    sed -i "s/    Hub: .*/    Hub: $hub/g" $configTemplate # reset hub server
   fi
  }                                         # setMinimyVars()
 
