@@ -20,6 +20,11 @@ except ImportError:
     try_to_load_from_cache = None
 
 
+def _log(message):
+    timestamp = datetime.utcnow().isoformat(timespec="seconds") + "Z"
+    print(f"{timestamp} {message}", flush=True)
+
+
 def _read_lockfile(lock_path):
     try:
         with open(lock_path, "r", encoding="utf-8") as handle:
@@ -41,14 +46,17 @@ def _pid_is_alive(pid):
 def acquire_lock(lock_path, repo_id, filename):
     existing = _read_lockfile(lock_path)
     if existing and _pid_is_alive(existing.get("pid")):
-        print(
+        _log(
             "LLM cache download already running "
             f"(pid={existing.get('pid')}, repo={existing.get('repo_id')}, file={existing.get('filename')})",
-            flush=True,
         )
         return False
 
     if existing:
+        _log(
+            "LLM cache lock existed but the recorded worker was no longer alive; "
+            "removing stale lock"
+        )
         try:
             os.remove(lock_path)
         except FileNotFoundError:
@@ -69,12 +77,17 @@ def acquire_lock(lock_path, repo_id, filename):
     with os.fdopen(fd, "w", encoding="utf-8") as handle:
         json.dump(payload, handle)
 
+    _log(
+        f"Acquired LLM cache lock at {lock_path} "
+        f"(pid={payload['pid']}, repo={repo_id}, file={filename})"
+    )
     return True
 
 
 def release_lock(lock_path):
     try:
         os.remove(lock_path)
+        _log(f"Released LLM cache lock at {lock_path}")
     except FileNotFoundError:
         pass
 
@@ -115,35 +128,37 @@ def main():
     lock_path = os.path.join(tmp_dir, "llm_download.lock")
 
     if hf_hub_download is None:
-        print("huggingface_hub is not installed; cannot cache LLM model", flush=True)
+        _log("huggingface_hub is not installed; cannot cache LLM model")
         return 1
 
     if not should_cache_local_llm(cfg):
-        print("LLM cache not required on this node; skipping", flush=True)
+        _log("LLM cache not required on this node; skipping")
         return 0
 
     repo_id = str(cfg.get_cfg_val("Basic.LLMRepo") or "").strip()
     filename = str(cfg.get_cfg_val("Basic.LLMFile") or "").strip()
     if not repo_id or not filename:
-        print("LLMRepo or LLMFile is missing in mmconfig.yml; skipping", flush=True)
+        _log("LLMRepo or LLMFile is missing in mmconfig.yml; skipping")
         return 1
 
     cached_path = resolve_cached_path(repo_id, filename)
     if isinstance(cached_path, str) and os.path.exists(cached_path):
-        print(f"LLM model already cached at {cached_path}", flush=True)
+        _log(f"LLM model already cached at {cached_path}")
         return 0
 
     if not acquire_lock(lock_path, repo_id, filename):
         return 0
 
     try:
-        print(
-            f"Downloading LLM model {repo_id} ({filename}) on host {socket.gethostname()}",
-            flush=True,
+        _log(
+            f"Downloading LLM model {repo_id} ({filename}) on host {socket.gethostname()}"
         )
         cached_path = hf_hub_download(repo_id=repo_id, filename=filename)
-        print(f"LLM model cached at {cached_path}", flush=True)
+        _log(f"LLM model cached at {cached_path}")
         return 0
+    except Exception as exc:
+        _log(f"LLM model download failed: {exc}")
+        return 1
     finally:
         release_lock(lock_path)
 
