@@ -535,8 +535,8 @@ TMP_MOUNT_UNIT=""
 detectUserInfo                             # detect user information first
 getPlatform                                # verify supported platform
 checkEnv                                   # check the environment
-setMinimyVars                              # set config file variables
 parseArgs $@                               # parse arguments
+setMinimyVars                              # set config file variables
 generateConfigFile                         # generate config file from template
 generateServiceFiles                       # generate systemctl service files
 buildVenv                                  # do the work
