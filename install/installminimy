@@ -115,9 +115,6 @@ function generateServiceFiles
   echo | tee -a $logFile
   echo "Generating systemd service files from templates..." | tee -a $logFile
 
-  # Create a temporary directory for generated files
-  local tmpDir=$(mktemp -d)
-
   # Generate minimy.service from template
   if [ ! -f "$baseDir/install/minimy.service.template" ]; then
     echo "ERROR: minimy.service.template not found" | tee -a $logFile
@@ -127,7 +124,7 @@ function generateServiceFiles
       -e "s|{{GROUP}}|$CURRENT_GROUP|g" \
       -e "s|{{BASE_DIR}}|$baseDir|g" \
       -e "s|{{UID}}|$CURRENT_UID|g" \
-      "$baseDir/install/minimy.service.template" > "$tmpDir/minimy.service"
+      "$baseDir/install/minimy.service.template" > "/tmp/minimy.service"
   echo "Generated minimy.service" | tee -a $logFile
 
   # Generate whisper.service from template
@@ -139,7 +136,7 @@ function generateServiceFiles
       -e "s|{{GROUP}}|$CURRENT_GROUP|g" \
       -e "s|{{BASE_DIR}}|$baseDir|g" \
       -e "s|{{UID}}|$CURRENT_UID|g" \
-      "$baseDir/install/whisper.service.template" > "$tmpDir/whisper.service"
+      "$baseDir/install/whisper.service.template" > "/tmp/whisper.service"
   echo "Generated whisper.service" | tee -a $logFile
 
   # Generate mount unit name based on base directory path
@@ -154,7 +151,7 @@ function generateServiceFiles
   sed -e "s|{{USER}}|$CURRENT_USER|g" \
       -e "s|{{GROUP}}|$CURRENT_GROUP|g" \
       -e "s|{{BASE_DIR}}|$baseDir|g" \
-      "$baseDir/install/minimy-logs.mount.template" > "$tmpDir/${mountUnitPath}-logs.mount"
+      "$baseDir/install/minimy-logs.mount.template" > "/tmp/${mountUnitPath}-logs.mount"
   echo "Generated ${mountUnitPath}-logs.mount" | tee -a $logFile
 
   # Generate tmp mount file from template
@@ -165,7 +162,7 @@ function generateServiceFiles
   sed -e "s|{{USER}}|$CURRENT_USER|g" \
       -e "s|{{GROUP}}|$CURRENT_GROUP|g" \
       -e "s|{{BASE_DIR}}|$baseDir|g" \
-      "$baseDir/install/minimy-tmp.mount.template" > "$tmpDir/${mountUnitPath}-tmp.mount"
+      "$baseDir/install/minimy-tmp.mount.template" > "/tmp/${mountUnitPath}-tmp.mount"
   echo "Generated ${mountUnitPath}-tmp.mount" | tee -a $logFile
 
   # Store the mount unit names for later use
@@ -175,12 +172,10 @@ function generateServiceFiles
   if command -v systemctl &>/dev/null; then
     # Copy generated files to /etc/systemd/system
     echo "Installing systemd service files..." | tee -a $logFile
-    runCmd sudo cp "$tmpDir/minimy.service" /etc/systemd/system/minimy.service
-    runCmd sudo cp "$tmpDir/whisper.service" /etc/systemd/system/whisper.service
-    runCmd sudo cp "$tmpDir/${mountUnitPath}-logs.mount" "/etc/systemd/system/${mountUnitPath}-logs.mount"
-    runCmd sudo cp "$tmpDir/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
-
-    rm -rf "$tmpDir"                         # cleanup temporary directory
+    runCmd sudo cp "/tmp/minimy.service" /etc/systemd/system/minimy.service
+    runCmd sudo cp "/tmp/whisper.service" /etc/systemd/system/whisper.service
+    runCmd sudo cp "/tmp/${mountUnitPath}-logs.mount" "/etc/systemd/system/${mountUnitPath}-logs.mount"
+    runCmd sudo cp "/tmp/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
     runCmd sudo systemctl daemon-reload      # reload systemd to pick up new files
     runCmd sudo systemctl start whisper      # start whisper for this session
     echo "Systemd service files installed successfully" | tee -a $logFile
@@ -249,7 +244,8 @@ function runCmd
   let stepNum=$stepNum+1
   echo | tee -a $logFile
   echo "Step $stepNum: $cmd ..." 2>&1 | tee -a $logFile # show the command and send to output file
-  eval $cmd >> $logFile 2>&1               # run command and log output
+  # eval $cmd >> $logFile 2>&1               # run command and log output
+  $cmd >> $logFile 2>&1               # run command and log output
   rc=$?
   if [ "$rc" != 0 ]; then                  # it failed
     echo "ERROR: $cmd returned $rc" | tee -a $logFile
