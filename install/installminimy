@@ -378,7 +378,7 @@ function buildVenv
   runCmd $pipCmd install psutil 
   runCmd $pipCmd install -r install/requirements.txt
   echo "Installing local STT faster-whisper" | tee -a $logFile
-  runCmd $pipCmd install faster-whisper
+  runCmd $pipCmd install faster-whisper --constraint <(echo "ctranslate2==$(pip show ctranslate2 | grep Version | awk '{print $2}')")
   runCmd $pipCmd install datasets
   runCmd $pipCmd install gpiozero
   runCmd $pipCmd install keyboard
@@ -453,13 +453,18 @@ function buildVenv
     echo "Skipping piper - already installed ..."| tee -a $logFile
   fi
 
-  echo "Installing Ollama ..." | tee -a $logFile
+  echo "Installing Llama.cpp ..." | tee -a $logFile
   echo | tee -a $logFile
   if grep -qi "Jetson" /proc/device-tree/model 2>/dev/null || grep -qi "Orin" /proc/device-tree/model 2>/dev/null; then
-    llamaCppVersion="0.3.19"
+        llamaCppVersion="0.3.14"
     echo "Jetson Orin Nano detected. Building llama-cpp-python $llamaCppVersion from source with CUDA ..." | tee -a $logFile
     runCmd "$pipCmd install --upgrade huggingface_hub"
-    runCmd "PATH=/usr/local/cuda/bin:\$PATH CUDA_HOME=/usr/local/cuda CUDACXX=/usr/local/cuda/bin/nvcc CMAKE_ARGS='-DGGML_CUDA=on -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCUDAToolkit_ROOT=/usr/local/cuda' FORCE_CMAKE=1 $pipCmd install --force-reinstall --no-cache-dir --no-binary=llama-cpp-python --index-url https://pypi.org/simple llama-cpp-python==$llamaCppVersion"
+    export PATH="/usr/local/cuda/bin:$PATH"
+    export CUDA_HOME="/usr/local/cuda"
+    export CUDACXX="/usr/local/cuda/bin/nvcc"
+    export CMAKE_ARGS="-DGGML_CUDA=on -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCUDAToolkit_ROOT=/usr/local/cuda"
+    export FORCE_CMAKE=1
+    runCmd "$pipCmd install --force-reinstall --no-cache-dir --index-url https://pypi.org/simple llama-cpp-python==$llamaCppVersion"
   else
     echo "Installing with OpenBLAS ..." | tee -a $logFile
     if command -v apt-get &>/dev/null; then
