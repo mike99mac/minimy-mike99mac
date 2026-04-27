@@ -378,7 +378,8 @@ function buildVenv
   runCmd $pipCmd install psutil 
   runCmd $pipCmd install -r install/requirements.txt
   echo "Installing local STT faster-whisper" | tee -a $logFile
-  runCmd $pipCmd install faster-whisper --constraint <(echo "ctranslate2==$(pip show ctranslate2 | grep Version | awk '{print $2}')")
+  #runCmd $pipCmd install faster-whisper --constraint <(echo "ctranslate2==$(pip show ctranslate2 | grep Version | awk '{print $2}')")
+  runCmd $pipCmd install faster-whisper 
   runCmd $pipCmd install datasets
   runCmd $pipCmd install gpiozero
   runCmd $pipCmd install keyboard
