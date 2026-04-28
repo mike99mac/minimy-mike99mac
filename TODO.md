@@ -9,6 +9,10 @@
 1. Go to the Internet only when necessary - for example, news, weather and sports scores. Play a chime when accessing the Internet. 
 1. Add a skill to answer "Computer what is the {minimy} version?" 
 1. Work on "barge in" and microphone directionality 
+### Goals for Summer 2026
+1. Finish move music intent
+1. Get directional mic working
+1. Work on internet searching skill
 ### Lower Priority
 1. Make logging cleaner - less printing to stdout.
 1. Finish the connectivity skill.
