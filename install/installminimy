@@ -176,8 +176,8 @@ function generateServiceFiles
     runCmd sudo cp "/tmp/whisper.service" /etc/systemd/system/whisper.service
     runCmd sudo cp "/tmp/${mountUnitPath}-logs.mount" "/etc/systemd/system/${mountUnitPath}-logs.mount"
     runCmd sudo cp "/tmp/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
-    runCmd sudo systemctl daemon-reload      # reload systemd to pick up new files
-    runCmd sudo systemctl start whisper      # start whisper for this session
+    runCmd sudo systemctl daemon-reload    # reload systemd to pick up new files
+    runCmd sudo systemctl start whisper    # start whisper for this session
     echo "Systemd service files installed successfully" | tee -a $logFile
   fi
  }                                         # generateServiceFiles()
@@ -245,7 +245,7 @@ function runCmd
   echo | tee -a $logFile
   echo "Step $stepNum: $cmd ..." 2>&1 | tee -a $logFile # show the command and send to output file
   # eval $cmd >> $logFile 2>&1               # run command and log output
-  $cmd >> $logFile 2>&1               # run command and log output
+  $cmd >> $logFile 2>&1                    # run command and log output
   rc=$?
   if [ "$rc" != 0 ]; then                  # it failed
     echo "ERROR: $cmd returned $rc" | tee -a $logFile
@@ -312,7 +312,7 @@ function buildVenv
     runCmd sudo apt-get install -y python3-venv python3-dev
   fi
   PI_MODEL=$(grep -q "Raspberry Pi 4" /proc/device-tree/model 2>/dev/null && echo "4" || echo "other")
-  if [ "$PI_MODEL" = "4" ]; then # Select Python version
+  if [ "$PI_MODEL" = "4" ]; then           # Select Python version
     PYTHON=python3.11
     echo "Python 3.11 not found. Compiling for Pi 4..."
     runCmd sudo apt update

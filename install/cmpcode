@@ -39,8 +39,8 @@ for nextFile in $sourceFiles; do
     fi
   else
     diff "$srcCode/$nextFile" "$gitCode/$nextFile" >/dev/null
-    if [ $? != 0 ]; then                     # file has changed
-      if [ ${#copyCmds} = 0 ]; then          # first copy command
+    if [ $? != 0 ]; then                   # file has changed
+      if [ ${#copyCmds} = 0 ]; then        # first copy command
         copyCmds="cp $srcCode/$nextFile $gitCode/$nextFile"
       else
         copyCmds="$copyCmds \ncp $srcCode/$nextFile $gitCode/$nextFile"
@@ -56,7 +56,7 @@ else                                       # at least one change
   tmpFile=$(mktemp)
   echo "#!/bin/bash" > $tmpFile            # restart file
   echo -e "$copyCmds" >> $tmpFile          # add copy commands with newlines
-  sudo mv "$tmpFile" "$copycode"               # script to copy modified files
+  sudo mv "$tmpFile" "$copycode"           # script to copy modified files
   sudo chown $(whoami):$(id -gn) "$copycode"
   sudo chmod 755 "$copycode"
   echo "Copy commands in: $copycode"

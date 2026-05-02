@@ -24,7 +24,7 @@ def test_hub_stt(wav_filename, hub):
     "--connect-timeout", "5",
     "--max-time", "10",
     "-H", "Content-Type: audio/wav",
-    "--data-binary", f"@{wav_filename}" 
+    "--data-binary", f"@{wav_filename}"
   ]
   try:
     result = subprocess.run(cmd, capture_output=True, text=True)
