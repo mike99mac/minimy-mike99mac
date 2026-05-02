@@ -35,8 +35,10 @@ link-4.1b/
 install/mmconfig.yml
 install/my-google-key.json
 
-# Editor / IDE
-pyrightconfig.json
+# Editor
+.nvim.lua
+
+# LGPIO
 .lgd-nfy0
 
 # OS artifacts
