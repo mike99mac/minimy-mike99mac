@@ -210,7 +210,7 @@ function loadSystemSkills
   "$venvPython" skills/system_skills/skill_volume.py >> "$logDir/skills.log" 2>&1 &
   "$venvPython" skills/system_skills/skill_alarm.py >> "$logDir/skills.log" 2>&1 &
   sleep 2
- }                                       # loadSystemSkills()
+ }                                         # loadSystemSkills()
 
 #+--------------------------------------------------------------------------+
 function loadUserSkills
@@ -253,7 +253,7 @@ function loadOtherServices
   "$venvPython" framework/services/input/buttons.py >> "$logDir/buttons.log" 2>&1 &
   echo "Starting the mic ..."
   "$venvPython" framework/services/input/mic.py >> "$logDir/mic.log" 2>&1 &
- }                                       # loadOtherServices()
+ }                                         # loadOtherServices()
 
 # main()
 export SVA_BASE_DIR="$baseDir"
