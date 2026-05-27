@@ -65,6 +65,22 @@ class Config:
       'WakeWords': ['computer']
     }
   }
+  legacy_key_map = {
+    'Advanced.AWSId': 'Advanced.AWSId',
+    'Advanced.AWSKey': 'Advanced.AWSKey',
+    'Advanced.GoogleApiKeyPath': 'Advanced.GoogleApiKeyPath',
+    'Basic.HubModel': 'Basic.STT.Model',
+    'Basic.SpokeModel': 'Basic.STT.Model',
+    'Advanced.OutputDeviceName': 'Advanced.OutputDeviceName',
+    'Advanced.OutputLevelControlName': 'Advanced.OutputLevelControlName',
+    'Advanced.STT.UseRemote': 'Basic.STT.UseRemote',
+    'Advanced.TTS.UseRemote': 'Basic.TTS.UseRemote',
+    'Advanced.TTS.Local': 'Basic.TTS.Local',
+    'Advanced.TTS.Remote': 'Basic.TTS.Remote',
+    'Advanced.TTS.LocalVoice': 'Basic.TTS.LocalVoice',
+    'Advanced.NLP.UseRemote': 'Basic.NLP.UseRemote',
+    'Advanced.LLM.UseRemote': 'Basic.LLM.UseRemote'
+  }
 
   def __init__(self):
     base_dir = os.getenv('SVA_BASE_DIR')
@@ -101,24 +117,45 @@ class Config:
     self.save_cfg()
     self.cfg = self.load_cfg()
 
+  # ========== REPLACED METHODS ==========
   def get_cfg_val(self, key):
-    ka = self._resolve_key(key).split(".")
-    sect = self.cfg
-    for k in ka:
-      try:
-        sect = sect[k]
-      except Exception:
-        return None
-    return sect
+    """Get a config value using dot notation. Returns None if key not found."""
+    # Handle legacy config that might be a list of dicts
+    cfg_dict = self.cfg
+    if isinstance(cfg_dict, list):
+        merged = {}
+        for item in cfg_dict:
+            if isinstance(item, dict):
+                merged.update(item)
+        cfg_dict = merged
+    keys = key.split('.')
+    current = cfg_dict
+    for k in keys:
+        if isinstance(current, dict) and k in current:
+            current = current[k]
+        else:
+            return None
+    return current
 
   def set_cfg_val(self, key, value):
-    ka = self._resolve_key(key).split(".")
-    sect = self.cfg
-    for k in ka[:-1]:
-      if k not in sect or not isinstance(sect[k], dict):
-        sect[k] = {}
-      sect = sect[k]
-    sect[ka[-1]] = value
+    """Set a config value using dot notation, creating intermediate dicts as needed."""
+    # Handle legacy config that might be a list of dicts
+    cfg_dict = self.cfg
+    if isinstance(cfg_dict, list):
+        merged = {}
+        for item in cfg_dict:
+            if isinstance(item, dict):
+                merged.update(item)
+        self.cfg = merged
+        cfg_dict = self.cfg
+    keys = key.split('.')
+    current = cfg_dict
+    for k in keys[:-1]:
+        if k not in current or not isinstance(current[k], dict):
+            current[k] = {}
+        current = current[k]
+    current[keys[-1]] = value
+  # ========== END REPLACED METHODS ==========
 
   def is_hub(self):
     hub = self.get_cfg_val("Basic.Hub")
@@ -137,6 +174,7 @@ class Config:
   def _resolve_key(self, key):
     if self._has_path(self.cfg, key.split(".")):
       return key
+    return self.legacy_key_map.get(key, key)
 
   def _has_path(self, cfg, keys):
     sect = cfg
