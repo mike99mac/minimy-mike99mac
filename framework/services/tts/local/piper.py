@@ -1,4 +1,3 @@
-#from framework.util.utils import execute_command, Config
 from framework.util.utils import Config
 import os
 
@@ -16,4 +15,3 @@ def local_speak_dialog(text, file_name, wait_q):
   os.system(cmd)                           # piper creates speech.wav then plays it
   os.system("rm speech.wav")
   wait_q.put({'service':'local', 'status':'success'})
-    
