@@ -27,4 +27,3 @@ if __name__ == "__main__":
   home_dir = os.environ.get('HOME')
   wav_file = f"{home_dir}/minimy/jfk.wav"
   test_hub_stt(wav_file)
-

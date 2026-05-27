@@ -10,7 +10,7 @@
 1. Add a skill to answer "Computer what is the {minimy} version?" 
 1. Work on "barge in" and microphone directionality 
 ### Goals for Summer 2026
-1. Get directional mic working - Accomplished manually but need to automate
+1. Get directional mic working - ✅️
 1. Make llama-cpp-python a system service
 1. Finish move music intent
 1. Work on internet searching skill
