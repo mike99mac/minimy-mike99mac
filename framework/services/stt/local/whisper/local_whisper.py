@@ -1,6 +1,7 @@
 import io
 import os
 import sys
+import time
 import wave
 import numpy as np
 import ctranslate2
@@ -11,9 +12,8 @@ home_dir = os.environ.get("HOME")
 sys.path.append(f"{home_dir}/minimy")
 from framework.util.utils import Config
 
-app = Quart(__name__)                      # Initialize the Quart app
-# Read the model from config file
-cfg = Config()                             # Get config file
+app = Quart(__name__)
+cfg = Config()
 try:
   model = cfg.get_cfg_val("Basic.STT.Model")
   if model is None:
@@ -21,41 +21,40 @@ try:
     sys.exit(1)
 except Exception as e:
   print(f"ERROR calling cfg.get_cfg_val(Basic.STT.Model): {e}")
-if ctranslate2.get_cuda_device_count() > 0: # Check for CUDA GPU to use
+if ctranslate2.get_cuda_device_count() > 0:
   print(f"Starting Whisper using CUDA GPU with model {model}...")
   model = WhisperModel(
     model, device="cuda", compute_type="int8_float16"
-  )                                        # load model on gpu
+  )
 else:
   print(f"Starting Whisper using CPU with model {model}...")
-  model = WhisperModel(model, device="cpu", compute_type="int8") # load model on CPU
+  model = WhisperModel(model, device="cpu", compute_type="int8")
 
 
 @app.route("/stt", methods=["POST"])
 async def transcribe():
-  # STT transcription - expects raw WAV file data in the request body
   wav_bytes = await request.data
-  try:                                     # to load WAV data
+  try:
+    start_time = time.perf_counter()
     with io.BytesIO(wav_bytes) as wav_io:
-      with wave.open(wav_io, "rb") as wav_file: # Ensure correct WAV format
+      with wave.open(wav_io, "rb") as wav_file:
         audio_bytes = wav_file.readframes(
           wav_file.getnframes()
-        )                                  # read audio frames and convert to NumPy array
+        )
         audio_array = (
           np.frombuffer(audio_bytes, dtype=np.int16).astype(np.float32)
             / 32768.0
-        )                                  # Normalize audio
+        )
     segments, info = model.transcribe(
       audio_array, beam_size=5
-    )                                      # transcribe audio using Whisper
-
-    # fold text to lower case, remove leading spaces, ','s and '?'s
+    )
     transcription = ""
     for segment in segments:
       transcription += (
         segment.text.lower().lstrip().replace(",", "").replace("?", "")
       )
-
+    elapsed = (time.perf_counter() - start_time) * 1000
+    print(f"TIMING STT transcription: {elapsed:.1f} ms")
     if transcription:
       print(f"whisper.transcribe() Transcription: {transcription}")
     return {"text": transcription}
@@ -66,29 +65,25 @@ async def transcribe():
 
 @app.route("/stream", methods=["POST"])
 async def stream_transcription():
-  # Handle streaming audio transcription.  Expects raw audio chunks in the request body.
   model_stream = model.create_stream()
   try:
-    async for (
-      chunk
-    ) in request.body:                     # convert chunk to NumPy array and feed into model
+    async for chunk in request.body:
       chunk_array = (
         np.frombuffer(chunk, dtype=np.int16).astype(np.float32) / 32768.0
       )
       model_stream.feed_audio(chunk_array)
-    transcription = model_stream.finish()  # Finalize transcription
+    transcription = model_stream.finish()
     return {"text": transcription}
   except Exception as e:
     return {"error": str(e)}, 400
 
 
-# main()
 if __name__ == "__main__":
   import asyncio
   from hypercorn.asyncio import serve
   from hypercorn.config import Config as HyperConfig
   config = HyperConfig()
   config.bind = ["0.0.0.0:5002"]
-  config.use_reloader = False              # equivalent to debug=False
+  config.use_reloader = False
   config.debug = False
   asyncio.run(serve(app, config))
