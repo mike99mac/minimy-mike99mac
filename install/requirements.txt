@@ -1,9 +1,8 @@
 PyAudio
 PyYAML
 boto3[crt]
-datasets
-gpiozero
 google-cloud-speech
+gpiozero
 hypercorn
 inflect
 keyboard
@@ -11,8 +10,6 @@ lingua-franca
 psutil
 pytube
 pytz
-quart
-redis
 requests
 scipy
 webrtcvad-wheels
