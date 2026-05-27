@@ -34,58 +34,36 @@ class Config:
   # minimal yaml based config file support class - must coordinate this with mmconfig.py
   config_defaults = {
     'Advanced': {
-      'CrappyAEC': 'n',
-      'InputDeviceId': '0',
-      'InputLevelControlName': '',
-      'LogLevel': 'i',
       'AWSId': '',
       'AWSKey': '',
-      'GoogleApiKeyPath': 'install/my_google_key.json'
+      'CrappyAEC': 'n',
+      'GoogleApiKeyPath': 'install/my_google_key.json',
+      'LogLevel': 'i',
     },
     'Basic': {
-      'LLM': {
-           'UseRemote': 'n'
-          },
-      'NLP': {
-           'UseRemote': 'n'
-          },
-      'OutputDeviceName': '',
-      'OutputLevelControlName': '',
-      'Platform': 'l',
-      'STT' : {
-           'UseRemote': 'y',
-           'Model': 'base.en'
-          },
-      'TTS' : {
-           'UseRemote': 'y',
-           'Local': 'm',
-           'Remote': 'p',
-           'LocalVoice': 'en_US-hfc_male-medium'
-          },
-      'BaseDir':'',
+      'BaseDir': '',
       'Hub': 'localhost',
-      'LLMRepo': 'unsloth/Qwen3.5-2B-GGUF',
-      'LLMFile': 'Qwen3.5-2B-Q6_K.gguf',
-      'WakeWords': ['computer', 'internet'],
-      'MusicDir': None,
-      'RoomToHost': None
-      }
-  }
-  legacy_key_map = {
-    'Advanced.AWSId': 'Advanced.AWSId',
-    'Advanced.AWSKey': 'Advanced.AWSKey',
-    'Advanced.GoogleApiKeyPath': 'Advanced.GoogleApiKeyPath',
-    'Basic.HubModel': 'Basic.STT.Model',
-    'Basic.SpokeModel': 'Basic.STT.Model',
-    'Advanced.OutputDeviceName': 'Advanced.OutputDeviceName',
-    'Advanced.OutputLevelControlName': 'Advanced.OutputLevelControlName',
-    'Advanced.STT.UseRemote': 'Basic.STT.UseRemote',
-    'Advanced.TTS.UseRemote': 'Basic.TTS.UseRemote',
-    'Advanced.TTS.Local': 'Basic.TTS.Local',
-    'Advanced.TTS.Remote': 'Basic.TTS.Remote',
-    'Advanced.TTS.LocalVoice': 'Basic.TTS.LocalVoice',
-    'Advanced.NLP.UseRemote': 'Basic.NLP.UseRemote',
-    'Advanced.LLM.UseRemote': 'Basic.LLM.UseRemote'
+      'LLM': {
+               'UseRemote': 'n'
+             },
+      'LLMFile': 'qwen2.5-1.5b-instruct-q4_k_m.gguf',
+      'LLMRepo': 'Qwen/Qwen2.5-1.5B-Instruct-GGUF',
+      'NLP': {
+               'UseRemote': 'n'
+             },
+      'RoomToHost': None,
+      'STT' : {
+                'Model': 'base.en',
+                'UseRemote': 'n'
+              },
+      'TTS' : {
+                'Local': 'p',
+                'LocalVoice': 'en_US-hfc_male-medium',
+                'UseRemote': 'n',
+                'Remote': 'p'
+              },
+      'WakeWords': ['computer']
+    }
   }
 
   def __init__(self):
@@ -159,7 +137,6 @@ class Config:
   def _resolve_key(self, key):
     if self._has_path(self.cfg, key.split(".")):
       return key
-    return self.legacy_key_map.get(key, key)
 
   def _has_path(self, cfg, keys):
     sect = cfg
@@ -236,12 +213,8 @@ class MediaSession:
     self.correlator = ''
 
 def aplay(file):
-  # one place where the raw aplay is used which uses proper device entry from the config file
-  cfg = Config()
-  device_id = cfg.get_cfg_val('Advanced.OutputDeviceName')
+  # Use default ALSA device (which points to PipeWire via pulse)
   cmd = "aplay " + file
-  if device_id is not None and device_id != '':
-    cmd = "aplay -D" + device_id + " " + file
   os.system(cmd)
 
 # for simple blocking operations

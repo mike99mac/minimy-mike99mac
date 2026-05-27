@@ -183,6 +183,111 @@ function generateServiceFiles
  }                                         # generateServiceFiles()
 
 #+--------------------------------------------------------------------------+
+function setupAudioRouting
+# Configure PipeWire audio routing: reSpeaker as default input, USB adapter
+# as default output. If devices are not found, logs a warning and continues
+#+--------------------------------------------------------------------------+
+{
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+
+  echo | tee -a $logFile
+  echo "Setting up audio routing with PipeWire..." | tee -a $logFile
+
+  # Only proceed if apt-get is available (Ubuntu/Debian systems)
+  if ! command -v apt-get &>/dev/null; then
+    echo "Skipping audio setup: apt-get not found (non-Debian system)." | tee -a $logFile
+    return 0
+  fi
+
+  # 1. Install PipeWire and related packages if not already present
+  echo "Installing PipeWire packages..." | tee -a $logFile
+  sudo apt-get install -y pipewire pipewire-pulse wireplumber pulseaudio-utils >> $logFile 2>&1
+  systemctl --user enable --now pipewire pipewire-pulse wireplumber >> $logFile 2>&1
+
+  # 2. Write minimal ~/.asoundrc
+  cat > "$HOME/.asoundrc" << 'EOF'
+pcm.!default {
+    type pulse
+}
+ctl.!default {
+    type pulse
+}
+EOF
+  echo "Written ~/.asoundrc" | tee -a $logFile
+
+  # Wait for PipeWire to settle
+  sleep 2
+
+  # 3. Detect devices - continue gracefully if not found
+  if ! pactl info &>/dev/null; then
+    echo "Warning: pactl command failed (pipewire-pulse not running?). Skipping audio device configuration." | tee -a $logFile
+    return 0
+  fi
+
+  # Attempt to find USB Audio adapter (output)
+  SINK_NAME=$(pactl list sinks short | grep -i "USB Audio" | head -1 | awk '{print $2}')
+  if [ -n "$SINK_NAME" ]; then
+    echo "Detected output sink: $SINK_NAME" | tee -a $logFile
+    pactl set-default-sink "$SINK_NAME"
+  else
+    echo "Notice: No USB audio adapter found. Using system default for audio output." | tee -a $logFile
+  fi
+
+  # Attempt to find reSpeaker mic (input) - case-insensitive for safety
+  SOURCE_NAME=$(pactl list sources short | grep -iE "reSpeaker|XVF3800" | head -1 | awk '{print $2}')
+  if [ -n "$SOURCE_NAME" ]; then
+    echo "Detected input source: $SOURCE_NAME" | tee -a $logFile
+    pactl set-default-source "$SOURCE_NAME"
+    pactl set-source-mute "$SOURCE_NAME" 0
+    pactl set-source-volume "$SOURCE_NAME" 100%
+
+    # 4. Set reSpeaker card profile to Pro Audio (for 4‑channel raw access)
+    CARD_ID=$(pactl list cards short | grep -iE "reSpeaker|XVF3800" | awk '{print $1}')
+    if [ -n "$CARD_ID" ]; then
+      echo "Setting reSpeaker card profile to pro-audio..." | tee -a $logFile
+      pactl set-card-profile "$CARD_ID" pro-audio 2>/dev/null || \
+        echo "Notice: pro-audio profile not available, using default." | tee -a $logFile
+    fi
+  else
+    echo "Notice: No reSpeaker microphone found. Using system default for audio input." | tee -a $logFile
+  fi
+
+  # 5. Conditionally install udev rule only if reSpeaker is present
+  if [ -n "$SOURCE_NAME" ]; then
+    sudo tee /etc/udev/rules.d/99-respeaker.rules > /dev/null << 'RULE'
+ACTION=="add", SUBSYSTEM=="usb", ATTR{manufacturer}=="Seeed Technology Co., Ltd.", ATTR{product}=="reSpeaker*", ATTR{authorized}="0", ATTR{authorized}="1"
+RULE
+    sudo udevadm control --reload-rules
+    sudo udevadm trigger
+    echo "Installed udev rule for reSpeaker device." | tee -a $logFile
+  else
+    echo "Skipping udev rule: reSpeaker not detected." | tee -a $logFile
+  fi
+
+  # 6. Create systemd user service to restore defaults at every login (always enabled)
+  mkdir -p "$HOME/.config/systemd/user"
+  cat > "$HOME/.config/systemd/user/set-default-audio.service" << 'EOF'
+[Unit]
+Description=Set default audio sink and source for PipeWire
+After=pipewire.service pipewire-pulse.service
+Requires=pipewire.service pipewire-pulse.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'SINK=$(pactl list sinks short | grep -i "USB Audio" | head -1 | awk "{print \$2}"); [ -n "$SINK" ] && pactl set-default-sink "$SINK" || true'
+ExecStart=/bin/bash -c 'SOURCE=$(pactl list sources short | grep -iE "reSpeaker|XVF3800" | head -1 | awk "{print \$2}"); if [ -n "$SOURCE" ]; then pactl set-default-source "$SOURCE"; pactl set-source-mute "$SOURCE" 0; pactl set-source-volume "$SOURCE" 100%; else echo "Notice: reSpeaker not found, skipping defaults."; fi'
+
+[Install]
+WantedBy=default.target
+EOF
+
+  systemctl --user enable set-default-audio.service
+  echo "Enabled user systemd service to persist audio defaults." | tee -a $logFile
+  echo "Audio routing setup complete." | tee -a $logFile
+}
+
+#+--------------------------------------------------------------------------+
 function generateConfigFile
 # Generate mmconfig.yml from template with dynamic base directory
 #+--------------------------------------------------------------------------+
@@ -370,27 +475,8 @@ function buildVenv
   fi
   cd $baseDir
   runCmd $pipCmd install --no-binary :all: regex # force pip to ignore old wheels and build fresh
+  echo "Installing local requirements.txt" | tee -a $logFile
   runCmd $pipCmd install -r install/requirements.txt
-
-  # After installing requirements, detect reSpeaker and update config
-  echo | tee -a $logFile
-  echo "Detecting reSpeaker microphone device..." | tee -a $logFile
-  RESPEAKER_IDX=$(cd $baseDir && source minimy_venv/bin/activate && python install/find_respeaker.py 2>/dev/null)
-  if [ -n "$RESPEAKER_IDX" ]; then
-    echo "Found reSpeaker at device index $RESPEAKER_IDX" | tee -a $logFile
-    # Update mmconfig.yml: set Advanced.InputDeviceId to that index
-    if [ -f "$configFile" ]; then
-      if grep -q "^    InputDeviceId:" "$configFile"; then
-        sed -i "s/^    InputDeviceId:.*/    InputDeviceId: $RESPEAKER_IDX/" "$configFile"
-      fi
-        echo "Updated $configFile with InputDeviceId: $RESPEAKER_IDX" | tee -a $logFile
-      else
-        echo "WARNING: $configFile not found, cannot set InputDeviceId" | tee -a $logFile
-    fi
-  else
-    echo "reSpeaker not found. Keeping existing InputDeviceId (or leaving unset)." | tee -a $logFile
-  fi
-
   echo "Installing local STT faster-whisper" | tee -a $logFile
   if [ "$platform" = "NVIDIA Jetson" ] && [ ! -d "$baseDir/CTranslate2" ]; then
     runCmd $pipCmd install faster-whisper --constraint <(echo "ctranslate2==$(pip show ctranslate2 | grep Version | awk '{print $2}')")
@@ -553,6 +639,7 @@ parseArgs $@                               # parse arguments
 setMinimyVars                              # set config file variables
 generateConfigFile                         # generate config file from template
 generateServiceFiles                       # generate systemctl service files
+setupAudioRouting                          # setup audio routing through PipeWire
 buildVenv                                  # do the work
 let min=$SECONDS/60
 let sec=$SECONDS%60
