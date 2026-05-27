@@ -7,7 +7,6 @@ from framework.util.utils import LOG, Config, get_wake_words, aplay, normalize_s
 from framework.services.intent.nlp.shallow_parse.nlu import SentenceInfo
 from framework.services.intent.nlp.shallow_parse.shallow_utils import scrub_sentence, remove_articles
 
-# Lightweight TF-IDF matcher
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -38,13 +37,13 @@ class Intent:
     self.bus.on("register_intent", self.handle_register_intent)
     self.bus.on("system", self.handle_system_message)
 
-    # --- TF-IDF fast intent matcher ---
+    # TF-IDF fast intent matcher
     self.log.info("Initializing TF-IDF intent matcher...")
     self.vectorizer = TfidfVectorizer(ngram_range=(1, 2), lowercase=True, stop_words='english')
-    self.intent_patterns = []      # list of example sentences
-    self.intent_keys = []          # list of (skill_id, intent_key)
+    self.intent_patterns = []
+    self.intent_keys = []
     self.pattern_embeddings = None
-    self.threshold = 0.25          # cosine similarity threshold (adjust based on testing)
+    self.threshold = 0.25
     self.log.info("Intent matcher ready.")
 
   def register_intent_pattern(self, skill_id, intent_key, example_phrases):
@@ -53,7 +52,6 @@ class Intent:
         self.intent_patterns.append(norm_phrase)
         self.intent_keys.append((skill_id, intent_key))
         self.log.debug(f"Registered pattern: '{norm_phrase}' -> {skill_id}:{intent_key}")
-    # Recompute TF-IDF matrix after each batch of registrations
     self._rebuild_tfidf()
 
   def _rebuild_tfidf(self):
@@ -152,6 +150,8 @@ class Intent:
     self.bus.send("system", "system_skill", info)
 
   def get_question_intent_match(self, info):
+    # Play earcon here, as in original code (before matching)
+    aplay(self.earcon_filename)
     sentence = info.get("sentence", "")
     if not sentence:
         return "", ""
@@ -159,12 +159,11 @@ class Intent:
     if skill_id:
         self.log.info(f"Fast match: '{sentence}' -> {skill_id}:{intent_key} (score {score:.2f})")
         return skill_id, intent_key
-    # If no match, return empty – will go to fallback
-    self.log.debug(f"No intent match for '{sentence}'")
     return "", ""
 
   def get_intent_match(self, info):
-    # Same for commands
+    # Play earcon here, as in original code
+    aplay(self.earcon_filename)
     sentence = info.get("sentence", "")
     if not sentence:
         return "", ""
@@ -185,7 +184,6 @@ class Intent:
     else:
       self.log.info(f"Intent.handle_register_intent() adding key {key} to intents")
       self.intents[key] = {"skill_id": skill_id, "state": "enabled"}
-      # Build natural language example for this intent
       if subject:
           example = f"{verb} {subject}"
       else:
