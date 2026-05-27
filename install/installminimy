@@ -397,12 +397,15 @@ function buildVenv
   else
     runCmd $pipCmd install faster-whisper
   fi
+  runCmd $pipCmd install datasets
   if command -v apt-get &>/dev/null; then
     runCmd sudo apt-get install -y swig liblgpio-dev
   fi
   if [ $(uname -m) = "aarch64" ]; then
     runCmd $pipCmd install lgpio           # Only builds on ARM
   fi
+  runCmd $pipCmd install quart
+  runCmd $pipCmd install redis
 
   echo | tee -a $logFile
   echo "Installing local ytplay/ytadd in /usr/local/sbin ..." | tee -a $logFile
