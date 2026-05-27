@@ -3,11 +3,13 @@ import os
 import re
 import subprocess
 import sys
+import time
 import uuid
 from datetime import datetime
 from threading import Event, Lock
 from urllib import error as urlerror
 from urllib import request as urlrequest
+from contextlib import contextmanager
 from framework.util.utils import Config
 from skills.sva_base import SimpleVoiceAssistant
 
@@ -91,6 +93,13 @@ class FallbackSkill(SimpleVoiceAssistant):
 
     if self.use_remote_llm and self.cfg.is_hub():
       self._setup_remote_server()
+
+  @contextmanager
+  def _timed(self, label):
+    start = time.perf_counter()
+    yield
+    elapsed = (time.perf_counter() - start) * 1000
+    self.log.info(f"TIMING {label}: {elapsed:.1f} ms")
 
   def _patch_llama_cleanup_bug(self):
     model_cls = getattr(llama_internals, "LlamaModel", None)
@@ -478,11 +487,12 @@ You are now answering the user directly. Provide a short, factual, helpful answe
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt},
       ]
-      output = self.llm.create_chat_completion(
-        messages=messages,
-        max_tokens=max_tokens,
-        temperature=0.0,
-      )
+      with self._timed(f"LLM call ({len(user_prompt)} chars)"):
+        output = self.llm.create_chat_completion(
+          messages=messages,
+          max_tokens=max_tokens,
+          temperature=0.0,
+        )
       ans = output["choices"][0]["message"]["content"].strip()
       self._log_llm("fallback", user_prompt, ans)
       return ans
@@ -605,7 +615,8 @@ You are now answering the user directly. Provide a short, factual, helpful answe
     return self._default_answer_failure_answer()
 
   def _run_controller(self, sentence):
-    controller_output = self._chat(self.controller_prompt, sentence, max_tokens=100)
+    with self._timed(f"controller LLM for '{sentence[:30]}...'"):
+      controller_output = self._chat(self.controller_prompt, sentence, max_tokens=100)
     payload = self._extract_json_object(controller_output)
     if payload is None:
       self.log.warning(
