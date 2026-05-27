@@ -3,31 +3,19 @@ import os
 import sys
 import time
 import wave
-import logging
 import numpy as np
 import ctranslate2
 from faster_whisper import WhisperModel
 from quart import Quart, request
 
-# Ensure log directory exists
+# Simple timing logger - write to a separate file
 home_dir = os.environ.get("HOME", "/home/pi")
-log_dir = os.path.join(home_dir, "minimy/logs")
-os.makedirs(log_dir, exist_ok=True)
-log_file = os.path.join(log_dir, "stt.log")
+timing_log = os.path.join(home_dir, "minimy/logs/stt_timing.log")
+os.makedirs(os.path.dirname(timing_log), exist_ok=True)
 
-# Configure logger specifically for this module
-logger = logging.getLogger("stt_timing")
-logger.setLevel(logging.INFO)
-# Remove any existing handlers to avoid duplicates
-if logger.hasHandlers():
-    logger.handlers.clear()
-file_handler = logging.FileHandler(log_file, mode='a')
-file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S'))
-logger.addHandler(file_handler)
-# Also print to console for debugging (optional)
-console = logging.StreamHandler()
-console.setLevel(logging.INFO)
-logger.addHandler(console)
+def log_timing(msg):
+    with open(timing_log, "a") as f:
+        f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {msg}\n")
 
 sys.path.append(f"{home_dir}/minimy")
 from framework.util.utils import Config
@@ -74,7 +62,7 @@ async def transcribe():
         segment.text.lower().lstrip().replace(",", "").replace("?", "")
       )
     elapsed = (time.perf_counter() - start_time) * 1000
-    logger.info(f"TIMING STT transcription: {elapsed:.1f} ms")
+    log_timing(f"TIMING STT transcription: {elapsed:.1f} ms")
     if transcription:
       print(f"whisper.transcribe() Transcription: {transcription}")
     return {"text": transcription}
