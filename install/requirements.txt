@@ -11,6 +11,7 @@ psutil
 pytube
 pytz
 requests
+scikit-learn
 scipy
 webrtcvad-wheels
 websocket-client

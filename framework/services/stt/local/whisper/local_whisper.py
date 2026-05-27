@@ -9,16 +9,25 @@ import ctranslate2
 from faster_whisper import WhisperModel
 from quart import Quart, request
 
-# Setup logging to stt.log
-home_dir = os.environ.get("HOME")
-log_file = os.path.join(home_dir, "minimy/logs/stt.log")
-logging.basicConfig(
-    filename=log_file,
-    level=logging.INFO,
-    format='[%(asctime)s] %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
-logger = logging.getLogger("stt.timing")
+# Ensure log directory exists
+home_dir = os.environ.get("HOME", "/home/pi")
+log_dir = os.path.join(home_dir, "minimy/logs")
+os.makedirs(log_dir, exist_ok=True)
+log_file = os.path.join(log_dir, "stt.log")
+
+# Configure logger specifically for this module
+logger = logging.getLogger("stt_timing")
+logger.setLevel(logging.INFO)
+# Remove any existing handlers to avoid duplicates
+if logger.hasHandlers():
+    logger.handlers.clear()
+file_handler = logging.FileHandler(log_file, mode='a')
+file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S'))
+logger.addHandler(file_handler)
+# Also print to console for debugging (optional)
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+logger.addHandler(console)
 
 sys.path.append(f"{home_dir}/minimy")
 from framework.util.utils import Config
