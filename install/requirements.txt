@@ -6,6 +6,7 @@ google-cloud-speech
 hypercorn
 inflect
 lingua-franca
+psutil
 pytube
 pytz
 requests

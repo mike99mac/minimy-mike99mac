@@ -370,10 +370,27 @@ function buildVenv
   fi
   cd $baseDir
   runCmd $pipCmd install --no-binary :all: regex # force pip to ignore old wheels and build fresh
-  echo "Installing python3-lingua-franca ..." | tee -a $logFile
-  runCmd $pipCmd install lingua_franca
-  runCmd $pipCmd install psutil 
   runCmd $pipCmd install -r install/requirements.txt
+
+  # After installing requirements, detect reSpeaker and update config
+  echo | tee -a $logFile
+  echo "Detecting reSpeaker microphone device..." | tee -a $logFile
+  RESPEAKER_IDX=$(cd $baseDir && source minimy_venv/bin/activate && python install/find_respeaker.py 2>/dev/null)
+  if [ -n "$RESPEAKER_IDX" ]; then
+    echo "Found reSpeaker at device index $RESPEAKER_IDX" | tee -a $logFile
+    # Update mmconfig.yml: set Advanced.InputDeviceId to that index
+    if [ -f "$configFile" ]; then
+      if grep -q "^    InputDeviceId:" "$configFile"; then
+        sed -i "s/^    InputDeviceId:.*/    InputDeviceId: $RESPEAKER_IDX/" "$configFile"
+      fi
+        echo "Updated $configFile with InputDeviceId: $RESPEAKER_IDX" | tee -a $logFile
+      else
+        echo "WARNING: $configFile not found, cannot set InputDeviceId" | tee -a $logFile
+    fi
+  else
+    echo "reSpeaker not found. Keeping existing InputDeviceId (or leaving unset)." | tee -a $logFile
+  fi
+
   echo "Installing local STT faster-whisper" | tee -a $logFile
   if [ "$platform" = "NVIDIA Jetson" ] && [ ! -d "$baseDir/CTranslate2" ]; then
     runCmd $pipCmd install faster-whisper --constraint <(echo "ctranslate2==$(pip show ctranslate2 | grep Version | awk '{print $2}')")
