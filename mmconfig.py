@@ -33,22 +33,6 @@ def handle_super_advanced(cfg):
   update_value(cfg, "Advanced.LogLevel", "Logging Level (e,w,i,d)")
   update_value(cfg, "Basic.TTS.Local", "Local TTS (e)speak, (c)oqui, or (m)imic3")
   update_value(cfg, "Basic.TTS.Remote", "Remote TTS (p)olly, (m)imic2")
-  update_value(cfg, "Advanced.InputDeviceId", "Input Device ID (0 means use default)")
-  update_value(
-    cfg,
-    "Advanced.OutputDeviceName",
-    "Output Device Name (empty string means use default)",
-  )
-  update_value(
-    cfg,
-    "Advanced.InputLevelControlName",
-    "Input Level Control Name (typically Record or Mic)",
-  )
-  update_value(
-    cfg,
-    "Advanced.OutputLevelControlName",
-    "Output Level Control Name (typically Playback or Speaker)",
-  )
 
 def main():
   advanced_options = False

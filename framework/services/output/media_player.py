@@ -1,8 +1,7 @@
 from threading import Event
 from bus.MsgBus import MsgBus
 import time, os
-from subprocess import Popen, PIPE, STDOUT
-from framework.util.utils import CommandExecutor, LOG, Config, MediaSession, get_hal_obj
+from framework.util.utils import CommandExecutor, LOG, MediaSession, get_hal_obj
 
 class SVAMediaPlayerSkill:
   # The media player plays wav and mp3 files. it has several interesting features. first it can pause an active media
@@ -44,12 +43,12 @@ class SVAMediaPlayerSkill:
     if self.state == "paused":
       self.state = "resumed"
       self.current_session = self.paused_sessions.pop()
-      if self.current_session.ce.proc is not None:
+      if self.current_session.ce is not None and self.current_session.ce.proc is not None:
         if self.current_session.media_type == "wav": # we have an active process, resume it
-          self.current.session.ce.send(" ")
+          self.current_session.ce.send(" ")
         else:
           if self.current_session.media_type == "mp3":
-            self.current.session.ce.send("s")
+            self.current_session.ce.send("s")
           else:
             os.system("dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.vlc /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.PlayPause")
       else:
@@ -59,7 +58,7 @@ class SVAMediaPlayerSkill:
       if len(self.paused_sessions) > 0:
         self.log.debug("SVAMediaPlayerSkill.resume() was idle but there are paused sessions to restart")
         self.current_session = self.paused_sessions.pop()
-        if self.current_session.ce.proc is not None: # we have an active process, resume it
+        if self.current_session.ce is not None and self.current_session.ce.proc is not None:
           if self.current_session.media_type == "wav":
             self.current_session.ce.send(" ")
           else:
@@ -85,7 +84,7 @@ class SVAMediaPlayerSkill:
     if not self.current_session:
       self.resume(msg)
       time.sleep(0.01)
-    if self.current_session.ce.proc is not None:
+    if self.current_session.ce is not None and self.current_session.ce.proc is not None:
       try:
         self.current_session.ce.kill()
       except:
@@ -142,7 +141,7 @@ class SVAMediaPlayerSkill:
             "skill_id": msg["payload"]["from_skill_id"],
             "from_skill_id": "media_player_service"
            }
-    return self.send_message(data["from_skill_id"], info)
+    return self.send_message(msg["payload"]["from_skill_id"], info)
 
   def send_session_paused(self, session_id, target):
     self.log.debug(f"SVAMediaPlayerSkill.send_session_paused() session_id: {session_id} target: {target}")
@@ -186,7 +185,7 @@ class SVAMediaPlayerSkill:
     cancel_sid = msg["payload"]["session_id"]  # could be paused or active
     if self.current_session and self.current_session.session_id == cancel_sid:
       if self.current_session.session_id == cancel_sid:
-        if self.current_session.ce.proc is not None:
+        if self.current_session.ce is not None and self.current_session.ce.proc is not None:
           try:
             self.current_session.ce.kill()
           except:
@@ -207,7 +206,7 @@ class SVAMediaPlayerSkill:
         next_uri = mentry["file_uri"]
         self.log.error(f"SVAMediaPlayerSkill.cancel_session(): BUG! ClearQ must deal with this: {next_uri}")
       paused_session.media_queue = []
-      if paused_session.ce.proc is not None:
+      if paused_session.ce is not None and paused_session.ce.proc is not None:
         try:
           paused_session.ce.kill()
         except:
@@ -227,7 +226,7 @@ class SVAMediaPlayerSkill:
           self.current_session = paused_session
           self.remove_paused_entry(paused_session)
         else:
-          self.log.error(f"SVAMediaPlayerSkill.stop_session() BUG: session owner is {paused_session_owner} but {sid_owner} is asking to stop session!!!")
+          self.log.error(f"SVAMediaPlayerSkill.stop_session() BUG: session owner is {paused_session.owner} but {sid_owner} is asking to stop session!!!")
       else:              # session not active or paused maybe send a message
         self.log.warning(f"SVAMediaPlayerSkill.stop_session() cannot find sid to stop: {sid_to_stop}")
     if msg["payload"]["from_skill_id"] != self.current_session.owner: # active session is not owner's
@@ -277,14 +276,14 @@ class SVAMediaPlayerSkill:
       self.current_session.owner = from_skill_id
       self.next_session_id += 1
       self.current_session.session_id = self.next_session_id
-      self.current_session_time_out_ctr = 0
+      self.current_session.time_out_ctr = 0
       self.current_session.correlator = correlator
       return self.send_session_confirm(msg)
     reason = "session_busy"
     if self.current_session.owner == from_skill_id: # its owner doing the requesting
       self.next_session_id += 1
       self.current_session.session_id = self.next_session_id
-      self.current_session_time_out_ctr = 0
+      self.current_session.time_out_ctr = 0
       self.current_session.correlator = correlator
       return self.send_session_confirm(msg)
     self.log.info(f"SVAMediaPlayerSkill.stop_session() is busy, owner: {self.current_session.owner} requester: {from_skill_id}")
@@ -315,13 +314,14 @@ class SVAMediaPlayerSkill:
 
   def wait_for_end_play(self, media_entry):
     self.log.debug(f"MediaPlayer:wait_for_end_play() media_entry: {media_entry}")
-    while not self.current_session.ce.is_completed() and self.state == "playing":
+    # Ensure ce exists before checking
+    while self.current_session.ce is not None and not self.current_session.ce.is_completed() and self.state == "playing":
       time.sleep(0.01)
     file_uri = media_entry["file_uri"]
     self.log.info(f"MediaPlayer:wait_for_end_play() state: {self.state} owner: {self.current_session.owner} file_uri: {file_uri}")
     if self.state == "paused":
       self.log.info("MediaPlayer:wait_for_end_play() Pausing current session")
-      if self.current_session.ce.proc is not None:
+      if self.current_session.ce is not None and self.current_session.ce.proc is not None:
         # if we have an active process, pause it
         if self.current_session.media_type == "wav":
           self.current_session.ce.send(" ")
@@ -343,12 +343,14 @@ class SVAMediaPlayerSkill:
       ms_copy.ce = self.current_session.ce
       ms_copy.time_out_ctr = self.current_session.time_out_ctr
       ms_copy.media_type = self.current_session.media_type
-      self.paused_sessions.append( ms_copy )
+      self.paused_sessions.append(ms_copy)
       self.send_session_paused(self.current_session.session_id, self.current_session.owner)
     elif self.state == "resumed":
       self.log.warning("MediaPlayer.wait_for_end_play() ILLEGAL STATE TRANSITION playing to resumed!")
     else:
-      process_exit_code = self.current_session.ce.get_return_code()
+      process_exit_code = -1
+      if self.current_session.ce is not None:
+        process_exit_code = self.current_session.ce.get_return_code()
       self.log.debug(f"MediaPlayer.wait_for_end_play() end of play detected, process_exit_code: {process_exit_code} state: {self.state}")
       if process_exit_code != -9:  # remove from q if not killed
         self.current_session.media_queue = self.current_session.media_queue[1:]
@@ -372,7 +374,7 @@ class SVAMediaPlayerSkill:
         if self.current_session is None:   # no current session
           break
         if len(self.current_session.media_queue) == 0:  # no current file to play
-          self.current_session_time_out_ctr += 1
+          self.current_session.time_out_ctr += 1
           break
         media_entry = self.current_session.media_queue[0]
         file_uri = media_entry["file_uri"]
@@ -380,29 +382,24 @@ class SVAMediaPlayerSkill:
         self.log.debug(f"SVAMediaPlayerSkill.run() file_uri: {file_uri} media_type: {media_type}")
         fa = file_uri.split(".")
         file_ext = fa[len(fa) - 1]
-        cfg = Config()
-        device_id = cfg.get_cfg_val("Advanced.OutputDeviceName")
+        # Removed config lookup for OutputDeviceName; always use default ALSA device (pulse)
         cmd = ""
         if media_type is None or media_type == "":
           self.log.warning(f"SVAMediaPlayerSkill.run() invalid media type: {media_type}")
           self.current_session.media_type = "mp3"
-          cmd = "mpg123 %s" % (file_uri,)  
-          if device_id is not None:
-            cmd = "mpg123 -a " + device_id + " " + file_uri
-            if file_ext == "wav":
-              cmd = "aplay " + file_uri
-              if device_id is not None and device_id != "":
-                cmd = "aplay -D" + device_id + " " + file_uri
-              self.current_session.media_type = "wav"
+          cmd = "mpg123 %s" % (file_uri,)
+          if file_ext == "wav":
+            cmd = "aplay %s" % (file_uri,)
+            self.current_session.media_type = "wav"
           self.log.warning(f"SVAMediaPlayerSkill.run() derived media_type: {media_type}")
-        else:                              # media type is known so use it to get cmd line from hal cfg file
+        else:
           self.current_session.media_type = media_type
           media_player_cfg = self.hal.get("play_media", None)
           if media_player_cfg:
-            cmd = media_player_cfg.get(self.current_session.media_type,"")
+            cmd = media_player_cfg.get(self.current_session.media_type, "")
           if cmd == "":
             self.log.error("SVAMediaPlayerSkill.run() invalid media player command line !")
-            return 
+            return
           else:
             cmd = cmd % (file_uri,)
         self.log.info("cmd = %s" % (cmd,))
@@ -410,7 +407,11 @@ class SVAMediaPlayerSkill:
         self.wait_for_end_play(media_entry)
       if self.state == "resumed":
         self.state = "playing"
-        self.wait_for_end_play(media_entry)
+        # media_entry may not be defined if we came from resumed without a previous media_entry
+        # Use the current media_entry from queue if it exists
+        if len(self.current_session.media_queue) > 0:
+          media_entry = self.current_session.media_queue[0]
+          self.wait_for_end_play(media_entry)
       if self.state == "paused":   # clear current media entry
         self.current_session.owner = None
         self.current_session.ce = None
@@ -418,7 +419,7 @@ class SVAMediaPlayerSkill:
         self.current_session.session_id = 0
         self.current_session.time_out_ctr = 0
         self.current_session.media_queue = []
-        self.current_session.state = "idle"
+        self.state = "idle"
         self.log.debug("SVAMediaPlayerSkill.run() - Paused Signal causing me to transition to idle!")
         self.state = "idle"
       time.sleep(0.01)
