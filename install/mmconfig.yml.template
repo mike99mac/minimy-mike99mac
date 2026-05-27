@@ -3,7 +3,7 @@
     AWSKey: ''
     CrappyAEC: n
     GoogleApiKeyPath: install/my_google_key.json
-    InputDeviceId: '0'
+    InputDeviceId: 0
     InputLevelControlName: Mic
     LogLevel: d
     OutputDeviceName: ''
@@ -13,8 +13,8 @@
     Hub: localhost
     LLM:
       UseRemote: n
-    LLMFile: 'Qwen3.5-2B-Q6_K.gguf'
-    LLMRepo: 'unsloth/Qwen3.5-2B-GGUF'
+    LLMFile: 'qwen2.5-1.5b-instruct-q4_k_m.gguf'
+    LLMRepo: 'Qwen/Qwen2.5-1.5B-Instruct-GGUF'
     MusicDir:
     NLP:
       UseRemote: n

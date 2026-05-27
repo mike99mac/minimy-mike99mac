@@ -60,8 +60,6 @@ class FallbackSkill(SimpleVoiceAssistant):
     self.hub_host = self.cfg.get_cfg_val("Basic.Hub") or "localhost"
     self.use_remote_llm = self.cfg.get_cfg_val("Advanced.LLM.UseRemote") == "y"
     self.remote_app = None
-    self.prompt_cache = None
-    self.system_prompt_formatters = {}
     self._patch_llama_cleanup_bug()
     self.run_remote_server = False
     self.llm_repo = str(self.cfg.get_cfg_val("Basic.LLMRepo") or "").strip()
@@ -130,7 +128,8 @@ class FallbackSkill(SimpleVoiceAssistant):
   def _create_llm(self, model_path):
     llm_kwargs = {
       "model_path": model_path,
-      "n_ctx": 2048,
+      "n_ctx": 4096,
+      "n_batch": 256,
       "verbose": False,
     }
 
@@ -323,7 +322,6 @@ class FallbackSkill(SimpleVoiceAssistant):
       )
       try:
         self.llm = self._create_llm(model_path)
-        self._warm_system_prompt_cache()
         return True
       except Exception as e:
         self.log.error(f"FallbackSkill: Failed to load cached Llama model: {e}")
@@ -391,88 +389,6 @@ class FallbackSkill(SimpleVoiceAssistant):
       "I have started downloading it in the background, so please try again in a few minutes."
     )
 
-  def _get_chat_formatter(self, add_generation_prompt):
-    if llama_chat_format is None or self.llm is None:
-      return None
-
-    formatter = self.system_prompt_formatters.get(add_generation_prompt)
-    if formatter is not None:
-      return formatter
-
-    template = self.llm.metadata.get("tokenizer.chat_template")
-    if not template:
-      return None
-
-    eos_token_id = self.llm.token_eos()
-    bos_token_id = self.llm.token_bos()
-    eos_token = (
-      self.llm._model.token_get_text(eos_token_id) if eos_token_id != -1 else ""
-    )
-    bos_token = (
-      self.llm._model.token_get_text(bos_token_id) if bos_token_id != -1 else ""
-    )
-
-    formatter = llama_chat_format.Jinja2ChatFormatter(
-      template=template,
-      eos_token=eos_token,
-      bos_token=bos_token,
-      add_generation_prompt=add_generation_prompt,
-      stop_token_ids=[eos_token_id] if eos_token_id != -1 else None,
-    )
-    self.system_prompt_formatters[add_generation_prompt] = formatter
-    return formatter
-
-  def _tokenize_chat_messages(self, messages, add_generation_prompt):
-    formatter = self._get_chat_formatter(add_generation_prompt)
-    if formatter is None or self.llm is None:
-      return None
-
-    formatted = formatter(messages=messages)
-    return self.llm.tokenize(
-      formatted.prompt.encode("utf-8"),
-      add_bos=not formatted.added_special,
-      special=True,
-    )
-
-  def _warm_system_prompt_cache(self):
-    if self.llm is None or LlamaRAMCache is None:
-      return
-
-    try:
-      # Store prompt-prefix KV state so the first real request does not have to
-      # re-evaluate the full system prompt from scratch.
-      self.prompt_cache = LlamaRAMCache(capacity_bytes=256 << 20)
-      self.llm.set_cache(self.prompt_cache)
-
-      system_prompts = (
-        ("controller", self.controller_prompt),
-        ("answer", self.answer_prompt),
-      )
-
-      for label, system_prompt in system_prompts:
-        prompt_tokens = self._tokenize_chat_messages(
-          [{"role": "system", "content": system_prompt}],
-          add_generation_prompt=False,
-        )
-        if not prompt_tokens:
-          self.log.warning(
-            f"FallbackSkill: Unable to build {label} system prompt cache prefix"
-          )
-          continue
-
-        self.llm.reset()
-        self.llm.eval(prompt_tokens)
-        self.prompt_cache[prompt_tokens] = self.llm.save_state()
-        self.log.info(
-          f"FallbackSkill: Warmed KV cache for {label} system prompt ({len(prompt_tokens)} tokens)"
-        )
-
-      self.llm.reset()
-    except Exception as e:
-      self.log.warning(
-        f"FallbackSkill: Failed to warm system prompt KV cache: {e}"
-      )
-
   def _setup_remote_server(self):
     if Quart is None:
       self.log.error(
@@ -518,115 +434,25 @@ class FallbackSkill(SimpleVoiceAssistant):
       self.log.error(f"FallbackSkill: Remote LLM server failed: {e}")
 
   def _build_capability_manifest(self):
-    return """Smart Boombox capability manifest
-
-Identity and architecture
-- You are the language reasoning layer for Minimy, a smart boombox.
-- You are not the execution engine. The deterministic Minimy command system performs actions.
-- If you are asked to control the device, your job is to classify the request, normalize it into a canonical command if possible, or explain why it cannot be executed.
-- Never claim that music started, volume changed, alarms were set, or any other device action already happened unless deterministic execution has already succeeded outside this fallback stage.
-
-Core boombox capabilities you may rely on
-- Music and media:
-  accepted intent families include play music by artist, album, song, genre, playlist, radio station, internet music, or news.
-  common examples include: play coldplay, play jazz radio, play npr, pause, resume, next track, previous track, stop music.
-  malformed user phrases like put on, listen to, start playing, queue up, throw on, or can you play may be normalized to play when the meaning is clear.
-- Time and date:
-  what time is it, what is the date, what day is it.
-- Weather:
-  what is the weather, what is the forecast, what is the temperature, optionally with a location.
-- Alarms:
-  set or create an alarm, list alarms, delete or remove an alarm, stop a ringing alarm, snooze a ringing alarm.
-- Volume and microphone:
-  set, change, increase, decrease, mute, or unmute volume.
-  set or change microphone level.
-- Help:
-  general help topics about music, radio, weather, time, alarms, volume, and related boombox usage.
-- General question answering:
-  answer ordinary factual questions that are not boombox control requests.
-
-Live boombox state and environment queries
-- Current time, current day, current date, weather, forecast, temperature, and current device state are not facts you may invent.
-- If the user asks for current live boombox information that the deterministic system can provide, you must prefer rewriting to a canonical boombox query rather than answering from model knowledge.
-- Never guess the current time, date, day, weather, forecast, temperature, alarm state, or current volume level.
-
-Optional or uncertain capabilities
-- Home Assistant control and email may exist in some deployments, but do not promise them unless the provided context explicitly says they are available.
-- Do not invent internet browsing, app launching, messaging, purchasing, or arbitrary external integrations.
-
-Command normalization rules
-- Preserve the user's intent. Do not add new details.
-- Do not drop negation.
-- Do not convert a capability question into an execution command unless the user is clearly asking for action.
-- Only rewrite into short canonical commands the deterministic system is likely to understand.
-- Good rewrite examples:
-  put on some coldplay -> play coldplay
-  can you turn the music down -> decrease volume
-  whats the forecast for boston massachusetts -> what is the forecast for boston massachusetts
-- Bad rewrites:
-  play something relaxing -> play norah jones
-  can you play coldplay -> play coldplay if the user is obviously asking about capability rather than issuing a command
-  dont play coldplay -> play coldplay
-
-Behavior rules
-- Prefer truthfulness over helpful-sounding roleplay.
-- Never say now playing, done, I changed it, I set that, or similar action-confirmation language inside this fallback layer.
-- For boombox capability questions, answer only from this manifest.
-- For unsupported or underspecified device requests, explain the limitation or what information is missing.
-- This fallback interaction is single-turn. You cannot ask the user a follow-up question and wait for a response.
-- If more information would normally be needed, state the missing information in one answer instead of asking an interactive follow-up.
-- If a rewritten command later fails deterministic execution, the follow-up answer must discuss the original user request, not the rewritten command only."""
+    return """You are the fallback LLM for a smart boombox. Never claim an action was performed. Capabilities: play music, pause, resume, next/prev, stop, time/date, weather, alarms, volume/mic control, help. Rewrite commands concisely. Never add details or drop negation. For live info (time/date/weather), prefer rewrite. Single turn only. Do not ask follow-up questions."""
 
   def _build_controller_prompt(self):
     return f"""{self.capability_manifest}
 
-Your task is to act as a hidden controller for the smart boombox fallback layer.
-
-Follow this decision process exactly:
-1. Decide whether the user input is primarily:
-   - a general question,
-   - a boombox capability question,
-   - a boombox command request,
-   - or unknown.
-2. If it is a boombox command request, determine whether:
-   - it is likely supported by the boombox,
-   - it contains enough information to execute,
-   - and it can be safely normalized into a concise canonical command.
-3. Output JSON only. Do not output Markdown. Do not output prose outside the JSON object.
-
-Return exactly one JSON object with these keys:
-- route: one of "rewrite_command", "answer", "cannot_execute"
-- confidence: number from 0.0 to 1.0
-- canonical_utterance: string, empty unless route is "rewrite_command"
-- answer: string, empty unless route is "answer" or "cannot_execute"
-- reason: short string explaining the decision
-
-Additional hard rules:
-- If route is "rewrite_command", the command must be something the deterministic command system could plausibly parse.
-- If route is "rewrite_command", never include a wake word, explanations, or multiple commands.
-- If route is "answer", answer concisely and truthfully, and the answer field must not be empty.
-- If route is "cannot_execute", explain what is missing, unsupported, or uncertain without pretending anything happened, and the answer field must not be empty.
-- Do not ask the user a follow-up question. This is a single-turn decision.
-- If the user is asking for live boombox information such as time, date, day, weather, forecast, temperature, or current device state, prefer "rewrite_command" over "answer".
-- Never claim you performed an action.
-- When in doubt, choose "cannot_execute" rather than inventing a command."""
+Output ONLY a JSON object. No other text.
+For general knowledge questions: {{"route": "answer", "answer": "your short factual answer"}}
+For boombox actions or live info requests: {{"route": "rewrite_command", "canonical_utterance": "the rewritten command"}}
+Examples:
+User: "what is the capital of New York" -> {{"route": "answer", "answer": "Albany"}}
+User: "play coldplay" -> {{"route": "rewrite_command", "canonical_utterance": "play coldplay"}}
+User: "what time is it" -> {{"route": "rewrite_command", "canonical_utterance": "what time is it"}}
+User: "what color are apples" -> {{"route": "answer", "answer": "Apples can be red, green, or yellow."}}
+Now respond with only the JSON object for: """
 
   def _build_answer_prompt(self):
     return f"""{self.capability_manifest}
 
-You are now producing the user-facing fallback answer for the smart boombox.
-
-Rules:
-- Speak plainly in complete sentences with no Markdown.
-- If the user asked a general knowledge question, answer it directly and concisely.
-- If the user asked about smart boombox capabilities, answer only from the provided capability manifest.
-- If the user asked for device control and execution did not happen, say that clearly and do not pretend the action occurred.
-- This is single-turn only. Do not ask the user a follow-up question.
-- If information is missing, explain exactly what is missing in one answer instead of asking interactively.
-- Never answer by guessing live boombox information such as the current time, date, day, weather, forecast, temperature, or device state.
-- Never invent capabilities.
-- Never say you already completed a boombox action unless that success was explicitly provided to you.
-- Prefer short, concrete answers over broad assistant-style explanations."""
+You are now answering the user directly. Provide a short, factual, helpful answer. No markdown. No extra explanations. Just the answer."""
 
   def handle_message(self, msg):
     self.log.info(
@@ -652,19 +478,11 @@ Rules:
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt},
       ]
-      try:
-        output = self.llm.create_chat_completion(
-          messages=messages,
-          max_tokens=max_tokens,
-          temperature=0.1,
-          chat_template_kwargs={"enable_thinking": False},
-        )
-      except TypeError:
-        output = self.llm.create_chat_completion(
-          messages=messages,
-          max_tokens=max_tokens,
-          temperature=0.1,
-        )
+      output = self.llm.create_chat_completion(
+        messages=messages,
+        max_tokens=max_tokens,
+        temperature=0.0,
+      )
       ans = output["choices"][0]["message"]["content"].strip()
       self._log_llm("fallback", user_prompt, ans)
       return ans
@@ -779,15 +597,15 @@ Rules:
         f"Rewritten command that failed: {rewritten_utterance}\n"
         "Respond to the original user utterance. Do not pretend any action happened.\n"
       )
-    answer = self._chat(self.answer_prompt, user_prompt, max_tokens=170)
+    answer = self._chat(self.answer_prompt, user_prompt, max_tokens=100)
     if answer:
       return answer
     if failed_rewrite:
       return self._default_command_failure_answer(original_utterance)
-    return "I am sorry, my local language model is not available right now due to a configuration error."
+    return self._default_answer_failure_answer()
 
   def _run_controller(self, sentence):
-    controller_output = self._chat(self.controller_prompt, sentence, max_tokens=220)
+    controller_output = self._chat(self.controller_prompt, sentence, max_tokens=100)
     payload = self._extract_json_object(controller_output)
     if payload is None:
       self.log.warning(
@@ -795,17 +613,28 @@ Rules:
       )
       return {
         "route": "answer",
-        "confidence": 0.0,
-        "canonical_utterance": "",
         "answer": self._default_answer_failure_answer(),
-        "reason": "controller_parse_failure",
       }
-    payload.setdefault("route", "answer")
-    payload.setdefault("confidence", 0.0)
-    payload.setdefault("canonical_utterance", "")
-    payload.setdefault("answer", "")
-    payload.setdefault("reason", "")
-    return payload
+    route = payload.get("route", "answer")
+    if route == "answer":
+      answer = payload.get("answer", "")
+      if not answer:
+        answer = self._default_answer_failure_answer()
+      return {
+        "route": "answer",
+        "answer": answer,
+      }
+    elif route == "rewrite_command":
+      canonical_utterance = payload.get("canonical_utterance", "")
+      return {
+        "route": "rewrite_command",
+        "canonical_utterance": canonical_utterance,
+      }
+    else:
+      return {
+        "route": "answer",
+        "answer": self._default_answer_failure_answer(),
+      }
 
   def _process_request_local(
     self,
@@ -848,21 +677,17 @@ Rules:
         }
 
       decision = self._run_controller(sentence)
-      route = str(decision.get("route", "answer")).strip()
-      confidence = float(decision.get("confidence", 0.0) or 0.0)
-      canonical_utterance = self._normalize_rewrite(
-        decision.get("canonical_utterance", "")
-      )
-      answer = str(decision.get("answer", "") or "").strip()
-
+      route = decision.get("route", "answer")
       if route == "rewrite_command":
-        if confidence >= 0.55 and canonical_utterance:
-          if canonical_utterance.lower() != sentence.lower():
-            return {
-              "action": "rewrite",
-              "canonical_utterance": canonical_utterance,
-            }
-        answer = answer or self._default_command_failure_answer(sentence)
+        canonical_utterance = decision.get("canonical_utterance", "")
+        if canonical_utterance and canonical_utterance.lower() != sentence.lower():
+          return {
+            "action": "rewrite",
+            "canonical_utterance": canonical_utterance,
+          }
+        answer = self._default_command_failure_answer(sentence)
+      else:
+        answer = decision.get("answer", self._default_answer_failure_answer())
 
       if not answer:
         answer = self._default_answer_failure_answer()
@@ -970,7 +795,7 @@ Rules:
 
     answer = str(result.get("answer", "") or "").strip()
     if not answer:
-      answer = "I am sorry, the language model is not available right now."
+      answer = self._default_answer_failure_answer()
     self.log.debug(f"FallbackSkill:handle_fallback(): ans: {answer}")
     self.speak(answer)
 
