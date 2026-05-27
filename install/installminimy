@@ -397,19 +397,12 @@ function buildVenv
   else
     runCmd $pipCmd install faster-whisper
   fi
-  runCmd $pipCmd install datasets
-  runCmd $pipCmd install gpiozero
-  runCmd $pipCmd install keyboard
   if command -v apt-get &>/dev/null; then
     runCmd sudo apt-get install -y swig liblgpio-dev
   fi
   if [ $(uname -m) = "aarch64" ]; then
     runCmd $pipCmd install lgpio           # Only builds on ARM
   fi
-  runCmd $pipCmd install quart
-  runCmd $pipCmd install redis
-  runCmd $pipCmd install whisper
-  runCmd $pipCmd install youtube-search
 
   echo | tee -a $logFile
   echo "Installing local ytplay/ytadd in /usr/local/sbin ..." | tee -a $logFile
@@ -417,7 +410,6 @@ function buildVenv
   if [ ! -f /usr/local/sbin/ytadd ]; then
     runCmd sudo ln -s /usr/local/sbin/ytplay /usr/local/sbin/ytadd
   fi
-  runCmd $pipCmd install youtube-search-python
   echo | tee -a $logFile
   cd $baseDir/framework/services/intent/nlp/local
 
@@ -482,7 +474,7 @@ function buildVenv
     export CUDACXX="/usr/local/cuda/bin/nvcc"
     export CMAKE_ARGS="-DGGML_CUDA=on -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCUDAToolkit_ROOT=/usr/local/cuda"
     export FORCE_CMAKE=1
-    runCmd "$pipCmd install --force-reinstall --no-cache-dir --index-url https://pypi.org/simple llama-cpp-python==$llamaCppVersion"
+    runCmd "$pipCmd install --force-reinstall --index-url https://pypi.org/simple llama-cpp-python==$llamaCppVersion"
   else
     echo "Installing with OpenBLAS ..." | tee -a $logFile
     if command -v apt-get &>/dev/null; then
