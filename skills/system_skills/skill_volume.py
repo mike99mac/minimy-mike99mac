@@ -143,12 +143,10 @@ class VolumeSkill(SimpleVoiceAssistant):
         self.log.debug("Inside handle mute!")
         self.muted_volume = self.get_volume()
         self.set_volume(0)
-        self.speak("volume muted")
 
     def handle_unmute(self, msg):
         self.log.debug("Inside handle unmute!")
         self.set_volume(self.muted_volume)
-        self.speak(f"volume restored to {self.muted_volume} percent")
 
     def stop(self, msg=None):
         self.log.debug(f"Volume skill stop() method called WITH message {msg}")
