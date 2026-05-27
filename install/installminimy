@@ -563,7 +563,7 @@ function buildVenv
     export CUDACXX="/usr/local/cuda/bin/nvcc"
     export CMAKE_ARGS="-DGGML_CUDA=on -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCUDAToolkit_ROOT=/usr/local/cuda"
     export FORCE_CMAKE=1
-    runCmd "$pipCmd install --force-reinstall --index-url https://pypi.org/simple llama-cpp-python==$llamaCppVersion"
+    runCmd "$pipCmd install --index-url https://pypi.org/simple llama-cpp-python==$llamaCppVersion"
   else
     echo "Installing with OpenBLAS ..." | tee -a $logFile
     if command -v apt-get &>/dev/null; then
