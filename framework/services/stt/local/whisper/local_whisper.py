@@ -3,32 +3,43 @@ import os
 import sys
 import time
 import wave
+import logging
 import numpy as np
 import ctranslate2
 from faster_whisper import WhisperModel
 from quart import Quart, request
 
+# Setup logging to stt.log
 home_dir = os.environ.get("HOME")
+log_file = os.path.join(home_dir, "minimy/logs/stt.log")
+logging.basicConfig(
+    filename=log_file,
+    level=logging.INFO,
+    format='[%(asctime)s] %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger("stt.timing")
+
 sys.path.append(f"{home_dir}/minimy")
 from framework.util.utils import Config
 
 app = Quart(__name__)
 cfg = Config()
 try:
-  model = cfg.get_cfg_val("Basic.STT.Model")
-  if model is None:
+  model_name = cfg.get_cfg_val("Basic.STT.Model")
+  if model_name is None:
     print(f"ERROR Basic.STT.Model not found in config file: {cfg.config_file}")
     sys.exit(1)
 except Exception as e:
   print(f"ERROR calling cfg.get_cfg_val(Basic.STT.Model): {e}")
 if ctranslate2.get_cuda_device_count() > 0:
-  print(f"Starting Whisper using CUDA GPU with model {model}...")
+  print(f"Starting Whisper using CUDA GPU with model {model_name}...")
   model = WhisperModel(
-    model, device="cuda", compute_type="int8_float16"
+    model_name, device="cuda", compute_type="int8_float16"
   )
 else:
-  print(f"Starting Whisper using CPU with model {model}...")
-  model = WhisperModel(model, device="cpu", compute_type="int8")
+  print(f"Starting Whisper using CPU with model {model_name}...")
+  model = WhisperModel(model_name, device="cpu", compute_type="int8")
 
 
 @app.route("/stt", methods=["POST"])
@@ -54,7 +65,7 @@ async def transcribe():
         segment.text.lower().lstrip().replace(",", "").replace("?", "")
       )
     elapsed = (time.perf_counter() - start_time) * 1000
-    print(f"TIMING STT transcription: {elapsed:.1f} ms")
+    logger.info(f"TIMING STT transcription: {elapsed:.1f} ms")
     if transcription:
       print(f"whisper.transcribe() Transcription: {transcription}")
     return {"text": transcription}

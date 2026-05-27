@@ -7,6 +7,9 @@ from framework.services.intent.nlp.shallow_parse.nlu import SentenceInfo
 from framework.services.intent.nlp.shallow_parse.shallow_utils import scrub_sentence, remove_articles
 
 class Intent:
+  # English language specific intent parser
+  # Monitors the save_text/ dir for utterances to process, if wake words not detected speech is ignored
+  # Emits utterance messages. If skill_id is not '' the utterance matched an intent in the skill_id skill
   def __init__(self, bus=None, timeout=5):
     self.skill_id = "intent_service"
     self.bus = MsgBus(self.skill_id)
@@ -43,7 +46,8 @@ class Intent:
       if subtype == "reserve_oob":
         self.recognized_verbs.append(verb)
       elif subtype == "release_oob":
-        del self.recognized_verbs[verb]
+        if verb in self.recognized_verbs:
+          del self.recognized_verbs[verb]
 
   def is_oob(self, utt):
     ua = utt.split(" ")
@@ -192,7 +196,7 @@ class Intent:
           start_nlp = time.perf_counter()
           si.parse_utterance(utt)
           elapsed_nlp = (time.perf_counter() - start_nlp) * 1000
-          print(f"TIMING NLP parse: {elapsed_nlp:.1f} ms")
+          self.log.info(f"TIMING NLP parse: {elapsed_nlp:.1f} ms")
           info = {"sentence_type": si.sentence_type, 
                   "sentence": si.original_sentence, 
                   "normalized_sentence": si.normalized_sentence, 
@@ -216,35 +220,35 @@ class Intent:
                  }
 
           if si.sentence_type == "Q":
-            print(f"Intent.run(): Match Question. key=Q:{si.insight.question}:{si.insight.subject}")
+            self.log.info(f"Intent.run(): Match Question. key=Q:{si.insight.question}:{si.insight.subject}")
             start_match = time.perf_counter()
             info["skill_id"], info["intent_match"] = self.get_question_intent_match({"subject":info["subject"], "qword":info["question"]})
             elapsed_match = (time.perf_counter() - start_match) * 1000
-            print(f"TIMING intent match (question): {elapsed_match:.1f} ms")
-            print(f'Intent.run(): Match Question. skill_id: {info["skill_id"]} intent_match: {info["intent_match"]}')
+            self.log.info(f"TIMING intent match (question): {elapsed_match:.1f} ms")
+            self.log.info(f'Intent.run(): Match Question. skill_id: {info["skill_id"]} intent_match: {info["intent_match"]}')
             self.send_utt(info) 
           elif si.sentence_type == "C":
-            print("Intent.run(): Match Command")
+            self.log.info("Intent.run(): Match Command")
             start_match = time.perf_counter()
             info["skill_id"], info["intent_match"] = self.get_intent_match(info)
             elapsed_match = (time.perf_counter() - start_match) * 1000
-            print(f"TIMING intent match (command): {elapsed_match:.1f} ms")
+            self.log.info(f"TIMING intent match (command): {elapsed_match:.1f} ms")
             self.send_utt(info) 
           elif si.sentence_type == "M":
-            print("Intent.run(): Media Command")
+            self.log.info("Intent.run(): Media Command")
             info["skill_id"] = "media_skill"
             info["from_skill_id"] = self.skill_id
             info["subtype"] = "media_query"
             self.send_media(info) 
           elif si.sentence_type == "O":
-            print("Intent.run(): OOB Command")
+            self.log.info("Intent.run(): OOB Command")
             base_verb = utt.split(" ", 1)[0]
             if base_verb in self.recognized_verbs:
               self.send_oob_to_system(utt, contents)
             else:
               self.log.warning(f"Intent.run() Ignoring unrecognized OOB si.sentence_type {si.sentence_type} not found in {self.recognized_verbs}")
           else:
-            print(f"Intent.run(): Unknown sentence type {si.sentence_type} or Informational sentence")
+            self.log.info(f"Intent.run(): Unknown sentence type {si.sentence_type} or Informational sentence")
         os.remove(txt_file)
       time.sleep(0.125)
 
