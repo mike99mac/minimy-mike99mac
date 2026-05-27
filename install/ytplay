@@ -17,7 +17,7 @@ else
   which yt-dlp >/dev/null 2>&1
   if [ $? != 0 ]; then
     echo "ERROR: yt-dlp not installed"
-    echo "Try: python3 -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz"
+    echo "Try: pip install yt-dlp"
     exit 2
   fi
   which mpc >/dev/null 2>&1
@@ -26,6 +26,7 @@ else
     exit 3
   fi
   URL=$1
+  yt-dlp --update >/dev/null 2>&1
   mpc_URLs=`yt-dlp -g $URL`                # convert browser URL to streamable
   rc=$?
   if [ "$rc" != 0 ]; then

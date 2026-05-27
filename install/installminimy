@@ -337,7 +337,6 @@ function buildVenv
   echo "Upgrading pip ..." | tee -a $logFile
   local pipCmd="$baseDir/minimy_venv/bin/pip" # use pip from the venv
   runCmd $pipCmd install --upgrade pip
-  runCmd $baseDir/minimy_venv/bin/$PYTHON -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
   echo | tee -a $logFile
   echo "Activating virtual environment ..." | tee -a $logFile
   runCmd source minimy_venv/bin/activate   # start virtual environment
@@ -369,8 +368,6 @@ function buildVenv
     runCmd python setup.py bdist_wheel
     runCmd $pipCmd install --force-reinstall dist/*.whl
   fi
-  runCmd $pythonCmd -m pip install --force-reinstall https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
-  echo "Installing yt-dlp and requirements.txt ..." | tee -a $logFile
   cd $baseDir
   runCmd $pipCmd install --no-binary :all: regex # force pip to ignore old wheels and build fresh
   echo "Installing python3-lingua-franca ..." | tee -a $logFile
