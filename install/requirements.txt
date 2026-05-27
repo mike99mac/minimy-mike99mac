@@ -13,3 +13,4 @@ scipy
 webrtcvad-wheels
 websocket-client
 websockets
+yt-dlp
