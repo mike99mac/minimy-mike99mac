@@ -460,7 +460,7 @@ function buildVenv
   echo "Installing Llama.cpp ..." | tee -a $logFile
   echo | tee -a $logFile
   if grep -qi "Jetson" /proc/device-tree/model 2>/dev/null || grep -qi "Orin" /proc/device-tree/model 2>/dev/null; then
-        llamaCppVersion="0.3.14"
+        llamaCppVersion="0.3.19"
     echo "Jetson Orin Nano detected. Building llama-cpp-python $llamaCppVersion from source with CUDA ..." | tee -a $logFile
     runCmd "$pipCmd install --upgrade huggingface_hub"
     export PATH="/usr/local/cuda/bin:$PATH"
