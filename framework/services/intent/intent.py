@@ -1,15 +1,17 @@
 import time
 import glob
 import os
+import numpy as np
 from bus.MsgBus import MsgBus
 from framework.util.utils import LOG, Config, get_wake_words, aplay, normalize_sentence, remove_pleasantries
 from framework.services.intent.nlp.shallow_parse.nlu import SentenceInfo
 from framework.services.intent.nlp.shallow_parse.shallow_utils import scrub_sentence, remove_articles
 
+# Lightweight TF-IDF matcher
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
 class Intent:
-  # English language specific intent parser
-  # Monitors the save_text/ dir for utterances to process, if wake words not detected speech is ignored
-  # Emits utterance messages. If skill_id is not '' the utterance matched an intent in the skill_id skill
   def __init__(self, bus=None, timeout=5):
     self.skill_id = "intent_service"
     self.bus = MsgBus(self.skill_id)
@@ -35,6 +37,42 @@ class Intent:
     self.log.debug("Intent.__init__() registering handle_register_intent and handle_system_message")
     self.bus.on("register_intent", self.handle_register_intent)
     self.bus.on("system", self.handle_system_message)
+
+    # --- TF-IDF fast intent matcher ---
+    self.log.info("Initializing TF-IDF intent matcher...")
+    self.vectorizer = TfidfVectorizer(ngram_range=(1, 2), lowercase=True, stop_words='english')
+    self.intent_patterns = []      # list of example sentences
+    self.intent_keys = []          # list of (skill_id, intent_key)
+    self.pattern_embeddings = None
+    self.threshold = 0.25          # cosine similarity threshold (adjust based on testing)
+    self.log.info("Intent matcher ready.")
+
+  def register_intent_pattern(self, skill_id, intent_key, example_phrases):
+    for phrase in example_phrases:
+        norm_phrase = phrase.lower().strip()
+        self.intent_patterns.append(norm_phrase)
+        self.intent_keys.append((skill_id, intent_key))
+        self.log.debug(f"Registered pattern: '{norm_phrase}' -> {skill_id}:{intent_key}")
+    # Recompute TF-IDF matrix after each batch of registrations
+    self._rebuild_tfidf()
+
+  def _rebuild_tfidf(self):
+    if not self.intent_patterns:
+        self.pattern_embeddings = None
+        return
+    self.pattern_embeddings = self.vectorizer.fit_transform(self.intent_patterns)
+
+  def fast_intent_match(self, user_sentence):
+    if self.pattern_embeddings is None or self.pattern_embeddings.shape[0] == 0:
+        return None, None, 0.0
+    user_vec = self.vectorizer.transform([user_sentence.lower()])
+    similarities = cosine_similarity(user_vec, self.pattern_embeddings)[0]
+    best_idx = int(np.argmax(similarities))
+    best_score = float(similarities[best_idx])
+    if best_score >= self.threshold:
+        skill_id, intent_key = self.intent_keys[best_idx]
+        return skill_id, intent_key, best_score
+    return None, None, 0.0
 
   def handle_system_message(self, msg):
     skill_id = msg["payload"]["skill_id"]
@@ -114,54 +152,45 @@ class Intent:
     self.bus.send("system", "system_skill", info)
 
   def get_question_intent_match(self, info):
-    self.log.debug(f"Intent.get_question_intent_match() info: {info}")
-    aplay(self.earcon_filename)
-    skill_id = ""
-    for intent in self.intents:
-      stype, subject, verb = intent.split(":") 
-      if stype == "Q" and subject in info["subject"] and verb == info["qword"]:
-        info["subject"] = subject
-        skill_id = self.intents[intent]["skill_id"]
-        self.log.debug(f"Intent.get_question_intent_match() matched skill_id: {skill_id}")
-        intent_state = self.intents[intent]["state"]
-        return skill_id, intent
-    return skill_id, ""
+    sentence = info.get("sentence", "")
+    if not sentence:
+        return "", ""
+    skill_id, intent_key, score = self.fast_intent_match(sentence)
+    if skill_id:
+        self.log.info(f"Fast match: '{sentence}' -> {skill_id}:{intent_key} (score {score:.2f})")
+        return skill_id, intent_key
+    # If no match, return empty – will go to fallback
+    self.log.debug(f"No intent match for '{sentence}'")
+    return "", ""
 
   def get_intent_match(self, info):
-    self.log.debug(f"Intent.get_intent_match() info: {info}")  
-    aplay(self.earcon_filename)
-    skill_id = ""
-    intent_type = "C"
-    if info["sentence_type"] == "I":
-      self.log.warning(f"Intent trying to match an informational statement which it is not designed to do! {info}")
-      info["sentence_type"] = "C"
-    subject = remove_articles(info["subject"])
-    if subject:
-      subject = subject.replace(":",";").lower()
-      subject = subject.strip()
-      verb = info["verb"].lower().strip()
-    else:
-      verb = ""
-    key = f"{intent_type}:{subject}:{verb}"
-    self.log.debug(f"Intent.get_intent_match() key: {key}")
-    if key in self.intents:
-      skill_id = self.intents[key]["skill_id"]
-      intent_state = self.intents[key]["state"]
-      self.log.debug(f"Intent.get_intent_match(): matched key: {key} skill_id: {skill_id} intent_state: {intent_state}")
-      return skill_id, key
-    return skill_id, ""
+    # Same for commands
+    sentence = info.get("sentence", "")
+    if not sentence:
+        return "", ""
+    skill_id, intent_key, score = self.fast_intent_match(sentence)
+    if skill_id:
+        self.log.info(f"Fast match: '{sentence}' -> {skill_id}:{intent_key} (score {score:.2f})")
+        return skill_id, intent_key
+    return "", ""
 
   def handle_register_intent(self, msg):
     subject = msg["payload"]["subject"].replace(":", ";").lower()
     verb = msg["payload"]["verb"]
     intent_type = msg["payload"]["intent_type"]
+    skill_id = msg["payload"]["skill_id"]
     key = f"{intent_type}:{subject}:{verb}"
     if key in self.intents:
-      skill_id = msg["payload"]["skill_id"]
       self.log.warning(f"Intent.handle_register_intent() Intent clash! key: {key} skill_id: {skill_id}")
     else:
       self.log.info(f"Intent.handle_register_intent() adding key {key} to intents")
-      self.intents[key] = {"skill_id": msg["payload"]["skill_id"], "state": "enabled"}
+      self.intents[key] = {"skill_id": skill_id, "state": "enabled"}
+      # Build natural language example for this intent
+      if subject:
+          example = f"{verb} {subject}"
+      else:
+          example = verb
+      self.register_intent_pattern(skill_id, key, [example])
 
   def run(self):
     self.log.debug(f"Intent.run() intents: {self.intents}")
@@ -220,20 +249,28 @@ class Intent:
                  }
 
           if si.sentence_type == "Q":
-            self.log.info(f"Intent.run(): Match Question. key=Q:{si.insight.question}:{si.insight.subject}")
+            self.log.info(f"Intent.run(): Match Question.")
             start_match = time.perf_counter()
-            info["skill_id"], info["intent_match"] = self.get_question_intent_match({"subject":info["subject"], "qword":info["question"]})
+            info["skill_id"], info["intent_match"] = self.get_question_intent_match(info)
             elapsed_match = (time.perf_counter() - start_match) * 1000
             self.log.info(f"TIMING intent match (question): {elapsed_match:.1f} ms")
-            self.log.info(f'Intent.run(): Match Question. skill_id: {info["skill_id"]} intent_match: {info["intent_match"]}')
-            self.send_utt(info) 
+            if info["skill_id"]:
+                self.log.info(f'Intent.run(): Matched skill_id: {info["skill_id"]} intent_match: {info["intent_match"]}')
+                self.send_utt(info)
+            else:
+                info["skill_id"] = "fallback_skill"
+                self.send_utt(info)
           elif si.sentence_type == "C":
             self.log.info("Intent.run(): Match Command")
             start_match = time.perf_counter()
             info["skill_id"], info["intent_match"] = self.get_intent_match(info)
             elapsed_match = (time.perf_counter() - start_match) * 1000
             self.log.info(f"TIMING intent match (command): {elapsed_match:.1f} ms")
-            self.send_utt(info) 
+            if info["skill_id"]:
+                self.send_utt(info)
+            else:
+                info["skill_id"] = "fallback_skill"
+                self.send_utt(info)
           elif si.sentence_type == "M":
             self.log.info("Intent.run(): Media Command")
             info["skill_id"] = "media_skill"

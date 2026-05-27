@@ -2,17 +2,24 @@ from framework.util.utils import Config
 import os
 import time
 import logging
+import subprocess
 
-# Setup logger for TTS timing
-home_dir = os.environ.get("HOME")
-log_file = os.path.join(home_dir, "minimy/logs/tts.log")
-logging.basicConfig(
-    filename=log_file,
-    level=logging.INFO,
-    format='[%(asctime)s] %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
-tts_logger = logging.getLogger("tts.timing")
+# Ensure log directory exists
+home_dir = os.environ.get("HOME", "/home/pi")
+log_dir = os.path.join(home_dir, "minimy/logs")
+os.makedirs(log_dir, exist_ok=True)
+log_file = os.path.join(log_dir, "tts.log")
+
+logger = logging.getLogger("tts_timing")
+logger.setLevel(logging.INFO)
+if logger.hasHandlers():
+    logger.handlers.clear()
+file_handler = logging.FileHandler(log_file, mode='a')
+file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S'))
+logger.addHandler(file_handler)
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+logger.addHandler(console)
 
 def local_speak_dialog(text, file_name, wait_q):
   print(f"local_speak_dialog() text: {text} file_name: {file_name} ")
@@ -25,8 +32,8 @@ def local_speak_dialog(text, file_name, wait_q):
   cmd = f"echo {text} | {piper_dir}/piper --quiet --model {piper_dir}/{model_file}.onnx --output_file speech.wav; aplay speech.wav"
   print(f"local_speak_dialog() cmd: {cmd}")
   start_time = time.perf_counter()
-  os.system(cmd)
+  subprocess.run(cmd, shell=True)
   elapsed = (time.perf_counter() - start_time) * 1000
-  tts_logger.info(f"TIMING TTS synthesis + playback: {elapsed:.1f} ms")
+  logger.info(f"TIMING TTS synthesis + playback: {elapsed:.1f} ms")
   os.system("rm speech.wav")
   wait_q.put({'service':'local', 'status':'success'})
