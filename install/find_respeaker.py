@@ -17,7 +17,7 @@ def get_respeaker_index():
   idx = None
   for i in range(p.get_device_count()):
     info = p.get_device_info_by_index(i)
-    if info['maxInputChannels'] > 0 and "reSpeaker XVF3800" in info['name']:
+    if "reSpeaker XVF3800" in info['name']:
       idx = i
       break
   p.terminate()
