@@ -56,29 +56,36 @@ class Intent:
 
   def register_intent_pattern(self, skill_id, intent_key, example_phrases):
     for phrase in example_phrases:
-        norm_phrase = phrase.lower().strip()
-        self.intent_patterns.append(norm_phrase)
-        self.intent_keys.append((skill_id, intent_key))
-        self.log.debug(f"Registered pattern: '{norm_phrase}' -> {skill_id}:{intent_key}")
+      norm_phrase = phrase.lower().strip()
+      self.intent_patterns.append(norm_phrase)
+      self.intent_keys.append((skill_id, intent_key))
+      self.log.debug(f"Registered pattern: '{norm_phrase}' -> {skill_id}:{intent_key}")
     self._rebuild_tfidf()
 
   def _rebuild_tfidf(self):
     if not self.intent_patterns:
-        self.pattern_embeddings = None
-        return
+      self.pattern_embeddings = None
+      return
     self.pattern_embeddings = self.vectorizer.fit_transform(self.intent_patterns)
 
-  def fast_intent_match(self, user_sentence):
+  def fast_intent_match(self, user_sentence, intent_type=None):
     if self.pattern_embeddings is None or self.pattern_embeddings.shape[0] == 0:
-        return None, None, 0.0
+      return None, None, 0.0
     user_vec = self.vectorizer.transform([user_sentence.lower()])
     similarities = cosine_similarity(user_vec, self.pattern_embeddings)[0]
-    best_idx = int(np.argmax(similarities))
+    # Build list of indices matching the requested intent_type (if any)
+    valid_indices = []
+    for i, (skill_id, key) in enumerate(self.intent_keys):
+      if intent_type is None or key.startswith(intent_type + ":"):
+        valid_indices.append(i)
+    if not valid_indices:
+      return None, None, 0.0
+    # Find best among valid indices
+    best_idx = valid_indices[np.argmax([similarities[i] for i in valid_indices])]
     best_score = float(similarities[best_idx])
     if best_score >= self.threshold:
-        skill_id, intent_key = self.intent_keys[best_idx]
-        self.log.info(f"Fast match: '{user_sentence}' -> {skill_id}:{intent_key} (score {best_score:.2f})")
-        return skill_id, intent_key, best_score
+      skill_id, intent_key = self.intent_keys[best_idx]
+      return skill_id, intent_key, best_score
     return None, None, 0.0
 
   def handle_system_message(self, msg):
@@ -162,53 +169,55 @@ class Intent:
     sentence = info.get("sentence", "").strip().lower()
     words = sentence.split()
 
-    # Ignore single question word (e.g., "what", "how")
+    # Ignore single question word or "computer" + question word
     if len(words) == 1 and words[0] in self.question_words_set:
-      self.log.debug(f"Ignoring single question word: '{sentence}'")
       return "", ""
-
-    # Ignore "computer what", "computer how", etc.
     if len(words) == 2 and words[0] == "computer" and words[1] in self.question_words_set:
-      self.log.debug(f"Ignoring 'computer {words[1]}'")
       return "", ""
 
-    # Play earcon asynchronously (only for valid utterances)
+    # Play earcon asynchronously
     subprocess.Popen(["aplay", self.earcon_filename], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     if not sentence:
       return "", ""
 
-    if len(words) <= 2 and sentence not in ["pause", "stop", "next", "previous", "resume", "help", "mute", "unmute"]:
+    if len(words) == 1 and sentence not in ["pause", "stop", "next", "previous", "resume", "help", "mute", "unmute"]:
       self.log.info(f"Short utterance '{sentence}' -> fallback_skill")
       return "fallback_skill", ""
 
-    skill_id, intent_key, _ = self.fast_intent_match(sentence)
-    if skill_id:
+    skill_id, intent_key, score = self.fast_intent_match(sentence, intent_type="Q")
+    if skill_id and score >= 0.5:
+      self.log.debug(f"High confidence match: '{sentence}' -> {skill_id} (score {score:.2f})")
       return skill_id, intent_key
-    return "", ""
+    self.log.debug(f"Low confidence ({score:.2f}) or no match -> fallback_skill")
+    return "fallback_skill", ""
 
   def get_intent_match(self, info):
     sentence = info.get("sentence", "").strip().lower()
     words = sentence.split()
 
+    # Ignore single question word or "computer" + question word
     if len(words) == 1 and words[0] in self.question_words_set:
       return "", ""
-
     if len(words) == 2 and words[0] == "computer" and words[1] in self.question_words_set:
       return "", ""
 
+    # Play earcon asynchronously
     subprocess.Popen(["aplay", self.earcon_filename], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     if not sentence:
       return "", ""
 
-    if len(words) <= 2 and sentence not in ["pause", "stop", "next", "previous", "resume", "help", "mute", "unmute"]:
+    if len(words) == 1 and sentence not in ["pause", "stop", "next", "previous", "resume", "help", "mute", "unmute"]:
+      self.log.info(f"Short utterance '{sentence}' -> fallback_skill")
       return "fallback_skill", ""
 
-    skill_id, intent_key, _ = self.fast_intent_match(sentence)
-    if skill_id:
+    skill_id, intent_key, score = self.fast_intent_match(sentence, intent_type="C")
+    if skill_id and score >= 0.5:
+      self.log.debug(f"High confidence match: '{sentence}' -> {skill_id} (score {score:.2f})")
       return skill_id, intent_key
-    return "", ""
+    self.log.debug(f"Low confidence ({score:.2f}) or no match -> fallback_skill")
+    return "fallback_skill", ""
 
   def handle_register_intent(self, msg):
     subject = msg["payload"]["subject"].replace(":", ";").lower()
@@ -222,9 +231,9 @@ class Intent:
       self.log.info(f"Intent.handle_register_intent() adding key {key} to intents")
       self.intents[key] = {"skill_id": skill_id, "state": "enabled"}
       if subject:
-          example = f"{verb} {subject}"
+        example = f"{verb} {subject}"
       else:
-          example = verb
+        example = verb
       self.register_intent_pattern(skill_id, key, [example])
 
   def run(self):
@@ -295,11 +304,11 @@ class Intent:
             elapsed_match = (time.perf_counter() - start_match) * 1000
             self.log.info(f"TIMING intent match (question): {elapsed_match:.1f} ms")
             if info["skill_id"]:
-                self.log.info(f'Intent.run(): Matched skill_id: {info["skill_id"]} intent_match: {info["intent_match"]}')
-                self.send_utt(info)
+              self.log.info(f'Intent.run(): Matched skill_id: {info["skill_id"]} intent_match: {info["intent_match"]}')
+              self.send_utt(info)
             else:
-                info["skill_id"] = "fallback_skill"
-                self.send_utt(info)
+              info["skill_id"] = "fallback_skill"
+              self.send_utt(info)
           elif si.sentence_type == "C":
             self.log.info("Intent.run(): Match Command")
             start_match = time.perf_counter()
@@ -307,10 +316,10 @@ class Intent:
             elapsed_match = (time.perf_counter() - start_match) * 1000
             self.log.info(f"TIMING intent match (command): {elapsed_match:.1f} ms")
             if info["skill_id"]:
-                self.send_utt(info)
+              self.send_utt(info)
             else:
-                info["skill_id"] = "fallback_skill"
-                self.send_utt(info)
+              info["skill_id"] = "fallback_skill"
+              self.send_utt(info)
           elif si.sentence_type == "M":
             self.log.info("Intent.run(): Media Command")
             info["skill_id"] = "media_skill"
