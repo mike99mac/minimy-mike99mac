@@ -659,8 +659,6 @@ You are now answering the user directly. Provide a short, factual, helpful answe
       f"(sentence={sentence!r}, failed_rewrite={failed_rewrite}, "
       f"original_utterance={original_utterance!r}, rewritten_utterance={rewritten_utterance!r})"
     )
-    if len(sentence.strip()) < 2:
-      return {"action": "answer", "answer": "I'm sorry, I didn't understand. Could you repeat?"}
     with self.processing_lock:
       if not self._ensure_llm_ready():
         self.log.warning(
@@ -785,7 +783,6 @@ You are now answering the user directly. Provide a short, factual, helpful answe
     words = sentence.split()
     if len(words) < 2 and sentence.lower() not in ["computer", "help", "stop", "pause", "resume", "next", "previous"]:
       self.log.info(f"FallbackSkill: Ignoring too short sentence: '{sentence}'")
-      self.speak("I'm sorry, I didn't catch that. Could you repeat?")
       return
 
     rewrite_nonce = self._get_rewrite_nonce(raw_input)

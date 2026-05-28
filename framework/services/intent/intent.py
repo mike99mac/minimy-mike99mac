@@ -161,10 +161,6 @@ class Intent:
       self.log.info(f"Short utterance '{sentence}' -> fallback_skill")
       return "fallback_skill", ""
 
-    # Isolated "what" or "computer what"
-    if sentence.lower() == "what" or sentence.lower() == "computer what":
-      return "fallback_skill", ""
-
     # Capital questions go to LLM
     if "capital of" in sentence.lower():
       return "fallback_skill", ""
@@ -184,9 +180,6 @@ class Intent:
 
     words = sentence.split()
     if len(words) <= 2 and sentence.lower() not in ["pause", "stop", "next", "previous", "resume", "help", "mute", "unmute"]:
-      return "fallback_skill", ""
-
-    if sentence.lower() == "what" or sentence.lower() == "computer what":
       return "fallback_skill", ""
 
     if "capital of" in sentence.lower():
@@ -228,6 +221,11 @@ class Intent:
         utt_type = contents[1:start]
         utt = contents[start+1:]
         utt = scrub_sentence(utt)
+        # Ignore exactly "computer what" (breaks the echo loop)
+        if utt.lower().strip() == "computer what":
+          self.log.debug(f"Ignoring 'computer what' utterance")
+          os.remove(txt_file)
+          continue
         self.log.debug(f"Intent.run() got txt_file: {txt_file} contents: {contents} utt: {utt}")
         oob_type = self.is_oob(utt)
         self.log.debug(f"Intent.run() oob_type: {oob_type} utt_type: {utt_type} utt: {utt}")
