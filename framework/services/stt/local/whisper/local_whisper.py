@@ -8,17 +8,7 @@ import ctranslate2
 from faster_whisper import WhisperModel
 from quart import Quart, request
 
-# Timing log under ~/minimy/logs
-home = os.environ.get("HOME", "/home/pi")
-log_dir = os.path.join(home, "minimy/logs")
-os.makedirs(log_dir, exist_ok=True)
-timing_log = os.path.join(log_dir, "stt_timing.log")
-
-def log_timing(msg):
-  with open(timing_log, "a") as f:
-    f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {msg}\n")
-
-sys.path.append(f"{home}/minimy")
+sys.path.append(f"{os.environ.get('HOME', '/home/pi')}/minimy")
 from framework.util.utils import Config
 
 app = Quart(__name__)
@@ -50,7 +40,10 @@ async def transcribe():
     segments, info = model.transcribe(audio_array, beam_size=5)
     transcription = "".join(segment.text.lower().lstrip().replace(",", "").replace("?", "") for segment in segments)
     elapsed = (time.perf_counter() - start_time) * 1000
-    log_timing(f"TIMING STT transcription: {elapsed:.1f} ms")
+    # Log timing to stdout (systemd will capture)
+    print(f"TIMING STT transcription: {elapsed:.1f} ms")
+    if transcription:
+      print(f"whisper.transcribe() Transcription: {transcription}")
     return {"text": transcription}
   except Exception as e:
     print(f"whisper.transcribe(): Error during transcription: {e}")

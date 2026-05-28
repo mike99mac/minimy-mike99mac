@@ -161,18 +161,18 @@ function startSystem
 
   echo "Starting system skills ..."
   cd "$baseDir/skills/system_skills"
-  "$venvPython" skill_system.py >> "$logDir/skills.log" &
+  "$venvPython" skill_system.py >> "$logDir/skills.log" 2>&1 &
   sleep 1
   echo "Starting intent service ..."
   cd "$baseDir"
-  "$venvPython" framework/services/intent/intent.py >> "$logDir/intent.log" &
+  "$venvPython" framework/services/intent/intent.py >> "$logDir/intent.log" 2>&1 &
   sleep 2
   echo "Starting media player ..."
-  "$venvPython" framework/services/output/media_player.py >> "$logDir/skills.log" &
+  "$venvPython" framework/services/output/media_player.py >> "$logDir/skills.log" 2>&1 &
   echo "Starting TTS service ..."
-  "$venvPython" framework/services/tts/tts.py >> "$logDir/tts.log" &
+  "$venvPython" framework/services/tts/tts.py >> "$logDir/tts.log" 2>&1 &
   echo "Starting STT service ..."
-  "$venvPython" framework/services/stt/stt.py >> "$logDir/stt.log" &
+  "$venvPython" framework/services/stt/stt.py >> "$logDir/stt.log" 2>&1 &
   sleep 1
  }                                         # startSystem()
 
