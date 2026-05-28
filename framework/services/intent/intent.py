@@ -26,6 +26,17 @@ class Intent:
     self.crappy_aec = cfg.get_cfg_val("Advanced.CrappyAEC")
     self.recognized_verbs = []
     self.stop_aliases = ["stop", "terminate", "abort", "cancel", "kill", "exit"]
+    self.question_words_set = set()
+    qw_file = f"{self.base_dir}/framework/question_words.txt"
+    try:
+      with open(qw_file) as f:
+        for line in f:
+          w = line.strip().lower()
+          if w:
+            self.question_words_set.add(w)
+    except FileNotFoundError:
+      # Fallback common question words
+      self.question_words_set = {'what', 'where', 'when', 'who', 'why', 'how', 'which', 'is', 'are', 'do', 'does', 'did', 'can', 'could', 'would', 'will', 'should'}
     self.wake_words = []
     wws = get_wake_words()
     for ww in wws:
@@ -148,41 +159,50 @@ class Intent:
     self.bus.send("system", "system_skill", info)
 
   def get_question_intent_match(self, info):
-    # Play earcon asynchronously
+    sentence = info.get("sentence", "").strip().lower()
+    words = sentence.split()
+
+    # Ignore single question word (e.g., "what", "how")
+    if len(words) == 1 and words[0] in self.question_words_set:
+      self.log.debug(f"Ignoring single question word: '{sentence}'")
+      return "", ""
+
+    # Ignore "computer what", "computer how", etc.
+    if len(words) == 2 and words[0] == "computer" and words[1] in self.question_words_set:
+      self.log.debug(f"Ignoring 'computer {words[1]}'")
+      return "", ""
+
+    # Play earcon asynchronously (only for valid utterances)
     subprocess.Popen(["aplay", self.earcon_filename], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    sentence = info.get("sentence", "").strip()
     if not sentence:
       return "", ""
 
-    # Very short utterances (1-2 words) go to fallback unless they are clear commands
-    words = sentence.split()
-    if len(words) <= 2 and sentence.lower() not in ["pause", "stop", "next", "previous", "resume", "help", "mute", "unmute"]:
+    if len(words) <= 2 and sentence not in ["pause", "stop", "next", "previous", "resume", "help", "mute", "unmute"]:
       self.log.info(f"Short utterance '{sentence}' -> fallback_skill")
       return "fallback_skill", ""
 
-    # Capital questions go to LLM
-    if "capital of" in sentence.lower():
-      return "fallback_skill", ""
-
-    # Fast intent matching
     skill_id, intent_key, _ = self.fast_intent_match(sentence)
     if skill_id:
       return skill_id, intent_key
     return "", ""
 
   def get_intent_match(self, info):
+    sentence = info.get("sentence", "").strip().lower()
+    words = sentence.split()
+
+    if len(words) == 1 and words[0] in self.question_words_set:
+      return "", ""
+
+    if len(words) == 2 and words[0] == "computer" and words[1] in self.question_words_set:
+      return "", ""
+
     subprocess.Popen(["aplay", self.earcon_filename], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    sentence = info.get("sentence", "").strip()
     if not sentence:
       return "", ""
 
-    words = sentence.split()
-    if len(words) <= 2 and sentence.lower() not in ["pause", "stop", "next", "previous", "resume", "help", "mute", "unmute"]:
-      return "fallback_skill", ""
-
-    if "capital of" in sentence.lower():
+    if len(words) <= 2 and sentence not in ["pause", "stop", "next", "previous", "resume", "help", "mute", "unmute"]:
       return "fallback_skill", ""
 
     skill_id, intent_key, _ = self.fast_intent_match(sentence)
