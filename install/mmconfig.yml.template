@@ -11,8 +11,6 @@
       UseRemote: n
     LLMFile: 'qwen2.5-1.5b-instruct-q4_k_m.gguf'
     LLMRepo: 'Qwen/Qwen2.5-1.5B-Instruct-GGUF'
-    NLP:
-      UseRemote: n
     RoomToHost: ''
       # Examples:
       # bedroom: 192.168.4.50

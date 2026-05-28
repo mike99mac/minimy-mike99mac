@@ -78,7 +78,6 @@ class Config:
     'Advanced.TTS.Local': 'Basic.TTS.Local',
     'Advanced.TTS.Remote': 'Basic.TTS.Remote',
     'Advanced.TTS.LocalVoice': 'Basic.TTS.LocalVoice',
-    'Advanced.NLP.UseRemote': 'Basic.NLP.UseRemote',
     'Advanced.LLM.UseRemote': 'Basic.LLM.UseRemote'
   }
 

@@ -8,16 +8,17 @@ import ctranslate2
 from faster_whisper import WhisperModel
 from quart import Quart, request
 
-# Simple timing logger - write to a separate file
-home_dir = os.environ.get("HOME", "/home/pi")
-timing_log = os.path.join(home_dir, "minimy/logs/stt_timing.log")
-os.makedirs(os.path.dirname(timing_log), exist_ok=True)
+# Timing log under ~/minimy/logs
+home = os.environ.get("HOME", "/home/pi")
+log_dir = os.path.join(home, "minimy/logs")
+os.makedirs(log_dir, exist_ok=True)
+timing_log = os.path.join(log_dir, "stt_timing.log")
 
 def log_timing(msg):
-    with open(timing_log, "a") as f:
-        f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {msg}\n")
+  with open(timing_log, "a") as f:
+    f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {msg}\n")
 
-sys.path.append(f"{home_dir}/minimy")
+sys.path.append(f"{home}/minimy")
 from framework.util.utils import Config
 
 app = Quart(__name__)
@@ -29,15 +30,13 @@ try:
     sys.exit(1)
 except Exception as e:
   print(f"ERROR calling cfg.get_cfg_val(Basic.STT.Model): {e}")
+
 if ctranslate2.get_cuda_device_count() > 0:
   print(f"Starting Whisper using CUDA GPU with model {model_name}...")
-  model = WhisperModel(
-    model_name, device="cuda", compute_type="int8_float16"
-  )
+  model = WhisperModel(model_name, device="cuda", compute_type="int8_float16")
 else:
   print(f"Starting Whisper using CPU with model {model_name}...")
   model = WhisperModel(model_name, device="cpu", compute_type="int8")
-
 
 @app.route("/stt", methods=["POST"])
 async def transcribe():
@@ -46,45 +45,28 @@ async def transcribe():
     start_time = time.perf_counter()
     with io.BytesIO(wav_bytes) as wav_io:
       with wave.open(wav_io, "rb") as wav_file:
-        audio_bytes = wav_file.readframes(
-          wav_file.getnframes()
-        )
-        audio_array = (
-          np.frombuffer(audio_bytes, dtype=np.int16).astype(np.float32)
-            / 32768.0
-        )
-    segments, info = model.transcribe(
-      audio_array, beam_size=5
-    )
-    transcription = ""
-    for segment in segments:
-      transcription += (
-        segment.text.lower().lstrip().replace(",", "").replace("?", "")
-      )
+        audio_bytes = wav_file.readframes(wav_file.getnframes())
+        audio_array = np.frombuffer(audio_bytes, dtype=np.int16).astype(np.float32) / 32768.0
+    segments, info = model.transcribe(audio_array, beam_size=5)
+    transcription = "".join(segment.text.lower().lstrip().replace(",", "").replace("?", "") for segment in segments)
     elapsed = (time.perf_counter() - start_time) * 1000
     log_timing(f"TIMING STT transcription: {elapsed:.1f} ms")
-    if transcription:
-      print(f"whisper.transcribe() Transcription: {transcription}")
     return {"text": transcription}
   except Exception as e:
     print(f"whisper.transcribe(): Error during transcription: {e}")
     return {"error": str(e)}, 400
-
 
 @app.route("/stream", methods=["POST"])
 async def stream_transcription():
   model_stream = model.create_stream()
   try:
     async for chunk in request.body:
-      chunk_array = (
-        np.frombuffer(chunk, dtype=np.int16).astype(np.float32) / 32768.0
-      )
+      chunk_array = np.frombuffer(chunk, dtype=np.int16).astype(np.float32) / 32768.0
       model_stream.feed_audio(chunk_array)
     transcription = model_stream.finish()
     return {"text": transcription}
   except Exception as e:
     return {"error": str(e)}, 400
-
 
 if __name__ == "__main__":
   import asyncio

@@ -2,6 +2,7 @@ import time
 import glob
 import os
 import numpy as np
+import subprocess
 from bus.MsgBus import MsgBus
 from framework.util.utils import LOG, Config, get_wake_words, aplay, normalize_sentence, remove_pleasantries
 from framework.services.intent.nlp.shallow_parse.nlu import SentenceInfo
@@ -23,10 +24,6 @@ class Intent:
     self.is_running = False
     cfg = Config()
     self.crappy_aec = cfg.get_cfg_val("Advanced.CrappyAEC")
-    remote_nlp = cfg.get_cfg_val("Basic.NLP.UseRemote")
-    self.use_remote_nlp = True
-    if remote_nlp and remote_nlp == "n":
-      self.use_remote_nlp = False
     self.recognized_verbs = []
     self.stop_aliases = ["stop", "terminate", "abort", "cancel", "kill", "exit"]
     self.wake_words = []
@@ -43,7 +40,7 @@ class Intent:
     self.intent_patterns = []
     self.intent_keys = []
     self.pattern_embeddings = None
-    self.threshold = 0.25
+    self.threshold = 0.35
     self.log.info("Intent matcher ready.")
 
   def register_intent_pattern(self, skill_id, intent_key, example_phrases):
@@ -69,6 +66,7 @@ class Intent:
     best_score = float(similarities[best_idx])
     if best_score >= self.threshold:
         skill_id, intent_key = self.intent_keys[best_idx]
+        self.log.info(f"Fast match: '{user_sentence}' -> {skill_id}:{intent_key} (score {best_score:.2f})")
         return skill_id, intent_key, best_score
     return None, None, 0.0
 
@@ -150,27 +148,53 @@ class Intent:
     self.bus.send("system", "system_skill", info)
 
   def get_question_intent_match(self, info):
-    # Play earcon here, as in original code (before matching)
-    aplay(self.earcon_filename)
-    sentence = info.get("sentence", "")
+    # Play earcon asynchronously
+    subprocess.Popen(["aplay", self.earcon_filename], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    sentence = info.get("sentence", "").strip()
     if not sentence:
-        return "", ""
-    skill_id, intent_key, score = self.fast_intent_match(sentence)
+      return "", ""
+
+    # Very short utterances (1-2 words) go to fallback unless they are clear commands
+    words = sentence.split()
+    if len(words) <= 2 and sentence.lower() not in ["pause", "stop", "next", "previous", "resume", "help", "mute", "unmute"]:
+      self.log.info(f"Short utterance '{sentence}' -> fallback_skill")
+      return "fallback_skill", ""
+
+    # Isolated "what" or "computer what"
+    if sentence.lower() == "what" or sentence.lower() == "computer what":
+      return "fallback_skill", ""
+
+    # Capital questions go to LLM
+    if "capital of" in sentence.lower():
+      return "fallback_skill", ""
+
+    # Fast intent matching
+    skill_id, intent_key, _ = self.fast_intent_match(sentence)
     if skill_id:
-        self.log.info(f"Fast match: '{sentence}' -> {skill_id}:{intent_key} (score {score:.2f})")
-        return skill_id, intent_key
+      return skill_id, intent_key
     return "", ""
 
   def get_intent_match(self, info):
-    # Play earcon here, as in original code
-    aplay(self.earcon_filename)
-    sentence = info.get("sentence", "")
+    subprocess.Popen(["aplay", self.earcon_filename], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    sentence = info.get("sentence", "").strip()
     if not sentence:
-        return "", ""
-    skill_id, intent_key, score = self.fast_intent_match(sentence)
+      return "", ""
+
+    words = sentence.split()
+    if len(words) <= 2 and sentence.lower() not in ["pause", "stop", "next", "previous", "resume", "help", "mute", "unmute"]:
+      return "fallback_skill", ""
+
+    if sentence.lower() == "what" or sentence.lower() == "computer what":
+      return "fallback_skill", ""
+
+    if "capital of" in sentence.lower():
+      return "fallback_skill", ""
+
+    skill_id, intent_key, _ = self.fast_intent_match(sentence)
     if skill_id:
-        self.log.info(f"Fast match: '{sentence}' -> {skill_id}:{intent_key} (score {score:.2f})")
-        return skill_id, intent_key
+      return skill_id, intent_key
     return "", ""
 
   def handle_register_intent(self, msg):

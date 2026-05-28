@@ -41,7 +41,6 @@ class SystemSkill(SimpleVoiceAssistant):
     cfg = Config()                         # get config file
     self.cfg_remote_stt = cfg.get_cfg_val("Basic.STT.UseRemote")
     self.cfg_remote_tts = cfg.get_cfg_val("Basic.TTS.UseRemote")
-    self.cfg_remote_nlp = cfg.get_cfg_val("Basic.NLP.UseRemote")
     self.cfg_remote_llm = cfg.get_cfg_val("Basic.LLM.UseRemote")
     self.cfg_wake_words = cfg.get_cfg_val("Basic.WakeWords")
     self.base_dir = cfg.get_cfg_val("Basic.BaseDir")
