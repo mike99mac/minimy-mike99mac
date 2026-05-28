@@ -21,7 +21,6 @@ def handle_advanced(cfg):
   print("Advanced Settings\n-----------------")
   update_value(cfg, "Basic.STT.UseRemote", "Use Remote STT (y/n)")
   update_value(cfg, "Basic.TTS.UseRemote", "Use Remote TTS (y/n)")
-  update_value(cfg, "Basic.NLP.UseRemote", "Use Remote NLP (y/n)")
   update_value(cfg, "Basic.LLM.UseRemote", "Use Remote LLM (y/n)")
   update_value(cfg, "Advanced.CrappyAEC", "Crappy AEC (y/n)")
   update_value(cfg, "Advanced.GoogleApiKeyPath", "Google API Key File Location")

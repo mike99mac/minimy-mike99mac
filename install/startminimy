@@ -14,6 +14,12 @@ logDir="$baseDir/logs"
 # Detect current user information
 CURRENT_USER=$(whoami)
 
+# Set high performance mode on Jetson hardware
+platform=`cat /proc/device-tree/model | awk '{print $1 " " $2}'`
+if [ "$platform" = "NVIDIA Jetson" ]; then
+  sudo jetson_clocks
+fi
+
 #+--------------------------------------------------------------------------+
 function checkEnv
 # Check the environment

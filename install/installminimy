@@ -478,7 +478,7 @@ function buildVenv
   echo "Installing local requirements.txt" | tee -a $logFile
   runCmd $pipCmd install -r install/requirements.txt
   echo "Installing local STT faster-whisper" | tee -a $logFile
-  if [ "$platform" = "NVIDIA Jetson" ] && [ ! -d "$baseDir/CTranslate2" ]; then
+  if [ "$platform" = "NVIDIA Jetson" ]; then
     runCmd $pipCmd install faster-whisper --constraint <(echo "ctranslate2==$(pip show ctranslate2 | grep Version | awk '{print $2}')")
   else
     runCmd $pipCmd install faster-whisper
@@ -500,14 +500,6 @@ function buildVenv
     runCmd sudo ln -s /usr/local/sbin/ytplay /usr/local/sbin/ytadd
   fi
   echo | tee -a $logFile
-  cd $baseDir/framework/services/intent/nlp/local
-
-  echo "Building CMU link grammar ..." | tee -a $logFile
-  runCmd tar xzf cmu_link-4.1b.tar.gz
-  echo | tee -a $logFile
-  echo "cd to link-4.1b ..." | tee -a $logFile
-  cd link-4.1b
-  runCmd make
 
   echo "Installing Local STT ..." | tee -a $logFile
   echo | tee -a $logFile
@@ -554,7 +546,7 @@ function buildVenv
 
   echo "Installing Llama.cpp ..." | tee -a $logFile
   echo | tee -a $logFile
-  if grep -qi "Jetson" /proc/device-tree/model 2>/dev/null || grep -qi "Orin" /proc/device-tree/model 2>/dev/null; then
+  if [ "$platform" = "NVIDIA Jetson" ]; then
     llamaCppVersion="0.3.19"
     echo "Jetson Orin Nano detected. Building llama-cpp-python $llamaCppVersion from source with CUDA ..." | tee -a $logFile
     runCmd "$pipCmd install --upgrade huggingface_hub"
