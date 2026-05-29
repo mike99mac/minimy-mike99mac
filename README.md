@@ -433,7 +433,15 @@ To download Minimy, perform the following steps:
     ```
 
     ```
-    git clone https://github.com/mike99mac/minimy-mike99mac minimy
+    git clone https://github.com/mike99mac/minimy-mike99mac 
+    ```
+
+### Copy Minimy
+
+- Recursively copy ``minimy-mike99mac`` to `` minimy``.
+     
+    ```
+    cp -a minimy-mike99mac minimy 
     ```
 
 ### Install Minimy
