@@ -194,18 +194,14 @@ function setupAudioRouting
   echo | tee -a $logFile
   echo "Setting up audio routing with PipeWire..." | tee -a $logFile
 
-  # Only proceed if apt-get is available (Ubuntu/Debian systems)
-  if ! command -v apt-get &>/dev/null; then
-    echo "Skipping audio setup: apt-get not found (non-Debian system)." | tee -a $logFile
-    return 0
-  fi
-
-  # 1. Install PipeWire and related packages if not already present
+  # Install PipeWire and related packages if not already present
   echo "Installing PipeWire packages..." | tee -a $logFile
-  sudo apt-get install -y pipewire pipewire-pulse wireplumber pulseaudio-utils >> $logFile 2>&1
+  if command -v apt-get &>/dev/null; then
+    sudo apt-get install -y pipewire pipewire-pulse wireplumber pulseaudio-utils alsa-plugins-pulseaudio >> $logFile 2>&1
+  fi
   systemctl --user enable --now pipewire pipewire-pulse wireplumber >> $logFile 2>&1
 
-  # 2. Write minimal ~/.asoundrc
+  # Write minimal ~/.asoundrc
   cat > "$HOME/.asoundrc" << 'EOF'
 pcm.!default {
     type pulse
@@ -219,7 +215,7 @@ EOF
   # Wait for PipeWire to settle
   sleep 2
 
-  # 3. Detect devices - continue gracefully if not found
+  # Detect devices - continue gracefully if not found
   if ! pactl info &>/dev/null; then
     echo "Warning: pactl command failed (pipewire-pulse not running?). Skipping audio device configuration." | tee -a $logFile
     return 0
@@ -234,7 +230,7 @@ EOF
     echo "Notice: No USB audio adapter found. Using system default for audio output." | tee -a $logFile
   fi
 
-  # Attempt to find reSpeaker mic (input) - case-insensitive for safety
+  # Attempt to find reSpeaker mic (input)
   SOURCE_NAME=$(pactl list sources short | grep -iE "reSpeaker|XVF3800" | head -1 | awk '{print $2}')
   if [ -n "$SOURCE_NAME" ]; then
     echo "Detected input source: $SOURCE_NAME" | tee -a $logFile
@@ -242,7 +238,7 @@ EOF
     pactl set-source-mute "$SOURCE_NAME" 0
     pactl set-source-volume "$SOURCE_NAME" 100%
 
-    # 4. Set reSpeaker card profile to Pro Audio (for 4‑channel raw access)
+    # Set reSpeaker card profile to Pro Audio (for 4‑channel raw access)
     CARD_ID=$(pactl list cards short | grep -iE "reSpeaker|XVF3800" | awk '{print $1}')
     if [ -n "$CARD_ID" ]; then
       echo "Setting reSpeaker card profile to pro-audio..." | tee -a $logFile
@@ -253,7 +249,7 @@ EOF
     echo "Notice: No reSpeaker microphone found. Using system default for audio input." | tee -a $logFile
   fi
 
-  # 5. Conditionally install udev rule only if reSpeaker is present
+  # Install udev rule only if reSpeaker is present
   if [ -n "$SOURCE_NAME" ]; then
     sudo tee /etc/udev/rules.d/99-respeaker.rules > /dev/null << 'RULE'
 ACTION=="add", SUBSYSTEM=="usb", ATTR{manufacturer}=="Seeed Technology Co., Ltd.", ATTR{product}=="reSpeaker*", ATTR{authorized}="0", ATTR{authorized}="1"
@@ -265,7 +261,7 @@ RULE
     echo "Skipping udev rule: reSpeaker not detected." | tee -a $logFile
   fi
 
-  # 6. Create systemd user service to restore defaults at every login (always enabled)
+  # Create systemd user service to restore defaults at every login
   mkdir -p "$HOME/.config/systemd/user"
   cat > "$HOME/.config/systemd/user/set-default-audio.service" << 'EOF'
 [Unit]
@@ -282,8 +278,10 @@ ExecStart=/bin/bash -c 'SOURCE=$(pactl list sources short | grep -iE "reSpeaker|
 WantedBy=default.target
 EOF
 
-  systemctl --user enable set-default-audio.service
-  echo "Enabled user systemd service to persist audio defaults." | tee -a $logFile
+  if command -v systemctl &>/dev/null; then
+    systemctl --user enable set-default-audio.service
+    echo "Enabled user systemd service to persist audio defaults." | tee -a $logFile
+  fi
   echo "Audio routing setup complete." | tee -a $logFile
 }
 
@@ -578,7 +576,7 @@ function buildVenv
   runCmd sudo touch /var/log/whisper.log
   runCmd sudo chown $CURRENT_USER:$CURRENT_GROUP /var/log/whisper.log
   runCmd sudo chmod 664 /var/log/whisper.log
-  if command -v apt-get &>/dev/null; then
+  if command -v systemctl &>/dev/null; then
     runCmd sudo systemctl enable whisper
   fi
   echo | tee -a $logFile
