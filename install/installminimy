@@ -168,13 +168,14 @@ function generateServiceFiles
     echo "Installing systemd service files..." | tee -a $logFile
     mkdir -p "$HOME/.config/systemd/user"
     runCmd sudo loginctl enable-linger $USER # Don't kill user services on SSH logout
-    runCmd cp "/tmp/minimy.service" "$HOME/.config/systemd/user/minimy.service"
-    runCmd cp "/tmp/whisper.service" "$HOME/.config/systemd/user/whisper.service"
     runCmd sudo cp "/tmp/${mountUnitPath}-logs.mount" "/etc/systemd/system/${mountUnitPath}-logs.mount"
     runCmd sudo cp "/tmp/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
     runCmd sudo systemctl daemon-reload
+    runCmd cp "/tmp/minimy.service" "$HOME/.config/systemd/user/minimy.service"
+    runCmd cp "/tmp/whisper.service" "$HOME/.config/systemd/user/whisper.service"
+    runCmd cp "$baseDir/install/set-default-audio.service" "$HOME/.config/systemd/user/set-default-audio.service"
     runCmd systemctl --user daemon-reload
-    runCmd systemctl --user enable whisper.service minimy.service # Enable at boot
+    runCmd systemctl --user enable whisper.service minimy.service set-default-audio.service # Enable at boot
     runCmd systemctl --user start whisper.service # Start whisper for this session
     echo "Systemd service files installed successfully" | tee -a $logFile
   fi
@@ -199,16 +200,8 @@ function setupAudioRouting
   fi
   systemctl --user enable --now pipewire pipewire-pulse wireplumber >> $logFile 2>&1
 
-  # Write minimal ~/.asoundrc
-  cat > "$HOME/.asoundrc" << 'EOF'
-pcm.!default {
-    type pulse
-}
-ctl.!default {
-    type pulse
-}
-EOF
-  echo "Written ~/.asoundrc" | tee -a $logFile
+  # Install minimal ~/.asoundrc
+  cp "$baseDir/install/.asoundrc" "$HOME/.asoundrc"
 
   # Wait for PipeWire to settle
   sleep 2
@@ -229,7 +222,7 @@ EOF
   fi
 
   # Attempt to find reSpeaker mic (input)
-  SOURCE_NAME=$(pactl list sources short | grep -iE "reSpeaker|XVF3800" | head -1 | awk '{print $2}')
+  SOURCE_NAME=$(pactl list sources short | grep -iE "reSpeaker|XVF3800" | grep -vi "Monitor of" | head -1 | awk '{print $2}')
   if [ -n "$SOURCE_NAME" ]; then
     echo "Detected input source: $SOURCE_NAME" | tee -a $logFile
     pactl set-default-source "$SOURCE_NAME"
@@ -259,29 +252,8 @@ RULE
     echo "Skipping udev rule: reSpeaker not detected." | tee -a $logFile
   fi
 
-  # Create systemd user service to restore defaults at every login
-  mkdir -p "$HOME/.config/systemd/user"
-  cat > "$HOME/.config/systemd/user/set-default-audio.service" << 'EOF'
-[Unit]
-Description=Set default audio sink and source for PipeWire
-After=pipewire.service pipewire-pulse.service
-Requires=pipewire.service pipewire-pulse.service
-
-[Service]
-Type=oneshot
-ExecStart=/bin/bash -c 'SINK=$(pactl list sinks short | grep -i "USB Audio" | head -1 | awk "{print \$2}"); [ -n "$SINK" ] && pactl set-default-sink "$SINK" || true'
-ExecStart=/bin/bash -c 'SOURCE=$(pactl list sources short | grep -iE "reSpeaker|XVF3800" | head -1 | awk "{print \$2}"); if [ -n "$SOURCE" ]; then pactl set-default-source "$SOURCE"; pactl set-source-mute "$SOURCE" 0; pactl set-source-volume "$SOURCE" 100%; else echo "Notice: reSpeaker not found, skipping defaults."; fi'
-
-[Install]
-WantedBy=default.target
-EOF
-
-  if command -v systemctl &>/dev/null; then
-    systemctl --user enable set-default-audio.service
-    echo "Enabled user systemd service to persist audio defaults." | tee -a $logFile
-  fi
   echo "Audio routing setup complete." | tee -a $logFile
-}
+}                                          # setupAudioRouting()
 
 #+--------------------------------------------------------------------------+
 function generateConfigFile
@@ -550,7 +522,7 @@ function buildVenv
     export CUDACXX="/usr/local/cuda/bin/nvcc"
     export CMAKE_ARGS="-DGGML_CUDA=on -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCUDAToolkit_ROOT=/usr/local/cuda"
     export FORCE_CMAKE=1
-    runCmd "$pipCmd install --index-url https://pypi.org/simple --extra-index-url https://pypi.jetson-ai-lab.io/jp6/cu126 llama-cpp-python"
+    runCmd "$pipCmd install --upgrade --index-url https://pypi.org/simple --extra-index-url https://pypi.jetson-ai-lab.io/jp6/cu126 llama-cpp-python"
   else
     echo "Installing with OpenBLAS ..." | tee -a $logFile
     if command -v apt-get &>/dev/null; then

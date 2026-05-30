@@ -154,6 +154,10 @@ class Config:
         current = current[k]
     current[keys[-1]] = value
 
+  def is_hub(self):
+    hub = self.get_cfg_val("Basic.Hub")
+    return hub == socket.gethostname() or hub == "localhost"
+
   def dump_cfg(self):
     tmp_cfg = self.cfg
     for section in tmp_cfg.keys():
