@@ -3,7 +3,7 @@
     AWSKey: ''
     CrappyAEC: n
     GoogleApiKeyPath: install/my_google_key.json
-    LogLevel: i
+    LogLevel: d
 - Basic:
     BaseDir: {{BASE_DIR}}
     Hub: localhost

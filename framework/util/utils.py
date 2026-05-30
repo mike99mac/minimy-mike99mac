@@ -38,7 +38,7 @@ class Config:
       'AWSKey': '',
       'CrappyAEC': 'n',
       'GoogleApiKeyPath': 'install/my_google_key.json',
-      'LogLevel': 'i',
+      'LogLevel': 'd',
     },
     'Basic': {
       'BaseDir': '',
@@ -116,7 +116,6 @@ class Config:
     self.save_cfg()
     self.cfg = self.load_cfg()
 
-  # ========== REPLACED METHODS ==========
   def get_cfg_val(self, key):
     """Get a config value using dot notation. Returns None if key not found."""
     # Handle legacy config that might be a list of dicts
@@ -154,11 +153,6 @@ class Config:
             current[k] = {}
         current = current[k]
     current[keys[-1]] = value
-  # ========== END REPLACED METHODS ==========
-
-  def is_hub(self):
-    hub = self.get_cfg_val("Basic.Hub")
-    return hub == socket.gethostname() or hub == "localhost"
 
   def dump_cfg(self):
     tmp_cfg = self.cfg
