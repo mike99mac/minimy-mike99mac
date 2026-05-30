@@ -168,7 +168,7 @@ function generateServiceFiles
     echo "Installing systemd service files..." | tee -a $logFile
     mkdir -p "$HOME/.config/systemd/user"
     runCmd sudo loginctl enable-linger $USER # Don't kill user services on SSH logout
-    runCmd cp "/tmp/minimy.service" "$HOMW/.config/systemd/user/minimy.service"
+    runCmd cp "/tmp/minimy.service" "$HOME/.config/systemd/user/minimy.service"
     runCmd cp "/tmp/whisper.service" "$HOME/.config/systemd/user/whisper.service"
     runCmd sudo cp "/tmp/${mountUnitPath}-logs.mount" "/etc/systemd/system/${mountUnitPath}-logs.mount"
     runCmd sudo cp "/tmp/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
@@ -542,7 +542,7 @@ function buildVenv
 
   echo "Installing Llama.cpp ..." | tee -a $logFile
   echo | tee -a $logFile
-  if [ "$platform" = "NVIDIA Jetson" ]; then
+  if [ "$platform" = "smiNVIDIA Jetson" ]; then
     echo "Jetson Orin Nano detected. Building llama-cpp-python from source with CUDA ..." | tee -a $logFile
     runCmd "$pipCmd install --upgrade huggingface_hub"
     export PATH="/usr/local/cuda/bin:$PATH"
