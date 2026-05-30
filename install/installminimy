@@ -542,7 +542,7 @@ function buildVenv
 
   echo "Installing Llama.cpp ..." | tee -a $logFile
   echo | tee -a $logFile
-  if [ "$platform" = "smiNVIDIA Jetson" ]; then
+  if [ "$platform" = "NVIDIA Jetson" ]; then
     echo "Jetson Orin Nano detected. Building llama-cpp-python from source with CUDA ..." | tee -a $logFile
     runCmd "$pipCmd install --upgrade huggingface_hub"
     export PATH="/usr/local/cuda/bin:$PATH"
