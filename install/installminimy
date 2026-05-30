@@ -120,10 +120,7 @@ function generateServiceFiles
     echo "ERROR: minimy.service.template not found" | tee -a $logFile
     exit 6
   fi
-  sed -e "s|{{USER}}|$CURRENT_USER|g" \
-      -e "s|{{GROUP}}|$CURRENT_GROUP|g" \
-      -e "s|{{BASE_DIR}}|$baseDir|g" \
-      -e "s|{{UID}}|$CURRENT_UID|g" \
+  sed -e "s|{{BASE_DIR}}|$baseDir|g" \
       "$baseDir/install/minimy.service.template" > "/tmp/minimy.service"
   echo "Generated minimy.service" | tee -a $logFile
 
@@ -132,10 +129,7 @@ function generateServiceFiles
     echo "ERROR: whisper.service.template not found" | tee -a $logFile
     exit 7
   fi
-  sed -e "s|{{USER}}|$CURRENT_USER|g" \
-      -e "s|{{GROUP}}|$CURRENT_GROUP|g" \
-      -e "s|{{BASE_DIR}}|$baseDir|g" \
-      -e "s|{{UID}}|$CURRENT_UID|g" \
+  sed -e "s|{{BASE_DIR}}|$baseDir|g" \
       "$baseDir/install/whisper.service.template" > "/tmp/whisper.service"
   echo "Generated whisper.service" | tee -a $logFile
 
@@ -172,12 +166,16 @@ function generateServiceFiles
   if command -v systemctl &>/dev/null; then
     # Copy generated files to /etc/systemd/system
     echo "Installing systemd service files..." | tee -a $logFile
-    runCmd sudo cp "/tmp/minimy.service" /etc/systemd/system/minimy.service
-    runCmd sudo cp "/tmp/whisper.service" /etc/systemd/system/whisper.service
+    mkdir -p "$HOME/.config/systemd/user"
+    runCmd sudo loginctl enable-linger $USER # Don't kill user services on SSH logout
+    runCmd cp "/tmp/minimy.service" "$HOMW/.config/systemd/user/minimy.service"
+    runCmd cp "/tmp/whisper.service" "$HOME/.config/systemd/user/whisper.service"
     runCmd sudo cp "/tmp/${mountUnitPath}-logs.mount" "/etc/systemd/system/${mountUnitPath}-logs.mount"
     runCmd sudo cp "/tmp/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
-    runCmd sudo systemctl daemon-reload    # reload systemd to pick up new files
-    runCmd sudo systemctl start whisper    # start whisper for this session
+    runCmd sudo systemctl daemon-reload
+    runCmd systemctl --user daemon-reload
+    runCmd systemctl --user enable whisper.service minimy.service # Enable at boot
+    runCmd systemctl --user start whisper.service # Start whisper for this session
     echo "Systemd service files installed successfully" | tee -a $logFile
   fi
  }                                         # generateServiceFiles()
@@ -402,7 +400,7 @@ function buildVenv
   echo "Running $0 at `date` ..." > $logFile # create a new log file
   echo | tee -a $logFile
 
-  # Export environment variables needed by Python scripts 
+  # Export environment variables needed by Python scripts
   export SVA_BASE_DIR="$baseDir"
   export PYTHONPATH="$baseDir"
   echo "Set SVA_BASE_DIR=$baseDir" | tee -a $logFile
@@ -545,20 +543,21 @@ function buildVenv
   echo "Installing Llama.cpp ..." | tee -a $logFile
   echo | tee -a $logFile
   if [ "$platform" = "NVIDIA Jetson" ]; then
-    llamaCppVersion="0.3.19"
-    echo "Jetson Orin Nano detected. Building llama-cpp-python $llamaCppVersion from source with CUDA ..." | tee -a $logFile
+    echo "Jetson Orin Nano detected. Building llama-cpp-python from source with CUDA ..." | tee -a $logFile
     runCmd "$pipCmd install --upgrade huggingface_hub"
     export PATH="/usr/local/cuda/bin:$PATH"
     export CUDA_HOME="/usr/local/cuda"
     export CUDACXX="/usr/local/cuda/bin/nvcc"
     export CMAKE_ARGS="-DGGML_CUDA=on -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCUDAToolkit_ROOT=/usr/local/cuda"
     export FORCE_CMAKE=1
-    runCmd "$pipCmd install --index-url https://pypi.org/simple llama-cpp-python==$llamaCppVersion"
+    runCmd "$pipCmd install --extra-index-url https://pypi.jetson-ai-lab.io/jp6/cu126 llama-cpp-python"
   else
     echo "Installing with OpenBLAS ..." | tee -a $logFile
     if command -v apt-get &>/dev/null; then
       runCmd sudo apt-get install -y libopenblas-dev
     fi
+    export CMAKE_ARGS="-DLLAMA_BLAS=ON -DLLAMA_BLAS_VENDOR=OpenBLAS"
+    runCmd "$pipCmd install llama-cpp-python"
   fi
 
   echo "Pre-caching the LLM model from HuggingFace..." | tee -a $logFile
@@ -608,7 +607,7 @@ hub=""                                     # hub server
 let lastSecs=$SECONDS
 timeSt=`date +"%y-%m-%d-%H-%M-%S"`
 logFile="$HOME/$timeSt-installminimy.out"  # output file
-if [ "$MINIMY_SAVELOGS" = "false" ]; then 
+if [ "$MINIMY_SAVELOGS" = "false" ]; then
   logFile="/dev/null"                      # if logging is disabled, log to /dev/null
 fi
 musicDir=""                                # directory with music files
