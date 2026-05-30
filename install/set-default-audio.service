@@ -1,0 +1,12 @@
+[Unit]
+Description=Set default audio sink and source for PipeWire
+After=pipewire.service pipewire-pulse.service
+Requires=pipewire.service pipewire-pulse.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'SINK=$(pactl list sinks short | grep -i "USB Audio" | head -1 | awk "{print \$2}"); [ -n "$SINK" ] && pactl set-default-sink "$SINK" || true'
+ExecStart=/bin/bash -c 'SOURCE=$(pactl list sources short | grep -iE "reSpeaker|XVF3800" | grep -vi "Monitor of" | head -1 | awk "{print \$2}"); if [ -n "$SOURCE" ]; then pactl set-default-source "$SOURCE"; pactl set-source-mute "$SOURCE" 0; pactl set-source-volume "$SOURCE" 100%; else echo "Notice: reSpeaker not found, skipping defaults."; fi'
+
+[Install]
+WantedBy=default.target
