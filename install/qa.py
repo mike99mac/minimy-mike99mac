@@ -1,59 +1,36 @@
 #!/usr/bin/env python3
 #
-# File: qa.py - answer questions with Minimy's fallback LLM
+# File: qa.py - answer questions with Minimy's fallback LLM service
 # Usage: qa.py <your question>
 #
-import os
+import json
 import sys
+from urllib import request as urlrequest
 
-def _get_base_dir():
-  return os.environ.get("SVA_BASE_DIR") or os.path.join(
-    os.path.expanduser("~"), "minimy"
-  )
-
-def _ensure_venv_python(base_dir):
-  venv_python = os.path.join(base_dir, "minimy_venv", "bin", "python3")
-  if not os.path.exists(venv_python):
-    return
-  current_python = os.path.realpath(sys.executable)
-  target_python = os.path.realpath(venv_python)
-  if current_python != target_python:
-    os.execv(venv_python, [venv_python] + sys.argv)
-
-class NoOpBus:
-  def on(self, _msg_type, _callback):
-    return None
-
-  def send(self, _msg_type, _target_client_id, _payload):
-    return None
-
-  def close(self):
-    return None
+FALLBACK_URL = "http://localhost:5003/fallback"
+TIMEOUT = 30
 
 def answer_question(question):
-  base_dir = _get_base_dir()
-  os.environ.setdefault("SVA_BASE_DIR", base_dir)
-  _ensure_venv_python(base_dir)
-  if base_dir not in sys.path:
-    sys.path.append(base_dir)
+  req_body = json.dumps({"sentence": question, "raw_input": question}).encode("utf-8")
+  req = urlrequest.Request(FALLBACK_URL, data=req_body, headers={"Content-Type": "application/json"}, method="POST")
+  try:
+    with urlrequest.urlopen(req, timeout=TIMEOUT) as resp:
+      result = json.loads(resp.read().decode("utf-8"))
+  except Exception as e:
+    return f"I am sorry, I could not reach the fallback service: {e}"
 
-  from skills.system_skills.skill_fallback import FallbackSkill
-
-  fallback = FallbackSkill(bus=NoOpBus())
-  result = fallback._process_request(question)
-
+  # Handle rewrite if needed
   if result.get("action") == "rewrite":
     canonical = str(result.get("canonical_utterance", "") or "").strip()
-    if canonical:
-      result = fallback._process_request(
-        sentence=question,
-        failed_rewrite=True,
-        original_utterance=question,
-        rewritten_utterance=canonical
-      )
+    if canonical and canonical.lower() != question.lower():
+      # Second attempt: send the rewritten command as a new request
+      return answer_question(canonical)
+    else:
+      # No meaningful rewrite, fallback to answer
+      return "I do not understand, please ask another way."
 
   answer = str(result.get("answer", "") or "").strip()
-  answer = answer.replace('"', "")         # remove quotes
+  answer = answer.replace('"', "")
   if not answer:
     answer = "I am sorry, I could not answer that right now."
   return answer

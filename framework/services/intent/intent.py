@@ -3,13 +3,16 @@ import glob
 import os
 import numpy as np
 import subprocess
+import json
+from urllib import request as urlrequest
 from bus.MsgBus import MsgBus
 from framework.util.utils import LOG, Config, get_wake_words, aplay, normalize_sentence, remove_pleasantries
 from framework.services.intent.nlp.shallow_parse.nlu import SentenceInfo
 from framework.services.intent.nlp.shallow_parse.shallow_utils import scrub_sentence, remove_articles
-
+from skills.sva_base import SimpleVoiceAssistant
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+
 
 class Intent:
   def __init__(self, bus=None, timeout=5):
@@ -18,6 +21,7 @@ class Intent:
     self.intents = {}
     self.base_dir = os.getenv("SVA_BASE_DIR")
     self.tmp_file_path = self.base_dir + "/tmp/"
+    self.speaker = SimpleVoiceAssistant(bus=None, skill_id="intent_speaker")
     log_filename = self.base_dir + "/logs/intent.log"
     self.log = LOG(log_filename).log
     self.earcon_filename = self.base_dir + "/framework/assets/earcon_start.wav"
@@ -142,9 +146,36 @@ class Intent:
   def send_utt(self, utt):
     target = utt.get("skill_id", "*")
     if target == "":
-      target = "fallback_skill"
+      target = "fallback_service"
     if utt == "stop":
       target = "system_skill"
+
+    # Send to fallback service via HTTP request
+    if target == "fallback_service":
+      self.log.debug("Sending HTTP request to fallback service")
+      req_body = json.dumps({
+        "sentence": utt.get("sentence", ""),
+        "raw_input": utt.get("raw_input", "")
+      }).encode("utf-8")
+      req = urlrequest.Request(
+        "http://localhost:5003/fallback",
+        data=req_body,
+        headers={"Content-Type": "application/json"},
+        method="POST"
+      )
+      try:
+        with urlrequest.urlopen(req, timeout=15) as resp:
+          result = json.loads(resp.read().decode("utf-8"))
+        if result.get("action") == "rewrite":
+          self.bus.send("utterance", "*", {"utt": result["canonical_utterance"], "subtype": "utt"})
+        elif result.get("action") == "answer":
+          self.speaker.speak(result["answer"])
+        else:
+          self.log.warning(f"Unknown fallback response: {result}")
+      except Exception as e:
+        self.log.error(f"Fallback service request failed: {e}")
+      return
+
     self.log.debug(f"Intent.send_utt() sending utt: {utt} to target: {target}")  
     self.bus.send("utterance", target, {"utt": utt,"subtype":"utt"})
     self.log.debug("Intent.send_utt() after bus.send()")  
@@ -182,15 +213,15 @@ class Intent:
       return "", ""
 
     if len(words) == 1 and sentence not in ["pause", "stop", "next", "previous", "resume", "help", "mute", "unmute"]:
-      self.log.info(f"Short utterance '{sentence}' -> fallback_skill")
-      return "fallback_skill", ""
+      self.log.info(f"Short utterance '{sentence}' -> fallback_service")
+      return "fallback_service", ""
 
     skill_id, intent_key, score = self.fast_intent_match(sentence, intent_type="Q")
     if skill_id and score >= 0.5:
       self.log.debug(f"High confidence match: '{sentence}' -> {skill_id} (score {score:.2f})")
       return skill_id, intent_key
-    self.log.debug(f"Low confidence ({score:.2f}) or no match -> fallback_skill")
-    return "fallback_skill", ""
+    self.log.debug(f"Low confidence ({score:.2f}) or no match -> fallback_service")
+    return "fallback_service", ""
 
   def get_intent_match(self, info):
     sentence = info.get("sentence", "").strip().lower()
@@ -209,15 +240,15 @@ class Intent:
       return "", ""
 
     if len(words) == 1 and sentence not in ["pause", "stop", "next", "previous", "resume", "help", "mute", "unmute"]:
-      self.log.info(f"Short utterance '{sentence}' -> fallback_skill")
-      return "fallback_skill", ""
+      self.log.info(f"Short utterance '{sentence}' -> fallback_service")
+      return "fallback_service", ""
 
     skill_id, intent_key, score = self.fast_intent_match(sentence, intent_type="C")
     if skill_id and score >= 0.5:
       self.log.debug(f"High confidence match: '{sentence}' -> {skill_id} (score {score:.2f})")
       return skill_id, intent_key
-    self.log.debug(f"Low confidence ({score:.2f}) or no match -> fallback_skill")
-    return "fallback_skill", ""
+    self.log.debug(f"Low confidence ({score:.2f}) or no match -> fallback_service")
+    return "fallback_service", ""
 
   def handle_register_intent(self, msg):
     subject = msg["payload"]["subject"].replace(":", ";").lower()
@@ -307,7 +338,7 @@ class Intent:
               self.log.info(f'Intent.run(): Matched skill_id: {info["skill_id"]} intent_match: {info["intent_match"]}')
               self.send_utt(info)
             else:
-              info["skill_id"] = "fallback_skill"
+              info["skill_id"] = "fallback_service"
               self.send_utt(info)
           elif si.sentence_type == "C":
             self.log.info("Intent.run(): Match Command")
@@ -318,7 +349,7 @@ class Intent:
             if info["skill_id"]:
               self.send_utt(info)
             else:
-              info["skill_id"] = "fallback_skill"
+              info["skill_id"] = "fallback_service"
               self.send_utt(info)
           elif si.sentence_type == "M":
             self.log.info("Intent.run(): Media Command")
@@ -337,6 +368,7 @@ class Intent:
             self.log.info(f"Intent.run(): Unknown sentence type {si.sentence_type} or Informational sentence")
         os.remove(txt_file)
       time.sleep(0.125)
+
 
 if __name__ == "__main__":
   up = Intent()
