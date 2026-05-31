@@ -38,7 +38,7 @@ function checkEnv
     echo "WARNING: log directory $logDir not found, creating it..."
     mkdir -p "$logDir"
   fi
-  ps -ef | grep "python3.*minimy" | grep -v grep | grep -v whisper
+  pgrep -af "python3.*minimy" | grep -v -e whisper -e fallback -e vim
   if [ $? = 0 ]; then                      # minimy is running
     echo "It appears Minimy is already running!"
     exit 3
@@ -211,7 +211,6 @@ function loadSystemSkills
   cd "$baseDir"
   local venvPython="$baseDir/minimy_venv/bin/python3"
   "$venvPython" install/cache_llm.py >> "$logDir/llm_download.log" 2>&1 &
-  "$venvPython" skills/system_skills/skill_fallback.py >> "$logDir/skills.log" 2>&1 &
   "$venvPython" skills/system_skills/skill_media.py >> "$logDir/skills.log" 2>&1 &
   "$venvPython" skills/system_skills/skill_volume.py >> "$logDir/skills.log" 2>&1 &
   "$venvPython" skills/system_skills/skill_alarm.py >> "$logDir/skills.log" 2>&1 &

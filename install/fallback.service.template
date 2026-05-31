@@ -1,0 +1,19 @@
+[Unit]
+Description=LLM Fallback Service for Minimy
+After=network.target
+
+[Service]
+Type=simple
+ExecStart={{BASE_DIR}}/minimy_venv/bin/python3 {{BASE_DIR}}/framework/services/llm/fallback.py
+WorkingDirectory={{BASE_DIR}}/framework/services/llm
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH={{BASE_DIR}}:$PYTHONPATH
+Environment=SVA_BASE_DIR={{BASE_DIR}}
+StandardOutput=append:{{BASE_DIR}}/logs/fallback.log
+StandardError=append:{{BASE_DIR}}/logs/fallback.log
+Restart=always
+RestartSec=5
+KillMode=process
+
+[Install]
+WantedBy=default.target

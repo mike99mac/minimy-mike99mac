@@ -133,6 +133,15 @@ function generateServiceFiles
       "$baseDir/install/whisper.service.template" > "/tmp/whisper.service"
   echo "Generated whisper.service" | tee -a $logFile
 
+  # Generate fallback.service from template
+  if [ ! -f "$baseDir/install/fallback.service.template" ]; then
+    echo "ERROR: fallback.service.template not found" | tee -a $logFile
+    exit 8
+  fi
+  sed -e "s|{{BASE_DIR}}|$baseDir|g" \
+      "$baseDir/install/fallback.service.template" > "/tmp/fallback.service"
+  echo "Generated fallback.service" | tee -a $logFile
+
   # Generate mount unit name based on base directory path
   # systemd mount units must be named after the mount path with - replacing /
   local mountUnitPath=$(echo "$baseDir" | sed 's|^/||; s|/|-|g')
@@ -140,7 +149,7 @@ function generateServiceFiles
   # Generate logs mount file from template
   if [ ! -f "$baseDir/install/minimy-logs.mount.template" ]; then
     echo "ERROR: minimy-logs.mount.template not found" | tee -a $logFile
-    exit 8
+    exit 9
   fi
   sed -e "s|{{USER}}|$CURRENT_USER|g" \
       -e "s|{{GROUP}}|$CURRENT_GROUP|g" \
@@ -151,7 +160,7 @@ function generateServiceFiles
   # Generate tmp mount file from template
   if [ ! -f "$baseDir/install/minimy-tmp.mount.template" ]; then
     echo "ERROR: minimy-tmp.mount.template not found" | tee -a $logFile
-    exit 9
+    exit 10
   fi
   sed -e "s|{{USER}}|$CURRENT_USER|g" \
       -e "s|{{GROUP}}|$CURRENT_GROUP|g" \
@@ -173,10 +182,11 @@ function generateServiceFiles
     runCmd sudo systemctl daemon-reload
     runCmd cp "/tmp/minimy.service" "$HOME/.config/systemd/user/minimy.service"
     runCmd cp "/tmp/whisper.service" "$HOME/.config/systemd/user/whisper.service"
+    runCmd cp "/tmp/fallback.service" "$HOME/.config/systemd/user/fallback.service"
     runCmd cp "$baseDir/install/set-default-audio.service" "$HOME/.config/systemd/user/set-default-audio.service"
     runCmd systemctl --user daemon-reload
-    runCmd systemctl --user enable whisper.service minimy.service set-default-audio.service # Enable at boot
-    runCmd systemctl --user start whisper.service # Start whisper for this session
+    runCmd systemctl --user enable set-default-audio.service whisper.service fallback.service minimy.service # Enable at boot
+    runCmd systemctl --user start set-default-audio.service whisper.service fallback.service # Start immediately
     echo "Systemd service files installed successfully" | tee -a $logFile
   fi
  }                                         # generateServiceFiles()
@@ -533,8 +543,8 @@ function buildVenv
   fi
 
   echo "Pre-caching the LLM model from HuggingFace..." | tee -a $logFile
-  llmRepo=$($pythonCmd -c "import socket, yaml; raw = yaml.safe_load(open('$configFile')); cfg = {}; [cfg.update(item) for item in raw if isinstance(item, dict)]; basic = cfg.get('Basic', {}); advanced = cfg.get('Advanced', {}); llm_cfg = basic.get('LLM', advanced.get('LLM', {})); is_hub = basic.get('Hub') in (socket.gethostname(), 'localhost'); use_remote = llm_cfg.get('UseRemote') == 'y'; value = '' if (use_remote and not is_hub) else (basic.get('LLMRepo') or ''); print(str(value).strip())")
-  llmFile=$($pythonCmd -c "import socket, yaml; raw = yaml.safe_load(open('$configFile')); cfg = {}; [cfg.update(item) for item in raw if isinstance(item, dict)]; basic = cfg.get('Basic', {}); advanced = cfg.get('Advanced', {}); llm_cfg = basic.get('LLM', advanced.get('LLM', {})); is_hub = basic.get('Hub') in (socket.gethostname(), 'localhost'); use_remote = llm_cfg.get('UseRemote') == 'y'; value = '' if (use_remote and not is_hub) else (basic.get('LLMFile') or ''); print(str(value).strip())")
+  llmRepo=$($pythonCmd -c "import yaml; f=open(\"$configFile\"); data=yaml.safe_load(f); f.close(); basic=next((item for item in data if 'Basic' in item), {}).get('Basic', {}); llm=basic.get('LLM', {}); print(llm.get('LLMRepo', ''))")
+  llmFile=$($pythonCmd -c "import yaml; f=open(\"$configFile\"); data=yaml.safe_load(f); f.close(); basic=next((item for item in data if 'Basic' in item), {}).get('Basic', {}); llm=basic.get('LLM', {}); print(llm.get('LLMFile', ''))")
 
   if [ -n "$llmRepo" ] && [ -n "$llmFile" ]; then
     echo "Downloading model $llmRepo ($llmFile) ..." | tee -a $logFile
