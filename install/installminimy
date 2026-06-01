@@ -557,9 +557,10 @@ function buildVenv
   runCmd sudo touch /var/log/whisper.log
   runCmd sudo chown $CURRENT_USER:$CURRENT_GROUP /var/log/whisper.log
   runCmd sudo chmod 664 /var/log/whisper.log
-  if command -v systemctl &>/dev/null; then
-    runCmd sudo systemctl enable whisper
-  fi
+  # this is no longer needed -Mike Mac
+  #if command -v systemctl &>/dev/null; then
+  #  runCmd sudo systemctl enable whisper
+  #fi
   echo | tee -a $logFile
 
   echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile
