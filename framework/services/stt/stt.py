@@ -44,19 +44,19 @@ def execute_command(command):
 def _local_transcribe_file(wav_filename, return_dict, completion_pipe):
   # Use whisper, listening on port 5002, for local STT
   if not os.path.exists(wav_filename):
-    print(f"remote_transcribe_file(): ERROR - File does not exist: {wav_filename}", flush=True)
+    print(f"_local_transcribe_file(): ERROR - File does not exist: {wav_filename}", flush=True)
     completion_pipe.send("error")          # signal local transcription completed
     return
   try:
     cmd = f'curl -X POST http://localhost:5002/stt -s -H "Content-Type: audio/wav" --data-binary @"{wav_filename}" --max-time {LOCAL_TIMEOUT}'
     stdout, stderr, returncode = execute_command(cmd)
     if returncode != 0:
-      print("remote_transcribe_file(): ERROR - Hub is not reachable")
+      print("_local_transcribe_file(): ERROR - Hub is not reachable")
       completion_pipe.send("error")        # signal local transcription completed
       return
     if not stdout or stdout.strip() == "":
       print(f"stdout: [{stdout}] stderr: [{stderr}]")
-      print("remote_transcribe_file(): ERROR - Empty response from curl", flush=True)
+      print("_local_transcribe_file(): ERROR - Empty response from curl", flush=True)
       completion_pipe.send("done")         # signal local transcription completed
       return
     # print(f"DEBUG: Raw curl output: '{stdout}'")
