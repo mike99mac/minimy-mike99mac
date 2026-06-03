@@ -173,17 +173,16 @@ function generateServiceFiles
   TMP_MOUNT_UNIT="${mountUnitPath}-tmp.mount"
 
   if command -v systemctl &>/dev/null; then
-    # Copy generated files to /etc/systemd/system
     echo "Installing systemd service files..." | tee -a $logFile
     mkdir -p "$HOME/.config/systemd/user"
     runCmd sudo loginctl enable-linger $USER # Don't kill user services on SSH logout
     runCmd sudo cp "/tmp/${mountUnitPath}-logs.mount" "/etc/systemd/system/${mountUnitPath}-logs.mount"
     runCmd sudo cp "/tmp/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
-    runCmd sudo systemctl daemon-reload
     runCmd cp "/tmp/minimy.service" "$HOME/.config/systemd/user/minimy.service"
     runCmd cp "/tmp/whisper.service" "$HOME/.config/systemd/user/whisper.service"
     runCmd cp "/tmp/fallback.service" "$HOME/.config/systemd/user/fallback.service"
     runCmd cp "$baseDir/install/set-default-audio.service" "$HOME/.config/systemd/user/set-default-audio.service"
+    runCmd sudo systemctl daemon-reload
     runCmd systemctl --user daemon-reload
     runCmd systemctl --user enable set-default-audio.service whisper.service fallback.service minimy.service # Enable at boot
     runCmd systemctl --user start set-default-audio.service whisper.service fallback.service # Start immediately
@@ -379,7 +378,6 @@ function buildVenv
   : STACK:  ${FUNCNAME[@]}
 
   echo
-  echo "Running $0 at `date` ..." > $logFile # create a new log file
   echo | tee -a $logFile
 
   # Export environment variables needed by Python scripts
@@ -591,6 +589,7 @@ let lastSecs=$SECONDS
 timeSt=`date +"%y-%m-%d-%H-%M-%S"`
 logFile="$HOME/$timeSt-installminimy.out"  # output file
 if [ "$MINIMY_SAVELOGS" = "false" ]; then
+  echo "WARNING: setting logFile to /dev/null!"
   logFile="/dev/null"                      # if logging is disabled, log to /dev/null
 fi
 musicDir=""                                # directory with music files
@@ -604,15 +603,16 @@ LOGS_MOUNT_UNIT=""
 TMP_MOUNT_UNIT=""
 
 # main()
+echo "Running $0 at `date` ..." > $logFile # create a new log file
 detectUserInfo                             # detect user information first
 getPlatform                                # verify supported platform
 checkEnv                                   # check the environment
 parseArgs $@                               # parse arguments
 setMinimyVars                              # set config file variables
 generateConfigFile                         # generate config file from template
-generateServiceFiles                       # generate systemctl service files
 setupAudioRouting                          # setup audio routing through PipeWire
 buildVenv                                  # do the work
+generateServiceFiles                       # generate systemctl service files
 let min=$SECONDS/60
 let sec=$SECONDS%60
 if [ $sec -lt 10 ]; then                   # add a leading 0
