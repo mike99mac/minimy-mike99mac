@@ -27,7 +27,7 @@ def has_speech(wav_filename, energy_threshold=0.001):
       audio_normalized = audio_array / 32768.0
       energy = np.mean(audio_normalized ** 2)
       # TO DO: add logging
-      # print(f"DEBUG: File {os.path.basename(wav_filename)} energy: {energy:.6f}, threshold: {energy_threshold}")
+      print(f"has_speech(): File {os.path.basename(wav_filename)} energy: {energy:.6f}, threshold: {energy_threshold}")
       return energy > energy_threshold
   except Exception:
     return True
@@ -51,7 +51,7 @@ def _local_transcribe_file(wav_filename, return_dict, completion_pipe):
     cmd = f'curl -X POST http://localhost:5002/stt -s -H "Content-Type: audio/wav" --data-binary @"{wav_filename}" --max-time {LOCAL_TIMEOUT}'
     stdout, stderr, returncode = execute_command(cmd)
     if returncode != 0:
-      print("_local_transcribe_file(): ERROR - Hub is not reachable")
+      print("_local_transcribe_file(): ERROR - Local STT not reachable")
       completion_pipe.send("error")        # signal local transcription completed
       return
     if not stdout or stdout.strip() == "":
@@ -75,7 +75,7 @@ def _local_transcribe_file(wav_filename, return_dict, completion_pipe):
       completion_pipe.send("done")         # signal local transcription completed
   except Exception as e:
     print(f"Local transcription error: {e}")
-    completion_pipe.send("done")          # signal local transcription completed
+    completion_pipe.send("done")           # signal local transcription completed
   finally:
     completion_pipe.close()
 
@@ -144,8 +144,7 @@ class STTSvc:
     print(f"STTSvc.__init__() use_remote_stt: {self.use_remote_stt} wws: {self.wws}")
 
   def send_message(self, target, subtype):
-    # send a standard skill message on the bus.
-    # message must be a dict
+    # send a skill message 
     if self.bus is not None:
       info = {
           'from_skill_id': self.skill_id,
@@ -157,16 +156,16 @@ class STTSvc:
       self.bus.send("skill", target, info)
 
   def send_mute(self):
-    self.log.debug("STT: sending mute!")
+    self.log.debug("STT.send_mute(): sending mute!")
     self.send_message('volume_skill', 'mute_volume')
 
   def send_unmute(self):
-    self.log.debug("STT: sending unmute!")
+    self.log.debug("STT.send_unmute(): sending unmute!")
     self.send_message('volume_skill', 'unmute_volume')
 
   def process_stt_result(self, utt):
+    self.log.debug(f"STT.process_stt_result(): utt: {utt}")
     if utt:
-      self.log.debug(f"STT.process_stt_result(): utt: {utt}")
       wake_word = ''
       for ww in self.wws:
         if utt.lower().find(ww.lower()) > -1:
@@ -425,3 +424,4 @@ class STTSvc:
 if __name__ == '__main__':
   stt_svc = STTSvc()
   stt_svc.run()                            # Loop forever
+
