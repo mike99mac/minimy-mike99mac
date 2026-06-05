@@ -454,17 +454,19 @@ function buildVenv
   echo "Installing local requirements.txt" | tee -a $logFile
   runCmd $pipCmd install -r install/requirements.txt
   echo "Installing local STT faster-whisper" | tee -a $logFile
-  if [ "$platform" = "NVIDIA Jetson" ]; then
+  if [ "$platform" = "NVIDIA Jetson" ] && [ ! -d "$baseDir/CTranslate2" ]; then
     runCmd $pipCmd install faster-whisper --constraint <(echo "ctranslate2==$(pip show ctranslate2 | grep Version | awk '{print $2}')")
   else
     runCmd $pipCmd install faster-whisper
   fi
   runCmd $pipCmd install datasets
   if command -v apt-get &>/dev/null; then
-    runCmd sudo apt-get install -y swig liblgpio-dev
+    runCmd sudo apt-get install -y swig
   fi
-  if [ $(uname -m) = "aarch64" ]; then
-    runCmd $pipCmd install lgpio           # Only builds on ARM
+  if [ "$platform" = "Raspberry Pi" ]; then
+    runCmd $pipCmd install lgpio
+  elif [ "$platform" = "NVIDIA Jetson" ]; then
+    runCmd $pipCmd install Jetson.GPIO
   fi
   runCmd $pipCmd install quart
   runCmd $pipCmd install redis
@@ -530,7 +532,7 @@ function buildVenv
     export CUDACXX="/usr/local/cuda/bin/nvcc"
     export CMAKE_ARGS="-DGGML_CUDA=on -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCUDAToolkit_ROOT=/usr/local/cuda"
     export FORCE_CMAKE=1
-    runCmd "$pipCmd install --upgrade --index-url https://pypi.org/simple --extra-index-url https://pypi.jetson-ai-lab.io/jp6/cu126 llama-cpp-python"
+    runCmd "$pipCmd install --index-url https://pypi.org/simple --extra-index-url https://pypi.jetson-ai-lab.io/jp6/cu126 llama-cpp-python"
   else
     echo "Installing with OpenBLAS ..." | tee -a $logFile
     if command -v apt-get &>/dev/null; then
@@ -562,7 +564,7 @@ function buildVenv
   echo | tee -a $logFile
 
   echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile
-  minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver testhub.py testspoke.py qa.py"
+  minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver testhub.py testspoke.py qa.py ytplay"
   echo | tee -a $logFile
   echo "cd to $baseDir/install ..." | tee -a $logFile
   cd $baseDir/install

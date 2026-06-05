@@ -1,5 +1,4 @@
-# constants used by system as message types.
-
+# Constants used by system as message types.
 "connected" = 'connected'                # sent by msg bus
 "skill" = 'skill'                        # generic message sent to and received from skills
 "utterance" = 'utterance'                # utterance preceeded by the wake word
@@ -9,8 +8,3 @@
 "stop" = 'stop'                          # global stop message
 "speak" = 'speak'                        # handle as base msg types
 "register_intent" = 'register_intent'    # register_intent() only
-
-# not used 
-# MSG_TYPES = ["connected", "skill", "utterance", "media", "raw", "system", "stop", "speak", "register_intent"]
-
-
