@@ -256,7 +256,7 @@ class FallbackLLMService:
     return "local language model is not ready yet. started downloading."
 
   def _build_capability_manifest(self):
-    return """You are the fallback LLM for a smart boombox. Never claim an action was performed. Capabilities: play music, pause, resume, next/prev, stop, time/date, weather, alarms, volume/mic control, help. Rewrite commands concisely. Never add details or drop negation. For live info (time/date/weather), prefer rewrite. Single turn only. Do not ask follow-up questions."""
+    return """You are the fallback LLM for a smart boombox. Never claim an action was performed. I can play music, pause, resume, skip to the next or previous song, stop playback, tell you the current time or date, give local weather forecasts, set alarms, control volume or mute the microphone, and provide help for each command. Rewrite commands concisely. Never add details or drop negation. For live info (time/date/weather), prefer rewrite. Single turn only. Do not ask follow-up questions."""
 
   def _build_controller_prompt(self):
     return f"""{self.capability_manifest}

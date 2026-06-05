@@ -4,6 +4,7 @@ import os
 import numpy as np
 import subprocess
 import json
+import re
 from urllib import request as urlrequest
 from bus.MsgBus import MsgBus
 from framework.util.utils import LOG, Config, get_wake_words, aplay, normalize_sentence, remove_pleasantries
@@ -200,12 +201,6 @@ class Intent:
     sentence = info.get("sentence", "").strip().lower()
     words = sentence.split()
 
-    # Ignore single question word or "computer" + question word
-    if len(words) == 1 and words[0] in self.question_words_set:
-      return "", ""
-    if len(words) == 2 and words[0] == "computer" and words[1] in self.question_words_set:
-      return "", ""
-
     # Play earcon asynchronously
     subprocess.Popen(["aplay", self.earcon_filename], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -226,12 +221,6 @@ class Intent:
   def get_intent_match(self, info):
     sentence = info.get("sentence", "").strip().lower()
     words = sentence.split()
-
-    # Ignore single question word or "computer" + question word
-    if len(words) == 1 and words[0] in self.question_words_set:
-      return "", ""
-    if len(words) == 2 and words[0] == "computer" and words[1] in self.question_words_set:
-      return "", ""
 
     # Play earcon asynchronously
     subprocess.Popen(["aplay", self.earcon_filename], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -281,11 +270,22 @@ class Intent:
         utt_type = contents[1:start]
         utt = contents[start+1:]
         utt = scrub_sentence(utt)
-        # Ignore exactly "computer what" (breaks the echo loop)
-        if utt.lower().strip() == "computer what":
-          self.log.debug(f"Ignoring 'computer what' utterance")
+        cleaned = utt.lower().strip()
+        cleaned = re.sub(r'[^\w\s]', '', cleaned) # Remove punctuation
+        words = cleaned.split()            # Split into words
+        
+        # Ignore single question word (e.g., "what", "why", "how")
+        if len(words) == 1 and words[0] in self.question_words_set:
+          self.log.debug(f"Ignoring single question word: '{utt}'")
           os.remove(txt_file)
           continue
+        
+        # Ignore "computer <question_word>" (e.g., "computer what", "computer why")
+        if len(words) == 2 and words[0] == "computer" and words[1] in self.question_words_set:
+          self.log.debug(f"Ignoring 'computer <question_word>': '{utt}'")
+          os.remove(txt_file)
+          continue
+
         self.log.debug(f"Intent.run() got txt_file: {txt_file} contents: {contents} utt: {utt}")
         oob_type = self.is_oob(utt)
         self.log.debug(f"Intent.run() oob_type: {oob_type} utt_type: {utt_type} utt: {utt}")
