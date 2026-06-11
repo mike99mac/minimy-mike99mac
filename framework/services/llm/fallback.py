@@ -67,6 +67,7 @@ class FallbackLLMService:
       self.mode = "server"
       self.remote_host = None
       self.remote_port = None
+    self._loading_failed = False
 
     log.info(f"FallbackLLMService: mode={self.mode}, LLM repo={self.llm_repo}, file={self.llm_file}")
     self._ensure_llm_ready()
@@ -234,26 +235,31 @@ class FallbackLLMService:
         from llama_cpp.llama_cache import LlamaRAMCache
         cache = LlamaRAMCache(capacity_bytes=268435456) # 256 MB
         self.llm.set_cache(cache)
+        self._loading_failed = False       # reset on success
         return True
       except Exception as e:
         log.error(f"Failed to load cached Llama model: {e}")
+        self._loading_failed = True        # remember that loading failed
         return False
-    self._ensure_model_download_requested()
+    if not self._loading_failed:           # Model file not found
+      self._ensure_model_download_requested()
     return False
 
   def _llm_unavailable_answer(self):
     if not self.llm_repo or not self.llm_file:
-      return "local language model not available due to a configuration error."
+      return "Local language model not available due to a configuration error."
+    if self._loading_failed:
+      return "Local language model could not be loaded. Check logs for details."
     if os.path.exists(self.llm_fallback_lock):
       lock_info = self._read_fallback_lock()
       if lock_info and self._is_pid_alive(lock_info.get("pid")):
-        return "local language model is still downloading."
+        return "Local language model is still downloading."
       try:
         os.remove(self.llm_fallback_lock)
       except FileNotFoundError:
         pass
     self._ensure_model_download_requested()
-    return "local language model is not ready yet. started downloading."
+    return "Local language model is not ready yet. started downloading."
 
   def _build_capability_manifest(self):
     return """You are the fallback LLM for a smart boombox. Never claim an action was performed. I can play music, pause, resume, skip to the next or previous song, stop playback, tell you the current time or date, give local weather forecasts, set alarms, control volume or mute the microphone, and provide help for each command. Rewrite commands concisely. Never add details or drop negation. For live info (time/date/weather), prefer rewrite. Single turn only. Do not ask follow-up questions."""

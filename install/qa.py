@@ -6,8 +6,15 @@
 import json
 import sys
 from urllib import request as urlrequest
+from framework.util.utils import Config
 
-FALLBACK_URL = "http://localhost:5003/fallback"
+cfg = Config()                             # Get hub from config file
+use_remote = str(cfg.get_cfg_val("Basic.LLM.UseRemote") or "n").strip().lower()
+if use_remote == 'y':
+  hub = cfg.get_cfg_val("Basic.Hub") or "localhost"
+else:
+  hub = "localhost"
+FALLBACK_URL = f"http://{hub}:5003/fallback"
 TIMEOUT = 30
 
 def answer_question(question):
