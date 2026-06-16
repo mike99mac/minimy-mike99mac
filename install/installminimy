@@ -464,7 +464,8 @@ function buildVenv
     runCmd sudo apt-get install -y swig
   fi
   if [ "$platform" = "Raspberry Pi" ]; then
-    runCmd $pipCmd install lgpio
+    runCmd sudo apt-get install -y liblgpio-dev 
+    runCmd $pipCmd install lgpio 
   elif [ "$platform" = "NVIDIA Jetson" ]; then
     runCmd $pipCmd install Jetson.GPIO
   fi
