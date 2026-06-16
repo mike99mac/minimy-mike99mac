@@ -99,20 +99,28 @@ class SimpleVoiceAssistant:
       return e.returncode
 
   def start_watchdog(self, timeout, callback):
+    self.log.debug(f"SimpleVoiceAssistant.start_watchdog() timeout: {timeout}")
     # watchdog timer
-    timeout = int(timeout) * 1000
-    while timeout > 0:
-      time.sleep(0.001)
-      timeout -= 1
-      if self.bridge.is_set():
-        self.log.debug("SimpleVoiceAssistant.start_watchdog() bridge is set - watchdog cancelled")
-        self.bridge.clear()
-        break
-    self.log.debug(f"SimpleVoiceAssistant.start_watchdog() timeout {timeout}")
-    if timeout == 0:
-      self.log.debug("SimpleVoiceAssistant.start_watchdog() watchdog timed out")
-      callback()
-    self.log.debug("SimpleVoiceAssistant.start_watchdog() watchdog ended")
+    # Copilot said this is inefficient
+    # timeout = int(timeout) * 1000
+    # while timeout > 0:
+    #   time.sleep(0.001)
+    #   timeout -= 1
+    #   if self.bridge.is_set():
+    #     self.log.debug("SimpleVoiceAssistant.start_watchdog() bridge is set - watchdog cancelled")
+    #     self.bridge.clear()
+    #     break
+    # self.log.debug(f"SimpleVoiceAssistant.start_watchdog() timeout {timeout}")
+    # if timeout == 0:
+    #   self.log.debug("SimpleVoiceAssistant.start_watchdog() watchdog timed out")
+    #   callback()
+    # self.log.debug("SimpleVoiceAssistant.start_watchdog() watchdog ended")
+    #
+    # replaced with this
+    if self.bridge.wait(timeout=timeout):  # Blocks efficiently
+      self.bridge.clear()
+      return
+    callback()  # Timeout occurred
 
   def watchdog_timeout(self):
     self.log.debug("SimpleVoiceAssistant.watchdog_timeout() starting")
@@ -153,7 +161,8 @@ class SimpleVoiceAssistant:
 
   def confirm_callback(self):
     self.log.debug("SimpleVoiceAssistant.confirm_callback() confirm converse type path")
-    time.sleep(0.01)
+    # Copilot says this is not necessary:
+    # time.sleep(0.01)
     self.watchdog_thread = Thread(target=self.start_watchdog, args=(10, self.watchdog_timeout)).start()
     self.converse(self.confirm_converse_callback)
 
