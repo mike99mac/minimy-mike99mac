@@ -7,6 +7,7 @@ does
 explain
 give
 how
+how's
 if
 is
 list
@@ -17,10 +18,15 @@ tell
 was
 were
 what
+what's
 when
+when's
 where
+where's
 which
 who
+who's
 whose
 why
+why's
 will

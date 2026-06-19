@@ -53,4 +53,3 @@ class TimeSkill(SimpleVoiceAssistant):
 if __name__ == '__main__':
   ts = TimeSkill()
   Event().wait()                           # wait forever 
-
