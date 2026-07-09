@@ -16,7 +16,7 @@ fi
 echo "Stopping Minimy ..."
 echo "User: $USER"
 echo "Base directory: $baseDir"
-procs=$(ps -ef | awk '!/grep|whisper|vim|fallback/ && /minimy\/skills|skills\/system_skills|framework\/services|MsgBus|mimic3|skill_system.py/')
+procs=$(ps -ef | awk '!/grep|whisper|vim|fallback|piper/ && /minimy\/skills|skills\/system_skills|framework\/services|MsgBus|mimic3|skill_system.py/')
 if [ ${#procs} = 0 ]; then
   echo "Minimy does not appear to be running"
 else
