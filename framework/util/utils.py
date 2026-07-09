@@ -3,7 +3,6 @@ import re
 import time
 import json
 import datetime
-import socket
 from subprocess import Popen, PIPE
 from lingua_franca.parse import extract_datetime
 from lingua_franca.time import to_local
@@ -12,7 +11,7 @@ import logging
 import yaml
 
 # the larger the chunk size the less responsive the barge-in. the smaller
-# the chunk size the more choppy the outout sounds. you pick your poison.
+# the chunk size the more choppy the output sounds. you pick your poison.
 # MAX_CHUNK_LEN = 15
 # MIN_CHUNK_LEN = 5
 MAX_CHUNK_LEN = 45

@@ -6,16 +6,17 @@ from multiprocessing.connection import wait
 from subprocess import Popen, PIPE
 import numpy as np
 import dbm
-import glob 
+import glob
 import json
 import os
 import time
 import wave
+import gzip
 
 REMOTE_TIMEOUT = 3
 LOCAL_TIMEOUT = 7
 
-def has_speech(wav_filename, energy_threshold=0.001):
+def has_speech(wav_filename, energy_threshold=0.0005):
   # Check if WAV file contains speech above threshold
   try:
     with wave.open(wav_filename, 'rb') as wav:
@@ -31,6 +32,35 @@ def has_speech(wav_filename, energy_threshold=0.001):
       return energy > energy_threshold
   except Exception:
     return True
+
+def is_hallucination(text, wake_words=None, barge_in_words=None):
+  if not text:
+    return True
+  text = text.strip()
+  if len(text) <= 2:
+    return True
+  words = text.split()
+  # Single word: allow if it's a wake word OR a barge‑in command
+  if len(words) == 1:
+    if wake_words and text.lower() in [w.lower() for w in wake_words]:
+      return False
+    if barge_in_words and text.lower() in [w.lower() for w in barge_in_words]:
+      return False
+    return True
+  # Multiple words: check for repetition or over-compression
+  if len(words) >= 3 and len(set(words)) == 1:
+    return True
+  if len(words) >= 4:
+    bigrams = [' '.join(words[i:i+2]) for i in range(len(words)-1)]
+    if len(set(bigrams)) == 1:
+      return True
+  text_bytes = text.encode('utf-8')
+  if len(text_bytes) > 10:
+    compressed = gzip.compress(text_bytes)
+    ratio = len(compressed) / len(text_bytes)
+    if ratio < 0.80:
+      return True
+  return False
 
 def execute_command(command):
   p = Popen(command, shell=True, stdout=PIPE, stderr=PIPE, close_fds=True)
@@ -123,6 +153,7 @@ class STTSvc:
     self.wav_file = None
     self.mute_start_time = 0
     self.wws = get_wake_words()
+    self.barge_in_words = {"pause", "stop", "next", "previous", "resume", "help", "mute", "unmute", "terminate", "abort", "cancel", "kill", "exit"}
     base_dir = os.getenv('SVA_BASE_DIR')
     self.beep_loc = "%s/framework/assets/what.wav" % (base_dir,)
     self.cfg = Config()
@@ -394,17 +425,25 @@ class STTSvc:
         self.waiting_stt = False
       try:                                 # Handle results
         if remote_success and self.remote_return_dict and 'text' in self.remote_return_dict:
-          self.log.debug(f"STT.run(): remote_return_dict: {self.remote_return_dict}")
-          self.process_stt_result(self.remote_return_dict['text'])
-        elif local_success and self.local_return_dict and 'text' in self.local_return_dict:
-          self.log.debug(f"STT.run(): local_return_dict: {self.local_return_dict}")
-          local_text = self.local_return_dict['text']
-          if local_text in self.local2remote:
-            remote_text = self.local2remote[local_text].decode("utf-8")
-            self.log.debug(f"STT.run(): CACHE HIT!!! Converted local: {local_text} remote: {remote_text}")
-            self.process_stt_result(remote_text)
+          text = self.remote_return_dict['text']
+          if is_hallucination(text, self.wws, self.barge_in_words):
+            self.log.debug(f"STT.run(): Dropped remote hallucination: {text}")
           else:
-            self.process_stt_result(local_text)
+            self.log.debug(f"STT.run(): remote_return_dict: {self.remote_return_dict}")
+            self.process_stt_result(text)
+        elif local_success and self.local_return_dict and 'text' in self.local_return_dict:
+          text = self.local_return_dict['text']
+          if is_hallucination(text, self.wws, self.barge_in_words):
+            self.log.debug(f"STT.run(): Dropped local hallucination: {text}")
+          else:
+            self.log.debug(f"STT.run(): local_return_dict: {self.local_return_dict}")
+            local_text = text
+            if local_text in self.local2remote:
+              remote_text = self.local2remote[local_text].decode("utf-8")
+              self.log.debug(f"STT.run(): CACHE HIT!!! Converted local: {local_text} remote: {remote_text}")
+              self.process_stt_result(remote_text)
+            else:
+              self.process_stt_result(local_text)
         else:
           self.log.info("STT.run(): Can't produce STT from WAV file")
         # Cache update with better validation
@@ -413,7 +452,7 @@ class STTSvc:
             self.local_return_dict and 'text' in self.local_return_dict):
           local_text = self.local_return_dict['text']
           remote_text = self.remote_return_dict['text']
-          if local_text and remote_text:
+          if local_text and remote_text and not is_hallucination(local_text, self.wws) and not is_hallucination(remote_text, self.wws):
             self.log.debug(f"STT.run(): new cache entry. local: {local_text} remote: remote_text")
             self.local2remote[local_text] = remote_text
       except Exception as e:
@@ -424,4 +463,3 @@ class STTSvc:
 if __name__ == '__main__':
   stt_svc = STTSvc()
   stt_svc.run()                            # Loop forever
-

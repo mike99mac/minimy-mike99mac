@@ -37,7 +37,7 @@ async def transcribe():
       with wave.open(wav_io, "rb") as wav_file:
         audio_bytes = wav_file.readframes(wav_file.getnframes())
         audio_array = np.frombuffer(audio_bytes, dtype=np.int16).astype(np.float32) / 32768.0
-    segments, info = model.transcribe(audio_array, beam_size=5)
+    segments, info = model.transcribe(audio_array, beam_size=5, vad_filter=True, vad_parameters=dict(min_silence_duration_ms=500, threshold=0.5))
     transcription = "".join(segment.text.lower().lstrip().replace(",", "").replace("?", "") for segment in segments)
     elapsed = (time.perf_counter() - start_time) * 1000
     # Log timing to stdout (systemd will capture)
