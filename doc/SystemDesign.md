@@ -281,5 +281,3 @@ the system, like the message bus, dialogs, etc. open it using any standard
 browser once you have started the system. If running on a different device you 
 can point to that device using the system monitor by clicking on the MiniMy logo
 at the top right corner of the screen.
-
-

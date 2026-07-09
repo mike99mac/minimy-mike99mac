@@ -63,4 +63,3 @@ in the hal.cfg file.
 The ultimate goal of this process will be that the system will use the 
 hal.cfg file to determine which system command line utility to call to 
 set the system volume and/or the mic level. 
-

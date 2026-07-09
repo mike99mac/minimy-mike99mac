@@ -72,4 +72,3 @@ class Platform(HalAbc):
 
     def unmute_master(self, new_level):
         os.system("amixer -q -D pulse sset Master unmute")
-

@@ -50,4 +50,3 @@ class HalAbc:
     @abc.abstractmethod
     def set_output_level(self, new_level):
         return
-

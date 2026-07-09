@@ -296,4 +296,3 @@ class TTSSessionMethods:
     self.__change_state(se_tts_constants.STATE_WAIT_MEDIA_END)
     self.paused = False
     self.send_session_resume()
-
