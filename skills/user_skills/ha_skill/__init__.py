@@ -74,4 +74,3 @@ class HALightSwitch(SimpleVoiceAssistant):
 if __name__ == "__main__":
     has = HALightSwitch()
     Event().wait()                         # wait forever
-

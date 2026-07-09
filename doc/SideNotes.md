@@ -34,4 +34,3 @@ Raspberry Pi4 running Ubuntu 64Bit, 8GB RAM (using wireless USB Headset)
 Mycroft Mark II running LINUX Pantacor build 2GB RAM using SJ201
 Jetson Nano running NVIDIA Linux 4GB RAM (using wireless USB Headset)
 Scott's Beast with his monster GPU :-)
-

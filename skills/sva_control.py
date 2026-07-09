@@ -3,4 +3,3 @@ class SkillControl():
   category = 'undefined'
   state = 'inactive'
   states = None
-

@@ -16,4 +16,3 @@ class remote_tts:
         except:
             pass
         wait_q.put({'service':'remote', 'status':status})
-

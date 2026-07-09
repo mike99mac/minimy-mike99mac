@@ -118,4 +118,3 @@ Insight:
 The above SentenceInformation object is used to match intents and 
 currently is passed in the message to the matching endpoint as a 
 json object.
-

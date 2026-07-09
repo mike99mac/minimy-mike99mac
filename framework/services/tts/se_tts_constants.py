@@ -78,4 +78,3 @@ valid_events = (
                 EVENT_MEDIA_CANCELLED,
                 EVENT_INTERNAL_PAUSE
                )
-
