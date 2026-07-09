@@ -133,10 +133,19 @@ function generateServiceFiles
       "$baseDir/install/whisper.service.template" > "/tmp/whisper.service"
   echo "Generated whisper.service" | tee -a $logFile
 
+  # Generate piper.service from template
+  if [ ! -f "$baseDir/install/piper.service.template" ]; then
+    echo "ERROR: piper.service.template not found" | tee -a $logFile
+    exit 8
+  fi
+  sed -e "s|{{BASE_DIR}}|$baseDir|g" \
+      "$baseDir/install/piper.service.template" > "/tmp/piper.service"
+  echo "Generated piper.service" | tee -a $logFile
+
   # Generate fallback.service from template
   if [ ! -f "$baseDir/install/fallback.service.template" ]; then
     echo "ERROR: fallback.service.template not found" | tee -a $logFile
-    exit 8
+    exit 9
   fi
   sed -e "s|{{BASE_DIR}}|$baseDir|g" \
       "$baseDir/install/fallback.service.template" > "/tmp/fallback.service"
@@ -149,7 +158,7 @@ function generateServiceFiles
   # Generate logs mount file from template
   if [ ! -f "$baseDir/install/minimy-logs.mount.template" ]; then
     echo "ERROR: minimy-logs.mount.template not found" | tee -a $logFile
-    exit 9
+    exit 10
   fi
   sed -e "s|{{USER}}|$CURRENT_USER|g" \
       -e "s|{{GROUP}}|$CURRENT_GROUP|g" \
@@ -160,7 +169,7 @@ function generateServiceFiles
   # Generate tmp mount file from template
   if [ ! -f "$baseDir/install/minimy-tmp.mount.template" ]; then
     echo "ERROR: minimy-tmp.mount.template not found" | tee -a $logFile
-    exit 10
+    exit 11
   fi
   sed -e "s|{{USER}}|$CURRENT_USER|g" \
       -e "s|{{GROUP}}|$CURRENT_GROUP|g" \
@@ -180,12 +189,13 @@ function generateServiceFiles
     runCmd sudo cp "/tmp/${mountUnitPath}-tmp.mount" "/etc/systemd/system/${mountUnitPath}-tmp.mount"
     runCmd cp "/tmp/minimy.service" "$HOME/.config/systemd/user/minimy.service"
     runCmd cp "/tmp/whisper.service" "$HOME/.config/systemd/user/whisper.service"
+    runCmd cp "/tmp/piper.service" "$HOME/.config/systemd/user/piper.service"
     runCmd cp "/tmp/fallback.service" "$HOME/.config/systemd/user/fallback.service"
     runCmd cp "$baseDir/install/set-default-audio.service" "$HOME/.config/systemd/user/set-default-audio.service"
     runCmd sudo systemctl daemon-reload
     runCmd systemctl --user daemon-reload
-    runCmd systemctl --user enable set-default-audio.service whisper.service fallback.service minimy.service # Enable at boot
-    runCmd systemctl --user start set-default-audio.service whisper.service fallback.service # Start immediately
+    runCmd systemctl --user enable set-default-audio.service whisper.service piper.service fallback.service minimy.service # Enable at boot
+    runCmd systemctl --user start set-default-audio.service whisper.service piper.service fallback.service # Start immediately
     echo "Systemd service files installed successfully" | tee -a $logFile
   fi
  }                                         # generateServiceFiles()
