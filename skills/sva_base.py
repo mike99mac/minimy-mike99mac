@@ -3,6 +3,7 @@ import os
 import subprocess
 import time
 from threading import Event, Thread
+import requests
 
 from bus.MsgBus import MsgBus
 from framework.util.utils import LOG, Config, execute_command
@@ -261,20 +262,34 @@ class SimpleVoiceAssistant:
     return True
 
   def speak(self, text, wait_callback=None):
-    # directly call piper then return 
-    text = text.replace("\n", " ")         # remove trailing newline
-    text = text.replace('"', "")           # remove quotes
-    text_file = f"{self.base_dir}/tmp/save_text/speech.wav"
-    piper_dir = f"{self.base_dir}/framework/services/tts/local/piper"
-    cmd = f'echo "{text}" | {piper_dir}/piper --quiet --model {piper_dir}/{self.model_file}.onnx --output_file {text_file}; aplay {text_file}'
-    self.log.debug(f"SimpleVoiceAssistant.speak() piper cmd: {cmd}")
-    try:                                   # writing file to ~/minimy/tmp/save_text
-      result = subprocess.check_output(["bash", "-c", cmd])
-    except subprocess.CalledProcessError as e:
-      self.log.error(f"SimpleVoiceAssistant.speak(): cmd: {cmd} returned e.returncode: {e.returncode}")
-      return e.returncode
-    os.system(f"rm {text_file}")
-    return
+    # Speak text using the Piper server. Fails if server is not running.
+    text = text.replace("\n", " ").replace('"', "")
+    self.log.info(f"Speaking: {text[:50]}...")
+
+    try:
+      resp = requests.post(
+        "http://localhost:5004/tts",
+        json={"text": text},
+        timeout=10.0
+      )
+      if resp.status_code != 200:
+        self.log.error(f"TTS server returned {resp.status_code}: {resp.text}")
+        return 1
+
+      temp_wav = "/tmp/speech.wav"
+      with open(temp_wav, "wb") as f:
+        f.write(resp.content)
+      subprocess.run(["aplay", temp_wav], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+      os.remove(temp_wav)
+      self.log.info("TTS via server succeeded")
+      return 0
+
+    except requests.exceptions.ConnectionError:
+      self.log.error("TTS server not running – please start piper.service")
+      return 1
+    except Exception as e:
+      self.log.error(f"TTS server error: {e}")
+      return 1
 
   def speak_lang(
     self, base_dir: str, mesg_file: str, mesg_info: dict, wait_callback=None
