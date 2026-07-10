@@ -9,7 +9,7 @@ import numpy as np
 from framework.util.utils import Config, LOG
 
 base_dir = os.getenv("SVA_BASE_DIR", os.path.expanduser("~/minimy"))
-log_filename = os.path.join(base_dir, "logs/tts.log")
+log_filename = os.path.join(base_dir, "logs/piper.log")
 log = LOG(log_filename).log
 
 cfg = Config()
