@@ -241,7 +241,7 @@ function setupAudioRouting
   fi
 
   # Attempt to find reSpeaker mic (input)
-  SOURCE_NAME=$(pactl list sources short | grep -iE "reSpeaker|XVF3800" | grep -vi "Monitor of" | head -1 | awk '{print $2}')
+  SOURCE_NAME=$(pactl list sources short | grep -i "reSpeaker" | grep -i "input" | grep -vi "monitor" | head -1 | awk '{print $2}')
   if [ -n "$SOURCE_NAME" ]; then
     echo "Detected input source: $SOURCE_NAME" | tee -a $logFile
     pactl set-default-source "$SOURCE_NAME"
