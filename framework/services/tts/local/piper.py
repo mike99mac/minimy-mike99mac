@@ -1,11 +1,8 @@
 import os
 import time
-import wave
-import io
 import requests
 import subprocess
 from quart import Quart, request, Response
-import numpy as np
 from framework.util.utils import Config, LOG
 
 base_dir = os.getenv("SVA_BASE_DIR", os.path.expanduser("~/minimy"))
@@ -57,12 +54,6 @@ async def tts():
 async def health():
   return {"status": "ok", "model": model_path}
 
-def log_timing(msg):
-  timing_log = os.path.join(base_dir, "logs/tts_timing.log")
-  os.makedirs(os.path.dirname(timing_log), exist_ok=True)
-  with open(timing_log, "a") as f:
-    f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {msg}\n")
-
 def local_speak_dialog(text, _file_name, wait_q):
   log.info(f"TTS request: {text[:50]}...")
   start_time = time.perf_counter()
@@ -104,4 +95,7 @@ if __name__ == "__main__":
   config.bind = ["0.0.0.0:5004"]
   config.use_reloader = False
   config.debug = False
+  # Suppress Hypercorn's default access/error logs (they go to stderr)
+  config.accesslog = None
+  config.errorlog = None
   asyncio.run(serve(app, config))
