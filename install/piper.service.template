@@ -8,8 +8,8 @@ WorkingDirectory={{BASE_DIR}}/framework/services/tts/local
 Environment=PYTHONUNBUFFERED=1
 Environment=PYTHONPATH={{BASE_DIR}}:$PYTHONPATH
 Environment=SVA_BASE_DIR={{BASE_DIR}}
-StandardOutput=append:{{BASE_DIR}}/logs/tts.log
-StandardError=append:{{BASE_DIR}}/logs/tts.log
+StandardOutput=append:{{BASE_DIR}}/logs/piper.log
+StandardError=append:{{BASE_DIR}}/logs/piper.log
 
 [Install]
 WantedBy=default.target
