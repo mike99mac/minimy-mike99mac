@@ -26,31 +26,31 @@ app = Quart(__name__)
 
 @app.route("/tts", methods=["POST"])
 async def tts():
+  log.info("Received TTS request")
   data = await request.get_json()
   text = data.get("text", "")
   if not text:
+    log.warning("Empty text received")
     return {"error": "Missing 'text' field"}, 400
 
-  temp_wav = "/tmp/speech.wav"
-  cmd = f'echo "{text}" | {piper_dir}/piper --quiet --model {model_path} --output_file {temp_wav}'
+  log.info(f"Synthesizing: {text[:50]}...")
+  start_time = time.perf_counter()
 
   try:
+    temp_wav = "/tmp/speech.wav"
+    cmd = f'echo "{text}" | {piper_dir}/piper --quiet --model {model_path} --output_file {temp_wav}'
     subprocess.run(cmd, shell=True, check=True)
+
     with open(temp_wav, "rb") as f:
       audio_data = f.read()
     os.remove(temp_wav)
 
-    # Convert to WAV for consistent output
-    wav_io = io.BytesIO()
-    with wave.open(wav_io, "wb") as wf:
-      wf.setnchannels(1)
-      wf.setsampwidth(2)
-      wf.setframerate(16000)
-      wf.writeframes(np.frombuffer(audio_data, dtype=np.int16).tobytes())
+    elapsed = (time.perf_counter() - start_time) * 1000
+    log.info(f"Synthesis completed in {elapsed:.1f} ms")
 
-    return Response(wav_io.getvalue(), mimetype="audio/wav")
+    return Response(audio_data, mimetype="audio/wav")
   except subprocess.CalledProcessError as e:
-    log.error(f"Piper synthesis failed: {e}")
+    log.error(f"Piper binary failed: {e}")
     return {"error": "Synthesis failed"}, 500
 
 @app.route("/health", methods=["GET"])
@@ -64,6 +64,7 @@ def log_timing(msg):
     f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {msg}\n")
 
 def local_speak_dialog(text, _file_name, wait_q):
+  log.info(f"TTS request: {text[:50]}...")
   start_time = time.perf_counter()
 
   try:
@@ -80,26 +81,19 @@ def local_speak_dialog(text, _file_name, wait_q):
       subprocess.run(["aplay", temp_wav], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
       os.remove(temp_wav)
       elapsed = (time.perf_counter() - start_time) * 1000
-      log_timing(f"TIMING TTS (server) + playback: {elapsed:.1f} ms")
+      log.info(f"TTS server completed in {elapsed:.1f} ms")
       wait_q.put({'service': 'local', 'status': 'success'})
       return
-  except Exception:
-    pass
+    else:
+      log.error(f"TTS server returned {resp.status_code}: {resp.text}")
+  except requests.exceptions.ConnectionError:
+    log.error("TTS server not running – is piper.service started?")
+  except Exception as e:
+    log.error(f"TTS server error: {e}")
 
-  # Fallback: direct binary call
-  cfg = Config()
-  model_file = cfg.get_cfg_val("Basic.TTS.LocalVoice")
-  if model_file is None:
-    model_file = "en_US-hfc_male-medium.onnx"
-  model_file = str(model_file)
-  piper_dir = f"{base_dir}/framework/services/tts/local/piper"
-  cmd = f'echo "{text}" | {piper_dir}/piper --quiet --model {piper_dir}/{model_file}.onnx --output_file speech.wav'
-  subprocess.run(cmd, shell=True)
-  subprocess.run(["aplay", "speech.wav"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-  elapsed = (time.perf_counter() - start_time) * 1000
-  log_timing(f"TIMING TTS (fallback) + playback: {elapsed:.1f} ms")
-  os.remove("speech.wav")
-  wait_q.put({'service': 'local', 'status': 'success'})
+  # No fallback – just fail
+  log.error("TTS failed")
+  wait_q.put({'service': 'local', 'status': 'error', 'msg': 'TTS server unavailable'})
 
 if __name__ == "__main__":
   import asyncio
