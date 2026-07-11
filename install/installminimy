@@ -133,14 +133,24 @@ function generateServiceFiles
       "$baseDir/install/whisper.service.template" > "/tmp/whisper.service"
   echo "Generated whisper.service" | tee -a $logFile
 
-  # Generate piper.service from template
-  if [ ! -f "$baseDir/install/piper.service.template" ]; then
-    echo "ERROR: piper.service.template not found" | tee -a $logFile
-    exit 8
+  # Generate piper.service from template (platform-specific)
+  if [ "$platform" = "NVIDIA Jetson" ]; then
+    if [ ! -f "$baseDir/install/piper.service.template-jetson" ]; then
+      echo "ERROR: piper.service.template-jetson not found" | tee -a $logFile
+      exit 8
+    fi
+    sed -e "s|{{BASE_DIR}}|$baseDir|g" \
+        "$baseDir/install/piper.service.template-jetson" > "/tmp/piper.service"
+    echo "Generated piper.service (Jetson)" | tee -a $logFile
+  else
+    if [ ! -f "$baseDir/install/piper.service.template-pi" ]; then
+      echo "ERROR: piper.service.template-pi not found" | tee -a $logFile
+      exit 8
+    fi
+    sed -e "s|{{BASE_DIR}}|$baseDir|g" \
+        "$baseDir/install/piper.service.template-pi" > "/tmp/piper.service"
+    echo "Generated piper.service (Raspberry Pi)" | tee -a $logFile
   fi
-  sed -e "s|{{BASE_DIR}}|$baseDir|g" \
-      "$baseDir/install/piper.service.template" > "/tmp/piper.service"
-  echo "Generated piper.service" | tee -a $logFile
 
   # Generate fallback.service from template
   if [ ! -f "$baseDir/install/fallback.service.template" ]; then
@@ -407,7 +417,7 @@ function buildVenv
     PYTHON=python3.11
     echo "Python 3.11 not found. Compiling for Pi 4..."
     runCmd sudo apt update
-    runCmd sudo apt install -y build-essential wget libssl-dev zlib1g-dev libncurses5-dev \
+    runCmd sudo apt-get install -y build-essential wget libssl-dev zlib1g-dev libncurses5-dev \
     libncursesw5-dev libreadline-dev libsqlite3-dev libffi-dev libbz2-dev
     if [ ! -f Python-3.11.9.tgz ]; then
       runCmd wget https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz
@@ -508,29 +518,57 @@ function buildVenv
 
   echo "Installing Local TTS ..."| tee -a $logFile
   echo | tee -a $logFile
-  cd $baseDir/framework/services/tts/local # piper is built in the source tree
-  if [ ! -d piper ]; then                  # not downloaded yet
-    if [ $(uname -m) = "aarch64" ]; then
-      runCmd wget -q "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_aarch64.tar.gz"
-      runCmd tar xzf piper_linux_aarch64.tar.gz # creates piper dir
+  cd $baseDir/framework/services/tts/local
+  if [ "$platform" = "NVIDIA Jetson" ]; then
+    # Jetson: use piper-plus binary (self-contained, GPU-ready)
+    echo "Installing piper-plus binary for Jetson..." | tee -a $logFile
+    if [ ! -f /usr/local/bin/piper ]; then
+      runCmd wget -q "https://github.com/ayutaz/piper-plus/releases/latest/download/piper-linux-arm64.tar.gz" -O /tmp/piper-plus.tar.gz
+      runCmd tar xzf /tmp/piper-plus.tar.gz -C /tmp
+      runCmd sudo mv /tmp/piper /usr/local/bin/
+      runCmd sudo chmod +x /usr/local/bin/piper
+      echo "piper-plus binary installed to /usr/local/bin/piper" | tee -a $logFile
     else
-      runCmd wget -q "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz"
-      runCmd tar xzf piper_linux_x86_64.tar.gz # creates piper dir
+      echo "piper-plus binary already installed, skipping download" | tee -a $logFile
     fi
-    cd piper                               # get a male and a female voice
-    runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx
-    runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx.json
-    runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_male/medium/en_US-hfc_male-medium.onnx
-    runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_male/medium/en_US-hfc_male-medium.onnx.json
-    echo "Piper has been installed!" | ./piper --model en_US-hfc_male-medium.onnx --output_file testpiper.wav
+    # Install system onnxruntime-gpu for GPU acceleration (Jetson only)
+    echo "Installing system onnxruntime-gpu for GPU acceleration..." | tee -a $logFile
+    sudo apt-get install -y nvidia-onnxruntime-gpu 2>/dev/null || echo "onnxruntime-gpu not available, will use CPU" | tee -a $logFile
+    # Download voice model (hfc_male-medium)
+    if [ ! -d "$HOME/.local/share/piper-plus/voices/en_US-hfc_male-medium" ]; then
+      runCmd /usr/local/bin/piper --download-model en_US-hfc_male-medium
+    fi
+    # Test the binary
+    echo "Testing piper-plus binary..." | tee -a $logFile
+    runCmd /usr/local/bin/piper --model en_US-hfc_male-medium --text "Piper plus is ready on Jetson" --output_file /tmp/testpiper.wav
     rc=$?
     if [ "$rc" != 0 ]; then
-      echo "ERROR: piper test command returned $rc" | tee -a $logFile
+      echo "ERROR: piper-plus test command returned $rc" | tee -a $logFile
       exit 4
     fi
-    runCmd aplay testpiper.wav             # play audio file
-  else                                     # assume it is installed
-    echo "Skipping piper - already installed ..."| tee -a $logFile
+    runCmd aplay /tmp/testpiper.wav
+    runCmd rm /tmp/testpiper.wav
+  else
+    # Raspberry Pi: use pip package (CPU only, architecture-agnostic)
+    echo "Installing piper-plus via pip for Raspberry Pi..." | tee -a $logFile
+    # Ensure we're in the venv
+    source $baseDir/minimy_venv/bin/activate
+    # Install piper-plus (CPU only, no GPU extras)
+    runCmd pip install piper-plus
+    # Download voice model (hfc_male-medium)
+    if [ ! -d "$HOME/.local/share/piper-plus/voices/en_US-hfc_male-medium" ]; then
+      runCmd piper --download-model en_US-hfc_male-medium
+    fi
+    # Test the pip package
+    echo "Testing piper-plus pip package..." | tee -a $logFile
+    runCmd piper --model en_US-hfc_male-medium --text "Piper plus is ready on Raspberry Pi" --output_file /tmp/testpiper.wav
+    rc=$?
+    if [ "$rc" != 0 ]; then
+      echo "ERROR: piper-plus pip test command returned $rc" | tee -a $logFile
+      exit 4
+    fi
+    runCmd aplay /tmp/testpiper.wav
+    runCmd rm /tmp/testpiper.wav
   fi
 
   echo "Installing Llama.cpp ..." | tee -a $logFile
