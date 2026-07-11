@@ -516,6 +516,7 @@ function buildVenv
   # Download voice model (hfc_male-medium)
   if [ ! -d "$HOME/.local/share/piper-plus/voices/en_US-hfc_male-medium" ]; then
     runCmd piper --download-model en_US-hfc_male-medium
+  fi
   # Test the installation
   echo "Testing piper-plus..." | tee -a $logFile
   runCmd piper --model en_US-hfc_male-medium --text "Piper Plus is ready" --output_file /tmp/testpiper.wav
