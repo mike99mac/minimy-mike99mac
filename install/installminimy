@@ -513,13 +513,25 @@ function buildVenv
   source $baseDir/minimy_venv/bin/activate
   echo "Installing piper-plus via pip..." | tee -a $logFile
   runCmd pip install piper-plus
-  # Download voice model (hfc_male-medium)
-  if [ ! -d "$HOME/.local/share/piper-plus/voices/en_US-hfc_male-medium" ]; then
-    runCmd piper --download-model en_US-hfc_male-medium
+  # Download NLTK data required for phonemization
+  echo "Downloading NLTK phonemization data..." | tee -a $logFile
+  runCmd python -c "import nltk; nltk.download('averaged_perceptron_tagger_eng')"
+  # Download voice model (hfc_male-medium) – not in piper-plus list
+  MODEL_DIR="$HOME/.local/share/piper-plus/voices/en_US-hfc_male-medium"
+  if [ ! -d "$MODEL_DIR" ]; then
+    mkdir -p "$MODEL_DIR"
+    cd "$MODEL_DIR"
+    runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_male/medium/en_US-hfc_male-medium.onnx
+    runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_male/medium/en_US-hfc_male-medium.onnx.json
+    # Fix phoneme_type for piper-plus compatibility
+    runCmd sed -i 's/"phoneme_type": "espeak"/"phoneme_type": "multilingual"/' en_US-hfc_male-medium.onnx.json
+    cd -
+  else
+    echo "en_US-hfc_male-medium voice already downloaded, skipping" | tee -a $logFile
   fi
   # Test the installation
   echo "Testing piper-plus..." | tee -a $logFile
-  runCmd piper --model en_US-hfc_male-medium --text "Piper Plus is ready" --output_file /tmp/testpiper.wav
+  runCmd piper --model "$MODEL_DIR/en_US-hfc_male-medium.onnx" --output_file /tmp/testpiper.wav "Piper Plus is ready"
   rc=$?
   if [ "$rc" != 0 ]; then
     echo "ERROR: piper-plus test command returned $rc" | tee -a $logFile
