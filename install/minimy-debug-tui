@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# minimy-debug-tui - Launch the Minimy Debug TUI Client
+# A split-pane terminal UI for testing minimy without a mic/speaker
+#
+# Usage: minimy-debug-tui [OPTIONS]
+#   --host HOST       messagebus host (default: 127.0.0.1)
+#   --port PORT       messagebus port (default: 8181)
+#   --lang LANG       BCP-47 language code (default: en-us)
+#   --log-dir DIR     override log directory auto-detection
+#
+
+set -e
+
+# Get the minimy base directory from the standard location
+if [ -z "$SVA_BASE_DIR" ]; then
+    if [ -d "$HOME/minimy" ]; then
+        SVA_BASE_DIR="$HOME/minimy"
+    else
+        echo "ERROR: Could not find minimy installation."
+        echo "Set SVA_BASE_DIR environment variable or install minimy in ~/minimy"
+        exit 1
+    fi
+fi
+
+# Verify the debug_tui module exists
+if [ ! -d "$SVA_BASE_DIR/debug_tui" ]; then
+    echo "ERROR: Debug TUI not found at $SVA_BASE_DIR/debug_tui"
+    exit 1
+fi
+
+# Activate the virtual environment if it exists
+if [ -f "$SVA_BASE_DIR/minimy_venv/bin/activate" ]; then
+    source "$SVA_BASE_DIR/minimy_venv/bin/activate"
+fi
+
+# Set up environment variables
+export PYTHONPATH="$SVA_BASE_DIR:$PYTHONPATH"
+export SVA_BASE_DIR
+
+# Run the debug TUI application
+cd "$SVA_BASE_DIR"
+python3 -m debug_tui.app "$@"
