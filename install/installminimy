@@ -516,7 +516,7 @@ function buildVenv
   # Download NLTK data required for phonemization (non-fatal, works with runCmd)
   echo "Downloading NLTK phonemization data..." | tee -a $logFile
   runCmd eval 'python -c "import nltk; nltk.download('\''averaged_perceptron_tagger_eng'\'', quiet=True)" || true'
-  # Download voice model (hfc_male-medium) - not in piper-plus list
+  # Download voice model (hfc_male-medium) – not in piper-plus list
   MODEL_DIR="$HOME/.local/share/piper-plus/voices/en_US-hfc_male-medium"
   if [ ! -d "$MODEL_DIR" ]; then
     mkdir -p "$MODEL_DIR"
