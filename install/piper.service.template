@@ -1,11 +1,13 @@
 [Unit]
-Description=Piper Text-to-Speech Server (Jetson)
+Description=Piper Text-to-Speech Server
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/piper --model en_US-hfc_male-medium --http-server --port 5004 --cuda
+ExecStart={{BASE_DIR}}/minimy_venv/bin/python3 {{BASE_DIR}}/framework/services/tts/local/piper.py
 WorkingDirectory={{BASE_DIR}}
 Environment=SVA_BASE_DIR={{BASE_DIR}}
+Environment=PYTHONUNBUFFERED=1
+Environment=NLTK_DATA={{BASE_DIR}}/framework/services/tts/local/nltk_data
 StandardOutput=append:{{BASE_DIR}}/logs/piper.log
 StandardError=append:{{BASE_DIR}}/logs/piper.log
 Restart=on-failure
