@@ -1,12 +1,13 @@
 import os
+import sys
 import requests
 import subprocess
 import io
 import wave
 import numpy as np
-from quart import Quart, request, Response
-from framework.util.utils import LOG
 from piper import PiperVoice
+from quart import Quart, request, Response
+from framework.util.utils import Config, LOG
 
 base_dir = os.getenv("SVA_BASE_DIR", os.path.expanduser("~/minimy"))
 log_filename = os.path.join(base_dir, "logs/piper.log")
@@ -14,7 +15,16 @@ log = LOG(log_filename).log
 
 app = Quart(__name__)
 
-model_path = os.path.expanduser("~/.local/share/piper-plus/voices/en_US-hfc_male-medium/en_US-hfc_male-medium.onnx")
+cfg = Config()
+try:
+  model_name = cfg.get_cfg_val("Basic.TTS.LocalVoice")
+  if model_name is None:
+    model_name = "en_US-hfc_male-medium"
+except Exception as e:
+  log.error(f"Failed to read Basic.TTS.LocalVoice: {e}")
+  sys.exit(1)
+
+model_path = os.path.expanduser(f"~/.local/share/piper-plus/voices/{model_name}/{model_name}.onnx")
 voice = PiperVoice.load(model_path)
 log.info("Piper server: model loaded")
 
