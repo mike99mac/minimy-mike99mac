@@ -1,0 +1,4 @@
+export PYTHONPATH=$HOME/minimy
+source $HOME/minimy/minimy_venv/bin/activate
+cd $HOME/minimy/debug_tui
+python app.py --log-dir $HOME/minimy/logs
