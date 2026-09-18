@@ -1,16 +1,6 @@
 """The Textual App: a 4-pane layout for testing minimy without a
 mic/speaker. Type utterances, see the conversation, watch toggleable
 live logs.
-
-    ┌──────────────────────────────────────────┐
-    │ Sources/Levels checkboxes (compact, one   │
-    │ line each) - directly visible, no modal   │
-    ├───────────────────────────┬───────────────┤
-    │ Conversation (2/3 width)  │ Activity (1/3) │
-    │ (auto-scrolls to bottom)  │                │
-    ├───────────────────────────┴───────────────┤
-    │ Input (bottom) - Up/Down browses history   │
-    └──────────────────────────────────────────┘
 """
 import argparse
 import sys
@@ -29,8 +19,8 @@ from debug_tui.logs import (
     extract_log_level, KNOWN_LOG_LEVELS,
 )
 
-LOG_POLL_INTERVAL = 0.5  # seconds
-LOG_BUFFER_SIZE = 5000  # lines kept in memory
+LOG_POLL_INTERVAL = 0.5
+LOG_BUFFER_SIZE = 5000
 
 LOG_SOURCE_COLORS = {
     "minimy": "cyan", "bus": "bright_black", "skills": "green",
@@ -51,28 +41,12 @@ def format_log_line(source_name: str, line: str) -> str:
 
 class MinimyDebugApp(App):
     CSS = """
-    #logs-container {
-        height: 45%;
-        border: solid $accent;
-    }
-    #log-filter {
-        height: 1;
-        border: none;
-    }
-    #middle-row {
-        height: 1fr;
-    }
-    #conversation {
-        width: 2fr;
-        border: solid $accent;
-    }
-    #activity {
-        width: 1fr;
-        border: solid $accent;
-    }
-    #utterance-input {
-        dock: bottom;
-    }
+    #logs-container { height: 45%; border: solid $accent; }
+    #log-filter { height: 1; border: none; }
+    #middle-row { height: 1fr; }
+    #conversation { width: 2fr; border: solid $accent; }
+    #activity { width: 1fr; border: solid $accent; }
+    #utterance-input { dock: bottom; }
     """
 
     BINDINGS = [
@@ -96,41 +70,30 @@ class MinimyDebugApp(App):
         self.log_buffer = deque(maxlen=LOG_BUFFER_SIZE)
         self.log_filter_text = ""
         self.level_enabled = {level: True for level in KNOWN_LOG_LEVELS}
-        self._ui_thread_id = None
 
     def compose(self) -> ComposeResult:
         yield Header()
         with Vertical(id="logs-container"):
-            log_filter = Input(placeholder="Filter logs (free text)...", id="log-filter")
-            yield log_filter
-            logs_view = RichLog(id="logs-view", wrap=False, markup=True, auto_scroll=True)
-            yield logs_view
+            yield Input(placeholder="Filter logs (free text)...", id="log-filter")
+            yield RichLog(id="logs-view", wrap=False, markup=True, auto_scroll=True)
         with Horizontal(id="middle-row"):
-            conversation = RichLog(id="conversation", wrap=True, markup=True, auto_scroll=True)
-            yield conversation
-            activity = RichLog(id="activity", wrap=True, markup=True, auto_scroll=True)
-            yield activity
-        utterance_input = Input(placeholder="Type what you'd say to minimy...", id="utterance-input", select_on_focus=False)
-        yield utterance_input
+            yield RichLog(id="conversation", wrap=True, markup=True, auto_scroll=True)
+            yield RichLog(id="activity", wrap=True, markup=True, auto_scroll=True)
+        yield Input(placeholder="Type what you'd say to minimy...", id="utterance-input", select_on_focus=False)
         yield Footer()
 
     def on_mount(self) -> None:
-        # Bus callbacks can come from another thread, but the file-queue
-        # implementation calls activity handlers synchronously on submit.
-        self._ui_thread_id = threading.get_ident()
         self._write_status("Minimy Debug TUI v0.1.0")
-        
         if not self.log_sources:
-            self._write_to_log(self.query_one("#logs-view", RichLog),
-                f"[yellow]No log files found. Pass --log-dir to point to the right one.[/yellow]")
+            self._write_to_log(
+                self.query_one("#logs-view", RichLog),
+                "[yellow]No log files found. Pass --log-dir to point to the right one.[/yellow]",
+            )
         else:
-            names = ", ".join(src.name for src in self.log_sources)
-            self._write_status(f"Logs found: {names}")
-
+            self._write_status(f"Logs found: {', '.join(src.name for src in self.log_sources)}")
         self.bus.on_speak(self._handle_speak)
         self.bus.on_activity(self._handle_activity)
         self.bus.connect()
-
         self.set_interval(LOG_POLL_INTERVAL, self._poll_logs)
         self.query_one("#utterance-input", Input).focus()
         self._write_status("Ready.")
@@ -140,13 +103,13 @@ class MinimyDebugApp(App):
         widget.write(content)
 
     def _run_on_ui_thread(self, callback, *args) -> None:
-        """Call directly on Textual's thread, otherwise marshal safely.
+        """Dispatch a callback using Textual's actual event-loop thread.
 
-        ``call_from_thread`` raises when called from the app thread. This is
-        important because the file-backed TUI bus reports queued activity
-        synchronously while the submit event is being handled.
+        ``on_mount`` is not a reliable source for the thread identity across
+        Textual versions. Textual records the authoritative ID as ``_thread_id``
+        and ``call_from_thread`` uses that same value internally.
         """
-        if threading.get_ident() == self._ui_thread_id:
+        if getattr(self, "_thread_id", None) == threading.get_ident():
             callback(*args)
         else:
             self.call_from_thread(callback, *args)
@@ -159,15 +122,13 @@ class MinimyDebugApp(App):
 
     def _write_conversation(self, line: str) -> None:
         try:
-            widget = self.query_one("#conversation", RichLog)
-            self._write_to_log(widget, line)
+            self._write_to_log(self.query_one("#conversation", RichLog), line)
         except Exception:
             pass
 
     def _write_activity(self, line: str) -> None:
         try:
-            widget = self.query_one("#activity", RichLog)
-            self._write_to_log(widget, line)
+            self._write_to_log(self.query_one("#activity", RichLog), line)
         except Exception:
             pass
 
@@ -180,17 +141,15 @@ class MinimyDebugApp(App):
         except Exception:
             return
         for src in self.log_sources:
-            new_lines = src.read_new_lines()
-            for line in new_lines:
+            for line in src.read_new_lines():
                 self.log_buffer.append((src.name, line))
                 if line_matches_filter(line, self.log_filter_text):
                     self._write_to_log(view, format_log_line(src.name, line))
 
     def on_input_changed(self, event: Input.Changed) -> None:
-        if event.input.id != "log-filter":
-            return
-        self.log_filter_text = event.value
-        self._rerender_logs()
+        if event.input.id == "log-filter":
+            self.log_filter_text = event.value
+            self._rerender_logs()
 
     def _rerender_logs(self) -> None:
         try:
@@ -207,10 +166,9 @@ class MinimyDebugApp(App):
         if event.input.id != "utterance-input":
             return
         text = event.value.strip()
-        if not text:
-            return
-        self._send_utterance(text)
-        event.input.value = ""
+        if text:
+            self._send_utterance(text)
+            event.input.value = ""
 
     def _send_utterance(self, text: str) -> None:
         self._write_conversation(f"[green]You: {text}[/green]")
@@ -274,8 +232,8 @@ def build_arg_parser():
 
 def run():
     args = build_arg_parser().parse_args()
-    app = MinimyDebugApp(host=args.host, port=args.port, lang=args.lang, log_dir_override=args.log_dir)
-    app.run()
+    MinimyDebugApp(host=args.host, port=args.port, lang=args.lang,
+                   log_dir_override=args.log_dir).run()
 
 
 if __name__ == "__main__":
