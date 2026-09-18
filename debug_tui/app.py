@@ -14,6 +14,7 @@ live logs.
 """
 import argparse
 import sys
+import threading
 from collections import deque
 from pathlib import Path
 from functools import partial
@@ -95,6 +96,7 @@ class MinimyDebugApp(App):
         self.log_buffer = deque(maxlen=LOG_BUFFER_SIZE)
         self.log_filter_text = ""
         self.level_enabled = {level: True for level in KNOWN_LOG_LEVELS}
+        self._ui_thread_id = None
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -113,6 +115,9 @@ class MinimyDebugApp(App):
         yield Footer()
 
     def on_mount(self) -> None:
+        # Bus callbacks can come from another thread, but the file-queue
+        # implementation calls activity handlers synchronously on submit.
+        self._ui_thread_id = threading.get_ident()
         self._write_status("Minimy Debug TUI v0.1.0")
         
         if not self.log_sources:
@@ -134,24 +139,36 @@ class MinimyDebugApp(App):
         widget.auto_scroll = widget.is_vertical_scroll_end
         widget.write(content)
 
+    def _run_on_ui_thread(self, callback, *args) -> None:
+        """Call directly on Textual's thread, otherwise marshal safely.
+
+        ``call_from_thread`` raises when called from the app thread. This is
+        important because the file-backed TUI bus reports queued activity
+        synchronously while the submit event is being handled.
+        """
+        if threading.get_ident() == self._ui_thread_id:
+            callback(*args)
+        else:
+            self.call_from_thread(callback, *args)
+
     def _handle_speak(self, utterance: str) -> None:
-        self.call_from_thread(self._write_conversation, f"[blue]Minimy: {utterance}[/blue]")
+        self._run_on_ui_thread(self._write_conversation, f"[blue]Minimy: {utterance}[/blue]")
 
     def _handle_activity(self, line: str) -> None:
-        self.call_from_thread(self._write_activity, line)
+        self._run_on_ui_thread(self._write_activity, line)
 
     def _write_conversation(self, line: str) -> None:
         try:
             widget = self.query_one("#conversation", RichLog)
             self._write_to_log(widget, line)
-        except:
+        except Exception:
             pass
 
     def _write_activity(self, line: str) -> None:
         try:
             widget = self.query_one("#activity", RichLog)
             self._write_to_log(widget, line)
-        except:
+        except Exception:
             pass
 
     def _write_status(self, text: str) -> None:
@@ -160,7 +177,7 @@ class MinimyDebugApp(App):
     def _poll_logs(self) -> None:
         try:
             view = self.query_one("#logs-view", RichLog)
-        except:
+        except Exception:
             return
         for src in self.log_sources:
             new_lines = src.read_new_lines()
@@ -178,7 +195,7 @@ class MinimyDebugApp(App):
     def _rerender_logs(self) -> None:
         try:
             view = self.query_one("#logs-view", RichLog)
-        except:
+        except Exception:
             return
         view.auto_scroll = True
         view.clear()
