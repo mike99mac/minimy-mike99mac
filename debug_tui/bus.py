@@ -17,12 +17,7 @@ from debug_tui.activity import summarize_message
 class MinimyBusConnection:
     def __init__(self, host="127.0.0.1", port=8181, lang="en-us", client=None,
                  input_dir=None):
-        """Connect the TUI to Minimy's input pipeline.
-
-        ``client`` is retained for compatibility and for tests. The current
-        Minimy intent service consumes ``tmp/save_text/*.txt`` rather than an
-        OVOS websocket event, so local utterances are queued there directly.
-        """
+        """Connect the TUI to Minimy's input pipeline."""
         self.host = host
         self.port = port
         self.lang = lang
@@ -88,12 +83,13 @@ class MinimyBusConnection:
         self._activity_handlers.append(handler)
 
     def send_utterance(self, text):
-        """Queue text exactly as STT does so ``Intent.run`` parses it.
+        """Queue text so ``Intent.run`` parses it.
 
-        ``Intent.run`` polls ``SVA_BASE_DIR/tmp/save_text`` and expects a
-        header followed by the utterance. ``[TUI]`` is deliberately a
-        non-RAW header: RAW input is routed to the system skill and never
-        enters question parsing.
+        The queue notification is intentionally not sent through activity
+        handlers here. This method is called by Textual's app thread, and a
+        synchronous callback would force the UI callback to use
+        ``call_from_thread`` from the same thread, which Textual rejects.
+        The app already displays the submitted text in its conversation pane.
         """
         text = text.strip()
         if not text:
@@ -104,7 +100,6 @@ class MinimyBusConnection:
             f"savetxt_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S_%f')}_"
             f"{uuid.uuid4().hex}.txt"
         )
-        # Write and rename atomically so Intent.run never reads a partial file.
         fd, temp_name = tempfile.mkstemp(prefix=".tui-", dir=self.input_dir,
                                          text=True)
         try:
@@ -117,7 +112,3 @@ class MinimyBusConnection:
             except OSError:
                 pass
             print(f"Failed to queue utterance: {e}")
-            return
-
-        for handler in self._activity_handlers:
-            handler(f'→ queued: "{text}"')
