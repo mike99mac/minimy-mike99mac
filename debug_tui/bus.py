@@ -1,36 +1,45 @@
-"""Wraps minimy bus client for the TUI's needs: sending an utterance,
-and a callback-based interface for incoming events - decoupled from
-Textual itself so this module has no UI framework dependency and can
-be tested without spinning up a real App."""
-import threading
-import uuid
+"""Connect the debug TUI to Minimy's input pipeline.
 
-try:
-    from ovos_bus_client import MessageBusClient, Message
-except ImportError:
-    # Fallback for minimy's own bus implementation
-    MessageBusClient = None
-    Message = None
+The main Minimy services in this repository do not consume an OVOS
+``recognizer_loop:utterance`` websocket event. The STT service writes text
+files to ``tmp/save_text`` and the intent service polls that directory. The
+TUI therefore uses the same file-queue contract for locally running Minimy.
+"""
+import os
+import tempfile
+import uuid
+from datetime import datetime
+from pathlib import Path
 
 from debug_tui.activity import summarize_message
 
 
 class MinimyBusConnection:
-    def __init__(self, host="127.0.0.1", port=8181, lang="en-us", client=None):
-        """Connect to minimy's message bus.
-        `client` is injectable for testing - defaults to a real
-        MessageBusClient against (host, port)."""
+    def __init__(self, host="127.0.0.1", port=8181, lang="en-us", client=None,
+                 input_dir=None):
+        """Connect the TUI to Minimy's input pipeline.
+
+        ``client`` is retained for compatibility and for tests. The current
+        Minimy intent service consumes ``tmp/save_text/*.txt`` rather than an
+        OVOS websocket event, so local utterances are queued there directly.
+        """
+        self.host = host
+        self.port = port
         self.lang = lang
-        if client:
-            self._client = client
-        elif MessageBusClient:
-            self._client = MessageBusClient(host=host, port=port)
-        else:
-            self._client = None
+        self._client = client
+        self.input_dir = Path(input_dir or self._default_input_dir())
         self._speak_handlers = []
         self._activity_handlers = []
 
+    @staticmethod
+    def _default_input_dir():
+        base_dir = os.environ.get("SVA_BASE_DIR")
+        if base_dir:
+            return Path(base_dir) / "tmp" / "save_text"
+        return Path.home() / "minimy" / "tmp" / "save_text"
+
     def connect(self):
+        """Start the optional client used for receiving activity/speak events."""
         if not self._client:
             return
         try:
@@ -41,7 +50,7 @@ class MinimyBusConnection:
             print(f"Failed to connect to bus: {e}")
 
     def _on_speak(self, message):
-        if hasattr(message, 'data'):
+        if hasattr(message, "data"):
             utterance = message.data.get("utterance", "")
         else:
             utterance = message.get("utterance", "")
@@ -49,25 +58,23 @@ class MinimyBusConnection:
             handler(utterance)
 
     def _on_raw_message(self, raw):
-        """Handle raw message from bus."""
+        """Handle raw message from an optional client."""
         try:
-            if isinstance(raw, str) and Message:
-                message = Message.deserialize(raw)
-            else:
-                message = raw
-            self._on_any_message(message)
+            if isinstance(raw, str):
+                return
+            self._on_any_message(raw)
         except Exception:
             return
 
     def _on_any_message(self, message):
         """Routes every bus message through the activity summarizer."""
-        if hasattr(message, 'msg_type'):
+        if hasattr(message, "msg_type"):
             msg_type = message.msg_type
-            msg_data = message.data if hasattr(message, 'data') else {}
+            msg_data = message.data if hasattr(message, "data") else {}
         else:
             msg_type = message.get("type", "")
             msg_data = message
-        
+
         line = summarize_message(msg_type, msg_data)
         if line is None:
             return
@@ -75,24 +82,42 @@ class MinimyBusConnection:
             handler(line)
 
     def on_speak(self, handler):
-        """Registers a callback(utterance: str) called whenever minimy
-        speaks. Multiple handlers can be registered."""
         self._speak_handlers.append(handler)
 
     def on_activity(self, handler):
-        """Registers a callback(summary_line: str) called for every
-        bus message the activity summarizer considers worth showing."""
         self._activity_handlers.append(handler)
 
     def send_utterance(self, text):
-        """Sends an utterance to the minimy engine."""
-        if not self._client or not Message:
+        """Queue text exactly as STT does so ``Intent.run`` parses it.
+
+        ``Intent.run`` polls ``SVA_BASE_DIR/tmp/save_text`` and expects a
+        header followed by the utterance. ``[TUI]`` is deliberately a
+        non-RAW header: RAW input is routed to the system skill and never
+        enters question parsing.
+        """
+        text = text.strip()
+        if not text:
             return
+
+        self.input_dir.mkdir(parents=True, exist_ok=True)
+        filename = (
+            f"savetxt_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S_%f')}_"
+            f"{uuid.uuid4().hex}.txt"
+        )
+        # Write and rename atomically so Intent.run never reads a partial file.
+        fd, temp_name = tempfile.mkstemp(prefix=".tui-", dir=self.input_dir,
+                                         text=True)
         try:
-            self._client.emit(Message("recognizer_loop:utterance", {
-                "utterances": [text],
-                "lang": self.lang,
-                "utterance_id": str(uuid.uuid4()),
-            }))
+            with os.fdopen(fd, "w", encoding="utf-8") as stream:
+                stream.write(f"[TUI]{text}")
+            os.replace(temp_name, self.input_dir / filename)
         except Exception as e:
-            print(f"Failed to send utterance: {e}")
+            try:
+                os.unlink(temp_name)
+            except OSError:
+                pass
+            print(f"Failed to queue utterance: {e}")
+            return
+
+        for handler in self._activity_handlers:
+            handler(f'→ queued: "{text}"')
