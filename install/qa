@@ -1,0 +1,6 @@
+#!/bin/bash
+export PYTHONPATH="$HOME/minimy${PYTHONPATH:+:$PYTHONPATH}"
+export SVA_BASE_DIR="$HOME/minimy"
+source "$HOME/minimy/minimy_venv/bin/activate"
+exec python /usr/local/sbin/qa.py "$@"
+
