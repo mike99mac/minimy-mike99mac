@@ -10,9 +10,7 @@ else
   baseDir="$HOME/minimy"
 fi
 logDir="$baseDir/logs"
-
-# Detect current user information
-CURRENT_USER=$(whoami)
+CURRENT_USER=$(whoami)                     # detect current user information
 
 # Set high performance mode on Jetson hardware
 platform=`cat /proc/device-tree/model | awk '{print $1 " " $2}'`
@@ -145,21 +143,21 @@ function startSystem
   : STACK:  ${FUNCNAME[@]}
 
   cd "$baseDir"
-
-  # Use explicit path to venv python to ensure packages are available
-  local venvPython="$baseDir/minimy_venv/bin/python3"
-
+  local venvPython="$baseDir/minimy_venv/bin/python3" # Use venv to ensure packages are available
   if [ ! -f "$venvPython" ]; then
     echo "ERROR: Virtual environment python not found at $venvPython"
     exit 4
   fi
-
   export PYTHONPATH="$baseDir"
   export SVA_BASE_DIR="$baseDir"
   export GOOGLE_APPLICATION_CREDENTIALS="$baseDir/install/my-google-key.json"
   logDir="$baseDir/logs"
 
   echo "Starting system skills ..."
+  echo "Starting whisper user service ..."
+  systemctl --user start whisper           # start whisper service
+  echo "Starting fallback user service ..."
+  systemctl --user start fallback          # start LLM fallback service
   cd "$baseDir/skills/system_skills"
   "$venvPython" skill_system.py >> "$logDir/skills.log" 2>&1 &
   sleep 1
