@@ -8,14 +8,15 @@ if [ -n "$SVA_BASE_DIR" ]; then
 else
   baseDir="$HOME/minimy"
 fi
-# Detect if logs should be saved (on by default)
-SAVELOGS="true"
+SAVELOGS="true"                            # should logs be saved (on by default)
 if [ "$MINIMY_SAVELOGS" = "false" ]; then
   SAVELOGS="false"
 fi
 echo "Stopping Minimy ..."
 echo "User: $USER"
 echo "Base directory: $baseDir"
+systemctl --user stop whisper              # stop whisper service
+systemctl --user stop fallback             # stop LLM fallbac service
 procs=$(ps -ef | awk '!/grep|whisper|vim|fallback/ && /minimy\/skills|skills\/system_skills|framework\/services|MsgBus|mimic3|skill_system.py/')
 if [ ${#procs} = 0 ]; then
   echo "Minimy does not appear to be running"
@@ -36,6 +37,11 @@ logDir="$tmpDir/tmp"
 if [ -d "$logDir" ] && [ "$SAVELOGS" = "true" ]; then # log directory exists
   cp "$logDir"/* "$HOME" 2>/dev/null       # copy all log files
 fi
+if [ ${#procs} != 0 ]; then
+  waitSecs=4
+  echo "Waiting $waitSecs seconds for processes to finish ..."
+  sleep $waitSecs                          # wait for processes to die before unmounting tmpfs
+fi
 findmount $logDir >/dev/null 2>&1
 if [ $? = 0 ]; then                        # log dir is mounted
   sudo umount "$logDir"                    # unmount log directory - and logs disappear
@@ -44,9 +50,5 @@ findmount $tmpDir >/dev/null 2>&1
 if [ $? = 0 ]; then                        # tmp dir is mounted
   sudo umount "$tmpDir"                    # unmount tmp directory - and logs disappear
 fi
-if [ ${#procs} != 0 ]; then
-  waitSecs=4
-  echo "Waiting $waitSecs seconds for processes to finish ..."
-  sleep $waitSecs                          # wait for processes to die before unmounting tmpfs
-fi
-echo "Minimy stopped."
+echo "Minimy is stopped"
+
