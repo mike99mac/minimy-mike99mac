@@ -230,11 +230,7 @@ function loadUserSkills
   # loadOneSkill ../ha_skill Home Assistant skill
   # loadOneSkill ../email Email skill
   # loadOneSkill ../example1 Example 1 skill
-  # loadOneSkill ../npr_news NPR News skill
   # loadOneSkill ../rfm RFM skill
-  # loadOneSkill ../wiki Wiki skill
-  # loadOneSkill ../youtube YouTube skill
-  # loadOneSkill ../youtube YouTube skill
   loadOneSkill "$baseDir/skills/user_skills/help" Help skill
   loadOneSkill "$baseDir/skills/user_skills/timedate" TimeDate skill
   loadOneSkill "$baseDir/skills/user_skills/weather" Weather skill
@@ -244,7 +240,7 @@ function loadUserSkills
 
 #+--------------------------------------------------------------------------+
 function loadOtherServices
-# load other processes
+# load buttons and mic processes, recycle fallback service
 #+--------------------------------------------------------------------------+
  {
   : SOURCE: ${BASH_SOURCE}
@@ -256,6 +252,8 @@ function loadOtherServices
   "$venvPython" framework/services/input/buttons.py >> "$logDir/buttons.log" 2>&1 &
   echo "Starting the mic ..."
   "$venvPython" framework/services/input/mic.py >> "$logDir/mic.log" 2>&1 &
+  echo "Recycling fallback service ..."
+  systemctl --user restart fallback 
  }                                         # loadOtherServices()
 
 # main()
