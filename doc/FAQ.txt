@@ -132,6 +132,3 @@ we try to delete its file in most cases it has not been created
 yet. While we could wait this would adversely impact performance
 so we live with extraneous files which are ultimately cleared
 out on system start and stop. 
-
-
-

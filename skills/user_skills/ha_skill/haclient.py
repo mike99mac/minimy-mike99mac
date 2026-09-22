@@ -96,4 +96,3 @@ class HomeAssistantClient:
                 return "the %s reports %s %s" % (name, speakable_current_state, spoken_uom)
 
         return err_response
-
