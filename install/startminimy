@@ -231,10 +231,13 @@ function loadUserSkills
   # loadOneSkill ../email Email skill
   # loadOneSkill ../example1 Example 1 skill
   # loadOneSkill ../rfm RFM skill
+  # loadOneSkill ../wiki Wiki skill
+  # loadOneSkill ../youtube YouTube skill
   loadOneSkill "$baseDir/skills/user_skills/help" Help skill
   loadOneSkill "$baseDir/skills/user_skills/timedate" TimeDate skill
   loadOneSkill "$baseDir/skills/user_skills/weather" Weather skill
   loadOneSkill "$baseDir/skills/user_skills/mpc" music and news skill
+  loadOneSkill "$baseDir/skills/user_skills/spotify" Spotify receiver skill
   sleep 3
  }                                         # loadUserSkills()
 
@@ -253,7 +256,7 @@ function loadOtherServices
   echo "Starting the mic ..."
   "$venvPython" framework/services/input/mic.py >> "$logDir/mic.log" 2>&1 &
   echo "Recycling fallback service ..."
-  systemctl --user restart fallback 
+  systemctl --user restart fallback
  }                                         # loadOtherServices()
 
 # main()
