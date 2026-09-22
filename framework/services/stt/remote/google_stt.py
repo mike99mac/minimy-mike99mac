@@ -14,4 +14,3 @@ def remote_transcribe_file(speech_file):
   response = client.recognize(config=config, audio=audio)
   for result in response.results:
     return result.alternatives[0].transcript
-

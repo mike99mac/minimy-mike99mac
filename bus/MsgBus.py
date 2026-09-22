@@ -385,4 +385,3 @@ class MsgBus:
       except Exception as e:
         # self.log.error(f'MsgBus._cancel_task(): Exception during task cancellation wait for {task.get_name() if hasattr(task, "get_name") else "unknown"}: {e}')
         print(f'MsgBus._cancel_task(): Exception during task cancellation wait for {task.get_name() if hasattr(task, "get_name") else "unknown"}: {e}')
-

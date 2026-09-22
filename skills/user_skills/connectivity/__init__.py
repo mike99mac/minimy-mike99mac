@@ -42,4 +42,3 @@ if __name__ == '__main__':
   conn = ConnectivitySkill()
   conn.run()
   Event().wait()                           # wait forever
-

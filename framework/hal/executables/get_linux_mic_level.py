@@ -14,4 +14,3 @@ for line in res:
                 end_indx = line.find("]")
                 current_volume = line[:end_indx].replace("%","")
                 print(current_volume)
-

@@ -435,4 +435,3 @@ class TTSEngine:
 if __name__ == "__main__":
   tts_eng = TTSEngine()
   Event().wait()                           # wait forever
-

@@ -21,15 +21,11 @@ tmp/save_tts/*
 # Runtime data
 db/
 
-# Piper TTS binaries (not the piper.py source)
-piper/
-piper_*.tar.gz*
+# NLTK data (used by piper-plus)
+nltk_data/
 
-# CTranslate2
+# CTranslate2 data (used by faster-whisper)
 CTranslate2/
-
-# Symlinks / build artifacts
-link-4.1b/
 
 # Local config (use mmconfig.yml.template instead)
 install/mmconfig.yml
@@ -43,6 +39,3 @@ install/my-google-key.json
 
 # OS artifacts
 .DS_Store
-
-# Local mpd config
-mpd/

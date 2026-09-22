@@ -198,6 +198,3 @@ it may resume streaming to the media service.
 - Skill Self Interruption Modes (1=default/stack, 2=terminate, 3=ignore, etc)
 - Dynamic Intents (simple but currently not supported, related to like Dynamic OOB)
 - Intent Types (currently NLP/NLU what would it take to integrate regex, others)
-
-
-
