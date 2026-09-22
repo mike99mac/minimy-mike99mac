@@ -1,0 +1,4 @@
+# Debug TUI for minimy
+textual>=0.60
+# ovos-bus-client optional for better bus integration
+# ovos-bus-client

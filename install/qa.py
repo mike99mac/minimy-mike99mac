@@ -24,7 +24,7 @@ def answer_question(question):
     with urlrequest.urlopen(req, timeout=TIMEOUT) as resp:
       result = json.loads(resp.read().decode("utf-8"))
   except Exception as e:
-    return f"I am sorry, I could not reach the fallback service: {e}"
+    return f"Cannot reach fallback service: {e}"
 
   # Handle rewrite if needed
   if result.get("action") == "rewrite":

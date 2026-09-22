@@ -211,23 +211,17 @@ function setupAudioRouting
 
   echo | tee -a $logFile
   echo "Setting up audio routing with PipeWire..." | tee -a $logFile
-
-  # Install PipeWire and related packages if not already present
-  echo "Installing PipeWire packages..." | tee -a $logFile
+  echo "Installing PipeWire packages..." | tee -a $logFile # install PipeWire 
   if command -v apt-get &>/dev/null; then
     sudo apt-get install -y pipewire pipewire-pulse wireplumber pulseaudio-utils alsa-plugins-pulseaudio >> $logFile 2>&1
   fi
   systemctl --user enable --now pipewire pipewire-pulse wireplumber >> $logFile 2>&1
-
-  # Install minimal ~/.asoundrc
-  cp "$baseDir/install/.asoundrc" "$HOME/.asoundrc"
-
-  # Wait for PipeWire to settle
-  sleep 2
+  cp "$baseDir/install/.asoundrc" "$HOME/.asoundrc" # Install minimal ~/.asoundrc
+  sleep 2                                  # Wait for it to settle
 
   # Detect devices - continue gracefully if not found
   if ! pactl info &>/dev/null; then
-    echo "Warning: pactl command failed (pipewire-pulse not running?). Skipping audio device configuration." | tee -a $logFile
+    echo "Warning: pactl info failed (pipewire-pulse not running?). Skipping audio device configuration." | tee -a $logFile
     return 0
   fi
 
@@ -270,7 +264,6 @@ RULE
   else
     echo "Skipping udev rule: reSpeaker not detected." | tee -a $logFile
   fi
-
   echo "Audio routing setup complete." | tee -a $logFile
 }                                          # setupAudioRouting()
 
@@ -284,7 +277,6 @@ function generateConfigFile
 
   echo | tee -a $logFile
   echo "Generating configuration file..." | tee -a $logFile
-
   if [ -f "$baseDir/install/mmconfig.yml.template" ]; then
     sed -e "s|{{BASE_DIR}}|$baseDir|g" \
         -e "s|{{USER}}|$CURRENT_USER|g" \
@@ -364,9 +356,7 @@ function checkEnv
     echo "ERROR: base directory $baseDir not found"
     exit 2
   fi
-
-  # Generate config file from template if it doesn't exist
-  if [ ! -f $configFile ]; then
+  if [ ! -f $configFile ]; then            # generate config file from template 
     if [ -f "$baseDir/install/mmconfig.yml.template" ]; then
       echo "Config file not found, generating from template..."
       sed -e "s|{{BASE_DIR}}|$baseDir|g" \
@@ -593,7 +583,7 @@ function buildVenv
   echo | tee -a $logFile
 
   echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile
-  minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver testhub.py testspoke.py qa.py ytplay"
+  minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver testhub.py testspoke.py qa.py ytplay startdebug"
   echo | tee -a $logFile
   echo "cd to $baseDir/install ..." | tee -a $logFile
   cd $baseDir/install
@@ -607,7 +597,6 @@ function buildVenv
   if [ -d "$baseDir/mpd/playlists" ]; then
     runCmd cp $baseDir/install/great_songs.m3u "$baseDir/mpd/playlists/"
   fi
-
   echo " "
   echo "Install Complete at `date`" | tee -a $logFile
  }                                         # buildVenv()
