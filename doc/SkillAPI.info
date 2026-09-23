@@ -46,4 +46,3 @@ extracting dates and times from spoken words. For example
 
 would return a datetime object. This can also be helpful when processing 
 spoken input.
-

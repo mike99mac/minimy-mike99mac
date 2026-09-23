@@ -8,4 +8,3 @@ def local_speak_dialog(text, filename, wait_q):
     #res = execute_command(command)
     #wait_q.put({'service':'local', 'status':'success'})
     wait_q.put({'service':'local', 'status':'failure'})
-

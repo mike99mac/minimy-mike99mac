@@ -389,4 +389,3 @@ class AlarmSkill(SimpleVoiceAssistant):
 if __name__ == "__main__":
   my_alarm_skill = AlarmSkill()
   Event().wait()                           # wait forever
-

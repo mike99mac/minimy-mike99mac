@@ -1,4 +1,4 @@
-from framework.util.utils import Config, LOG
+from framework.util.utils import LOG
 from datetime import datetime
 from scipy import signal
 import numpy as np
@@ -106,7 +106,7 @@ class VADAudio(Audio):
       while True:
         yield self.read_resampled()
 
-  def vad_collector(self, padding_ms=300, ratio=0.75, frames=None, max_utterance_sec=4.0):
+  def vad_collector(self, padding_ms=300, ratio=0.75, frames=None, max_utterance_sec=10.0):
     if frames is None:
       frames = self.frame_generator()
     num_padding_frames = padding_ms // self.frame_duration_ms

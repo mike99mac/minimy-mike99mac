@@ -55,7 +55,7 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
       from framework.services.tts.local.coqui_tts import local_speak_dialog
     elif cfg.get_cfg_val("Basic.TTS.Local") == "p": # piper
       self.log.debug(f"TTSSession.__init__() importing piper's local_speak_dialog()")
-      from framework.services.tts.local.piper import local_speak_dialog
+      from framework.services.tts.local.local_piper import local_speak_dialog
     else:
       from framework.services.tts.local.espeak import local_speak_dialog
     self.local_speak = local_speak_dialog

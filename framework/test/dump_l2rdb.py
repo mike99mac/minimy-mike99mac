@@ -5,4 +5,3 @@ k = db.firstkey()
 while k is not None:
     print("%s--->%s" % (k, db[k]))
     k = db.nextkey(k)
-

@@ -6,4 +6,3 @@ source .venv/bin/activate
 pip install importlib-resources
 
 # to run bin/mimic3 --model-dir voices/apope
-

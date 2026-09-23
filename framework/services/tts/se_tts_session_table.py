@@ -57,4 +57,3 @@ class TTSSessionTable:
       se_tts_constants.STATE_WAIT_MEDIA_CANCELLED    + ':' + se_tts_constants.EVENT_MEDIA_ENDED:  self._wmc_ended,
       se_tts_constants.STATE_WAIT_MEDIA_CANCELLED    + ':' + se_tts_constants.EVENT_MEDIA_CANCELLED:  self._wmc_ended,
      }
-  

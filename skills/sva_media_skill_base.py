@@ -29,4 +29,3 @@ class MediaSkill(SimpleVoiceAssistant):
       self.send_message("media_skill", info)
     if subtype == "media_play":
       self.media_play(msg)
-
