@@ -42,13 +42,6 @@ At some point the TTS session will have depleted its queue. At this point it wil
 
 Upon reception of a 'media_end' event while in the 'wait_media_end' state, the session will transition to the 'idle' state and generate an internal TTS session ended event which will be handled by the TTS Engine. 
 
-This is the basic life cycle of a TTS session, except for pause. 
+This is the basic life cycle of a TTS session, except for pause.
 
 The happy path also shows a simple pause process flow but this is a very simplified depiction of a much more complicated process. The actual process of handling pause consists of about 5 differen states and may bee seen in more detail in the file named 'tts_pause_states.png'. Keep in mind, any state which responds to a pause message must ultimately have these additional 5 states as well which complicates things considerably. The state event transition diagram depicted by 'tts_session_states.png' also does not include associated pause state detail.
-
-
-
-
-
-
-
