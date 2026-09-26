@@ -3,7 +3,7 @@ Description=Piper Text-to-Speech Server
 After=network.target
 
 [Service]
-ExecStart={{BASE_DIR}}/minimy_venv/bin/python3 {{BASE_DIR}}/framework/services/tts/local/piper.py
+ExecStart={{BASE_DIR}}/minimy_venv/bin/python3 {{BASE_DIR}}/framework/services/tts/local/local_piper.py
 WorkingDirectory={{BASE_DIR}}
 Environment=SVA_BASE_DIR={{BASE_DIR}}
 Environment=PYTHONUNBUFFERED=1
