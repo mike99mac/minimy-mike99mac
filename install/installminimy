@@ -85,10 +85,9 @@ function detectUserInfo
 
   # Detect current user information
   CURRENT_USER=$(whoami)
-  CURRENT_UID=$(id -u)
   CURRENT_GROUP=$(id -gn)
 
-  echo "Detected user: $CURRENT_USER (UID: $CURRENT_UID, Group: $CURRENT_GROUP)" | tee -a $logFile
+  echo "Detected user: $CURRENT_USER Group: $CURRENT_GROUP" | tee -a $logFile
   echo "Base directory: $baseDir" | tee -a $logFile
 
   # Validate that we're not running as root
@@ -309,7 +308,6 @@ function setMinimyVars
   if [ ${#hub} = 0 ]; then                 # hub not set with args
     hub=`grep "    Hub:" $configTemplate | awk '{print $2}'` # get hub in config file
     echo -n "Host name of hub server [$hub]: "
-    read hub
   fi
   if [ ${#hub} != 0 ]; then                # new value was supplied
     sed -i "s/    Hub: .*/    Hub: $hub/g" $configTemplate # reset hub server
@@ -602,8 +600,8 @@ function buildVenv
  }                                         # buildVenv()
 
 # global variables
-configFile="install/mmconfig.yml"          # Minimy config file
-baseDir=$(sed -n 's/^[[:space:]]*BaseDir:[[:space:]]*//p' "$configFile" | head -1)
+baseDir=$HOME/minimy                       # base directory
+configFile="$baseDir/install/mmconfig.yml" # Minimy config file
 hub=""                                     # hub server
 let lastSecs=$SECONDS
 timeSt=`date +"%y-%m-%d-%H-%M-%S"`
@@ -614,10 +612,7 @@ if [ "$MINIMY_SAVELOGS" = "false" ]; then
 fi
 musicDir=""                                # directory with music files
 let stepNum=0
-
-# User info (will be set by detectUserInfo)
 CURRENT_USER=""
-CURRENT_UID=""
 CURRENT_GROUP=""
 LOGS_MOUNT_UNIT=""
 TMP_MOUNT_UNIT=""
