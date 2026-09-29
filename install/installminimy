@@ -602,9 +602,8 @@ function buildVenv
 
 # global variables
 installDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" # get location of this script
-configFile="$installDir/mmconfig.yml"     # minimy config file
-baseDir=$(sed -n 's/^[[:space:]]*BaseDir:[[:space:]]*//p' "$configFile" 2>/dev/null | head -1) # base directory
-[ -z "$baseDir" ] && baseDir="$HOME/minimy" # if unable to set baseDir, set to ~/minimy
+baseDir="$(dirname "$installDir")"         # base directory
+configFile="$installDir/mmconfig.yml"      # minimy config file
 hub=""                                     # hub server
 let lastSecs=$SECONDS
 timeSt=`date +"%y-%m-%d-%H-%M-%S"`
