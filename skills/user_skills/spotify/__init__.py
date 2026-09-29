@@ -1,75 +1,158 @@
-# Spotify skill
+"""Minimy skill for starting and pairing a local librespot receiver.
 
-This skill manages a headless librespot Spotify Connect receiver for Minimy.
-It is intended to start and pair a local receiver instance, without storing
-Spotify credentials in the Minimy repository.
+librespot is the Spotify Connect receiver. Spotify playback selection is
+performed by a Spotify controller; this skill manages the receiver process and
+reports its state without storing Spotify credentials in Minimy.
+"""
 
-## What the skill does
+import os
+import signal
+import subprocess
+from pathlib import Path
+from threading import Event
 
-- starts librespot with the device name `Minimy`
-- keeps credentials in `~/.cache/librespot`
-- supports a one-time device-auth pairing flow
-- can stop or report the status of the receiver
+from skills.sva_base import SimpleVoiceAssistant
 
-## Environment variables
 
-Set these before starting Minimy if you need different defaults:
+class SpotifySkill(SimpleVoiceAssistant):
+    """Manage a headless librespot receiver named ``Minimy``."""
 
-```bash
-export LIBRESPOT_BIN="$HOME/.cargo/bin/librespot"
-export LIBRESPOT_CACHE="$HOME/.cache/librespot"
-export LIBRESPOT_NAME="Minimy"
-```
+    def __init__(self, bus=None, timeout=5):
+        self.skill_id = "spotify_skill"
+        super().__init__(
+            msg_handler=self.handle_message,
+            skill_id=self.skill_id,
+            skill_category="user",
+            bus=bus,
+            timeout=timeout,
+        )
 
-## Initial pairing (headless Raspberry Pi)
+        self.process = None
+        self.librespot = os.environ.get("LIBRESPOT_BIN", "/home/pi/.cargo/bin/librespot")
+        self.cache_dir = Path(
+            os.environ.get(
+                "LIBRESPOT_CACHE",
+                str(Path.home() / ".cache" / "librespot"),
+            )
+        ).expanduser()
+        self.device_name = os.environ.get("LIBRESPOT_NAME", "Minimy")
+        self.log_path = Path(
+            os.environ.get("SVA_BASE_DIR", str(Path.home() / "minimy"))
+        ) / "logs" / "spotify.log"
 
-From the Pi terminal, run:
+        self.register_intent("C", ["start", "launch", "open"], "spotify", self.start)
+        self.register_intent("C", ["stop", "quit", "close"], "spotify", self.stop)
+        self.register_intent("C", "pair", "spotify", self.pair)
+        self.register_intent("Q", "what", "spotify", self.status)
 
-```bash
-$LIBRESPOT_BIN --name "$LIBRESPOT_NAME" \
-  --enable-device-auth \
-  --cache "$LIBRESPOT_CACHE"
-```
+        self.log.info(
+            "SpotifySkill ready: binary=%s cache=%s device=%s",
+            self.librespot,
+            self.cache_dir,
+            self.device_name,
+        )
 
-Then open the printed URL in a browser on any machine:
+    def _running(self):
+        return self.process is not None and self.process.poll() is None
 
-```text
-https://spotify.com/pair
-```
+    def _command(self, device_auth=False):
+        command = [
+            self.librespot,
+            "--name",
+            self.device_name,
+            "--cache",
+            str(self.cache_dir),
+        ]
+        if device_auth:
+            command.append("--enable-device-auth")
+        return command
 
-Enter the provided code and approve the pairing. Once the browser reports that
-pairing succeeded, stop librespot with Ctrl-C. After that, Minimy can start it
-again without repeated authentication.
+    def _start_process(self, device_auth=False):
+        if self._running():
+            return True
 
-## Voice commands
+        if not Path(self.librespot).exists() and not self._which(self.librespot):
+            self.log.error("librespot executable not found: %s", self.librespot)
+            return False
 
-The skill responds to simple commands such as:
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        self.log_path.parent.mkdir(parents=True, exist_ok=True)
+        log_file = self.log_path.open("a", encoding="utf-8")
+        try:
+            self.process = subprocess.Popen(
+                self._command(device_auth),
+                stdout=log_file,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+            )
+        except OSError:
+            log_file.close()
+            self.process = None
+            raise
+        finally:
+            log_file.close()
+        return True
 
-- “start Spotify”
-- “stop Spotify”
-- “pair Spotify”
-- “what is Spotify”
+    def _which(self, command):
+        if os.path.dirname(command):
+            return os.access(command, os.X_OK)
+        for directory in os.environ.get("PATH", "").split(os.pathsep):
+            candidate = Path(directory) / command
+            if candidate.is_file() and os.access(candidate, os.X_OK):
+                return True
+        return False
 
-This is a receiver-management skill. It does not perform Spotify catalog
-searching or playback control by itself; librespot handles the local receiver,
-and a separate Spotify controller/API layer would be needed for full music
-selection and playback.
+    def start(self, msg=None):
+        try:
+            if self._start_process():
+                self.speak(f"Spotify Connect receiver {self.device_name} is running.")
+            else:
+                self.speak("I could not find librespot.")
+        except Exception as exc:
+            self.log.error("Could not start librespot: %s", exc, exc_info=True)
+            self.speak("I could not start Spotify.")
 
-## Logs
+    def pair(self, msg=None):
+        """Start device authorization for a headless Pi."""
+        if self._running():
+            self.speak("Spotify is already running. Stop it before pairing again.")
+            return
+        try:
+            self._start_process(device_auth=True)
+            self.speak(
+                "Spotify pairing has started. Open the pairing URL shown in the Spotify log."
+            )
+        except Exception as exc:
+            self.log.error("Could not start Spotify pairing: %s", exc, exc_info=True)
+            self.speak("I could not start Spotify pairing.")
 
-The skill logs output to:
+    def stop(self, msg=None):
+        if not self._running():
+            self.speak("Spotify is not running.")
+            return
+        try:
+            os.killpg(self.process.pid, signal.SIGTERM)
+            self.process.wait(timeout=5)
+            self.speak("Spotify has stopped.")
+        except subprocess.TimeoutExpired:
+            os.killpg(self.process.pid, signal.SIGKILL)
+            self.speak("Spotify was stopped.")
+        except Exception as exc:
+            self.log.error("Could not stop librespot: %s", exc, exc_info=True)
+            self.speak("I could not stop Spotify.")
+        finally:
+            self.process = None
 
-```text
-$SVA_BASE_DIR/logs/spotify.log
-```
+    def status(self, msg=None):
+        if self._running():
+            self.speak(f"Spotify Connect receiver {self.device_name} is running.")
+        else:
+            self.speak(f"Spotify Connect receiver {self.device_name} is stopped.")
 
-For example:
+    def handle_message(self, msg):
+        self.log.debug("SpotifySkill.handle_message(): %s", msg)
 
-```bash
-tail -f "$SVA_BASE_DIR/logs/spotify.log"
-```
 
-## Files created
-
-- `skills/user_skills/spotify/__init__.py`
-- `skills/user_skills/spotify/README.md`
+if __name__ == "__main__":
+    SpotifySkill()
+    Event().wait()
