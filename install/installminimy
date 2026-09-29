@@ -276,19 +276,20 @@ function generateConfigFile
 
   echo | tee -a $logFile
   echo "Generating configuration file..." | tee -a $logFile
-  if [ -f "$baseDir/install/mmconfig.yml.template" ]; then
-    sed -e "s|{{BASE_DIR}}|$baseDir|g" \
-        -e "s|{{USER}}|$CURRENT_USER|g" \
-        -e "s|{{GROUP}}|$CURRENT_GROUP|g" \
-        "$baseDir/install/mmconfig.yml.template" > "$baseDir/install/mmconfig.yml"
-    echo "Generated mmconfig.yml with BaseDir: $baseDir" | tee -a $logFile
-  elif [ -f "$baseDir/install/mmconfig.yml" ]; then
+  if [ -f "$baseDir/install/mmconfig.yml" ]; then
     # Update existing config file - use generic pattern to match any path
     # This handles /home/pi/minimy, /home/username/minimy, /opt/minimy, etc.
     sed -i "s|BaseDir: .*/minimy|BaseDir: $baseDir|g" "$baseDir/install/mmconfig.yml"
     # Also handle cases where BaseDir might have a different structure
     sed -i "s|BaseDir: /[^[:space:]]*|BaseDir: $baseDir|g" "$baseDir/install/mmconfig.yml"
     echo "Updated existing mmconfig.yml with BaseDir: $baseDir" | tee -a $logFile
+  elif [ -f "$baseDir/install/mmconfig.yml.template" ]; then
+    sed -e "s|{{BASE_DIR}}|$baseDir|g" \
+        -e "s|{{USER}}|$CURRENT_USER|g" \
+        -e "s|{{GROUP}}|$CURRENT_GROUP|g" \
+        "$baseDir/install/mmconfig.yml.template" > "$baseDir/install/mmconfig.yml"
+    echo "Generated mmconfig.yml with BaseDir: $baseDir" | tee -a $logFile
+  
   else
     echo "WARNING: No config template or file found" | tee -a $logFile
   fi
@@ -600,8 +601,10 @@ function buildVenv
  }                                         # buildVenv()
 
 # global variables
-baseDir=$HOME/minimy                       # base directory
-configFile="$baseDir/install/mmconfig.yml" # Minimy config file
+installDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" # get location of this script
+configFile="$installDir/mmconfig.yml"     # minimy config file
+baseDir=$(sed -n 's/^[[:space:]]*BaseDir:[[:space:]]*//p' "$configFile" 2>/dev/null | head -1) # base directory
+[ -z "$baseDir" ] && baseDir="$HOME/minimy" # if unable to set baseDir, set to ~/minimy
 hub=""                                     # hub server
 let lastSecs=$SECONDS
 timeSt=`date +"%y-%m-%d-%H-%M-%S"`
