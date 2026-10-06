@@ -501,8 +501,7 @@ function buildVenv
   cd $baseDir/framework/services/tts/local
   # Activate venv for pip installs
   source $baseDir/minimy_venv/bin/activate
-  echo "Installing piper-plus via pip..." | tee -a $logFile
-  runCmd pip install piper-plus
+  echo "Installing piper-plus dependencies... "| tee -a $logFile
   # Download NLTK data required for phonemization
   echo "Downloading NLTK phonemization data..." | tee -a $logFile
   export NLTK_DATA="$baseDir/framework/services/tts/local/nltk_data"
