@@ -8,6 +8,7 @@ hypercorn
 inflect
 keyboard
 lingua-franca
+piper-plus==1.13.0
 psutil
 pytube
 pytz
