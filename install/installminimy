@@ -542,8 +542,6 @@ function buildVenv
     echo "Skipping piper - already installed ..." | tee -a $logFile
   fi
   cd $baseDir
-  runCmd aplay /tmp/testpiper.wav
-  runCmd rm /tmp/testpiper.wav
 
   echo "Installing Llama.cpp ..." | tee -a $logFile
   echo | tee -a $logFile
