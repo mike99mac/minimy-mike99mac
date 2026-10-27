@@ -15,8 +15,10 @@ fi
 echo "Stopping Minimy ..."
 echo "User: $USER"
 echo "Base directory: $baseDir"
-systemctl --user stop whisper              # stop whisper service
-systemctl --user stop fallback             # stop LLM fallback service
+if command -v systemctl &>/dev/null; then
+    systemctl --user stop whisper              # stop whisper service
+    systemctl --user stop fallback             # stop LLM fallback service
+fi
 procs=$(ps -ef | awk '!/grep|whisper|vim|fallback|piper/ && /minimy\/skills|skills\/system_skills|framework\/services|MsgBus|mimic3|skill_system.py/')
 if [ ${#procs} = 0 ]; then
   echo "Minimy does not appear to be running"

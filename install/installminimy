@@ -425,7 +425,30 @@ function buildVenv
   runCmd $pipCmd install --upgrade wheel setuptools
   if command -v apt-get &>/dev/null; then
     runCmd sudo apt-get install -y build-essential portaudio19-dev mpg123 ffmpeg curl wget mpc \
-    libavutil-dev libswscale-dev libswresample-dev libavfilter-dev libavcodec-dev libavformat-dev libavdevice-dev redis
+    libavutil-dev libswscale-dev libswresample-dev libavfilter-dev libavcodec-dev libavformat-dev \
+    libavdevice-dev redis libogg-dev libvorbis-dev libflac-dev libmpg123-dev libasound2-dev
+  fi
+  # Install go-librespot prebuilt binary to /usr/local/bin
+  echo | tee -a $logFile
+  echo "Installing go-librespot..." | tee -a $logFile
+  if [ -x /usr/local/bin/go-librespot ]; then
+    echo "go-librespot already installed, skipping." | tee -a $logFile
+  else
+    case "$(uname -m)" in
+      aarch64|arm64)  archName="arm64" ;;
+      armv7l|armv6l)  archName="armv6_rpi" ;;
+      x86_64)         archName="x86_64" ;;
+      *)
+        echo "ERROR: Unsupported architecture for go-librespot: $(uname -m)" | tee -a $logFile
+        exit 12
+        ;;
+    esac
+    golibrespotTmp=$(mktemp -d)
+    golibrespotTar="go-librespot_linux_${archName}.tar.gz"
+    runCmd curl -fL "https://github.com/devgianlu/go-librespot/releases/latest/download/${golibrespotTar}" -o "$golibrespotTmp/$golibrespotTar"
+    runCmd tar -xzf "$golibrespotTmp/$golibrespotTar" -C "$golibrespotTmp"
+    runCmd sudo install -m 0755 "$golibrespotTmp/go-librespot" /usr/local/bin/go-librespot
+    rm -rf "$golibrespotTmp"
   fi
   echo | tee -a $logFile
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
@@ -498,44 +521,27 @@ function buildVenv
   echo "Installing Local TTS ..." | tee -a $logFile
   echo | tee -a $logFile
   cd $baseDir/framework/services/tts/local
-  # Activate venv for pip installs
-  source $baseDir/minimy_venv/bin/activate
-  echo "Installing piper-plus dependencies..." | tee -a $logFile
-  # Download NLTK data required for phonemization
-  echo "Downloading NLTK phonemization data..." | tee -a $logFile
-  export NLTK_DATA="$baseDir/framework/services/tts/local/nltk_data"
-  mkdir -p "$NLTK_DATA"
-  runCmd eval 'python -c "import nltk; nltk.download('\''averaged_perceptron_tagger_eng'\'', download_dir='\''$NLTK_DATA'\'', quiet=True)" || true'
-  # Download hfc_female voice model
-  MODEL_DIR="$HOME/.local/share/piper-plus/voices/en_US-hfc_female-medium"
-  if [ ! -d "$MODEL_DIR" ]; then
-    mkdir -p "$MODEL_DIR"
-    cd "$MODEL_DIR"
+  if [ ! -d piper ]; then
+    if [ "$(uname -m)" = "aarch64" ]; then
+      runCmd wget -q "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_aarch64.tar.gz"
+      runCmd tar xzf piper_linux_aarch64.tar.gz
+    else
+      runCmd wget -q "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz"
+      runCmd tar xzf piper_linux_x86_64.tar.gz
+    fi
+    cd piper
     runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx
     runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx.json
-    cd -
-  fi
-  # Fix phoneme_type for piper-plus compatibility
-  sed -i 's/"phoneme_type": "espeak"/"phoneme_type": "multilingual"/' ${MODEL_DIR}/en_US-hfc_female-medium.onnx.json
-  # Download hfc_male voice model
-  MODEL_DIR="$HOME/.local/share/piper-plus/voices/en_US-hfc_male-medium"
-  if [ ! -d "$MODEL_DIR" ]; then
-    mkdir -p "$MODEL_DIR"
-    cd "$MODEL_DIR"
     runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_male/medium/en_US-hfc_male-medium.onnx
     runCmd wget -q https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/hfc_male/medium/en_US-hfc_male-medium.onnx.json
-    cd -
+    runCmd echo "Piper is ready" | ./piper --model en_US-hfc_male-medium.onnx --output_file /tmp/testpiper.wav
+    runCmd aplay /tmp/testpiper.wav
+    runCmd rm -f /tmp/testpiper.wav
+    echo "Piper has been installed!" | tee -a $logFile
+  else
+    echo "Skipping piper - already installed ..." | tee -a $logFile
   fi
-  # Fix phoneme_type for piper-plus compatibility
-  sed -i 's/"phoneme_type": "espeak"/"phoneme_type": "multilingual"/' ${MODEL_DIR}/en_US-hfc_male-medium.onnx.json
-  # Test the installation
-  echo "Testing piper-plus..." | tee -a $logFile
-  runCmd eval 'piper --model "$MODEL_DIR/en_US-hfc_male-medium.onnx" --output_file /tmp/testpiper.wav "Piper Plus is ready"'
-  rc=$?
-  if [ "$rc" != 0 ]; then
-    echo "ERROR: piper-plus test command returned $rc" | tee -a $logFile
-    exit 4
-  fi
+  cd $baseDir
   runCmd aplay /tmp/testpiper.wav
   runCmd rm /tmp/testpiper.wav
 
@@ -574,10 +580,6 @@ function buildVenv
   runCmd sudo touch /var/log/whisper.log
   runCmd sudo chown $CURRENT_USER:$CURRENT_GROUP /var/log/whisper.log
   runCmd sudo chmod 664 /var/log/whisper.log
-  # this is no longer needed -Mike Mac
-  #if command -v systemctl &>/dev/null; then
-  #  runCmd sudo systemctl enable whisper
-  #fi
   echo | tee -a $logFile
 
   echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile

@@ -6,8 +6,8 @@ After=network.target
 ExecStart={{BASE_DIR}}/minimy_venv/bin/python3 {{BASE_DIR}}/framework/services/tts/local/local_piper.py
 WorkingDirectory={{BASE_DIR}}
 Environment=SVA_BASE_DIR={{BASE_DIR}}
+Environment=PYTHONPATH={{BASE_DIR}}
 Environment=PYTHONUNBUFFERED=1
-Environment=NLTK_DATA={{BASE_DIR}}/framework/services/tts/local/nltk_data
 StandardOutput=append:{{BASE_DIR}}/logs/piper.log
 StandardError=append:{{BASE_DIR}}/logs/piper.log
 Restart=on-failure
