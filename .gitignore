@@ -21,8 +21,10 @@ tmp/save_tts/*
 # Runtime data
 db/
 
-# NLTK data (used by piper-plus)
-nltk_data/
+# Piper installation
+piper/
+piper_linux_aarch64.tar.gz
+piper_linux_x86_64.tar.gz
 
 # CTranslate2 data (used by faster-whisper)
 CTranslate2/

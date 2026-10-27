@@ -154,10 +154,12 @@ function startSystem
   logDir="$baseDir/logs"
 
   echo "Starting system skills ..."
-  echo "Starting whisper user service ..."
-  systemctl --user start whisper           # start whisper service
-  echo "Starting fallback user service ..."
-  systemctl --user start fallback          # start LLM fallback service
+  if command -v systemctl &>/dev/null; then
+    echo "Starting whisper user service ..."
+    systemctl --user start whisper           # start whisper service
+    echo "Starting fallback user service ..."
+    systemctl --user start fallback          # start LLM fallback service
+  fi
   cd "$baseDir/skills/system_skills"
   "$venvPython" skill_system.py >> "$logDir/skills.log" 2>&1 &
   sleep 1
@@ -255,8 +257,10 @@ function loadOtherServices
   "$venvPython" framework/services/input/buttons.py >> "$logDir/buttons.log" 2>&1 &
   echo "Starting the mic ..."
   "$venvPython" framework/services/input/mic.py >> "$logDir/mic.log" 2>&1 &
-  echo "Recycling fallback service ..."
-  systemctl --user restart fallback
+  if command -v systemctl &>/dev/null; then
+    echo "Recycling fallback service ..."
+    systemctl --user restart fallback
+  fi
  }                                         # loadOtherServices()
 
 # main()
