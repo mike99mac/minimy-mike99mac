@@ -603,6 +603,9 @@ function buildVenv
 # global variables
 configFile="install/mmconfig.yml"          # Minimy config file
 baseDir=$(sed -n 's/^[[:space:]]*BaseDir:[[:space:]]*//p' "$configFile" | head -1)
+if [ ${#baseDir} = 0 ]; then               # still not set
+  baseDir="$HOME/minimy"
+fi
 hub=""                                     # hub server
 let lastSecs=$SECONDS
 timeSt=`date +"%y-%m-%d-%H-%M-%S"`
