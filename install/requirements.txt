@@ -1,5 +1,6 @@
 PyAudio
 PyYAML
+av==18.0.0
 boto3[crt]
 google-cloud-speech
 gpiozero
