@@ -118,6 +118,45 @@ To connect all the computer hardware, perform the following steps:
 - If you have a USB drive with music files on it, plug it in to a USB slot.
 - Now that all the other hardware is connected, plug the 5v power supply with a USB-C end into the RasPi 4. An official RasPi power supply is recommended to avoid *undervoltage* warnings. If you have an inline switch, turn it on.
 
+## Creating the virtual machine via Oracle VirtualBox
+- Download the necessary items to start the virtual machine:
+    - Go to https://ubuntu.com/download/desktop and download the standard 64-bit ISO file (circled recommended)
+
+      <img width="365" height="162" alt="image" src="https://github.com/user-attachments/assets/d0f9b287-d68e-4eb9-828d-9fa3ad6578d2" />
+      
+    - This download might take a while, so be comfortable while waiting
+    - Go to https://www.virtualbox.org/wiki/Downloads to download the correct Oracle VirtualBox Platform for your designated OS
+        - 	Follow this step by step guide https://www.geeksforgeeks.org/installation-guide/how-to-install-virtualbox-on-windows/ on how to approach the download process of Oracle VirtualBox
+- Once finished downloading all necessary items, open Oracle VirtualBox
+- On the top left of the tab, click on “New”
+    - A new tab should pop up
+
+     <img width="365" height="162" alt="image" src="https://github.com/user-attachments/assets/057264a6-68ac-4943-954c-c3e7ca1990f1" />
+     
+    - Enter your desired VM Name, select the Ubuntu disk you downloaded where ISO Image is at
+        - The OS, OS Distribution and OS Version should update by itself once you selected the ISO Image
+    - Click “Next”
+- The next step involves creating information that is required when the OS is installed
+
+  <img width="365" height="162" alt="image" src="https://github.com/user-attachments/assets/c8d44686-d852-440c-8508-3c11c60d72a0" />
+
+    - Enter a username and password that you want for your OS installation
+    - Confirm your password below
+    - Click “Next”
+- This step requires you to set up the necessary hardware for the VM
+    <img width="365" height="162" alt="image" src="https://github.com/user-attachments/assets/b70ae6e6-889e-494f-90ba-aa97790c1968" />
+
+    - Based on your specs on your setup, choose the amount of memory, number of CPU’s and disk size for your virtual machine
+    - Click “Next”
+- The last step is to confirm you chose correctly what your VM has
+      <img width="365" height="162" alt="image" src="https://github.com/user-attachments/assets/71cf4d5a-38d5-425d-ba25-ea92bd75a111" />
+
+    - Confirm that everything shown in the summary is correct.
+    - Click “Finish”
+- You have finished setting up the Virtual Machine
+    - You can start up the machine and begin setting everything up related to the new OS you have
+    - You can access the settings of the virtual machine via “Settings” on the top of the tab to make any necessary changes to double check that everything is correct to your likings.
+
 ## Install and configure Linux
 
 To install and configure Ubuntu Desktop Linux, perform the following sections.
