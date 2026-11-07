@@ -527,16 +527,24 @@ function buildVenv
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
   echo "Python version: $pythonVer ..." | tee -a $logFile
   local pythonCmd="$baseDir/minimy_venv/bin/python$pythonVer" # use python from the venv
-  if [ "$platform" = "NVIDIA Jetson" ] && [ ! -d "$baseDir/CTranslate2" ]; then
+  if [ "$platform" = "NVIDIA Jetson" ] && ! $pythonCmd -c "import ctranslate2, sys; sys.exit(0 if ctranslate2.get_cuda_device_count() >= 1 else 1)" 2>/dev/null; then
+    runCmd $pipCmd install --upgrade cmake
     echo "Building CTranslate2 from source ..."
     cd $baseDir
+    if [ -d "$baseDir/CTranslate2" ]; then
+      echo "CTranslate2 repo already present; removing for clean rebuild." | tee -a $logFile
+      rm -rf "$baseDir/CTranslate2"
+    fi
     runCmd git clone --recurse-submodules https://github.com/OpenNMT/CTranslate2
     cd CTranslate2
     mkdir build; cd build
+    export PATH="/usr/local/cuda/bin:$PATH"
+    export CUDA_HOME="/usr/local/cuda"
+    export CUDACXX="/usr/local/cuda/bin/nvcc"
     if command -v apt-get &>/dev/null; then
       runCmd sudo apt-get install -y libomp-dev
     fi
-    runCmd cmake .. -DWITH_CUDA=ON -DWITH_CUDNN=ON -DWITH_MKL=OFF -DWITH_RUY=ON
+    runCmd "$baseDir/minimy_venv/bin/cmake" .. -DWITH_CUDA=ON -DWITH_CUDNN=ON -DWITH_MKL=OFF -DWITH_RUY=ON -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_POLICY_VERSION_MINIMUM=3.5
     runCmd make -j6
     runCmd sudo make install
     cd ../python
@@ -549,8 +557,13 @@ function buildVenv
   echo "Installing local requirements.txt" | tee -a $logFile
   runCmd $pipCmd install -r install/requirements.txt
   echo "Installing local STT faster-whisper" | tee -a $logFile
-  if [ "$platform" = "NVIDIA Jetson" ] && [ ! -d "$baseDir/CTranslate2" ]; then
-    runCmd $pipCmd install faster-whisper 'av<19' --constraint <(echo "ctranslate2==$(pip show ctranslate2 | grep Version | awk '{print $2}')")
+  if [ "$platform" = "NVIDIA Jetson" ]; then
+    ct2_ver=$($pythonCmd -c "import ctranslate2; print(ctranslate2.__version__)" 2>/dev/null)
+    if [ -n "$ct2_ver" ]; then
+      runCmd $pipCmd install faster-whisper "ctranslate2==$ct2_ver" 'av<19'
+    else
+      runCmd $pipCmd install faster-whisper 'av<19'
+    fi
   else
     runCmd $pipCmd install faster-whisper 'av<19'
   fi
