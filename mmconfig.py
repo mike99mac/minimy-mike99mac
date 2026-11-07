@@ -23,7 +23,7 @@ def handle_basic(cfg):
   update_value(cfg, "Basic.BaseDir", "Path to Minimy installation (default: $HOME/minimy)")
   update_value(cfg, "Basic.Hub", "Hub Hostname (default: localhost)")
   update_value(cfg, "Basic.WakeWords", "Comma Separated List of Wake Words (default: [computer])")
-  update_value(cfg, "Basic.RoomToHost", "Comma Separated List of Rooms with boomboxes (only needed if you have multiple) (default: [])")
+  update_value(cfg, "Basic.RoomsToHost", "Comma Separated List of Rooms with boomboxes (only needed if you have multiple) (default: [])")
 
   print("\nSpotify Settings\n----------------")
   update_value(cfg, "Basic.Spotify.ClientId", "Spotify Client ID")
