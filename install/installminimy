@@ -329,6 +329,7 @@ EOF
   # 3. Install systemd service
   if command -v systemctl &>/dev/null && [ -f "$baseDir/install/spotify.service.template" ]; then
     sed -e "s|{{HOME}}|$HOME|g" \
+      -e "s|{{BASE_DIR}}|$baseDir|g" \
       "$baseDir/install/spotify.service.template" > "/tmp/spotify.service"
     runCmd cp "/tmp/spotify.service" "$HOME/.config/systemd/user/spotify.service"
     runCmd systemctl --user daemon-reload
