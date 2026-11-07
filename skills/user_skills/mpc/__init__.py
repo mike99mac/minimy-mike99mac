@@ -18,7 +18,7 @@ class MpcSkill(MediaSkill):
     cfg = Config()                         # get config file
     self.log.debug("MpcSkill.__init__(): Registering intents")
     self.register_intent('C', 'move', 'music', self.move_music)
-    self.room_to_host = cfg.get_cfg_val("Basic.RoomToHost") or {}
+    self.room_to_host = cfg.get_cfg_val("Basic.RoomsToHost") or {}
     self.log.debug(f"MpcSkill.__init__(): room_to_host: {self.room_to_host}")
     self.mpc_client = MpcClient()          # search for music under <music_dir>
     self.log.debug(f"MpcSkill.__init__(): skill_base_dir: {self.skill_base_dir}")
