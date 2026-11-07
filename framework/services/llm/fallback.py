@@ -113,11 +113,9 @@ class FallbackLLMService:
     model_cls._minimy_cleanup_patch = True
 
   def _get_num_threads(self):
-    # If GPU is available (n_gpu_layers > 0), use fewer CPU threads
-    if getattr(self, '_gpu_enabled', False):
-      return max(1, os.cpu_count() // 4)   # Lighter on CPU when GPU does the work
-    else:
-      return max(1, os.cpu_count() // 2)   # More threads for CPU‑only inference
+    # GPU offload still needs CPU threads for tokenization, sampling, and KV bookkeeping.
+    # Half the physical cores is a safe default on both GPU and CPU paths.
+    return max(4, os.cpu_count() // 2)
 
   def _create_llm(self, model_path):
     llm_kwargs = {
