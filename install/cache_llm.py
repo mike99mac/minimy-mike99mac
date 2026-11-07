@@ -136,10 +136,10 @@ def main():
     _log("huggingface_hub is not installed; cannot cache LLM model")
     return 1
 
-  repo_id = str(cfg.get_cfg_val("Basic.LLMRepo") or "").strip()
-  filename = str(cfg.get_cfg_val("Basic.LLMFile") or "").strip()
+  repo_id = str(cfg.get_cfg_val("Basic.LLM.Repo") or "").strip()
+  filename = str(cfg.get_cfg_val("Basic.LLM.Model") or "").strip()
   if not repo_id or not filename:
-    _log("LLMRepo or LLMFile is missing in mmconfig.yml; skipping")
+    _log("Basic.LLM.Repo or Basic.LLM.Model is missing in mmconfig.yml; skipping")
     return 1
 
   cached_path = resolve_cached_path(repo_id, filename)

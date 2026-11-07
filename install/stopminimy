@@ -16,17 +16,24 @@ echo "Stopping Minimy ..."
 echo "User: $USER"
 echo "Base directory: $baseDir"
 if command -v systemctl &>/dev/null; then
-    systemctl --user stop whisper              # stop whisper service
-    systemctl --user stop fallback             # stop LLM fallback service
+  systemctl --user stop whisper          # stop whisper service
+  systemctl --user stop fallback             # stop LLM fallback service
+  spotifyConfigured=$("$baseDir/minimy_venv/bin/python3" -c "import yaml; d=yaml.safe_load(open('$baseDir/install/mmconfig.yml')); b=next((i['Basic'] for i in d if 'Basic' in i), {}); s=b.get('Spotify', {}); print('y' if s.get('ClientId') and s.get('ClientSecret') else 'n')" 2>/dev/null)
+  if [ "$spotifyConfigured" = "y" ]; then
+    systemctl --user stop spotify
+  fi
 fi
 procs=$(ps -ef | awk '!/grep|whisper|vim|fallback|piper/ && /minimy\/skills|skills\/system_skills|framework\/services|MsgBus|mimic3|skill_system.py/')
 if [ ${#procs} = 0 ]; then
-  echo "Minimy does not appear to be running"
+  echo "Minimy does not appear to be running."
+  exit 0
 else
   echo "$procs" | while read nextProc; do
     pid=$(echo $nextProc | awk '{print $2}')
-    echo "killing process: $nextProc ..."
-    sudo kill $pid
+    if [[ "$nextProc" != *multiprocessing.forkserver* ]]; then
+      echo "killing process: $nextProc ..."
+    fi
+    sudo kill "$pid"
   done
 fi
 if command -v sortlogs &> /dev/null && [ "$SAVELOGS" = "true" ]; then # sortlogs command exists and logs are being saved
@@ -35,7 +42,7 @@ fi
 rm -fr /tmp/pymp*                          # clean up socket temp directories
 cd $HOME
 logDir="$baseDir/logs"
-logDir="$tmpDir/tmp"
+tmpDir="$baseDir/tmp"
 if [ -d "$logDir" ] && [ "$SAVELOGS" = "true" ]; then # log directory exists
   cp "$logDir"/* "$HOME" 2>/dev/null       # copy all log files
 fi
@@ -52,5 +59,4 @@ findmount $tmpDir >/dev/null 2>&1
 if [ $? = 0 ]; then                        # tmp dir is mounted
   sudo umount "$tmpDir"                    # unmount tmp directory - and logs disappear
 fi
-echo "Minimy is stopped"
-
+echo "Minimy is stopped."

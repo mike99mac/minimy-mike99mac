@@ -9,20 +9,23 @@
     Hub: localhost
     LLM:
       UseRemote: n
-    LLMFile: 'qwen2.5-1.5b-instruct-q4_k_m.gguf'
-    LLMRepo: 'Qwen/Qwen2.5-1.5B-Instruct-GGUF'
-    RoomToHost: ''
+      Model: 'qwen2.5-1.5b-instruct-q4_k_m.gguf'
+      Repo: 'Qwen/Qwen2.5-1.5B-Instruct-GGUF'
+    RoomsToHost:
+      - ''
       # Examples:
       # bedroom: 192.168.4.50
       # living room: 192.168.4.40
       # kitchen: 192.168.4.42
+    Spotify:
+      ClientId: ''
+      ClientSecret: ''
+      DeviceName: 'Smart Boombox'
     STT:
       Model: base.en
       UseRemote: n
     TTS:
-      Local: p
       LocalVoice: en_US-hfc_male-medium
-      Remote: p
       UseRemote: n
     WakeWords:
     - 'computer'

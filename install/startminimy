@@ -13,7 +13,7 @@ logDir="$baseDir/logs"
 CURRENT_USER=$(whoami)                     # detect current user information
 
 # Set high performance mode on Jetson hardware
-platform=`cat /proc/device-tree/model | awk '{print $1 " " $2}'`
+platform=`cat /proc/device-tree/model 2>/dev/null | awk '{print $1 " " $2}'`
 if [ "$platform" = "NVIDIA Jetson" ]; then
   sudo jetson_clocks
 fi
@@ -36,7 +36,7 @@ function checkEnv
     echo "WARNING: log directory $logDir not found, creating it..."
     mkdir -p "$logDir"
   fi
-  pgrep -af "python3.*minimy" | grep -v -e whisper -e fallback -e vim -e piper
+  pgrep -f "minimy_venv/bin/python3 (framework/services|skills/|skill_system.py|__init__.py)" | grep -v -e whisper -e fallback -e piper > /dev/null 2>&1
   if [ $? = 0 ]; then                      # minimy is running
     echo "It appears Minimy is already running!"
     exit 3
@@ -52,11 +52,12 @@ function umountTmpfs
   : SOURCE: ${BASH_SOURCE}
   : STACK:  ${FUNCNAME[@]}
 
-  fileSystem=$1
-  echo "Unmounting tmpfs file system $fileSystem..."
+  local fileSystem=$1
+  local fsType
   fsType=`mount | grep $fileSystem | awk '{print $1}'` # check if it's mounted
   if [ "$fsType" = "tmpfs" ]; then
-    sudo umount $fileSystem
+    echo "Unmounting tmpfs file system $fileSystem..."
+    sudo umount "$fileSystem"
   fi
  }                                         # umountTmpfs()
 
@@ -74,14 +75,14 @@ function mountTmpfs
   shift
   local desc="$@"                          # remaining args are desription
 
-  local mountDir=`echo $mountFile | sed 's:-:/:g'`
+  local mountDir="/$(echo "$mountFile" | sed 's/\.mount$//; s:-:/:g')"
   local fsType=`mount | grep $mountDir | awk '{print $5}'`
   if [ "$fsType" = tmpfs ]; then           # already a tmpfs
     echo "$mountDir is already a tmpfs"
     return
   fi
   if command -v systemctl &>/dev/null; then
-    echo "making directory $fileSystem a tmpfs ..."
+    echo "making directory $mountDir a tmpfs ..."
     cmd="sudo systemctl start $mountFile"
     eval $cmd
     rc=$?
@@ -116,16 +117,18 @@ function mountUmountDirs
   # Get the mount unit base name
   local mountUnitPath=$(getMountUnitName)
 
-  # unmount and remount a tmpfs over $baseDir/logs
-  umountTmpfs $baseDir/logs
-  sleep 1
-  mountTmpfs ${mountUnitPath}-logs.mount Minimy log directory
+  if command -v systemctl &>/dev/null; then
+    # unmount and remount a tmpfs over $baseDir/logs
+    umountTmpfs $baseDir/logs
+    sleep 1
+    mountTmpfs ${mountUnitPath}-logs.mount Minimy log directory
 
-  # mount a tmpfs over $baseDir/tmp and create three subdirectories
-  echo "Mounting tmpfs over $baseDir/tmp"
-  umountTmpfs $baseDir/tmp
-  mountTmpfs ${mountUnitPath}-tmp.mount Minimy temp directory
-  sleep 1
+    # mount a tmpfs over $baseDir/tmp and create three subdirectories
+    umountTmpfs $baseDir/tmp
+    sleep 1
+    mountTmpfs ${mountUnitPath}-tmp.mount Minimy temp directory
+  fi
+
   for nextDir in save_audio save_text save_tts; do
     if [ ! -d $baseDir/tmp/$nextDir ]; then
       echo "Making directory: $baseDir/tmp/$nextDir"
@@ -159,6 +162,10 @@ function startSystem
     systemctl --user start whisper           # start whisper service
     echo "Starting fallback user service ..."
     systemctl --user start fallback          # start LLM fallback service
+    spotifyConfigured=$("$baseDir/minimy_venv/bin/python3" -c "import yaml; d=yaml.safe_load(open('$baseDir/install/mmconfig.yml')); b=next((i['Basic'] for i in d if 'Basic' in i), {}); s=b.get('Spotify', {}); print('y' if s.get('ClientId') and s.get('ClientSecret') else 'n')" 2>/dev/null)
+    if [ "$spotifyConfigured" = "y" ]; then
+      systemctl --user start spotify
+    fi
   fi
   cd "$baseDir/skills/system_skills"
   "$venvPython" skill_system.py >> "$logDir/skills.log" 2>&1 &
@@ -239,7 +246,6 @@ function loadUserSkills
   loadOneSkill "$baseDir/skills/user_skills/timedate" TimeDate skill
   loadOneSkill "$baseDir/skills/user_skills/weather" Weather skill
   loadOneSkill "$baseDir/skills/user_skills/mpc" music and news skill
-  loadOneSkill "$baseDir/skills/user_skills/spotify" Spotify receiver skill
   sleep 3
  }                                         # loadUserSkills()
 

@@ -1,6 +1,6 @@
 import csv
 import logging
-from music_info import Music_info
+from framework.util.music_info import Music_info
 import os
 from pathlib import Path
 import random
@@ -28,7 +28,6 @@ class MpcClient(SimpleVoiceAssistant):
   list_lines: list                         # all radio stations in the CSV file
 
   # putting NPR news files in with .mp3 song files is kludgy
-  #def __init__(self, music_dir: Path):
   def __init__(self):
     super().__init__(skill_id="mpc_skill", skill_category="media")
     self.log = logging.getLogger(__name__)
@@ -43,6 +42,14 @@ class MpcClient(SimpleVoiceAssistant):
     self.request_type = "unknown"
     self.list_lines = []
     self.temp_dir = self.base_dir + "/tmp/save_audio" # save audio files here
+    # Spotify support if device authorized for playback
+    try:
+      from framework.util.utils import Config as _Cfg
+      from framework.services.spotify.spotify_client import SpotifyClient
+      self.spotify_client = SpotifyClient(_Cfg(), self.base_dir)
+    except Exception as e:
+      self.log.warning(f"Spotify client unavailable: {e}")
+      self.spotify_client = None
 
   def initialize(self, news_dir: Path):
     """
@@ -72,6 +79,9 @@ class MpcClient(SimpleVoiceAssistant):
   def start_music(self, music_info: Music_info):
     # Start playing the type of music passed in the music_info object
     self.log.debug(f"MpcClient.start_music(): match_type : {music_info.match_type}")
+    if music_info.match_type == "spotify":
+      # Playback was already started by SpotifyClient.find_and_play()
+      return True
     if music_info.match_type == "internet":
       self.stream_internet_music(music_info)
       return True
@@ -216,7 +226,31 @@ class MpcClient(SimpleVoiceAssistant):
       artist_name = str(key[1])
       self.log.debug("MpcClient.search_library() removed keyword artist or band from artist_name")
     self.log.debug(f"MpcClient.search_library() calling get_music with {intent}, {music_name} and {artist_name}")
-    return self.get_music(intent, music_name, artist_name)
+    music_info = self.get_music(intent, music_name, artist_name)
+
+    # Fallback: if local MPC found nothing, try Spotify.
+    if music_info.match_type == "none":
+      spotify_result = self._spotify_fallback(intent, music_name, artist_name)
+      if spotify_result is not None:
+        return spotify_result
+
+    return music_info
+
+  def _spotify_fallback(self, intent, music_name, artist_name):
+    # Attempt playback via Spotify if local library had no match.
+    # Returns a Music_info on success, None otherwise.
+    if not self.spotify_client or not self.spotify_client.enabled:
+      return None
+    self.log.info(f"MpcClient._spotify_fallback(): intent={intent} name='{music_name}' artist='{artist_name}'")
+    if intent in ("track", "track_artist"):
+      return self.spotify_client.find_and_play(music_name, artist_name, "track")
+    if intent in ("unknown", "unknown_artist"):
+      return self.spotify_client.find_and_play(music_name, artist_name, "track")
+    if intent == "artist":
+      return self.spotify_client.find_and_play(artist_name or music_name, "", "artist")
+    if intent in ("album", "album_artist"):
+      return self.spotify_client.find_and_play(music_name, artist_name, "album")
+    return None
 
   def get_album(self, album_name, album_id, artist_name):
     # Return a Music_info object with track file names for one album
@@ -905,14 +939,10 @@ class MpcClient(SimpleVoiceAssistant):
     mesg_info = {}
     tracks_or_urls = []
     self.log.debug(f"MpcClient.search_internet() utterance: {utterance}")
-    phrase = utterance.split(" ", 1)[1]    # remove first word (always "play"?)
-    phrase = phrase.lower()                # fold to lower case
-    phrase = phrase.replace("on youtube", "") # remove unnecessary words
-    phrase = phrase.replace("in youtube", "")
-    phrase = phrase.replace("from youtube", "")
-    phrase = phrase.replace("from the internet", "")
-    phrase = phrase.replace("from internet", "")
-    phrase = phrase.replace("on the internet", "")
+    _, _, phrase = utterance.partition(" ") # Remove first word (always play)
+    phrase = phrase.lower()                # Convert to lowercase
+    phrase = re.sub(r"\b(?:on|in|from)(?:\s+the)?\s+(?:youtube|spotify|internet)\b", "", phrase) # Remove unnecessary words
+    phrase = " ".join(phrase.split())      # Remove whitespace from substitution(s)
     self.log.debug(f"MpcClient.search_internet() searching for phrase: {phrase}")
 
     # the ytadd script takes around 5 seconds to add a URL - so limit results to 3
@@ -939,10 +969,9 @@ class MpcClient(SimpleVoiceAssistant):
     self.log.debug("MpcClient.stream_internet_music() streaming all tracks from the Internet")
     for next_url in music_info.tracks_or_urls: # queue up tracks in mpc
       self.log.debug(f"MpcClient.stream_internet_music() streaming from URL: {next_url}")
-      cmd = "/usr/local/sbin/ytadd "+next_url # add URL to mpc queue
       try:
-        self.log.debug(f"MpcClient.stream_internet_music(): running command: {cmd}")
-        result = subprocess.check_output(cmd, shell=True)
+        self.log.debug(f"MpcClient.stream_internet_music(): running ytadd for {next_url}")
+        result = subprocess.check_output(["/usr/local/sbin/ytadd", next_url])
         self.log.debug(f"MpcClient.stream_internet_music(): result: {result}")
       except subprocess.CalledProcessError as e:
         self.log.error(f"MpcClient.stream_internet_music() e.returncode: {e.returncode}")

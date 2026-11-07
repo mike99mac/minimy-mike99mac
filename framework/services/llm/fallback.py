@@ -52,8 +52,8 @@ class FallbackLLMService:
     self.processing_lock = Lock()
     self._patch_llama_cleanup_bug()
 
-    self.llm_repo = str(self.cfg.get_cfg_val("Basic.LLMRepo") or "").strip()
-    self.llm_file = str(self.cfg.get_cfg_val("Basic.LLMFile") or "").strip()
+    self.llm_repo = str(self.cfg.get_cfg_val("Basic.LLM.Repo") or "").strip()
+    self.llm_file = str(self.cfg.get_cfg_val("Basic.LLM.Model") or "").strip()
     base_dir = self.cfg.get_cfg_val("Basic.BaseDir") or "."
     self.llm_fallback_log = os.path.join(base_dir, "logs", "llm_fallback.log")
     self.llm_fallback_lock = os.path.join(base_dir, "tmp", "fallback_llm.lock")
@@ -283,7 +283,11 @@ Now respond with only the JSON object for: """
 You are now answering the user directly. Provide a short, factual, helpful answer. No markdown. No extra explanations. Just the answer."""
 
   def _log_llm(self, label, prompt_text, answer_text):
-    log_path = os.path.expanduser("~/minimy/logs/llm.log")
+    # Log to llm.log
+    base_dir = os.getenv('SVA_BASE_DIR')
+    if base_dir is None:
+      base_dir = os.path.expanduser('~/minimy')
+    log_path = os.path.join(base_dir, 'logs', 'llm.log')
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
     try:
       with open(log_path, "a", encoding="utf-8") as f:

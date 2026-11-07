@@ -27,14 +27,14 @@ else
   fi
   URL=$1
   yt-dlp --update >/dev/null 2>&1
-  mpc_URLs=`yt-dlp -g $URL`                # convert browser URL to streamable
+  mpc_URLs=`yt-dlp -g "$URL"`              # convert browser URL to streamable
   rc=$?
   if [ "$rc" != 0 ]; then
     echo "ERROR: yt-dlp -g $URL returned $rc"
     exit 4
   fi
   mpc_URL=`echo "$mpc_URLs" | tail -1`     # need only the last of the two URLs
-  mpc add $mpc_URL                         # add audio to mpc queue
+  mpc add "$mpc_URL"                       # add audio to mpc queue
   if [ "$this_cmd" = ytplay ]; then
     mpc play
   fi
