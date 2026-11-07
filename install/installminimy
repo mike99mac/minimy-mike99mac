@@ -267,6 +267,78 @@ RULE
 }                                          # setupAudioRouting()
 
 #+--------------------------------------------------------------------------+
+function setupSpotify
+# Configure go-librespot and run inline OAuth if credentials are present.
+# Skips entirely if Basic.Spotify.ClientId or ClientSecret is empty.
+#+--------------------------------------------------------------------------+
+ {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK:  ${FUNCNAME[@]}
+
+  echo | tee -a $logFile
+  echo "Checking Spotify configuration..." | tee -a $logFile
+
+  local pyCmd="$baseDir/minimy_venv/bin/python3"
+  if [ ! -x "$pyCmd" ]; then
+    echo "Spotify: skipping (venv python not found at $pyCmd)" | tee -a $logFile
+    return 0
+  fi
+
+  # Read in Spotify clientId, clientSecret, and deviceName from mmconfig.yml
+  { read -r clientId; read -r clientSecret; read -r deviceName; } < <($pyCmd -c "import yaml; d=yaml.safe_load(open('$configFile')); b=next((i['Basic'] for i in d if 'Basic' in i), {}); s=b.get('Spotify', {}); print(s.get('ClientId') or ''); print(s.get('ClientSecret') or ''); print(s.get('DeviceName') or 'Minimy')" 2>/dev/null)
+
+  if [ -z "$clientId" ] || [ -z "$clientSecret" ]; then
+    echo "Spotify: credentials absent — skipping service setup." | tee -a $logFile
+    return 0
+  fi
+
+  echo "Spotify: credentials present — configuring go-librespot." | tee -a $logFile
+
+  # 1. Write go-librespot config (zeroconf auth — headless friendly)
+  local glConfigDir="$HOME/.config/go-librespot"
+  mkdir -p "$glConfigDir"
+  cat > "$glConfigDir/config.yml" <<EOF
+device_name: "$deviceName"
+device_type: "speaker"
+audio_backend: "pulseaudio"
+credentials:
+  type: "zeroconf"
+  zeroconf:
+    persist_credentials: true
+server:
+  enabled: true
+  address: "0.0.0.0"
+  port: 3678
+EOF
+  echo "Spotify: wrote $glConfigDir/config.yml" | tee -a $logFile
+
+  # 2. Run OAuth inline (prompts user; stdin still attached to terminal)
+  mkdir -p "$HOME/.config/spotify"
+  local cachePath="$HOME/.config/spotify/credentials"
+  if [ -f "$cachePath" ]; then
+    echo "Spotify: OAuth cache already present at $cachePath — skipping auth." | tee -a $logFile
+  else
+    echo | tee -a $logFile
+    $pyCmd "$baseDir/install/spotify_auth.py" "$clientId" "$clientSecret" "$cachePath" 2>&1 | tee -a $logFile
+    if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+      echo "ERROR: Spotify OAuth failed. Service will not be enabled." | tee -a $logFile
+      return 1
+    fi
+  fi
+
+  # 3. Install systemd service
+  if command -v systemctl &>/dev/null && [ -f "$baseDir/install/spotify.service.template" ]; then
+    sed -e "s|{{HOME}}|$HOME|g" \
+      "$baseDir/install/spotify.service.template" > "/tmp/spotify.service"
+    runCmd cp "/tmp/spotify.service" "$HOME/.config/systemd/user/spotify.service"
+    runCmd systemctl --user daemon-reload
+    runCmd systemctl --user enable spotify.service
+    echo "Spotify: systemd user unit installed and enabled." | tee -a $logFile
+    echo "Spotify: start with: systemctl --user start spotify" | tee -a $logFile
+  fi
+ }                                         # setupSpotify()
+
+#+--------------------------------------------------------------------------+
 function generateConfigFile
 # Generate mmconfig.yml from template with dynamic base directory
 #+--------------------------------------------------------------------------+
@@ -564,11 +636,10 @@ function buildVenv
   fi
 
   echo "Pre-caching the LLM model from HuggingFace..." | tee -a $logFile
-  llmRepo=$($pythonCmd -c "import yaml; f=open(\"$configFile\"); data=yaml.safe_load(f); f.close(); basic=next((item for item in data if 'Basic' in item), {}).get('Basic', {}); llm=basic.get('LLM', {}); print(llm.get('LLMRepo', ''))")
-  llmFile=$($pythonCmd -c "import yaml; f=open(\"$configFile\"); data=yaml.safe_load(f); f.close(); basic=next((item for item in data if 'Basic' in item), {}).get('Basic', {}); llm=basic.get('LLM', {}); print(llm.get('LLMFile', ''))")
+  read -r llmRepo llmModel < <($pythonCmd -c "import yaml; d=yaml.safe_load(open(\"$configFile\")); b=next((i['Basic'] for i in d if 'Basic' in i), {}); llm=b.get('LLM', {}); print(llm.get('Repo', ''), llm.get('Model', ''))")
 
-  if [ -n "$llmRepo" ] && [ -n "$llmFile" ]; then
-    echo "Downloading model $llmRepo ($llmFile) ..." | tee -a $logFile
+  if [ -n "$llmRepo" ] && [ -n "$llmModel" ]; then
+    echo "Downloading model $llmRepo ($llmModel) ..." | tee -a $logFile
     runCmd "$pythonCmd $baseDir/install/cache_llm.py"
   else
     echo "Warning: LLMRepo or LLMFile not found in config. Skipping pre-cache." | tee -a $logFile
@@ -628,6 +699,7 @@ setMinimyVars                              # set config file variables
 generateConfigFile                         # generate config file from template
 setupAudioRouting                          # setup audio routing through PipeWire
 buildVenv                                  # do the work
+setupSpotify                               # configure + OAuth if credentials present
 generateServiceFiles                       # generate systemctl service files
 let min=$SECONDS/60
 let sec=$SECONDS%60

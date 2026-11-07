@@ -1,6 +1,6 @@
 from framework.util.utils import Config
 from mpc_client import MpcClient
-from music_info import Music_info
+from framework.util.music_info import Music_info
 from skills.sva_media_skill_base import MediaSkill
 from threading import Event
 import subprocess
@@ -25,6 +25,7 @@ class MpcSkill(MediaSkill):
     self.music_info = Music_info("none", "", {}, []) # music to play
     self.sentence = None 
     self.music_info.mesg_file = "mpc_initialized"
+    self.log.info(f"MpcSkill.__init__(): Local library has {len(self.search_music('listall'))} tracks")
     self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.fallback_internet) 
 
   def move_music(self, msg):

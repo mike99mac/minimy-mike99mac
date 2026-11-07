@@ -29,6 +29,7 @@ def get_hal_obj(which):
     return hal_obj
   return hal_obj.get(which,None)
 
+
 class Config:
   # minimal yaml based config file support class - must coordinate this with mmconfig.py
   config_defaults = {
@@ -40,44 +41,29 @@ class Config:
       'LogLevel': 'd',
     },
     'Basic': {
-      'BaseDir': '',
+      'BaseDir': '~/minimy',
       'Hub': 'localhost',
       'LLM': {
-               'UseRemote': 'n'
+               'UseRemote': 'n',
+               'Model': 'qwen2.5-1.5b-instruct-q4_k_m.gguf',
+               'Repo': 'Qwen/Qwen2.5-1.5B-Instruct-GGUF',
              },
-      'LLMFile': 'qwen2.5-1.5b-instruct-q4_k_m.gguf',
-      'LLMRepo': 'Qwen/Qwen2.5-1.5B-Instruct-GGUF',
-      'NLP': {
-               'UseRemote': 'n'
-             },
-      'RoomToHost': None,
+      'RoomsToHost': [''],
+      'Spotify': {
+                   'ClientId': '',
+                   'ClientSecret': '',
+                   'DeviceName': 'Smart Boombox',
+                 },
       'STT' : {
                 'Model': 'base.en',
-                'UseRemote': 'n'
+                'UseRemote': 'n',
               },
       'TTS' : {
-                'Local': 'p',
                 'LocalVoice': 'en_US-hfc_male-medium',
                 'UseRemote': 'n',
-                'Remote': 'p'
               },
       'WakeWords': ['computer']
     }
-  }
-  legacy_key_map = {
-    'Advanced.AWSId': 'Advanced.AWSId',
-    'Advanced.AWSKey': 'Advanced.AWSKey',
-    'Advanced.GoogleApiKeyPath': 'Advanced.GoogleApiKeyPath',
-    'Basic.HubModel': 'Basic.STT.Model',
-    'Basic.SpokeModel': 'Basic.STT.Model',
-    'Advanced.OutputDeviceName': 'Advanced.OutputDeviceName',
-    'Advanced.OutputLevelControlName': 'Advanced.OutputLevelControlName',
-    'Advanced.STT.UseRemote': 'Basic.STT.UseRemote',
-    'Advanced.TTS.UseRemote': 'Basic.TTS.UseRemote',
-    'Advanced.TTS.Local': 'Basic.TTS.Local',
-    'Advanced.TTS.Remote': 'Basic.TTS.Remote',
-    'Advanced.TTS.LocalVoice': 'Basic.TTS.LocalVoice',
-    'Advanced.LLM.UseRemote': 'Basic.LLM.UseRemote'
   }
 
   def __init__(self):
@@ -163,11 +149,6 @@ class Config:
   def _copy_defaults(self):
     return yaml.safe_load(yaml.dump(self.config_defaults))
 
-  def _resolve_key(self, key):
-    if self._has_path(self.cfg, key.split(".")):
-      return key
-    return self.legacy_key_map.get(key, key)
-
   def _has_path(self, cfg, keys):
     sect = cfg
     for key in keys:
@@ -214,6 +195,7 @@ class Config:
       {'Basic': cfg.get('Basic', {})}
     ]
 
+
 class LOG:
   def __init__(self, filename):
     log_level = logging.ERROR
@@ -231,6 +213,7 @@ class LOG:
         level=log_level)
     self.log = logging.getLogger()
 
+
 class MediaSession:
   def __init__(self,session_id, owner):
     self.session_id = session_id
@@ -241,6 +224,7 @@ class MediaSession:
     self.media_queue = []
     self.state = 'idle'
     self.correlator = ''
+
 
 def aplay(file):
   # Use default ALSA device (which points to PipeWire via pulse)
@@ -257,6 +241,7 @@ def execute_command(command):
     return "STDOUT:" + stdout + "\nSTDERR:" + stderr
   else:                                    # just return stdout
     return stdout
+
 
 class CommandExecutor:
   """
@@ -309,6 +294,7 @@ class CommandExecutor:
     while not self.is_completed():
       time.sleep(1)
     return self.get_return_code()
+
 
 # read two letter abbreviations to US states and vice-versa
 base_dir = os.getenv('SVA_BASE_DIR')
