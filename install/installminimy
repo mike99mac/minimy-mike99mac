@@ -674,6 +674,9 @@ function buildVenv
 installDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" # get location of this script
 baseDir="$(dirname "$installDir")"         # base directory
 configFile="$installDir/mmconfig.yml"      # minimy config file
+if [ ${#baseDir} = 0 ]; then               # If still not set
+  baseDir="$HOME/minimy"
+fi
 hub=""                                     # hub server
 let lastSecs=$SECONDS
 timeSt=`date +"%y-%m-%d-%H-%M-%S"`
