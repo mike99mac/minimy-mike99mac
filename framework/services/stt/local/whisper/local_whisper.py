@@ -27,6 +27,11 @@ if ctranslate2.get_cuda_device_count() > 0:
 else:
   print(f"Starting Whisper using CPU with model {model_name}...")
   model = WhisperModel(model_name, device="cpu", compute_type="int8")
+# Warmup: trigger lazy init and CUDA kernel compilation before serving requests.
+print("Warming up Whisper...")
+_warmup_audio = np.zeros(16000, dtype=np.float32) # 1 s of silence
+list(model.transcribe(_warmup_audio, beam_size=1))
+print("Warmup complete")
 
 @app.route("/stt", methods=["POST"])
 async def transcribe():
