@@ -5,18 +5,11 @@ __pycache__/
 # Virtual environment
 minimy_venv/
 
-# Logs (keep directory structure via tracked READMEs)
-logs/*
-!logs/README
+# Logs
+logs/
 
-# Temp files (keep directory structure via tracked READMEs)
-tmp/*
-tmp/save_audio/*
-!tmp/save_audio/README
-tmp/save_text/*
-!tmp/save_text/README
-tmp/save_tts/*
-!tmp/save_tts/README
+# Temp files
+tmp/
 
 # Runtime data
 db/
