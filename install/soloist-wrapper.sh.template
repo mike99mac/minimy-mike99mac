@@ -1,0 +1,13 @@
+#!/bin/bash
+# Wraps soloist to inject --pipewire-device. soloistd manages soloist.real
+# we rename the real binary and put this wrapper at the soloist path so
+# soloistd always launches it with the flag.
+SOLOIST_REAL="{{HOME}}/.local/share/soloistd/bin/soloist.real"
+if [ "$1" = "ctl" ]; then
+  exec "$SOLOIST_REAL" "$@"
+fi
+NODE_ID=$(pw-cli ls Node 2>/dev/null | grep -B6 'node.name = "soloist_sink"' | grep -oP '^\s+id \K[0-9]+' | head -1)
+if [ -n "$NODE_ID" ]; then
+  exec "$SOLOIST_REAL" --pipewire-device "$NODE_ID" "$@"
+fi
+exec "$SOLOIST_REAL" "$@"

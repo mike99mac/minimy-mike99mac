@@ -29,6 +29,7 @@ def handle_basic(cfg):
   update_value(cfg, "Basic.Spotify.ClientId", "Spotify Client ID")
   update_secret(cfg, "Basic.Spotify.ClientSecret", "Spotify Client Secret")
   update_value(cfg, "Basic.Spotify.DeviceName", "Spotify Device Name (default: Smart Boombox)")
+  update_value(cfg, "Basic.Spotify.SoloistAPIKey", "Spotify Soloist API Key")
 
   print("\nSTT Settings\n----------------")
   update_value(cfg, "Basic.STT.Model", "STT Model: tiny.en, base.en, or small.en (default: base.en)")

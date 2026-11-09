@@ -53,6 +53,7 @@ class Config:
                    'ClientId': '',
                    'ClientSecret': '',
                    'DeviceName': 'Smart Boombox',
+                   'SoloistAPIKey': '',
                  },
       'STT' : {
                 'Model': 'base.en',

@@ -1,21 +1,17 @@
 """
 Spotify Web API + Spotify Connect helper for MpcClient.
-Search via spotipy; play by transferring playback to the go-librespot device.
+Search via spotipy, play via calling soloist ctl on the local Soloist daemon.
 """
 import logging
 import os
-import socket
-import time
-
+import subprocess
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from spotipy.cache_handler import CacheFileHandler
-
 from framework.util.music_info import Music_info
 
 SCOPE = "user-modify-playback-state user-read-playback-state"
 REDIRECT = "http://127.0.0.1:8888/callback"
-LIBRESPOT_PORT = 3678
 
 
 class SpotifyClient:
@@ -52,31 +48,7 @@ class SpotifyClient:
     except Exception as e:
       self.log.error(f"Spotify: init failed: {e}")
 
-  # ---------- Internal ----------
-
-  def _service_running(self) -> bool:
-    try:
-      with socket.create_connection(("localhost", LIBRESPOT_PORT), timeout=2):
-        return True
-    except OSError:
-      return False
-
-  def _device_id(self):
-    try:
-      devices = self.sp.devices()
-    except Exception as e:
-      self.log.error(f"Spotify: devices() failed: {e}")
-      return None
-    for d in devices.get("devices", []):
-      if d.get("name") == self.device_name:
-        return d["id"]
-    self.log.warning(
-      f"Spotify: device '{self.device_name}' not found in Connect list. "
-      f"Open Spotify on your phone, tap the device once to pair, then retry."
-    )
-    return None
-
-  # ---------- Search ----------
+  # Search
 
   def _search_track(self, name, artist):
     q = name if not artist or artist == "unknown_artist" else f"{name} artist:{artist}"
@@ -95,32 +67,28 @@ class SpotifyClient:
     items = r.get("albums", {}).get("items", [])
     return items[0] if items else None
 
-  # ---------- Playback ----------
+  # Playback
 
   def _play(self, track_uri=None, context_uri=None) -> bool:
-    device_id = self._device_id()
-    if not device_id:
+    uri = track_uri or context_uri
+    if not uri:
       return False
     try:
-      self.sp.transfer_playback(device_id=device_id, force_play=False)
-      time.sleep(0.4)
-      if context_uri:
-        self.sp.start_playback(device_id=device_id, context_uri=context_uri)
-      else:
-        self.sp.start_playback(device_id=device_id, uris=[track_uri])
+      subprocess.run(
+        ["soloist", "ctl", "play", uri],
+        check=True,
+        timeout=10
+      )
       return True
-    except Exception as e:
-      self.log.error(f"Spotify: playback failed: {e}")
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
+      self.log.error(f"soloist ctl play failed: {e}")
       return False
 
-  # ---------- Public ----------
+  # Public
 
   def find_and_play(self, name, artist, kind):
     """kind: 'track' | 'artist' | 'album'. Returns Music_info or None."""
     if not self.enabled:
-      return None
-    if not self._service_running():
-      self.log.warning("Spotify: go-librespot is not running on port 3678")
       return None
 
     try:

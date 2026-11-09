@@ -1,5 +1,6 @@
 from threading import Event
 import subprocess
+import time
 from framework.util.utils import aplay
 from skills.sva_base import SimpleVoiceAssistant
 
@@ -18,6 +19,7 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     )
     self.media_skills = []  # array of registered media skill handlers
     self.active_media_skill = None
+    self.active_backend = "mpc"
     self.tick_file_name = self.base_dir + "/framework/assets/tick.wav"
     info = {
       "subtype": "reserve_oob",
@@ -46,6 +48,26 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     self.register_intent("O", "pause", "music", self.handle_pause)
     self.register_intent("O", "resume", "music", self.handle_resume)
     self.register_intent("O", "stop", "music", self.handle_stop)
+
+  def _soloist_cmd(self, *args):
+    try:
+      r = subprocess.run(["soloist", "ctl"] + list(args), capture_output=True, timeout=5)
+      return r.returncode == 0
+    except Exception as e:
+      self.log.error(f"soloist ctl {args} failed: {e}")
+      return False
+
+  def _soloist_state(self):
+    try:
+      r = subprocess.run(["soloist", "ctl", "now"], capture_output=True, text=True, timeout=5)
+      out = r.stdout.lower()
+      if "playing" in out:
+        return "playing"
+      if "paused" in out:
+        return "paused"
+      return "idle"
+    except Exception:
+      return "unknown"
 
   def handle_oob_detected(self, msg):
     self.log.debug(f"SVAMediaSkill.handle_oob_detected() OOB detected - msg: {msg}")
@@ -142,6 +164,9 @@ class SVAMediaSkill(SimpleVoiceAssistant):
       return self.handle_command(msg)
     elif subtype == "oob_detect":
       return self.handle_oob_detected(msg)
+    elif subtype == "backend_update":
+      self.active_backend = msg["payload"].get("backend", "mpc")
+      self.log.info(f"SVAMediaSkill.handle_message(): backend = {self.active_backend}")
     else:
       from_skill_id = msg["payload"]["from_skill_id"]
       response = msg["payload"].get("response")
@@ -160,29 +185,59 @@ class SVAMediaSkill(SimpleVoiceAssistant):
         )
 
   def handle_prev(self, msg):
-    # Play previous track or station
-    self.log.debug("SVAMediaSkill.handle_prev() - calling mpc_cmd(prev)")
-    self.mpc_cmd("prev")
+    if self.active_backend == "spotify":
+      self.log.debug("SVAMediaSkill.handle_prev() -> soloist ctl prev")
+      self._soloist_cmd("prev")
+    else:
+      self.log.debug("SVAMediaSkill.handle_prev() -> mpc prev")
+      self.mpc_cmd("prev")
 
-  def handle_next(self, message):
-    # Play next track or station - called by the playback control skill
-    self.log.debug("SVAMediaSkill.handle_next() - calling mpc_cmd(next)")
-    self.mpc_cmd("next")
+  def handle_next(self, msg):
+    if self.active_backend == "spotify":
+      self.log.debug("SVAMediaSkill.handle_next() -> soloist ctl next")
+      self._soloist_cmd("next")
+    else:
+      self.log.debug("SVAMediaSkill.handle_next() -> mpc next")
+      self.mpc_cmd("next")
 
   def handle_pause(self, msg):
-    # Pause what is playing
-    self.log.info("SVAMediaSkill.handle_pause() - calling mpc_cmd(toggle)")
-    self.mpc_cmd("toggle")  # toggle between play and pause
+    if self.active_backend == "spotify":
+      state = self._soloist_state()
+      if state == "playing":
+        self.log.info("SVAMediaSkill.handle_pause() -> soloist ctl pause + mpc pause")
+        self._soloist_cmd("pause")
+        self.mpc_cmd("pause")
+      else:
+        self.log.info("SVAMediaSkill.handle_pause() -> soloist ctl resume + mpc rebuild stream")
+        self._soloist_cmd("play")
+        self.mpc_cmd("clear")
+        time.sleep(2.5)
+        self.mpc_cmd("add", "http://127.0.0.1:8888/stream.ogg")
+        self.mpc_cmd("play")
+    else:
+      self.log.info("SVAMediaSkill.handle_pause() -> mpc toggle")
+      self.mpc_cmd("toggle")
 
   def handle_resume(self, msg):
-    # Resume what was playing
-    self.log.info("SVAMediaSkill.handle_resume() - calling mpc_cmd(toggle)")
-    self.mpc_cmd("toggle")  # toggle between play and pause
+    if self.active_backend == "spotify":
+      self.log.info("SVAMediaSkill.handle_resume() -> soloist ctl resume + mpc rebuild stream")
+      self._soloist_cmd("play")
+      self.mpc_cmd("clear")
+      time.sleep(2.5)
+      self.mpc_cmd("add", "http://127.0.0.1:8888/stream.ogg")
+      self.mpc_cmd("play")
+    else:
+      self.log.info("SVAMediaSkill.handle_resume() -> mpc toggle")
+      self.mpc_cmd("toggle")
 
   def handle_stop(self, msg):
-    # Clear the mpc queue
-    self.log.info("SVAMediaSkill.handle_resume() - calling mpc_cmd(clear)")
-    self.mpc_cmd("clear")
+    if self.active_backend == "spotify":
+      self.log.info("SVAMediaSkill.handle_stop() -> soloist ctl stop + mpc clear")
+      self._soloist_cmd("pause")
+      self.mpc_cmd("clear")
+    else:
+      self.log.info("SVAMediaSkill.handle_stop() -> mpc clear")
+      self.mpc_cmd("clear") 
 
   def stop(self, message):
     self.log.info("SVAMediaSkill.stop() - pausing music")
