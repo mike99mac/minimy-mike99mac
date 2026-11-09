@@ -1,0 +1,14 @@
+[Unit]
+Description=Spotify MPD Bridge
+After=spotify.service pipewire.service pipewire-pulse.service wireplumber.service mpd.service
+
+[Service]
+Type=simple
+ExecStartPre=-/bin/sh -c 'for i in $(seq 1 20); do pactl info >/dev/null 2>&1 && exit 0; sleep 0.5; done; exit 0'
+ExecStartPre=-/bin/sh -c 'pactl list short sinks 2>/dev/null | grep -q soloist_sink || pactl load-module module-pipe-sink sink_name=soloist_sink file=/tmp/soloist.raw format=s32le rate=44100 channels=2'
+ExecStart=/usr/local/bin/spotify-bridge.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,17 @@
+#!/bin/bash
+export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+
+cleanup() {
+  pkill -P $$ 2>/dev/null || true
+  pkill -f 'ffmpeg.*soloist_sink.monitor' 2>/dev/null || true
+  exit 0
+}
+trap cleanup TERM INT HUP
+
+while true; do
+  /usr/bin/ffmpeg \
+    -f pulse -i soloist_sink.monitor \
+    -c:a libvorbis -q:a 5 -f ogg -listen 1 \
+    "http://0.0.0.0:8888/stream.ogg"
+  sleep 2
+done

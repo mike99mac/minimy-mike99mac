@@ -150,6 +150,20 @@ function generateServiceFiles
       "$baseDir/install/fallback.service.template" > "/tmp/fallback.service"
   echo "Generated fallback.service" | tee -a $logFile
 
+  # Generate spotify.service from template (soloistd runs Soloist)
+  if [ -f "$baseDir/install/spotify.service.template" ]; then
+    sed -e "s|{{BASE_DIR}}|$baseDir|g" \
+        "$baseDir/install/spotify.service.template" > "/tmp/spotify.service"
+    echo "Generated spotify.service" | tee -a $logFile
+  fi
+
+  # Generate spotify-bridge.service from template (ffmpeg HTTP bridge)
+  if [ -f "$baseDir/install/spotify-bridge.service.template" ]; then
+    sed -e "s|{{BASE_DIR}}|$baseDir|g" \
+        "$baseDir/install/spotify-bridge.service.template" > "/tmp/spotify-bridge.service"
+    echo "Generated spotify-bridge.service" | tee -a $logFile
+  fi
+
   # Generate mount unit name based on base directory path
   # systemd mount units must be named after the mount path with - replacing /
   local mountUnitPath=$(echo "$baseDir" | sed 's|^/||; s|/|-|g')
@@ -191,10 +205,12 @@ function generateServiceFiles
     runCmd cp "/tmp/piper.service" "$HOME/.config/systemd/user/piper.service"
     runCmd cp "/tmp/fallback.service" "$HOME/.config/systemd/user/fallback.service"
     runCmd cp "$baseDir/install/set-default-audio.service" "$HOME/.config/systemd/user/set-default-audio.service"
+    runCmd cp "/tmp/spotify.service" "$HOME/.config/systemd/user/spotify.service"
+    runCmd cp "/tmp/spotify-bridge.service" "$HOME/.config/systemd/user/spotify-bridge.service"
     runCmd sudo systemctl daemon-reload
     runCmd systemctl --user daemon-reload
-    runCmd systemctl --user enable set-default-audio.service whisper.service piper.service fallback.service minimy.service # Enable at boot
-    runCmd systemctl --user start set-default-audio.service whisper.service piper.service fallback.service # Start immediately
+    runCmd systemctl --user enable set-default-audio.service whisper.service piper.service fallback.service spotify.service spotify-bridge.service minimy.service
+    runCmd systemctl --user start set-default-audio.service whisper.service piper.service fallback.service spotify.service spotify-bridge.service
     echo "Systemd service files installed successfully" | tee -a $logFile
   fi
  }                                         # generateServiceFiles()
@@ -268,74 +284,145 @@ RULE
 
 #+--------------------------------------------------------------------------+
 function setupSpotify
-# Configure go-librespot and run inline OAuth if credentials are present.
-# Skips entirely if Basic.Spotify.ClientId or ClientSecret is empty.
+# Configure Spotify Soloist and run inline OAuth if credentials are present.
+# Skips entirely if ClientId, ClientSecret, or SoloistAPIKey are empty.
 #+--------------------------------------------------------------------------+
  {
   : SOURCE: ${BASH_SOURCE}
-  : STACK:  ${FUNCNAME[@]}
-
+  : STACK: ${FUNCNAME[@]}
   echo | tee -a $logFile
   echo "Checking Spotify configuration..." | tee -a $logFile
-
   local pyCmd="$baseDir/minimy_venv/bin/python3"
+
   if [ ! -x "$pyCmd" ]; then
-    echo "Spotify: skipping (venv python not found at $pyCmd)" | tee -a $logFile
+    echo "Spotify: skipping (venv python not found)" | tee -a $logFile
     return 0
   fi
 
-  # Read in Spotify clientId, clientSecret, and deviceName from mmconfig.yml
-  { read -r clientId; read -r clientSecret; read -r deviceName; } < <($pyCmd -c "import yaml; d=yaml.safe_load(open('$configFile')); b=next((i['Basic'] for i in d if 'Basic' in i), {}); s=b.get('Spotify', {}); print(s.get('ClientId') or ''); print(s.get('ClientSecret') or ''); print(s.get('DeviceName') or 'Minimy')" 2>/dev/null)
+  local clientId=$($pyCmd -c "import yaml; d=yaml.safe_load(open('$configFile')); b=next((i['Basic'] for i in d if 'Basic' in i), {}); s=b.get('Spotify', {}); print(s.get('ClientId') or '')" 2>/dev/null)
+  local clientSecret=$($pyCmd -c "import yaml; d=yaml.safe_load(open('$configFile')); b=next((i['Basic'] for i in d if 'Basic' in i), {}); s=b.get('Spotify', {}); print(s.get('ClientSecret') or '')" 2>/dev/null)
+  local deviceName=$($pyCmd -c "import yaml; d=yaml.safe_load(open('$configFile')); b=next((i['Basic'] for i in d if 'Basic' in i), {}); s=b.get('Spotify', {}); print(s.get('DeviceName') or 'Smart Boombox')" 2>/dev/null)
+  local soloistKey=$($pyCmd -c "import yaml; d=yaml.safe_load(open('$configFile')); b=next((i['Basic'] for i in d if 'Basic' in i), {}); s=b.get('Spotify', {}); print(s.get('SoloistAPIKey') or '')" 2>/dev/null)
 
   if [ -z "$clientId" ] || [ -z "$clientSecret" ]; then
-    echo "Spotify: credentials absent — skipping service setup." | tee -a $logFile
+    echo "Spotify: ClientId/ClientSecret absent — Spotify disabled." | tee -a $logFile
     return 0
   fi
 
-  echo "Spotify: credentials present — configuring go-librespot." | tee -a $logFile
-
-  # 1. Write go-librespot config (zeroconf auth — headless friendly)
-  local glConfigDir="$HOME/.config/go-librespot"
-  mkdir -p "$glConfigDir"
-  cat > "$glConfigDir/config.yml" <<EOF
-device_name: "$deviceName"
-device_type: "speaker"
-audio_backend: "pulseaudio"
-credentials:
-  type: "zeroconf"
-  zeroconf:
-    persist_credentials: true
-server:
-  enabled: true
-  address: "0.0.0.0"
-  port: 3678
-EOF
-  echo "Spotify: wrote $glConfigDir/config.yml" | tee -a $logFile
-
-  # 2. Run OAuth inline (prompts user; stdin still attached to terminal)
-  mkdir -p "$HOME/.config/spotify"
-  local cachePath="$HOME/.config/spotify/credentials"
+  # Spotipy OAuth (for search)
+  local cachePath="$baseDir/.spotify_cache"
   if [ -f "$cachePath" ]; then
-    echo "Spotify: OAuth cache already present at $cachePath — skipping auth." | tee -a $logFile
+    echo "Spotify: OAuth cache present — skipping auth." | tee -a $logFile
   else
     echo | tee -a $logFile
     $pyCmd "$baseDir/install/spotify_auth.py" "$clientId" "$clientSecret" "$cachePath" 2>&1 | tee -a $logFile
     if [ "${PIPESTATUS[0]}" -ne 0 ]; then
-      echo "ERROR: Spotify OAuth failed. Service will not be enabled." | tee -a $logFile
+      echo "ERROR: Spotify OAuth failed." | tee -a $logFile
       return 1
     fi
   fi
 
-  # 3. Install systemd service
-  if command -v systemctl &>/dev/null && [ -f "$baseDir/install/spotify.service.template" ]; then
-    sed -e "s|{{HOME}}|$HOME|g" \
-      -e "s|{{BASE_DIR}}|$baseDir|g" \
-      "$baseDir/install/spotify.service.template" > "/tmp/spotify.service"
-    runCmd cp "/tmp/spotify.service" "$HOME/.config/systemd/user/spotify.service"
-    runCmd systemctl --user daemon-reload
-    runCmd systemctl --user enable spotify.service
-    echo "Spotify: systemd user unit installed and enabled." | tee -a $logFile
-    echo "Spotify: start with: systemctl --user start spotify" | tee -a $logFile
+  # Soloist setup (needed for playback on accounts created after 12/2024)
+  if [ -z "$soloistKey" ]; then
+    echo "Soloist: API key not set — Spotify search will work, playback will fall back to YouTube." | tee -a $logFile
+    return 0
+  fi
+
+  local soloistdPath="/usr/local/bin/soloistd"
+
+  if [ ! -x "$soloistdPath" ]; then
+    local arch=$(uname -m)
+    case "$arch" in
+      x86_64)
+        runCmd wget -q "https://github.com/MopigamesYT/soloistd/releases/download/v0.2.0/soloistd-linux-amd64" -O /tmp/soloistd
+        runCmd sudo install -m 755 /tmp/soloistd "$soloistdPath"
+        ;;
+      aarch64)
+        if ! command -v go &>/dev/null; then
+          echo "Soloist: go not found; install dev-lang/go to build soloistd on arm64." | tee -a $logFile
+          return 1
+        fi
+        local soloistdSrc="/tmp/soloistd-src"
+        runCmd rm -rf "$soloistdSrc"
+        runCmd git clone --depth 1 https://github.com/MopigamesYT/soloistd "$soloistdSrc"
+        runCmd cd "$soloistdSrc"
+        runCmd go build -o /tmp/soloistd .
+        runCmd sudo install -m 755 /tmp/soloistd "$soloistdPath"
+        runCmd cd "$baseDir"
+        ;;
+      *)
+        echo "Soloist: unsupported architecture $arch." | tee -a $logFile
+        return 1
+        ;;
+    esac
+  fi
+
+    # --- Run soloistd setup: downloads soloist binary, writes config ---
+  SOLOIST_API_KEY="$soloistKey" "$soloistdPath" setup --device-name "$deviceName" >> $logFile 2>&1
+  if [ "$?" != 0 ]; then
+    echo "ERROR: soloistd setup failed" | tee -a $logFile
+    return 1
+  fi
+
+  # --- Ensure websocket key is set in soloistd config ---
+  local soloistCfg="$HOME/.config/soloistd/config.json"
+  if [ -f "$soloistCfg" ]; then
+    $pyCmd -c "
+import json, sys
+p = '$soloistCfg'
+try:
+  with open(p) as f:
+    cfg = json.load(f)
+except Exception as e:
+  print(f'Failed to read {p}: {e}', file=sys.stderr)
+  sys.exit(1)
+if not cfg.get('websocket'):
+  cfg['websocket'] = '127.0.0.1:9090'
+  with open(p, 'w') as f:
+    json.dump(cfg, f, indent=2)
+  print('Added websocket to soloistd config')
+else:
+  print(f'Websocket already configured: {cfg[\"websocket\"]}')
+" 2>&1 | tee -a $logFile
+  fi
+
+  # --- Rename real soloist binary and install wrapper ---
+  local soloistBin="$HOME/.local/share/soloistd/bin/soloist"
+  local soloistReal="$HOME/.local/share/soloistd/bin/soloist.real"
+  if [ -f "$soloistBin" ] && ! head -c 2 "$soloistBin" 2>/dev/null | grep -q '#!'; then
+    mv "$soloistBin" "$soloistReal"
+    echo "Moved soloist binary to $soloistReal" | tee -a $logFile
+  fi
+  if [ ! -f "$soloistBin" ] || ! grep -q 'soloist.real' "$soloistBin" 2>/dev/null; then
+    if [ -f "$baseDir/install/soloist-wrapper.sh.template" ]; then
+      sed "s|{{HOME}}|$HOME|g" \
+        "$baseDir/install/soloist-wrapper.sh.template" > "$soloistBin"
+      chmod +x "$soloistBin"
+      echo "Installed soloist wrapper at $soloistBin" | tee -a $logFile
+    else
+      echo "WARNING: soloist-wrapper.sh.template not found" | tee -a $logFile
+    fi
+  fi
+
+  # --- Symlink soloist into PATH ---
+  if [ -x "$soloistBin" ]; then
+    runCmd sudo ln -sf "$soloistBin" /usr/local/bin/soloist
+  fi
+
+  # --- Install spotify-bridge.sh from template ---
+  if [ -f "$baseDir/install/spotify-bridge.sh.template" ]; then
+    runCmd sudo cp "$baseDir/install/spotify-bridge.sh.template" /usr/local/bin/spotify-bridge.sh
+    runCmd sudo chmod +x /usr/local/bin/spotify-bridge.sh
+  else
+    echo "WARNING: spotify-bridge.sh.template not found" | tee -a $logFile
+  fi
+
+  # --- Persist pipe-sink in ~/.config/pulse/default.pa ---
+  local pulseDefault="$HOME/.config/pulse/default.pa"
+  mkdir -p "$HOME/.config/pulse"
+  if ! grep -q 'sink_name=soloist_sink' "$pulseDefault" 2>/dev/null; then
+    echo 'load-module module-pipe-sink sink_name=soloist_sink file=/tmp/soloist.raw format=s32le rate=44100 channels=2' >> "$pulseDefault"
+    echo "Added pipe-sink to $pulseDefault" | tee -a $logFile
   fi
  }                                         # setupSpotify()
 
@@ -501,28 +588,6 @@ function buildVenv
     libavutil-dev libswscale-dev libswresample-dev libavfilter-dev libavcodec-dev libavformat-dev \
     libavdevice-dev redis libogg-dev libvorbis-dev libflac-dev libmpg123-dev libasound2-dev
   fi
-  # Install go-librespot prebuilt binary to /usr/local/bin
-  echo | tee -a $logFile
-  echo "Installing go-librespot..." | tee -a $logFile
-  if [ -x /usr/local/bin/go-librespot ]; then
-    echo "go-librespot already installed, skipping." | tee -a $logFile
-  else
-    case "$(uname -m)" in
-      aarch64|arm64)  archName="arm64" ;;
-      armv7l|armv6l)  archName="armv6_rpi" ;;
-      x86_64)         archName="x86_64" ;;
-      *)
-        echo "ERROR: Unsupported architecture for go-librespot: $(uname -m)" | tee -a $logFile
-        exit 12
-        ;;
-    esac
-    golibrespotTmp=$(mktemp -d)
-    golibrespotTar="go-librespot_linux_${archName}.tar.gz"
-    runCmd curl -fL "https://github.com/devgianlu/go-librespot/releases/latest/download/${golibrespotTar}" -o "$golibrespotTmp/$golibrespotTar"
-    runCmd tar -xzf "$golibrespotTmp/$golibrespotTar" -C "$golibrespotTmp"
-    runCmd sudo install -m 0755 "$golibrespotTmp/go-librespot" /usr/local/bin/go-librespot
-    rm -rf "$golibrespotTmp"
-  fi
   echo | tee -a $logFile
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
   echo "Python version: $pythonVer ..." | tee -a $logFile
@@ -682,8 +747,6 @@ function buildVenv
   if [ -d "$baseDir/mpd/playlists" ]; then
     runCmd cp $baseDir/install/great_songs.m3u "$baseDir/mpd/playlists/"
   fi
-  echo " "
-  echo "Install Complete at `date`" | tee -a $logFile
  }                                         # buildVenv()
 
 # global variables
@@ -725,5 +788,7 @@ let sec=$SECONDS%60
 if [ $sec -lt 10 ]; then                   # add a leading 0
   sec="0$sec"
 fi
+echo
+echo "Install Complete at `date`" | tee -a $logFile
 echo "Successfully installed Minimy in $min:$sec" | tee -a $logFile
 echo "Log file: $logFile"

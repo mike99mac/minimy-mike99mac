@@ -21,6 +21,7 @@
       ClientId: ''
       ClientSecret: ''
       DeviceName: 'Smart Boombox'
+      SoloistAPIKey: ''
     STT:
       Model: base.en
       UseRemote: n

@@ -1,14 +1,10 @@
 [Unit]
-Description=go-librespot Spotify Connect receiver
+Description=Spotify (soloistd)
 After=pipewire.service pipewire-pulse.service wireplumber.service
-Wants=pipewire.service pipewire-pulse.service
 
 [Service]
-WorkingDirectory={{BASE_DIR}}
-ExecStartPre=/usr/bin/touch {{BASE_DIR}}/logs/spotify.log
-ExecStart=/usr/local/bin/go-librespot --config_dir {{HOME}}/.config/go-librespot
-StandardOutput=append:{{BASE_DIR}}/logs/spotify.log
-StandardError=append:{{BASE_DIR}}/logs/spotify.log
+Type=simple
+ExecStart=/usr/local/bin/soloistd run
 Restart=on-failure
 RestartSec=5
 

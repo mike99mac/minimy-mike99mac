@@ -17,10 +17,11 @@ echo "User: $USER"
 echo "Base directory: $baseDir"
 if command -v systemctl &>/dev/null; then
   systemctl --user stop whisper          # stop whisper service
-  systemctl --user stop fallback             # stop LLM fallback service
-  spotifyConfigured=$("$baseDir/minimy_venv/bin/python3" -c "import yaml; d=yaml.safe_load(open('$baseDir/install/mmconfig.yml')); b=next((i['Basic'] for i in d if 'Basic' in i), {}); s=b.get('Spotify', {}); print('y' if s.get('ClientId') and s.get('ClientSecret') else 'n')" 2>/dev/null)
+  systemctl --user stop fallback         # stop LLM fallback service
+    spotifyConfigured=$("$baseDir/minimy_venv/bin/python3" -c "import yaml; d=yaml.safe_load(open('$baseDir/install/mmconfig.yml')); b=next((i['Basic'] for i in d if 'Basic' in i), {}); s=b.get('Spotify', {}); print('y' if s.get('ClientId') and s.get('ClientSecret') and s.get('SoloistAPIKey') else 'n')" 2>/dev/null)
   if [ "$spotifyConfigured" = "y" ]; then
     systemctl --user stop spotify
+    systemctl --user stop spotify-bridge
   fi
 fi
 procs=$(ps -ef | awk '!/grep|whisper|vim|fallback|piper/ && /minimy\/skills|skills\/system_skills|framework\/services|MsgBus|mimic3|skill_system.py/')
