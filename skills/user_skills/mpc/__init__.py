@@ -129,21 +129,25 @@ class MpcSkill(MediaSkill):
       self.log.debug("MpcSkill.media_play() speak results of playlist request")
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info) 
       return None
-    elif self.music_info.match_type != "playlist": # playlists are already queued up
-      self.mpc_client.mpc_cmd("clear")     # stop any media that might be playing
+    elif self.music_info.match_type == "internet":
+      # Internet music is resolved and queued by stream_internet_music() via ytadd.
+      self.mpc_client.mpc_cmd("clear")
+    elif self.music_info.match_type == "playlist":
+      self.mpc_client.mpc_cmd("random on") # shuffle tracks
+    else:                                  # local music: track, album, artist, radio, news
+      self.mpc_client.mpc_cmd("clear")
       for next_url in self.music_info.tracks_or_urls:
         self.log.debug(f"MpcSkill.media_play() adding URL to MPC queue: {next_url}")
-        cmd = f"add {next_url}"    
+        cmd = f"add {next_url}"
         self.mpc_client.mpc_cmd(cmd)
-    elif self.music_info.match_type == "playlist":     
-      self.mpc_client.mpc_cmd("random on") # shuffle tracks 
-    if self.music_info.mesg_file is None:  # no message
+
+    if not self.music_info.mesg_file:      # no message
       self.start_music()
     else:                                  # speak message and pass callback  
       #self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.start_music)
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info)
       self.start_music()
-    
+
   def start_music(self):
     # callback to start music after media_play() speaks informational message
     self.log.debug(f"MpcSkill.start_music() calling mpc_client.start_music({self.music_info}")

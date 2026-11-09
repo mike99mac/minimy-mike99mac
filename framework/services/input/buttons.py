@@ -199,4 +199,4 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
       buttons.cleanup()
   else:
-    print("The hardware is not a Raspberry Pi - GPIO buttons disabled")
+    print("The hardware is neither a Raspberry Pi nor an NVIDIA Jetson board - GPIO buttons disabled")

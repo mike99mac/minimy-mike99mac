@@ -5,30 +5,48 @@ import subprocess
 import threading
 import time
 import wave
-
 import requests
 from quart import Quart, request, Response
-
 from framework.util.utils import Config, LOG
 
-base_dir = os.getenv("SVA_BASE_DIR", os.path.expanduser("~/minimy"))
-log_filename = os.path.join(base_dir, "logs/piper.log")
+base_dir = os.getenv("SVA_BASE_DIR")
+if base_dir is None:
+  base_dir = os.path.expanduser("~/minimy")
+log_filename = os.path.join(base_dir, "logs", "piper.log")
+os.makedirs(os.path.dirname(log_filename), exist_ok=True)
 log = LOG(log_filename).log
 
-# Original MIT piper binary + model (installed by installminimy)
 PIPER_BIN = os.path.join(base_dir, "framework/services/tts/local/piper/piper")
-MODEL_PATH = os.path.join(
-    base_dir,
-    "framework/services/tts/local/piper/en_US-hfc_male-medium.onnx",
-)
+PIPER_DIR = os.path.join(base_dir, "framework/services/tts/local/piper")
+DEFAULT_VOICE = "en_US-hfc_male-medium"
+
+def _resolve_model_path():
+  # Read Basic.TTS.LocalVoice from mmconfig.yml or default to en_US-hfc_male-medium
+  voice = DEFAULT_VOICE
+  try:
+    cfg = Config()
+    configured = cfg.get_cfg_val("Basic.TTS.LocalVoice")
+    if configured:
+      voice = str(configured).strip()
+      # Tolerate users who include .onnx in the config value
+      if voice.endswith(".onnx"):
+        voice = voice[:-5]
+  except Exception as e:
+    log.warning(f"Could not read Basic.TTS.LocalVoice, using default: {e}")
+  model_path = os.path.join(PIPER_DIR, f"{voice}.onnx")
+  if not os.path.exists(model_path):
+    log.warning(f"Piper model {model_path} not found, falling back to {DEFAULT_VOICE}")
+    model_path = os.path.join(PIPER_DIR, f"{DEFAULT_VOICE}.onnx")
+  return model_path
+
+MODEL_PATH = _resolve_model_path()
+log.info(f"Piper model resolved: {MODEL_PATH}")
 SAMPLE_RATE = 22050
-SILENCE_GAP = 0.5           # seconds of quiet = end of utterance
-MAX_UTTERANCE_SEC = 30.0    # safety cap
+SILENCE_GAP = 0.5                          # seconds of quiet = end of utterance
+MAX_UTTERANCE_SEC = 30.0                   # safety cap
 
-
-# -------------------------------------------------
-# Client interface — imported by se_tts_session.py.
-# -------------------------------------------------
+# Client interface
+# Imported by se_tts_session.py
 def local_speak_dialog(text, _file_name, wait_q):
     log.info(f"Session TTS request: {text[:50]}...")
     try:
@@ -59,9 +77,8 @@ def local_speak_dialog(text, _file_name, wait_q):
         wait_q.put({'service': 'local', 'status': 'error', 'msg': str(e)})
 
 
-# ------------------------------------------------------------------------
-# Server interface - only runs when this file is executed by piper.service
-# ------------------------------------------------------------------------
+# Server interface
+# Only runs when this file is executed by piper.service
 if __name__ == "__main__":
     import asyncio
     from hypercorn.asyncio import serve
@@ -81,7 +98,7 @@ if __name__ == "__main__":
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
         )
-        # Warmup: forces model + espeak-ng init. Discard PCM.
+        # Warmup model and discard PCM.
         _piper_proc.stdin.write(b"a\n")
         _piper_proc.stdin.flush()
         _drain(15.0)

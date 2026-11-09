@@ -1,6 +1,7 @@
 from threading import Event
 from bus.MsgBus import MsgBus
-import time, os
+import time
+import os
 from framework.util.utils import CommandExecutor, LOG, MediaSession, get_hal_obj
 
 class SVAMediaPlayerSkill:

@@ -41,6 +41,11 @@ function checkEnv
     echo "It appears Minimy is already running!"
     exit 3
   fi
+
+  # Refresh yt-dlp in the background (updates frequently when YouTube breaks it)
+  if [ -x "$baseDir/minimy_venv/bin/yt-dlp" ]; then
+    "$baseDir/minimy_venv/bin/pip" install -U --quiet "yt-dlp[default]" > /dev/null 2>&1 &
+  fi
  }
 
 #+--------------------------------------------------------------------------+
@@ -175,7 +180,7 @@ function startSystem
   "$venvPython" framework/services/intent/intent.py >> "$logDir/intent.log" 2>&1 &
   sleep 2
   echo "Starting media player ..."
-  "$venvPython" framework/services/output/media_player.py >> "$logDir/skills.log" 2>&1 &
+  "$venvPython" framework/services/output/media_player.py >> "$logDir/media_player.log" 2>&1 &
   echo "Starting TTS service ..."
   "$venvPython" framework/services/tts/tts.py >> "$logDir/tts.log" 2>&1 &
   echo "Starting STT service ..."
@@ -217,7 +222,7 @@ function loadSystemSkills
   echo "Starting System Skills ..."
   cd "$baseDir"
   local venvPython="$baseDir/minimy_venv/bin/python3"
-  "$venvPython" install/cache_llm.py >> "$logDir/llm_download.log" 2>&1 &
+  "$venvPython" framework/services/llm/cache_llm.py >> "$logDir/llm_download.log" 2>&1 &
   "$venvPython" skills/system_skills/skill_media.py >> "$logDir/skills.log" 2>&1 &
   "$venvPython" skills/system_skills/skill_volume.py >> "$logDir/skills.log" 2>&1 &
   "$venvPython" skills/system_skills/skill_alarm.py >> "$logDir/skills.log" 2>&1 &
@@ -262,7 +267,7 @@ function loadOtherServices
   echo "Starting buttons ..."
   "$venvPython" framework/services/input/buttons.py >> "$logDir/buttons.log" 2>&1 &
   echo "Starting the mic ..."
-  "$venvPython" framework/services/input/mic.py >> "$logDir/mic.log" 2>&1 &
+  "$venvPython" framework/services/input/mic.py >> "$logDir/audio.log" 2>&1 &
   if command -v systemctl &>/dev/null; then
     echo "Recycling fallback service ..."
     systemctl --user restart fallback
