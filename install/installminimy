@@ -338,15 +338,31 @@ function setupSpotify
         runCmd sudo install -m 755 /tmp/soloistd "$soloistdPath"
         ;;
       aarch64)
-        if ! command -v go &>/dev/null; then
-          echo "Soloist: go not found; install dev-lang/go to build soloistd on arm64." | tee -a $logFile
-          return 1
+        # Ensure Go >= 1.21 for slices package and go.mod format
+        local goBin="/usr/local/go/bin/go"
+        local needGo=1
+        if [ -x "$goBin" ]; then
+          local goVer=$("$goBin" version | awk '{print $3}' | sed 's/go//')
+          local goMajor=$(echo "$goVer" | cut -d. -f1)
+          local goMinor=$(echo "$goVer" | cut -d. -f2)
+          if [ "$goMajor" -gt 1 ] || { [ "$goMajor" -eq 1 ] && [ "$goMinor" -ge 21 ]; }; then
+            needGo=0
+          fi
         fi
+        if [ "$needGo" = 1 ]; then
+          runCmd wget -q "https://go.dev/dl/go1.24.5.linux-arm64.tar.gz" -O /tmp/go.tar.gz
+          runCmd sudo rm -rf /usr/local/go
+          runCmd sudo tar -C /usr/local -xzf /tmp/go.tar.gz
+          runCmd rm -f /tmp/go.tar.gz
+        fi
+        export PATH="/usr/local/go/bin:$PATH"
         local soloistdSrc="/tmp/soloistd-src"
         runCmd rm -rf "$soloistdSrc"
         runCmd git clone --depth 1 https://github.com/MopigamesYT/soloistd "$soloistdSrc"
         runCmd cd "$soloistdSrc"
-        runCmd go build -o /tmp/soloistd .
+        # soloistd ships go.mod with "go 1.24.0"; strip patch version so any Go >=1.21 accepts it
+        runCmd sed -i -E 's/^go ([0-9]+)\.([0-9]+)\.[0-9]+$/go \1.\2/' go.mod
+        runCmd /usr/local/go/bin/go build -o /tmp/soloistd .
         runCmd sudo install -m 755 /tmp/soloistd "$soloistdPath"
         runCmd cd "$baseDir"
         ;;
