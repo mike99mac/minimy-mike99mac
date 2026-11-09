@@ -18,13 +18,13 @@ from sklearn.metrics.pairwise import cosine_similarity
 class Intent:
   def __init__(self, bus=None, timeout=5):
     self.skill_id = "intent_service"
-    self.bus = MsgBus(self.skill_id)
-    self.intents = {}
     self.base_dir = os.getenv("SVA_BASE_DIR")
     self.tmp_file_path = self.base_dir + "/tmp/"
-    self.speaker = SimpleVoiceAssistant(bus=None, skill_id="intent_speaker")
     log_filename = self.base_dir + "/logs/intent.log"
     self.log = LOG(log_filename).log
+    self.bus = MsgBus(self.skill_id)
+    self.intents = {}
+    self.speaker = SimpleVoiceAssistant(bus=None, skill_id="intent_speaker")
     self.earcon_filename = self.base_dir + "/framework/assets/earcon_start.wav"
     self.is_running = False
     cfg = Config()
@@ -153,7 +153,7 @@ class Intent:
 
     # Send to fallback service via HTTP request
     if target == "fallback_service":
-      self.log.debug("Sending HTTP request to fallback service")
+      self.log.debug("Intent.send_utt() Sending HTTP request to fallback service")
       req_body = json.dumps({
         "sentence": utt.get("sentence", ""),
         "raw_input": utt.get("raw_input", "")
@@ -172,16 +172,19 @@ class Intent:
         elif result.get("action") == "answer":
           self.speaker.speak(result["answer"])
         else:
-          self.log.warning(f"Unknown fallback response: {result}")
+          self.log.warning(f"Intent.send_utt(): Unknown fallback response: {result}")
       except Exception as e:
-        self.log.error(f"Fallback service request failed: {e}")
+        self.log.error(f"Intent.send_utt(): Fallback service request failed: {e}")
       return
 
-    self.log.debug(f"Intent.send_utt() sending utt: {utt} to target: {target}")  
+    self.log.debug(f"Intent.send_utt(): sending utt: {utt} to target: {target}")  
     self.bus.send("utterance", target, {"utt": utt,"subtype":"utt"})
-    self.log.debug("Intent.send_utt() after bus.send()")  
+    self.log.debug("Intent.send_utt(): after bus.send()")  
 
   def send_media(self, info):
+    # Play earcon asynchronously
+    subprocess.Popen(["aplay", self.earcon_filename], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
     self.log.debug("Intent.send_media(): sending media request to message bus")
     self.bus.send("media", "media_skill", info)
 
@@ -273,13 +276,13 @@ class Intent:
         cleaned = utt.lower().strip()
         cleaned = re.sub(r'[^\w\s]', '', cleaned) # Remove punctuation
         words = cleaned.split()            # Split into words
-        
+
         # Ignore single question word (e.g., "what", "why", "how")
         if len(words) == 1 and words[0] in self.question_words_set:
           self.log.debug(f"Ignoring single question word: '{utt}'")
           os.remove(txt_file)
           continue
-        
+
         # Ignore "computer <question_word>" (e.g., "computer what", "computer why")
         if len(words) == 2 and words[0] == "computer" and words[1] in self.question_words_set:
           self.log.debug(f"Ignoring 'computer <question_word>': '{utt}'")

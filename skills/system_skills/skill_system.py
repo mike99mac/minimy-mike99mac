@@ -3,6 +3,7 @@ from framework.util.utils import Config, aplay
 from threading import Event
 import time
 import psutil
+import subprocess
 
 INTERNAL_PAUSE = 1
 EXTERNAL_PAUSE = 2
@@ -44,7 +45,7 @@ class SystemSkill(SimpleVoiceAssistant):
     self.cfg_remote_llm = cfg.get_cfg_val("Basic.LLM.UseRemote")
     self.cfg_wake_words = cfg.get_cfg_val("Basic.WakeWords")
     self.base_dir = cfg.get_cfg_val("Basic.BaseDir")
-    self.play_filename = self.base_dir + "/framework/assets/stop.wav"
+    self.stop_filename = self.base_dir + "/framework/assets/stop.wav"
 
   def send_pause(self, target_skill):
     self.log.debug(f"SystemSkill:send_pause() target_skill: {target_skill}")
@@ -162,7 +163,8 @@ class SystemSkill(SimpleVoiceAssistant):
         for proc in psutil.process_iter(): # Killall current aplay processes (annoying!)
           if proc.name() == "aplay":
             proc.kill()
-        aplay(self.play_filename)
+        # Play stop sound asynchronously
+        subprocess.Popen(["aplay", self.stop_filename], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         if len(self.conversant_skills) > 0: # deal with conversants
           self.log.info(f"SystemSkill:handle_message() conversand_skills: {self.conversant_skills}")
           self.log.info("FYI doing nothing about it for now, but should probably stop them too!")

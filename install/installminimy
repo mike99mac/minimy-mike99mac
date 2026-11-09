@@ -656,9 +656,9 @@ function buildVenv
 
   if [ -n "$llmRepo" ] && [ -n "$llmModel" ]; then
     echo "Downloading model $llmRepo ($llmModel) ..." | tee -a $logFile
-    runCmd "$pythonCmd $baseDir/install/cache_llm.py"
+    runCmd "$pythonCmd $baseDir/framework/services/llm/cache_llm.py"
   else
-    echo "Warning: LLMRepo or LLMFile not found in config. Skipping pre-cache." | tee -a $logFile
+    echo "Warning: Basic.LLM.Repo or Basic.LLM.file not found in config. Skipping pre-cache." | tee -a $logFile
   fi
 
   # Set whisper to run as a system daemon and log to /var/log/whisper.log

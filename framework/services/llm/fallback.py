@@ -167,7 +167,7 @@ class FallbackLLMService:
     return None
 
   def _launch_model_prefetch(self):
-    helper_path = os.path.join(self.cfg.get_cfg_val("Basic.BaseDir") or ".", "install", "cache_llm.py")
+    helper_path = os.path.join(self.cfg.get_cfg_val("Basic.BaseDir") or ".", "framework", "services", "llm", "cache_llm.py")
     if not os.path.exists(helper_path):
       log.error(f"Missing LLM cache helper at {helper_path}")
       return False

@@ -16,7 +16,6 @@ from youtube_search import YoutubeSearch
 class MpcClient(SimpleVoiceAssistant):
   # Accept voice commands to communicate with mpd using mpc calls
   # Support cataloging of music files and accessing Internet radio stations
-  news_dir: str
   max_queued: int                          # maximum number of tracks or stations to queue
   station_name: str
   station_genre: str
@@ -31,7 +30,6 @@ class MpcClient(SimpleVoiceAssistant):
   def __init__(self):
     super().__init__(skill_id="mpc_skill", skill_category="media")
     self.log = logging.getLogger(__name__)
-    self.news_dir = "/tmp"
     self.max_queued = 20
     self.station_name = "unknown"
     self.station_genre = "unknown"
@@ -946,70 +944,65 @@ class MpcClient(SimpleVoiceAssistant):
     self.log.debug(f"MpcClient.search_internet() searching for phrase: {phrase}")
 
     # the ytadd script takes around 5 seconds to add a URL - so limit results to 3
+    # Keep 2 results as fallback candidates. Order matters - best match first.
     results = YoutubeSearch(phrase, max_results=2).to_dict() # return a dictionary
     num_hits = len(results)
     if num_hits == 0:
       self.log.info("MpcClient.search_internet() did not find any music on the internet")
       mesg_file = "music_not_found"
       mesg_info = {"music_name": utterance}
-    else:                                  # found music - queue it up
-      random.shuffle(results)              # shuffle tracks
+      return Music_info("none", mesg_file, mesg_info, [])
+    else:                                  # found music, queue fallback candidates
       for next_track in results:
-        suffix = next_track["url_suffix"]
+        suffix = next_track["url_suffix"].split("&")[0]  # keep only ?v=<id>
         next_url = "http://youtube.com"+suffix
-        self.log.debug(f"MpcClient.search_internet(): adding url: {next_url}")
+        self.log.debug(f"MpcClient.search_internet(): candidate url: {next_url}")
         tracks_or_urls.append(next_url)
-      mesg_file = None
-      mesg_info = None
     return Music_info("internet", mesg_file, mesg_info, tracks_or_urls)
 
   def stream_internet_music(self, music_info):
     # Stream music from the Internet using mpc
-    # param: Music_info object
-    self.log.debug("MpcClient.stream_internet_music() streaming all tracks from the Internet")
-    for next_url in music_info.tracks_or_urls: # queue up tracks in mpc
-      self.log.debug(f"MpcClient.stream_internet_music() streaming from URL: {next_url}")
+    # Try each candidate URL in order. The first one that ytadd resolves is
+    # queued and played; if it fails, fall through to the next candidate.
+    self.log.debug("MpcClient.stream_internet_music() resolving internet stream")
+    for next_url in music_info.tracks_or_urls:
+      self.log.debug(f"MpcClient.stream_internet_music(): trying {next_url}")
       try:
-        self.log.debug(f"MpcClient.stream_internet_music(): running ytadd for {next_url}")
-        result = subprocess.check_output(["/usr/local/sbin/ytadd", next_url])
-        self.log.debug(f"MpcClient.stream_internet_music(): result: {result}")
+        subprocess.check_output(["/usr/local/sbin/ytadd", next_url])
       except subprocess.CalledProcessError as e:
-        self.log.error(f"MpcClient.stream_internet_music() e.returncode: {e.returncode}")
-        return False
-    if not self.mpc_cmd("play"):        # Now play the queued up tracks
-        self.log.debug("MpcClient.start_music(): mpc_cmd(play) failed")
-        return False
+        self.log.warning(f"MpcClient.stream_internet_music(): ytadd failed for {next_url} (rc={e.returncode}), trying next")
+        continue
+      # One URL successfully resolved and queued - play it once, no loop
+      self.mpc_cmd("repeat", "off")
+      time.sleep(3)
+      self.mpc_cmd("play")                 # MPD returns non-zero transiently for streams; ignore exit code
+      return True
+    self.log.error("MpcClient.stream_internet_music(): all candidate URLs failed to resolve")
+    return False
 
   def search_news(self, utterance):
     # search for NPR news
     # param: text of the request
-    # return: Music_info object
+    # return: Music_info object with a direct HTTP stream URL
     url = "https://www.npr.org/podcasts/500005/npr-news-now"
     self.log.debug(f"MpcClient.search_news() utterance: {utterance} url: {url}")
-    mesg_info = {}
     mesg_file = "playing_npr"
-    res = requests.get(url)
+    try:
+      res = requests.get(url, timeout=15)
+    except requests.exceptions.RequestException as e:
+      self.log.error(f"MpcClient.search_news(): NPR page fetch failed: {e}")
+      return Music_info("none", "cannot_play_npr", {}, [])
     page = res.text
     start_indx = page.find("audioUrl")
     if start_indx == -1:
       self.log.debug("MpcClient.search_news() cannot find NPR news URL")
-      mesg_file = "cannot_play_npr"
-      return Music_info("none", mesg_file, {}, [])
+      return Music_info("none", "cannot_play_npr", {}, [])
     end_indx = start_indx + len("audioUrl")
     page = page[end_indx + 3:]
     end_indx = page.find("?")
     if end_indx == -1:
       self.log.debug("MpcClient.search_news() Parse error")
-      mesg_file = "cannot_parse_npr"
-      return Music_info("none", mesg_file, {}, [])
-    self.log.debug(f"MpcClient.search_news() start_indx: {start_indx} end_indx: {end_indx} ")
-    new_url = page[:end_indx]
-    new_url = new_url.replace("\\","")
-    os.chdir(self.news_dir)                # write file to news directory
-    cmd = f"wget {new_url}"
-    self.log.debug(f"MpcClient.search_news() cwd: {os.getcwd()} cmd: {cmd}")
-    os.system(cmd)                         # get the file with wget
-    file_name = new_url.rsplit('/', 1)[-1]
-    self.log.debug(f"MpcClient.search_news() mp3 file_name: {file_name}")
-    self.mpc_cmd("update")                 # update so mpc can see new file
-    return Music_info("news", mesg_file, mesg_info, [file_name])
+      return Music_info("none", "cannot_parse_npr", {}, [])
+    new_url = page[:end_indx].replace("\\", "")
+    self.log.debug(f"MpcClient.search_news() streaming {new_url}")
+    return Music_info("news", mesg_file, {}, [f'"{new_url}"'])
