@@ -170,7 +170,6 @@ function startSystem
     spotifyConfigured=$("$baseDir/minimy_venv/bin/python3" -c "import yaml; d=yaml.safe_load(open('$baseDir/install/mmconfig.yml')); b=next((i['Basic'] for i in d if 'Basic' in i), {}); s=b.get('Spotify', {}); print('y' if s.get('ClientId') and s.get('ClientSecret') and s.get('SoloistAPIKey') else 'n')" 2>/dev/null)
     if [ "$spotifyConfigured" = "y" ]; then
       systemctl --user start spotify
-      systemctl --user start spotify-bridge
     fi
   fi
   cd "$baseDir/skills/system_skills"

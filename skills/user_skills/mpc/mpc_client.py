@@ -240,6 +240,7 @@ class MpcClient(SimpleVoiceAssistant):
     if not self.spotify_client or not self.spotify_client.enabled:
       return None
     self.log.info(f"MpcClient._spotify_fallback(): intent={intent} name='{music_name}' artist='{artist_name}'")
+    self.mpc_cmd("stop")                   # Stop MPD before Soloist starts
     if intent in ("track", "track_artist"):
       return self.spotify_client.find_and_play(music_name, artist_name, "track")
     if intent in ("unknown", "unknown_artist"):

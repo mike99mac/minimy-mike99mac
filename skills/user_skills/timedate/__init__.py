@@ -36,6 +36,7 @@ def _year_to_words(year):
     return _two_digit_word(century) + " oh " + _ONES[rest]
   return _two_digit_word(century) + " " + _two_digit_word(rest)
 
+
 class TimeSkill(SimpleVoiceAssistant):
   def __init__(self, bus=None, timeout=5):
     super().__init__(skill_id='time_skill', skill_category='system')
@@ -80,8 +81,6 @@ class TimeSkill(SimpleVoiceAssistant):
     self.log.debug(f"TimeSkill.handle_day_match() now: {now} text: {text}")
     self.speak(text)
 
-  def stop(self, msg):
-    self.log.info(f"TimeSkill.stop() Do nothing - stop hit")
 
 if __name__ == '__main__':
   ts = TimeSkill()

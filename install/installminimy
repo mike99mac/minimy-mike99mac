@@ -157,13 +157,6 @@ function generateServiceFiles
     echo "Generated spotify.service" | tee -a $logFile
   fi
 
-  # Generate spotify-bridge.service from template (ffmpeg HTTP bridge)
-  if [ -f "$baseDir/install/spotify-bridge.service.template" ]; then
-    sed -e "s|{{BASE_DIR}}|$baseDir|g" \
-        "$baseDir/install/spotify-bridge.service.template" > "/tmp/spotify-bridge.service"
-    echo "Generated spotify-bridge.service" | tee -a $logFile
-  fi
-
   # Generate mount unit name based on base directory path
   # systemd mount units must be named after the mount path with - replacing /
   local mountUnitPath=$(echo "$baseDir" | sed 's|^/||; s|/|-|g')
@@ -206,11 +199,10 @@ function generateServiceFiles
     runCmd cp "/tmp/fallback.service" "$HOME/.config/systemd/user/fallback.service"
     runCmd cp "$baseDir/install/set-default-audio.service" "$HOME/.config/systemd/user/set-default-audio.service"
     runCmd cp "/tmp/spotify.service" "$HOME/.config/systemd/user/spotify.service"
-    runCmd cp "/tmp/spotify-bridge.service" "$HOME/.config/systemd/user/spotify-bridge.service"
     runCmd sudo systemctl daemon-reload
     runCmd systemctl --user daemon-reload
-    runCmd systemctl --user enable set-default-audio.service whisper.service piper.service fallback.service spotify.service spotify-bridge.service minimy.service
-    runCmd systemctl --user start set-default-audio.service whisper.service piper.service fallback.service spotify.service spotify-bridge.service
+    runCmd systemctl --user enable set-default-audio.service whisper.service piper.service fallback.service spotify.service minimy.service
+    runCmd systemctl --user start set-default-audio.service whisper.service piper.service fallback.service spotify.service
     echo "Systemd service files installed successfully" | tee -a $logFile
   fi
  }                                         # generateServiceFiles()
@@ -402,43 +394,9 @@ else:
 " 2>&1 | tee -a $logFile
   fi
 
-  # --- Rename real soloist binary and install wrapper ---
-  local soloistBin="$HOME/.local/share/soloistd/bin/soloist"
-  local soloistReal="$HOME/.local/share/soloistd/bin/soloist.real"
-  if [ -f "$soloistBin" ] && ! head -c 2 "$soloistBin" 2>/dev/null | grep -q '#!'; then
-    mv "$soloistBin" "$soloistReal"
-    echo "Moved soloist binary to $soloistReal" | tee -a $logFile
-  fi
-  if [ ! -f "$soloistBin" ] || ! grep -q 'soloist.real' "$soloistBin" 2>/dev/null; then
-    if [ -f "$baseDir/install/soloist-wrapper.sh.template" ]; then
-      sed "s|{{HOME}}|$HOME|g" \
-        "$baseDir/install/soloist-wrapper.sh.template" > "$soloistBin"
-      chmod +x "$soloistBin"
-      echo "Installed soloist wrapper at $soloistBin" | tee -a $logFile
-    else
-      echo "WARNING: soloist-wrapper.sh.template not found" | tee -a $logFile
-    fi
-  fi
-
   # --- Symlink soloist into PATH ---
   if [ -x "$soloistBin" ]; then
     runCmd sudo ln -sf "$soloistBin" /usr/local/bin/soloist
-  fi
-
-  # --- Install spotify-bridge.sh from template ---
-  if [ -f "$baseDir/install/spotify-bridge.sh.template" ]; then
-    runCmd sudo cp "$baseDir/install/spotify-bridge.sh.template" /usr/local/bin/spotify-bridge.sh
-    runCmd sudo chmod +x /usr/local/bin/spotify-bridge.sh
-  else
-    echo "WARNING: spotify-bridge.sh.template not found" | tee -a $logFile
-  fi
-
-  # --- Persist pipe-sink in ~/.config/pulse/default.pa ---
-  local pulseDefault="$HOME/.config/pulse/default.pa"
-  mkdir -p "$HOME/.config/pulse"
-  if ! grep -q 'sink_name=soloist_sink' "$pulseDefault" 2>/dev/null; then
-    echo 'load-module module-pipe-sink sink_name=soloist_sink file=/tmp/soloist.raw format=s32le rate=44100 channels=2' >> "$pulseDefault"
-    echo "Added pipe-sink to $pulseDefault" | tee -a $logFile
   fi
  }                                         # setupSpotify()
 

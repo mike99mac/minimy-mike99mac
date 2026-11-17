@@ -130,6 +130,9 @@ class MpcSkill(MediaSkill):
         "backend": backend,
       })
       self.log.debug(f"MpcSkill.media_play() sent backend_update: {backend}")
+      if backend == "mpc":
+        # Cross-backend mute: silence Soloist before MPD starts
+        subprocess.run(["soloist", "ctl", "pause"], capture_output=True, timeout=5)
     if self.music_info.match_type == "none": # no music was found
       self.log.debug("MpcSkill.media_play() no music found") 
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info) 
@@ -138,11 +141,6 @@ class MpcSkill(MediaSkill):
       self.log.debug("MpcSkill.media_play() speak results of playlist request")
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info) 
       return None
-    elif self.music_info.match_type == "spotify":
-      # Soloist is already playing; wire MPD to the bridge
-      self.mpc_client.mpc_cmd("clear")
-      self.mpc_client.mpc_cmd("add", "http://127.0.0.1:8888/stream.ogg")
-      self.mpc_client.mpc_play()
     elif self.music_info.match_type == "internet":
       # Internet music is resolved and queued by stream_internet_music() via ytadd.
       self.mpc_client.mpc_cmd("clear")

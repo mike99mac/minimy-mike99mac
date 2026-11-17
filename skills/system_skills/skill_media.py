@@ -1,6 +1,5 @@
 from threading import Event
 import subprocess
-import time
 from framework.util.utils import aplay
 from skills.sva_base import SimpleVoiceAssistant
 
@@ -204,44 +203,30 @@ class SVAMediaSkill(SimpleVoiceAssistant):
     if self.active_backend == "spotify":
       state = self._soloist_state()
       if state == "playing":
-        self.log.info("SVAMediaSkill.handle_pause() -> soloist ctl pause + mpc pause")
+        self.log.info("SVAMediaSkill.handle_pause() -> soloist ctl pause")
         self._soloist_cmd("pause")
-        self.mpc_cmd("pause")
       else:
-        self.log.info("SVAMediaSkill.handle_pause() -> soloist ctl resume + mpc rebuild stream")
+        self.log.info("SVAMediaSkill.handle_pause() -> soloist ctl play")
         self._soloist_cmd("play")
-        self.mpc_cmd("clear")
-        time.sleep(2.5)
-        self.mpc_cmd("add", "http://127.0.0.1:8888/stream.ogg")
-        self.mpc_cmd("play")
     else:
       self.log.info("SVAMediaSkill.handle_pause() -> mpc toggle")
       self.mpc_cmd("toggle")
 
   def handle_resume(self, msg):
     if self.active_backend == "spotify":
-      self.log.info("SVAMediaSkill.handle_resume() -> soloist ctl resume + mpc rebuild stream")
+      self.log.info("SVAMediaSkill.handle_resume() -> soloist ctl play")
       self._soloist_cmd("play")
-      self.mpc_cmd("clear")
-      time.sleep(2.5)
-      self.mpc_cmd("add", "http://127.0.0.1:8888/stream.ogg")
-      self.mpc_cmd("play")
     else:
       self.log.info("SVAMediaSkill.handle_resume() -> mpc toggle")
       self.mpc_cmd("toggle")
 
   def handle_stop(self, msg):
     if self.active_backend == "spotify":
-      self.log.info("SVAMediaSkill.handle_stop() -> soloist ctl stop + mpc clear")
+      self.log.info("SVAMediaSkill.handle_stop() -> soloist ctl pause")
       self._soloist_cmd("pause")
-      self.mpc_cmd("clear")
     else:
       self.log.info("SVAMediaSkill.handle_stop() -> mpc clear")
-      self.mpc_cmd("clear") 
-
-  def stop(self, message):
-    self.log.info("SVAMediaSkill.stop() - pausing music")
-    self.mpc_cmd("pause")
+      self.mpc_cmd("clear")
 
 
 if __name__ == "__main__":
