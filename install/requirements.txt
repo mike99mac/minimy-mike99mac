@@ -15,6 +15,7 @@ pytz
 requests
 scikit-learn
 scipy
+spotipy
 textual>=0.60
 webrtcvad-wheels
 websocket-client

@@ -17,20 +17,20 @@ DEFAULT_SAMPLE_RATE = 16000
 BARK = False
 
 class Audio(object):
-  # Streams raw audio from microphone. Data is received in a separate thread, and stored in a buffer, to be read from.
+  # Streams raw audio from microphone. Data is received in a separate thread and stored in a buffer to be read from.
   FORMAT = pyaudio.paInt16
   RATE_PROCESS = 16000                     # Network/VAD rate-space
-  CHANNELS = 1
+  CHANNELS = 1                             # logical output channels (mono)
+  CAPTURE_CHANNELS = 1                     # set at runtime by _probe_channels()
+  CHANNEL_INDEX = None                     # set at runtime by _probe_channels()
   BLOCKS_PER_SECOND = 50
 
-  def __init__(self, callback=None, device=None, input_rate=RATE_PROCESS, file=None): 
+  def __init__(self, callback=None, input_rate=RATE_PROCESS):
     if callback is None:
       def default_callback(in_data, frame_count, time_info, status):
-        self.buffer_queue.put(in_data)
+        self.buffer_queue.put(self._extract_channel(in_data))
       callback = default_callback
     def proxy_callback(in_data, frame_count, time_info, status):
-      if self.chunk is not None:
-        in_data = self.wf.readframes(self.chunk)
       if callback is not None:
         callback(in_data, frame_count, time_info, status)
       return (None, pyaudio.paContinue)
@@ -38,28 +38,42 @@ class Audio(object):
     log_filename = self.base_dir + "/logs/audio.log"
     self.log = LOG(log_filename).log
     self.buffer_queue = queue.Queue()
-    self.device = device
     self.input_rate = input_rate
     self.sample_rate = self.RATE_PROCESS
     self.block_size = int(self.RATE_PROCESS / float(self.BLOCKS_PER_SECOND))
     self.block_size_input = int(self.input_rate / float(self.BLOCKS_PER_SECOND))
     self.pa = pyaudio.PyAudio()
+    self._probe_channels()
     kwargs = {"format": self.FORMAT,
-              "channels": self.CHANNELS,
+              "channels": self.CAPTURE_CHANNELS,
               "rate": self.input_rate,
               "input": True,
               "frames_per_buffer": self.block_size_input,
               "stream_callback": proxy_callback
              }
-    self.chunk = None
-    if self.device is not None:
-      kwargs["input_device_index"] = self.device
-    elif file is not None:
-      self.chunk = 320
-      self.wf = wave.open(file, "rb")
     self.log.debug(f"Audio.__init__() kwargs: {kwargs}")
     self.stream = self.pa.open(**kwargs)
     self.stream.start_stream()
+
+  def _probe_channels(self):
+    # reSpeaker XVF3800 exposes 4 channels: ch0 is AEC-processed.
+    # Normal mics expose 1; stereo mics expose 2 (downmix).
+    try:
+      info = self.pa.get_default_input_device_info()
+      probed = int(info.get("maxInputChannels", 1))
+    except Exception:
+      probed = 1
+    if probed >= 4:
+      self.CAPTURE_CHANNELS = 4
+      self.CHANNEL_INDEX = 0       # AEC-processed
+    elif probed == 2:
+      self.CAPTURE_CHANNELS = 2
+      self.CHANNEL_INDEX = None    # downmix to mono
+    else:
+      self.CAPTURE_CHANNELS = 1
+      self.CHANNEL_INDEX = None    # already mono
+    self.log.debug(f"Audio._probe_channels(): probed={probed} "
+                   f"capture={self.CAPTURE_CHANNELS} index={self.CHANNEL_INDEX}")
 
   def resample(self, data):
     data16 = np.frombuffer(data, dtype=np.int16)
@@ -67,6 +81,15 @@ class Audio(object):
     resample = signal.resample(data16, resample_size)
     resample16 = np.array(resample, dtype=np.int16)
     return resample16.tobytes()
+
+  def _extract_channel(self, interleaved_bytes):
+    if self.CAPTURE_CHANNELS == 1:
+      return interleaved_bytes
+    samples = np.frombuffer(interleaved_bytes, dtype=np.int16)
+    channels = samples.reshape(-1, self.CAPTURE_CHANNELS)
+    if self.CHANNEL_INDEX is None:
+      return channels.mean(axis=1).astype(np.int16).tobytes()
+    return channels[:, self.CHANNEL_INDEX].tobytes()
 
   def read_resampled(self):
     return self.resample(data=self.buffer_queue.get())
@@ -92,10 +115,10 @@ class Audio(object):
     wf.close()
 
 class VADAudio(Audio):
-  def __init__(self, aggressiveness=3, device=None, input_rate=None, file=None):
+  def __init__(self, aggressiveness=3, input_rate=None):
     if input_rate is None:
       input_rate = self.RATE_PROCESS
-    super().__init__(device=device, input_rate=input_rate, file=file)
+    super().__init__(input_rate=input_rate)
     self.vad = webrtcvad.Vad(aggressiveness)
 
   def frame_generator(self):
@@ -163,7 +186,6 @@ def main():
 
   # Always use the system default input device (managed by PipeWire).
   # The default source should be set via PipeWire (pactl set-default-source).
-  device_indx = None
   print("mic.py.main() Using system default input (PipeWire pulse device)")
 
   aggressiveness = 3
@@ -179,9 +201,7 @@ def main():
 
   try:
     vad_audio = VADAudio(aggressiveness=aggressiveness,
-                         device=device_indx,
-                         input_rate=DEFAULT_SAMPLE_RATE,
-                         file=None)
+                         input_rate=DEFAULT_SAMPLE_RATE)
   except Exception as e:
     os.dup2(saved_stderr, 2)
     os.close(saved_stderr)

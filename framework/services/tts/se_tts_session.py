@@ -44,20 +44,11 @@ class TTSSession(TTSSessionTable, TTSSessionMethods, threading.Thread):
     self.log.debug(f"TTSSession.__init__() remote_tts_flag: {remote_tts_flag}")
     if remote_tts_flag and remote_tts_flag == "y":
       self.use_remote_tts = True
-      which_remote_tts = cfg.get_cfg_val("Basic.TTS.Remote")
-      if which_remote_tts == "m":          # mimic
-        from framework.services.tts.remote.mimic2 import remote_tts
-      else:                                # remote default is polly
-        from framework.services.tts.remote.polly import remote_tts
+      from framework.services.tts.remote.polly import remote_tts
       self.remote_tts = remote_tts()
     self.log.info(f"TTSSession.__init__() use_remote_tts: {self.use_remote_tts} remote_tts: {self.remote_tts}")
-    if cfg.get_cfg_val("Basic.TTS.Local") == "c": # coqui
-      from framework.services.tts.local.coqui_tts import local_speak_dialog
-    elif cfg.get_cfg_val("Basic.TTS.Local") == "p": # piper
-      self.log.debug(f"TTSSession.__init__() importing piper's local_speak_dialog()")
-      from framework.services.tts.local.local_piper import local_speak_dialog
-    else:
-      from framework.services.tts.local.espeak import local_speak_dialog
+    self.log.debug(f"TTSSession.__init__() importing piper's local_speak_dialog()")
+    from framework.services.tts.local.local_piper import local_speak_dialog
     self.local_speak = local_speak_dialog
     self.tmp_file_path = os.getenv("SVA_BASE_DIR") + "/tmp"
     self.remote_file_name = ""

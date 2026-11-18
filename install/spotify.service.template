@@ -1,0 +1,18 @@
+[Unit]
+Description=Spotify (soloistd)
+After=pipewire.service pipewire-pulse.service wireplumber.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/soloistd run
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH={{BASE_DIR}}:$PYTHONPATH
+WorkingDirectory={{BASE_DIR}}/framework/services/spotify
+StandardOutput=append:{{BASE_DIR}}/logs/spotify.log
+StandardError=append:{{BASE_DIR}}/logs/spotify.log
+Restart=always
+RestartSec=5
+KillMode=process
+
+[Install]
+WantedBy=default.target

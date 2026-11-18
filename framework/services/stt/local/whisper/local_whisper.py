@@ -27,6 +27,11 @@ if ctranslate2.get_cuda_device_count() > 0:
 else:
   print(f"Starting Whisper using CPU with model {model_name}...")
   model = WhisperModel(model_name, device="cpu", compute_type="int8")
+# Warmup: trigger lazy init and CUDA kernel compilation before serving requests.
+print("Warming up Whisper...")
+_warmup_audio = np.zeros(16000, dtype=np.float32) # 1 s of silence
+list(model.transcribe(_warmup_audio, beam_size=1))
+print("Warmup complete")
 
 @app.route("/stt", methods=["POST"])
 async def transcribe():
@@ -37,7 +42,13 @@ async def transcribe():
       with wave.open(wav_io, "rb") as wav_file:
         audio_bytes = wav_file.readframes(wav_file.getnframes())
         audio_array = np.frombuffer(audio_bytes, dtype=np.int16).astype(np.float32) / 32768.0
-    segments, info = model.transcribe(audio_array, beam_size=5, vad_filter=True, vad_parameters=dict(min_silence_duration_ms=500, threshold=0.5))
+    segments, info = model.transcribe(
+      audio_array,
+      beam_size=5,
+      vad_filter=True,
+      vad_parameters=dict(min_silence_duration_ms=500, threshold=0.5),
+      condition_on_previous_text=False,
+    )
     transcription = "".join(segment.text.lower().lstrip().replace(",", "").replace("?", "") for segment in segments)
     elapsed = (time.perf_counter() - start_time) * 1000
     # Log timing to stdout (systemd will capture)

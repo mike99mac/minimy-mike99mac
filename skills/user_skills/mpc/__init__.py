@@ -1,6 +1,6 @@
 from framework.util.utils import Config
 from mpc_client import MpcClient
-from music_info import Music_info
+from framework.util.music_info import Music_info
 from skills.sva_media_skill_base import MediaSkill
 from threading import Event
 import subprocess
@@ -18,7 +18,7 @@ class MpcSkill(MediaSkill):
     cfg = Config()                         # get config file
     self.log.debug("MpcSkill.__init__(): Registering intents")
     self.register_intent('C', 'move', 'music', self.move_music)
-    self.room_to_host = cfg.get_cfg_val("Basic.RoomToHost") or {}
+    self.room_to_host = cfg.get_cfg_val("Basic.RoomsToHost") or {}
     self.log.debug(f"MpcSkill.__init__(): room_to_host: {self.room_to_host}")
     self.mpc_client = MpcClient()          # search for music under <music_dir>
     self.log.debug(f"MpcSkill.__init__(): skill_base_dir: {self.skill_base_dir}")
@@ -121,6 +121,18 @@ class MpcSkill(MediaSkill):
   def media_play(self, msg):
     # Either music has been found, a playlist operation finished, or an error message has to be spoken
     self.log.debug(f"MpcSkill.media_play() match_type = {self.music_info.match_type}")
+    if self.music_info.match_type not in ("none", "playlist_op"):
+      backend = "spotify" if self.music_info.match_type == "spotify" else "mpc"
+      self.send_message("media_skill", {
+        "subtype": "backend_update",
+        "skill_id": "media_skill",
+        "from_skill_id": self.skill_id,
+        "backend": backend,
+      })
+      self.log.debug(f"MpcSkill.media_play() sent backend_update: {backend}")
+      if backend == "mpc":
+        # Cross-backend mute: silence Soloist before MPD starts
+        subprocess.run(["soloist", "ctl", "pause"], capture_output=True, timeout=5)
     if self.music_info.match_type == "none": # no music was found
       self.log.debug("MpcSkill.media_play() no music found") 
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info) 
@@ -129,21 +141,25 @@ class MpcSkill(MediaSkill):
       self.log.debug("MpcSkill.media_play() speak results of playlist request")
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info) 
       return None
-    elif self.music_info.match_type != "playlist": # playlists are already queued up
-      self.mpc_client.mpc_cmd("clear")     # stop any media that might be playing
+    elif self.music_info.match_type == "internet":
+      # Internet music is resolved and queued by stream_internet_music() via ytadd.
+      self.mpc_client.mpc_cmd("clear")
+    elif self.music_info.match_type == "playlist":
+      self.mpc_client.mpc_cmd("random on") # shuffle tracks
+    else:                                  # local music: track, album, artist, radio, news
+      self.mpc_client.mpc_cmd("clear")
       for next_url in self.music_info.tracks_or_urls:
         self.log.debug(f"MpcSkill.media_play() adding URL to MPC queue: {next_url}")
-        cmd = f"add {next_url}"    
+        cmd = f"add {next_url}"
         self.mpc_client.mpc_cmd(cmd)
-    elif self.music_info.match_type == "playlist":     
-      self.mpc_client.mpc_cmd("random on") # shuffle tracks 
-    if self.music_info.mesg_file is None:  # no message
+
+    if not self.music_info.mesg_file:      # no message
       self.start_music()
     else:                                  # speak message and pass callback  
       #self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info, self.start_music)
       self.speak_lang(self.skill_base_dir, self.music_info.mesg_file, self.music_info.mesg_info)
       self.start_music()
-    
+
   def start_music(self):
     # callback to start music after media_play() speaks informational message
     self.log.debug(f"MpcSkill.start_music() calling mpc_client.start_music({self.music_info}")

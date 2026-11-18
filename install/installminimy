@@ -150,6 +150,13 @@ function generateServiceFiles
       "$baseDir/install/fallback.service.template" > "/tmp/fallback.service"
   echo "Generated fallback.service" | tee -a $logFile
 
+  # Generate spotify.service from template (soloistd runs Soloist)
+  if [ -f "$baseDir/install/spotify.service.template" ]; then
+    sed -e "s|{{BASE_DIR}}|$baseDir|g" \
+        "$baseDir/install/spotify.service.template" > "/tmp/spotify.service"
+    echo "Generated spotify.service" | tee -a $logFile
+  fi
+
   # Generate mount unit name based on base directory path
   # systemd mount units must be named after the mount path with - replacing /
   local mountUnitPath=$(echo "$baseDir" | sed 's|^/||; s|/|-|g')
@@ -191,10 +198,11 @@ function generateServiceFiles
     runCmd cp "/tmp/piper.service" "$HOME/.config/systemd/user/piper.service"
     runCmd cp "/tmp/fallback.service" "$HOME/.config/systemd/user/fallback.service"
     runCmd cp "$baseDir/install/set-default-audio.service" "$HOME/.config/systemd/user/set-default-audio.service"
+    runCmd cp "/tmp/spotify.service" "$HOME/.config/systemd/user/spotify.service"
     runCmd sudo systemctl daemon-reload
     runCmd systemctl --user daemon-reload
-    runCmd systemctl --user enable set-default-audio.service whisper.service piper.service fallback.service minimy.service # Enable at boot
-    runCmd systemctl --user start set-default-audio.service whisper.service piper.service fallback.service # Start immediately
+    runCmd systemctl --user enable set-default-audio.service whisper.service piper.service fallback.service spotify.service minimy.service
+    runCmd systemctl --user start set-default-audio.service whisper.service piper.service fallback.service spotify.service
     echo "Systemd service files installed successfully" | tee -a $logFile
   fi
  }                                         # generateServiceFiles()
@@ -265,6 +273,219 @@ RULE
   fi
   echo "Audio routing setup complete." | tee -a $logFile
 }                                          # setupAudioRouting()
+
+#+--------------------------------------------------------------------------+
+function setupSpotify
+# Configure Spotify Soloist and run inline OAuth if credentials are present.
+# Skips entirely if ClientId, ClientSecret, or SoloistAPIKey are empty.
+#+--------------------------------------------------------------------------+
+ {
+  : SOURCE: ${BASH_SOURCE}
+  : STACK: ${FUNCNAME[@]}
+  echo | tee -a $logFile
+  echo "Checking Spotify configuration..." | tee -a $logFile
+  local pyCmd="$baseDir/minimy_venv/bin/python3"
+
+  if [ ! -x "$pyCmd" ]; then
+    echo "Spotify: skipping (venv python not found)" | tee -a $logFile
+    return 0
+  fi
+
+  local clientId=$($pyCmd -c "import yaml; d=yaml.safe_load(open('$configFile')); b=next((i['Basic'] for i in d if 'Basic' in i), {}); s=b.get('Spotify', {}); print(s.get('ClientId') or '')" 2>/dev/null)
+  local clientSecret=$($pyCmd -c "import yaml; d=yaml.safe_load(open('$configFile')); b=next((i['Basic'] for i in d if 'Basic' in i), {}); s=b.get('Spotify', {}); print(s.get('ClientSecret') or '')" 2>/dev/null)
+  local deviceName=$($pyCmd -c "import yaml; d=yaml.safe_load(open('$configFile')); b=next((i['Basic'] for i in d if 'Basic' in i), {}); s=b.get('Spotify', {}); print(s.get('DeviceName') or 'Smart Boombox')" 2>/dev/null)
+  local soloistKey=$($pyCmd -c "import yaml; d=yaml.safe_load(open('$configFile')); b=next((i['Basic'] for i in d if 'Basic' in i), {}); s=b.get('Spotify', {}); print(s.get('SoloistAPIKey') or '')" 2>/dev/null)
+
+  if [ -z "$clientId" ] || [ -z "$clientSecret" ]; then
+    echo "Spotify: ClientId/ClientSecret absent — Spotify disabled." | tee -a $logFile
+    return 0
+  fi
+
+  # Spotipy OAuth (for search)
+  mkdir -p "$HOME/.config/spotify"
+  local cachePath="$baseDir/.config/spotify/credentials"
+  if [ -f "$cachePath" ]; then
+    echo "Spotify: OAuth cache present — skipping auth." | tee -a $logFile
+  else
+    echo | tee -a $logFile
+    $pyCmd "$baseDir/install/spotify_auth.py" "$clientId" "$clientSecret" "$cachePath" 2>&1 | tee -a $logFile
+    if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+      echo "ERROR: Spotify OAuth failed." | tee -a $logFile
+      return 1
+    fi
+  fi
+
+  # Soloist setup (needed for playback on accounts created after 12/2024)
+  if [ -z "$soloistKey" ]; then
+    echo "Soloist: API key not set — Spotify search will work, playback will fall back to YouTube." | tee -a $logFile
+    return 0
+  fi
+
+  local soloistdPath="/usr/local/bin/soloistd"
+  local arch=$(uname -m)
+
+  case "$arch" in
+    x86_64)
+      if [ ! -x "$soloistdPath" ]; then
+        runCmd wget -q "https://github.com/MopigamesYT/soloistd/releases/download/v0.2.0/soloistd-linux-amd64" -O /tmp/soloistd
+        runCmd sudo install -m 755 /tmp/soloistd "$soloistdPath"
+      fi
+      ;;
+    aarch64)
+      local soloistdReal="/usr/local/libexec/soloistd"
+      if [ ! -x "$soloistdReal" ]; then
+        # Ensure Go >= 1.21 for slices package and go.mod format
+        local goBin="/usr/local/go/bin/go"
+        local needGo=1
+        if [ -x "$goBin" ]; then
+          local goVer=$("$goBin" version | awk '{print $3}' | sed 's/go//')
+          local goMajor=$(echo "$goVer" | cut -d. -f1)
+          local goMinor=$(echo "$goVer" | cut -d. -f2)
+          if [ "$goMajor" -gt 1 ] || { [ "$goMajor" -eq 1 ] && [ "$goMinor" -ge 21 ]; }; then
+            needGo=0
+          fi
+        fi
+        if [ "$needGo" = 1 ]; then
+          runCmd wget -q "https://go.dev/dl/go1.24.5.linux-arm64.tar.gz" -O /tmp/go.tar.gz
+          runCmd sudo rm -rf /usr/local/go
+          runCmd sudo tar -C /usr/local -xzf /tmp/go.tar.gz
+          runCmd rm -f /tmp/go.tar.gz
+        fi
+        export PATH="/usr/local/go/bin:$PATH"
+        local soloistdSrc="/tmp/soloistd-src"
+        runCmd rm -rf "$soloistdSrc"
+        runCmd git clone --depth 1 https://github.com/MopigamesYT/soloistd "$soloistdSrc"
+        runCmd /usr/local/go/bin/go build -C "$soloistdSrc" -o /tmp/soloistd .
+        runCmd sudo mkdir -p /usr/local/libexec
+        runCmd sudo install -m 755 /tmp/soloistd "$soloistdReal"
+      fi
+
+      # --- Install Docker if missing ---
+      if ! command -v docker &>/dev/null; then
+        echo "Installing Docker..." | tee -a $logFile
+        if command -v apt-get &>/dev/null; then
+          runCmd sudo apt-get update
+          runCmd sudo apt-get install -y docker.io
+        else
+          runCmd curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
+          runCmd sudo sh /tmp/get-docker.sh
+          runCmd rm -f /tmp/get-docker.sh
+        fi
+      fi
+
+      # --- Ensure Docker daemon is running and user has access ---
+      if command -v systemctl &>/dev/null; then
+        runCmd sudo systemctl enable --now docker
+      fi
+
+      if ! id -nG "$CURRENT_USER" | grep -qw docker; then
+        runCmd sudo usermod -aG docker "$CURRENT_USER"
+        echo "Added $CURRENT_USER to docker group." | tee -a $logFile
+      fi
+
+      # --- Build Docker image ---
+      runCmd sudo docker build -t minimy-soloist:latest -f "$baseDir/install/Dockerfile.soloist" "$baseDir/install"
+
+      # --- Install soloistd Docker wrapper at /usr/local/bin/soloistd ---
+      mkdir -p "$HOME/.local/share/soloistd" "$HOME/.local/share/soloist" "$HOME/.cache/soloist" "$HOME/.config/soloistd"
+      sudo tee "$soloistdPath" > /dev/null << 'WRAPPER'
+#!/usr/bin/env bash
+DOCKER_CMD=(docker)
+if ! docker info >/dev/null 2>&1; then
+  if sudo -n docker info >/dev/null 2>&1; then
+    DOCKER_CMD=(sudo docker)
+  fi
+fi
+
+exec "${DOCKER_CMD[@]}" run --rm -i \
+  --network host \
+  --init \
+  --user "$(id -u):$(id -g)" \
+  -e HOME="$HOME" \
+  -e SOLOIST_API_KEY="${SOLOIST_API_KEY:-}" \
+  -e XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
+  -e PIPEWIRE_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
+  -e PULSE_SERVER="unix:${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/pulse/native" \
+  -v /tmp:/tmp \
+  -v "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}:${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
+  -v /usr/local/libexec/soloistd:/usr/local/libexec/soloistd:ro \
+  -v "$HOME/.local/share/soloistd:$HOME/.local/share/soloistd" \
+  -v "$HOME/.local/share/soloist:$HOME/.local/share/soloist" \
+  -v "$HOME/.cache/soloist:$HOME/.cache/soloist" \
+  -v "$HOME/.config/soloistd:$HOME/.config/soloistd" \
+  minimy-soloist:latest "$@"
+WRAPPER
+      sudo chmod 755 "$soloistdPath"
+
+      # --- Install soloist Docker wrapper at /usr/local/bin/soloist ---
+      sudo tee /usr/local/bin/soloist > /dev/null << 'WRAPPER'
+#!/usr/bin/env bash
+DOCKER_CMD=(docker)
+if ! docker info >/dev/null 2>&1; then
+  if sudo -n docker info >/dev/null 2>&1; then
+    DOCKER_CMD=(sudo docker)
+  fi
+fi
+
+exec "${DOCKER_CMD[@]}" run --rm -i \
+  --network host \
+  --init \
+  --user "$(id -u):$(id -g)" \
+  --entrypoint "$HOME/.local/share/soloistd/bin/soloist" \
+  -e HOME="$HOME" \
+  -e XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
+  -e PIPEWIRE_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
+  -e PULSE_SERVER="unix:${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/pulse/native" \
+  -v /tmp:/tmp \
+  -v "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}:${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
+  -v "$HOME/.local/share/soloistd:$HOME/.local/share/soloistd" \
+  -v "$HOME/.local/share/soloist:$HOME/.local/share/soloist" \
+  -v "$HOME/.cache/soloist:$HOME/.cache/soloist" \
+  -v "$HOME/.config/soloistd:$HOME/.config/soloistd" \
+  minimy-soloist:latest "$@"
+WRAPPER
+      sudo chmod 755 /usr/local/bin/soloist
+      ;;
+    *)
+      echo "Soloist: unsupported architecture $arch." | tee -a $logFile
+      return 1
+      ;;
+  esac
+
+  # --- Run soloistd setup: downloads soloist binary, writes config ---
+  SOLOIST_API_KEY="$soloistKey" "$soloistdPath" setup --device-name "$deviceName" >> $logFile 2>&1
+  if [ "$?" != 0 ]; then
+    echo "ERROR: soloistd setup failed" | tee -a $logFile
+    return 1
+  fi
+
+  # --- Ensure websocket key is set in soloistd config ---
+  local soloistCfg="$HOME/.config/soloistd/config.json"
+  if [ -f "$soloistCfg" ]; then
+    $pyCmd -c "
+import json, sys
+p = '$soloistCfg'
+try:
+  with open(p) as f:
+    cfg = json.load(f)
+except Exception as e:
+  print(f'Failed to read {p}: {e}', file=sys.stderr)
+  sys.exit(1)
+if not cfg.get('websocket'):
+  cfg['websocket'] = '127.0.0.1:9090'
+  with open(p, 'w') as f:
+    json.dump(cfg, f, indent=2)
+  print('Added websocket to soloistd config')
+else:
+  print(f'Websocket already configured: {cfg[\"websocket\"]}')
+" 2>&1 | tee -a $logFile
+  fi
+
+  # --- Symlink soloist into PATH on x86_64 ---
+  if [ "$arch" = "x86_64" ]; then
+    runCmd sudo ln -sf ~/.local/share/soloistd/bin/soloist /usr/local/bin/soloist
+  fi
+ }                                         # setupSpotify()
 
 #+--------------------------------------------------------------------------+
 function generateConfigFile
@@ -428,44 +649,31 @@ function buildVenv
     libavutil-dev libswscale-dev libswresample-dev libavfilter-dev libavcodec-dev libavformat-dev \
     libavdevice-dev redis libogg-dev libvorbis-dev libflac-dev libmpg123-dev libasound2-dev
   fi
-  # Install go-librespot prebuilt binary to /usr/local/bin
-  echo | tee -a $logFile
-  echo "Installing go-librespot..." | tee -a $logFile
-  if [ -x /usr/local/bin/go-librespot ]; then
-    echo "go-librespot already installed, skipping." | tee -a $logFile
-  else
-    case "$(uname -m)" in
-      aarch64|arm64)  archName="arm64" ;;
-      armv7l|armv6l)  archName="armv6_rpi" ;;
-      x86_64)         archName="x86_64" ;;
-      *)
-        echo "ERROR: Unsupported architecture for go-librespot: $(uname -m)" | tee -a $logFile
-        exit 12
-        ;;
-    esac
-    golibrespotTmp=$(mktemp -d)
-    golibrespotTar="go-librespot_linux_${archName}.tar.gz"
-    runCmd curl -fL "https://github.com/devgianlu/go-librespot/releases/latest/download/${golibrespotTar}" -o "$golibrespotTmp/$golibrespotTar"
-    runCmd tar -xzf "$golibrespotTmp/$golibrespotTar" -C "$golibrespotTmp"
-    runCmd sudo install -m 0755 "$golibrespotTmp/go-librespot" /usr/local/bin/go-librespot
-    rm -rf "$golibrespotTmp"
-  fi
   echo | tee -a $logFile
   local pythonVer=`python -V | awk '{print $2}' | awk -F'.' '{print $1"."$2}'`
   echo "Python version: $pythonVer ..." | tee -a $logFile
   local pythonCmd="$baseDir/minimy_venv/bin/python$pythonVer" # use python from the venv
-  if [ "$platform" = "NVIDIA Jetson" ] && [ ! -d "$baseDir/CTranslate2" ]; then
+  if [ "$platform" = "NVIDIA Jetson" ] && ! $pythonCmd -c "import ctranslate2, sys; sys.exit(0 if ctranslate2.get_cuda_device_count() >= 1 else 1)" 2>/dev/null; then
+    runCmd $pipCmd install --upgrade cmake
     echo "Building CTranslate2 from source ..."
     cd $baseDir
-    runCmd git clone --recurse-submodules https://github.com/OpenNMT/CTranslate2
+    if [ -d "$baseDir/CTranslate2" ]; then
+      echo "CTranslate2 repo already present; removing for clean rebuild." | tee -a $logFile
+      rm -rf "$baseDir/CTranslate2"
+    fi
+    runCmd git clone --recurse-submodules --branch v4.8.5 --depth 1 https://github.com/OpenNMT/CTranslate2
     cd CTranslate2
     mkdir build; cd build
+    export PATH="/usr/local/cuda/bin:$PATH"
+    export CUDA_HOME="/usr/local/cuda"
+    export CUDACXX="/usr/local/cuda/bin/nvcc"
     if command -v apt-get &>/dev/null; then
       runCmd sudo apt-get install -y libomp-dev
     fi
-    runCmd cmake .. -DWITH_CUDA=ON -DWITH_CUDNN=ON -DWITH_MKL=OFF -DWITH_RUY=ON
+    runCmd "$baseDir/minimy_venv/bin/cmake" .. -DWITH_CUDA=ON -DWITH_CUDNN=ON -DWITH_MKL=OFF -DWITH_RUY=ON -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_CUDA_ARCHITECTURES=87
     runCmd make -j6
     runCmd sudo make install
+    runCmd sudo ldconfig
     cd ../python
     runCmd $pipCmd install -r install_requirements.txt
     runCmd python setup.py bdist_wheel
@@ -476,10 +684,16 @@ function buildVenv
   echo "Installing local requirements.txt" | tee -a $logFile
   runCmd $pipCmd install -r install/requirements.txt
   echo "Installing local STT faster-whisper" | tee -a $logFile
-  if [ "$platform" = "NVIDIA Jetson" ] && [ ! -d "$baseDir/CTranslate2" ]; then
-    runCmd $pipCmd install faster-whisper 'av<19' --constraint <(echo "ctranslate2==$(pip show ctranslate2 | grep Version | awk '{print $2}')")
+  local FW_VER="1.2.1"
+  if [ "$platform" = "NVIDIA Jetson" ]; then
+    ct2_ver=$($pythonCmd -c "import ctranslate2; print(ctranslate2.__version__)" 2>/dev/null)
+    if [ -n "$ct2_ver" ]; then
+      runCmd $pipCmd install "faster-whisper==$FW_VER" "ctranslate2==$ct2_ver" 'av<19'
+    else
+      runCmd $pipCmd install "faster-whisper==$FW_VER" 'av<19'
+    fi
   else
-    runCmd $pipCmd install faster-whisper 'av<19'
+    runCmd $pipCmd install "faster-whisper==$FW_VER" 'av<19'
   fi
   runCmd $pipCmd install datasets
   if command -v apt-get &>/dev/null; then
@@ -564,14 +778,13 @@ function buildVenv
   fi
 
   echo "Pre-caching the LLM model from HuggingFace..." | tee -a $logFile
-  llmRepo=$($pythonCmd -c "import yaml; f=open(\"$configFile\"); data=yaml.safe_load(f); f.close(); basic=next((item for item in data if 'Basic' in item), {}).get('Basic', {}); llm=basic.get('LLM', {}); print(llm.get('LLMRepo', ''))")
-  llmFile=$($pythonCmd -c "import yaml; f=open(\"$configFile\"); data=yaml.safe_load(f); f.close(); basic=next((item for item in data if 'Basic' in item), {}).get('Basic', {}); llm=basic.get('LLM', {}); print(llm.get('LLMFile', ''))")
+  read -r llmRepo llmModel < <($pythonCmd -c "import yaml; d=yaml.safe_load(open(\"$configFile\")); b=next((i['Basic'] for i in d if 'Basic' in i), {}); llm=b.get('LLM', {}); print(llm.get('Repo', ''), llm.get('Model', ''))")
 
-  if [ -n "$llmRepo" ] && [ -n "$llmFile" ]; then
-    echo "Downloading model $llmRepo ($llmFile) ..." | tee -a $logFile
-    runCmd "$pythonCmd $baseDir/install/cache_llm.py"
+  if [ -n "$llmRepo" ] && [ -n "$llmModel" ]; then
+    echo "Downloading model $llmRepo ($llmModel) ..." | tee -a $logFile
+    runCmd "$pythonCmd $baseDir/framework/services/llm/cache_llm.py"
   else
-    echo "Warning: LLMRepo or LLMFile not found in config. Skipping pre-cache." | tee -a $logFile
+    echo "Warning: Basic.LLM.Repo or Basic.LLM.file not found in config. Skipping pre-cache." | tee -a $logFile
   fi
 
   # Set whisper to run as a system daemon and log to /var/log/whisper.log
@@ -581,7 +794,7 @@ function buildVenv
   echo | tee -a $logFile
 
   echo "Copying Minimy scripts to /usr/local/sbin ..."| tee -a $logFile
-  minimyScripts="startminimy stopminimy restartminimy grm cmpcode countminimy minimyver testhub.py testspoke.py qa.py ytplay startdebug"
+  minimyScripts="startminimy stopminimy restartminimy grm countminimy minimyver testhub.py testspoke.py qa.py ytplay startdebug"
   echo | tee -a $logFile
   echo "cd to $baseDir/install ..." | tee -a $logFile
   cd $baseDir/install
@@ -595,8 +808,6 @@ function buildVenv
   if [ -d "$baseDir/mpd/playlists" ]; then
     runCmd cp $baseDir/install/great_songs.m3u "$baseDir/mpd/playlists/"
   fi
-  echo " "
-  echo "Install Complete at `date`" | tee -a $logFile
  }                                         # buildVenv()
 
 # global variables
@@ -631,11 +842,14 @@ setMinimyVars                              # set config file variables
 generateConfigFile                         # generate config file from template
 setupAudioRouting                          # setup audio routing through PipeWire
 buildVenv                                  # do the work
+setupSpotify                               # configure + OAuth if credentials present
 generateServiceFiles                       # generate systemctl service files
 let min=$SECONDS/60
 let sec=$SECONDS%60
 if [ $sec -lt 10 ]; then                   # add a leading 0
   sec="0$sec"
 fi
+echo
+echo "Install Complete at `date`" | tee -a $logFile
 echo "Successfully installed Minimy in $min:$sec" | tee -a $logFile
 echo "Log file: $logFile"

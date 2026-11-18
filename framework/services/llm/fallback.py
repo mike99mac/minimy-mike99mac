@@ -52,8 +52,8 @@ class FallbackLLMService:
     self.processing_lock = Lock()
     self._patch_llama_cleanup_bug()
 
-    self.llm_repo = str(self.cfg.get_cfg_val("Basic.LLMRepo") or "").strip()
-    self.llm_file = str(self.cfg.get_cfg_val("Basic.LLMFile") or "").strip()
+    self.llm_repo = str(self.cfg.get_cfg_val("Basic.LLM.Repo") or "").strip()
+    self.llm_file = str(self.cfg.get_cfg_val("Basic.LLM.Model") or "").strip()
     base_dir = self.cfg.get_cfg_val("Basic.BaseDir") or "."
     self.llm_fallback_log = os.path.join(base_dir, "logs", "llm_fallback.log")
     self.llm_fallback_lock = os.path.join(base_dir, "tmp", "fallback_llm.lock")
@@ -113,11 +113,9 @@ class FallbackLLMService:
     model_cls._minimy_cleanup_patch = True
 
   def _get_num_threads(self):
-    # If GPU is available (n_gpu_layers > 0), use fewer CPU threads
-    if getattr(self, '_gpu_enabled', False):
-      return max(1, os.cpu_count() // 4)   # Lighter on CPU when GPU does the work
-    else:
-      return max(1, os.cpu_count() // 2)   # More threads for CPU‑only inference
+    # GPU offload still needs CPU threads for tokenization, sampling, and KV bookkeeping.
+    # Half the physical cores is a safe default on both GPU and CPU paths.
+    return max(4, os.cpu_count() // 2)
 
   def _create_llm(self, model_path):
     llm_kwargs = {
@@ -169,7 +167,7 @@ class FallbackLLMService:
     return None
 
   def _launch_model_prefetch(self):
-    helper_path = os.path.join(self.cfg.get_cfg_val("Basic.BaseDir") or ".", "install", "cache_llm.py")
+    helper_path = os.path.join(self.cfg.get_cfg_val("Basic.BaseDir") or ".", "framework", "services", "llm", "cache_llm.py")
     if not os.path.exists(helper_path):
       log.error(f"Missing LLM cache helper at {helper_path}")
       return False
@@ -283,7 +281,11 @@ Now respond with only the JSON object for: """
 You are now answering the user directly. Provide a short, factual, helpful answer. No markdown. No extra explanations. Just the answer."""
 
   def _log_llm(self, label, prompt_text, answer_text):
-    log_path = os.path.expanduser("~/minimy/logs/llm.log")
+    # Log to llm.log
+    base_dir = os.getenv('SVA_BASE_DIR')
+    if base_dir is None:
+      base_dir = os.path.expanduser('~/minimy')
+    log_path = os.path.join(base_dir, 'logs', 'llm.log')
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
     try:
       with open(log_path, "a", encoding="utf-8") as f:

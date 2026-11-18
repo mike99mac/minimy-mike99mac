@@ -125,7 +125,7 @@ class Buttons:
   def prev_pressed(self):
     self.log.debug("Buttons.prev_pressed() prev button pressed")
     print("")
-    info = {"subtype": "oob_detect", "skill_id": "media_skill", "verb": "prev"}
+    info = {"subtype": "oob_detect", "skill_id": "media_skill", "verb": "previous"}
     self.bus.send("media", "media_skill", info)
   
   def prev_held(self):
@@ -158,7 +158,7 @@ class Buttons:
     info = {"subtype": "oob_detect", "skill_id": "media_skill", "verb": "stop"}
     self.bus.send("media", "media_skill", info)
 
-  def signal_handler(self, sig, frame):    
+  def signal_handler(self, sig, frame):
     # Trap Ctrl-C and cleanup before exiting
     sys.exit(0)
 
@@ -199,4 +199,4 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
       buttons.cleanup()
   else:
-    print("The hardware is not a Raspberry Pi - GPIO buttons disabled")
+    print("The hardware is neither a Raspberry Pi nor an NVIDIA Jetson board - GPIO buttons disabled")

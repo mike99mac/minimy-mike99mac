@@ -12,11 +12,12 @@ import os
 import time
 import wave
 import gzip
+import re
 
 REMOTE_TIMEOUT = 3
 LOCAL_TIMEOUT = 7
 
-def has_speech(wav_filename, energy_threshold=0.0005):
+def has_speech(wav_filename, energy_threshold=0.0015):
   # Check if WAV file contains speech above threshold
   try:
     with wave.open(wav_filename, 'rb') as wav:
@@ -53,6 +54,12 @@ def is_hallucination(text, wake_words=None, barge_in_words=None):
   if len(words) >= 4:
     bigrams = [' '.join(words[i:i+2]) for i in range(len(words)-1)]
     if len(set(bigrams)) == 1:
+      return True
+  # TTS-echo pattern: short utterances that look like a spoken time
+  # ("4.44 p.m.", "5 o'clock pm", "11 45 a m"). These come from the mic
+  # picking up TTS output, not from the user.
+  if len(words) <= 3:
+    if re.search(r'\d{1,2}[:.\s]?\d{0,2}\s*(a\.?\s?m\.?|p\.?\s?m\.?|o\.?\s?clock)', text.lower()):
       return True
   text_bytes = text.encode('utf-8')
   if len(text_bytes) > 10:

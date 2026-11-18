@@ -3,10 +3,10 @@ import json
 import os
 import socket
 import sys
-from datetime import datetime
+from datetime import datetime, UTC
+from pathlib import Path
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-BASE_DIR = os.path.dirname(SCRIPT_DIR)
+BASE_DIR = os.environ.get("SVA_BASE_DIR") or str(Path(__file__).resolve().parents[3])
 if BASE_DIR not in sys.path:
   sys.path.insert(0, BASE_DIR)
 
@@ -32,9 +32,8 @@ def _log(message):
   global _LOG_FILE
   if _LOG_FILE is None:
     _LOG_FILE = _get_log_file()
-  timestamp = datetime.utcnow().isoformat(timespec="seconds") + "Z"
+  timestamp = datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
   formatted = f"{timestamp} {message}"
-  print(formatted, flush=True)
   try:
     with open(_LOG_FILE, "a", encoding="utf-8") as f:
       f.write(formatted + "\n")
@@ -80,7 +79,7 @@ def acquire_lock(lock_path, repo_id, filename):
     "pid": os.getpid(),
     "repo_id": repo_id,
     "filename": filename,
-    "started_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+    "started_at": datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
   }
 
   try:
@@ -136,10 +135,10 @@ def main():
     _log("huggingface_hub is not installed; cannot cache LLM model")
     return 1
 
-  repo_id = str(cfg.get_cfg_val("Basic.LLMRepo") or "").strip()
-  filename = str(cfg.get_cfg_val("Basic.LLMFile") or "").strip()
+  repo_id = str(cfg.get_cfg_val("Basic.LLM.Repo") or "").strip()
+  filename = str(cfg.get_cfg_val("Basic.LLM.Model") or "").strip()
   if not repo_id or not filename:
-    _log("LLMRepo or LLMFile is missing in mmconfig.yml; skipping")
+    _log("Basic.LLM.Repo or Basic.LLM.Model is missing in mmconfig.yml; skipping")
     return 1
 
   cached_path = resolve_cached_path(repo_id, filename)
