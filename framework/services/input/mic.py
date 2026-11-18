@@ -12,16 +12,16 @@ import wave
 import webrtcvad
 
 # script to read from mic and save utterances in the directory base_dir/tmp/save_audio/ as .wav files
-DEFAULT_SAMPLE_RATE = 16000
+DEFAULT_SAMPLE_RATE = 48000  # Updated to match the reSpeaker 48kHz firmware rate
 
 class Audio(object):
   # Streams raw audio from microphone. Data is received in a separate thread and stored in a buffer to be read from.
   FORMAT = pyaudio.paInt16
-  RATE_PROCESS = 16000                     # Network/VAD rate-space
+  RATE_PROCESS = 48000                     # Network/VAD/Playback sync rate-space
   CHANNELS = 1                             # logical output channels (mono)
-  CAPTURE_CHANNELS = 2                     # always request stereo; select a channel below
+  CAPTURE_CHANNELS = 2                     # will be adjusted dynamically by probe
   CHANNEL_INDEX = 1                        # set at runtime by _probe_channels()
-  BLOCKS_PER_SECOND = 50
+  BLOCKS_PER_SECTION = 50
 
   def __init__(self, callback=None, input_rate=RATE_PROCESS):
     if callback is None:
@@ -36,18 +36,13 @@ class Audio(object):
     log_filename = self.base_dir + "/logs/audio.log"
     self.log = LOG(log_filename).log
     self.buffer_queue = queue.Queue()
-    if input_rate != self.RATE_PROCESS:
-      raise ValueError(
-        f"Audio.__init__(): input_rate={input_rate} but RATE_PROCESS={self.RATE_PROCESS}. "
-        f"Stream resampling was removed; set the capture device to {self.RATE_PROCESS} Hz "
-        f"(PipeWire resamples transparently) or reinstate a stateful resampler."
-      )
-    self.input_rate = input_rate
-    self.sample_rate = self.RATE_PROCESS
-    self.block_size = int(self.RATE_PROCESS / float(self.BLOCKS_PER_SECOND))
-    self.block_size_input = int(self.input_rate / float(self.BLOCKS_PER_SECOND))
+    
     self.pa = pyaudio.PyAudio()
-    self._probe_channels()
+    self._probe_device_caps(input_rate)
+
+    self.block_size = int(self.sample_rate / float(self.BLOCKS_PER_SECTION))
+    self.block_size_input = int(self.input_rate / float(self.BLOCKS_PER_SECTION))
+
     kwargs = {"format": self.FORMAT,
               "channels": self.CAPTURE_CHANNELS,
               "rate": self.input_rate,
@@ -59,22 +54,31 @@ class Audio(object):
     self.stream = self.pa.open(**kwargs)
     self.stream.start_stream()
 
-  def _probe_channels(self):
-    # Device probing through PipeWire is unreliable: the "default" pseudo-device
-    # reports maxInputChannels=64 regardless of real hardware. So we always
-    # request stereo and take channel 1:
-    #   - reSpeaker XVF3800 2-ch firmware: Ch1 = ASR-optimized output (correct)
-    #   - mono headset: PipeWire upmixes to stereo, Ch1 = same mic signal (correct)
-    # Override with SVA_MIC_CHANNEL=<index>; set SVA_MIC_CHANNEL=-1 to downmix to mono.
-    self.CAPTURE_CHANNELS = 2
-    env_idx = os.getenv("SVA_MIC_CHANNEL")
-    if env_idx is not None and env_idx.strip().lstrip("-").isdigit():
-      idx = int(env_idx)
-      self.CHANNEL_INDEX = None if idx < 0 else idx
-    else:
-      self.CHANNEL_INDEX = 1
-    self.log.debug(f"Audio._probe_channels(): capture={self.CAPTURE_CHANNELS} "
-                   f"index={self.CHANNEL_INDEX}")
+  def _probe_device_caps(self, requested_rate):
+    # Dynamically inspect default input device to support both 2-ch reSpeaker and 1-ch headsets plug-and-play
+    self.input_rate = requested_rate
+    self.sample_rate = requested_rate
+    try:
+      default_info = self.pa.get_default_input_device_info()
+      max_channels = int(default_info.get("maxInputChannels", 1))
+      dev_name = default_info.get("name", "")
+      self.log.debug(f"Audio._probe_device_caps(): device='{dev_name}', maxInputChannels={max_channels}")
+      
+      if "reSpeaker" in dev_name or max_channels >= 2:
+        self.CAPTURE_CHANNELS = 2
+        env_idx = os.getenv("SVA_MIC_CHANNEL")
+        if env_idx is not None and env_idx.strip().lstrip("-").isdigit():
+          idx = int(env_idx)
+          self.CHANNEL_INDEX = None if idx < 0 else idx
+        else:
+          self.CHANNEL_INDEX = 1  # ReSpeaker ASR-optimized channel
+      else:
+        self.CAPTURE_CHANNELS = 1
+        self.CHANNEL_INDEX = 0
+    except Exception as e:
+      self.log.debug(f"Audio._probe_device_caps() error querying device: {e}. Falling back to mono.")
+      self.CAPTURE_CHANNELS = 1
+      self.CHANNEL_INDEX = 0
 
   def _extract_channel(self, interleaved_bytes):
     if self.CAPTURE_CHANNELS == 1:
@@ -125,7 +129,9 @@ class VADAudio(Audio):
     utterance_start_time = None
     collected_frames = []
     for frame in frames:
-      if len(frame) < 640:
+      # webrtcvad requires 10, 20, or 30 ms frames at 8k, 16k, 32k, or 48k
+      min_frame_bytes = int(self.sample_rate * 0.01 * 2) # 10ms frame size in bytes
+      if len(frame) < min_frame_bytes:
         continue
       is_speech = self.vad.is_speech(frame, self.sample_rate)
       if not triggered:
@@ -171,8 +177,6 @@ def main():
   log_filename = base_dir + "/logs/audio.log"
   log = LOG(log_filename).log
 
-  # Always use the system default input device (managed by PipeWire).
-  # The default source should be set via PipeWire (pactl set-default-source).
   print("mic.py.main() Using system default input (PipeWire pulse device)")
 
   aggressiveness = 3
@@ -208,7 +212,7 @@ def main():
       wav_data.extend(frame)
     else:
       if len(wav_data) > 0:
-        duration_sec = len(wav_data) / (2 * DEFAULT_SAMPLE_RATE)
+        duration_sec = len(wav_data) / (2 * vad_audio.sample_rate)
         if 0.3 <= duration_sec <= max_utterance_sec:
           filename = os.path.join(
             tmp_file_path,
@@ -219,7 +223,7 @@ def main():
           log.debug(f"mic.py.main() Discarded utterance: {duration_sec:.2f}s")
       wav_data = bytearray()
   if len(wav_data) > 0:
-    duration_sec = len(wav_data) / (2 * DEFAULT_SAMPLE_RATE)
+    duration_sec = len(wav_data) / (2 * vad_audio.sample_rate)
     if 0.3 <= duration_sec <= max_utterance_sec:
       filename = os.path.join(tmp_file_path, datetime.now().strftime("savewav_%Y-%m-%d_%H-%M-%S_%f.wav"))
       vad_audio.write_wav(filename, wav_data)
