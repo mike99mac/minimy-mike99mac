@@ -354,13 +354,9 @@ function setupSpotify
         local soloistdSrc="/tmp/soloistd-src"
         runCmd rm -rf "$soloistdSrc"
         runCmd git clone --depth 1 https://github.com/MopigamesYT/soloistd "$soloistdSrc"
-        runCmd cd "$soloistdSrc"
-        # soloistd ships go.mod with "go 1.24.0"; strip patch version so any Go >=1.21 accepts it
-        runCmd sed -i -E 's/^go ([0-9]+)\.([0-9]+)\.[0-9]+$/go \1.\2/' go.mod
-        runCmd /usr/local/go/bin/go build -o /tmp/soloistd .
+        runCmd /usr/local/go/bin/go build -C "$soloistdSrc" -o /tmp/soloistd .
         runCmd sudo mkdir -p /usr/local/libexec
         runCmd sudo install -m 755 /tmp/soloistd "$soloistdReal"
-        runCmd cd "$baseDir"
       fi
 
       # --- Install Docker if missing ---

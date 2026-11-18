@@ -5,8 +5,12 @@ After=pipewire.service pipewire-pulse.service wireplumber.service
 [Service]
 Type=simple
 ExecStart=/usr/local/bin/soloistd run
-Restart=on-failure
+WorkingDirectory={baseDir}/framework/services/spotify
+StandardOutput=append:{baseDir}/logs/spotify.log
+StandardError=append:{baseDir}/logs/spotify.log
+Restart=always
 RestartSec=5
+KillMode=process
 
 [Install]
 WantedBy=default.target
