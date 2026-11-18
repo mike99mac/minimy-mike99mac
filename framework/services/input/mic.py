@@ -1,12 +1,11 @@
 from framework.util.utils import LOG
 from datetime import datetime
-from scipy import signal
 import numpy as np
 import collections
 import os
 import os.path
 import pyaudio
-import queue 
+import queue
 import sys
 import time
 import wave
@@ -14,15 +13,14 @@ import webrtcvad
 
 # script to read from mic and save utterances in the directory base_dir/tmp/save_audio/ as .wav files
 DEFAULT_SAMPLE_RATE = 16000
-BARK = False
 
 class Audio(object):
   # Streams raw audio from microphone. Data is received in a separate thread and stored in a buffer to be read from.
   FORMAT = pyaudio.paInt16
   RATE_PROCESS = 16000                     # Network/VAD rate-space
   CHANNELS = 1                             # logical output channels (mono)
-  CAPTURE_CHANNELS = 1                     # set at runtime by _probe_channels()
-  CHANNEL_INDEX = None                     # set at runtime by _probe_channels()
+  CAPTURE_CHANNELS = 2                     # always request stereo; select a channel below
+  CHANNEL_INDEX = 1                        # set at runtime by _probe_channels()
   BLOCKS_PER_SECOND = 50
 
   def __init__(self, callback=None, input_rate=RATE_PROCESS):
@@ -38,6 +36,12 @@ class Audio(object):
     log_filename = self.base_dir + "/logs/audio.log"
     self.log = LOG(log_filename).log
     self.buffer_queue = queue.Queue()
+    if input_rate != self.RATE_PROCESS:
+      raise ValueError(
+        f"Audio.__init__(): input_rate={input_rate} but RATE_PROCESS={self.RATE_PROCESS}. "
+        f"Stream resampling was removed; set the capture device to {self.RATE_PROCESS} Hz "
+        f"(PipeWire resamples transparently) or reinstate a stateful resampler."
+      )
     self.input_rate = input_rate
     self.sample_rate = self.RATE_PROCESS
     self.block_size = int(self.RATE_PROCESS / float(self.BLOCKS_PER_SECOND))
@@ -56,31 +60,21 @@ class Audio(object):
     self.stream.start_stream()
 
   def _probe_channels(self):
-    # reSpeaker XVF3800 exposes 4 channels: ch0 is AEC-processed.
-    # Normal mics expose 1; stereo mics expose 2 (downmix).
-    try:
-      info = self.pa.get_default_input_device_info()
-      probed = int(info.get("maxInputChannels", 1))
-    except Exception:
-      probed = 1
-    if probed >= 4:
-      self.CAPTURE_CHANNELS = 4
-      self.CHANNEL_INDEX = 0       # AEC-processed
-    elif probed == 2:
-      self.CAPTURE_CHANNELS = 2
-      self.CHANNEL_INDEX = None    # downmix to mono
+    # Device probing through PipeWire is unreliable: the "default" pseudo-device
+    # reports maxInputChannels=64 regardless of real hardware. So we always
+    # request stereo and take channel 1:
+    #   - reSpeaker XVF3800 2-ch firmware: Ch1 = ASR-optimized output (correct)
+    #   - mono headset: PipeWire upmixes to stereo, Ch1 = same mic signal (correct)
+    # Override with SVA_MIC_CHANNEL=<index>; set SVA_MIC_CHANNEL=-1 to downmix to mono.
+    self.CAPTURE_CHANNELS = 2
+    env_idx = os.getenv("SVA_MIC_CHANNEL")
+    if env_idx is not None and env_idx.strip().lstrip("-").isdigit():
+      idx = int(env_idx)
+      self.CHANNEL_INDEX = None if idx < 0 else idx
     else:
-      self.CAPTURE_CHANNELS = 1
-      self.CHANNEL_INDEX = None    # already mono
-    self.log.debug(f"Audio._probe_channels(): probed={probed} "
-                   f"capture={self.CAPTURE_CHANNELS} index={self.CHANNEL_INDEX}")
-
-  def resample(self, data):
-    data16 = np.frombuffer(data, dtype=np.int16)
-    resample_size = int(len(data16) / self.input_rate * self.RATE_PROCESS)
-    resample = signal.resample(data16, resample_size)
-    resample16 = np.array(resample, dtype=np.int16)
-    return resample16.tobytes()
+      self.CHANNEL_INDEX = 1
+    self.log.debug(f"Audio._probe_channels(): capture={self.CAPTURE_CHANNELS} "
+                   f"index={self.CHANNEL_INDEX}")
 
   def _extract_channel(self, interleaved_bytes):
     if self.CAPTURE_CHANNELS == 1:
@@ -90,9 +84,6 @@ class Audio(object):
     if self.CHANNEL_INDEX is None:
       return channels.mean(axis=1).astype(np.int16).tobytes()
     return channels[:, self.CHANNEL_INDEX].tobytes()
-
-  def read_resampled(self):
-    return self.resample(data=self.buffer_queue.get())
 
   def read(self):
     return self.buffer_queue.get()
@@ -122,12 +113,8 @@ class VADAudio(Audio):
     self.vad = webrtcvad.Vad(aggressiveness)
 
   def frame_generator(self):
-    if self.input_rate == self.RATE_PROCESS:
-      while True:
-        yield self.read()
-    else:
-      while True:
-        yield self.read_resampled()
+    while True:
+      yield self.read()
 
   def vad_collector(self, padding_ms=300, ratio=0.75, frames=None, max_utterance_sec=10.0):
     if frames is None:

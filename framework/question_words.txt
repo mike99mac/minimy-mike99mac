@@ -11,9 +11,11 @@ how's
 if
 is
 list
+recite
 repeat
 say
 show
+suggest
 tell
 was
 were
