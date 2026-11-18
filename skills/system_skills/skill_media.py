@@ -163,6 +163,8 @@ class SVAMediaSkill(SimpleVoiceAssistant):
       return self.handle_command(msg)
     elif subtype == "oob_detect":
       return self.handle_oob_detected(msg)
+    elif subtype == "stop":
+      return self.handle_stop(msg)
     elif subtype == "backend_update":
       self.active_backend = msg["payload"].get("backend", "mpc")
       self.log.info(f"SVAMediaSkill.handle_message(): backend = {self.active_backend}")
