@@ -326,7 +326,7 @@ function setupSpotify
   case "$arch" in
     x86_64)
       if [ ! -x "$soloistdPath" ]; then
-        runCmd wget -q "https://github.com" -O /tmp/soloistd
+        runCmd wget -q "https://github.com/MopigamesYT/soloistd/releases/download/v0.2.0/soloistd-linux-amd64" -O /tmp/soloistd
         runCmd sudo install -m 755 /tmp/soloistd "$soloistdPath"
       fi
       ;;
@@ -345,7 +345,7 @@ function setupSpotify
           fi
         fi
         if [ "$needGo" = 1 ]; then
-          runCmd wget -q "https://go.dev" -O /tmp/go.tar.gz
+          runCmd wget -q "https://go.dev/dl/go1.24.5.linux-arm64.tar.gz" -O /tmp/go.tar.gz
           runCmd sudo rm -rf /usr/local/go
           runCmd sudo tar -C /usr/local -xzf /tmp/go.tar.gz
           runCmd rm -f /tmp/go.tar.gz
@@ -353,7 +353,7 @@ function setupSpotify
         export PATH="/usr/local/go/bin:$PATH"
         local soloistdSrc="/tmp/soloistd-src"
         runCmd rm -rf "$soloistdSrc"
-        runCmd git clone --depth 1 https://github.com "$soloistdSrc"
+        runCmd git clone --depth 1 https://github.com/MopigamesYT/soloistd "$soloistdSrc"
         runCmd cd "$soloistdSrc"
         # soloistd ships go.mod with "go 1.24.0"; strip patch version so any Go >=1.21 accepts it
         runCmd sed -i -E 's/^go ([0-9]+)\.([0-9]+)\.[0-9]+$/go \1.\2/' go.mod
@@ -370,7 +370,7 @@ function setupSpotify
           runCmd sudo apt-get update
           runCmd sudo apt-get install -y docker.io
         else
-          runCmd curl -fsSL https://docker.com -o /tmp/get-docker.sh
+          runCmd curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
           runCmd sudo sh /tmp/get-docker.sh
           runCmd rm -f /tmp/get-docker.sh
         fi
