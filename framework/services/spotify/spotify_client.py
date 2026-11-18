@@ -69,8 +69,7 @@ class SpotifyClient:
 
   # Playback
 
-  def _play(self, track_uri=None, context_uri=None) -> bool:
-    uri = track_uri or context_uri
+  def play_uri(self, uri: str) -> bool:
     if not uri:
       return False
     try:
@@ -94,25 +93,25 @@ class SpotifyClient:
     try:
       if kind == "track":
         item = self._search_track(name, artist)
-        if item and self._play(track_uri=item["uri"]):
+        if item:
           return Music_info("spotify", "playing_track", {
             "track_name": item["name"],
             "artist_name": item["artists"][0]["name"],
             "album_name": item["album"]["name"],
-          }, [])
+          }, [item["uri"]])
       elif kind == "artist":
         item = self._search_artist(name)
-        if item and self._play(context_uri=item["uri"]):
+        if item:
           return Music_info("spotify", "playing_artist", {
             "artist_name": item["name"],
-          }, [])
+          }, [item["uri"]])
       elif kind == "album":
         item = self._search_album(name, artist)
-        if item and self._play(context_uri=item["uri"]):
+        if item:
           return Music_info("spotify", "playing_album", {
             "album_name": item["name"],
             "artist_name": item["artists"][0]["name"],
-          }, [])
+          }, [item["uri"]])
     except Exception as e:
-      self.log.error(f"Spotify: search/play error: {e}")
+      self.log.error(f"Spotify: search error: {e}")
     return None

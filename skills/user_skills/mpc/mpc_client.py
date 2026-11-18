@@ -78,8 +78,9 @@ class MpcClient(SimpleVoiceAssistant):
     # Start playing the type of music passed in the music_info object
     self.log.debug(f"MpcClient.start_music(): match_type : {music_info.match_type}")
     if music_info.match_type == "spotify":
-      # Playback was already started by SpotifyClient.find_and_play()
-      return True
+      if self.spotify_client and music_info.tracks_or_urls:
+        return self.spotify_client.play_uri(music_info.tracks_or_urls[0])
+      return False
     if music_info.match_type == "internet":
       self.stream_internet_music(music_info)
       return True

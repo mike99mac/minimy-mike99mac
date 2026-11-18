@@ -5,9 +5,11 @@ After=pipewire.service pipewire-pulse.service wireplumber.service
 [Service]
 Type=simple
 ExecStart=/usr/local/bin/soloistd run
-WorkingDirectory={baseDir}/framework/services/spotify
-StandardOutput=append:{baseDir}/logs/spotify.log
-StandardError=append:{baseDir}/logs/spotify.log
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH={{BASE_DIR}}:$PYTHONPATH
+WorkingDirectory={{BASE_DIR}}/framework/services/spotify
+StandardOutput=append:{{BASE_DIR}}/logs/spotify.log
+StandardError=append:{{BASE_DIR}}/logs/spotify.log
 Restart=always
 RestartSec=5
 KillMode=process

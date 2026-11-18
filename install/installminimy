@@ -302,7 +302,8 @@ function setupSpotify
   fi
 
   # Spotipy OAuth (for search)
-  local cachePath="$baseDir/.spotify_cache"
+  mkdir -p "$HOME/.config/spotify"
+  local cachePath="$baseDir/.config/spotify/credentials"
   if [ -f "$cachePath" ]; then
     echo "Spotify: OAuth cache present — skipping auth." | tee -a $logFile
   else
@@ -415,6 +416,35 @@ exec "${DOCKER_CMD[@]}" run --rm -i \
   minimy-soloist:latest "$@"
 WRAPPER
       sudo chmod 755 "$soloistdPath"
+
+      # --- Install soloist Docker wrapper at /usr/local/bin/soloist ---
+      sudo tee /usr/local/bin/soloist > /dev/null << 'WRAPPER'
+#!/usr/bin/env bash
+DOCKER_CMD=(docker)
+if ! docker info >/dev/null 2>&1; then
+  if sudo -n docker info >/dev/null 2>&1; then
+    DOCKER_CMD=(sudo docker)
+  fi
+fi
+
+exec "${DOCKER_CMD[@]}" run --rm -i \
+  --network host \
+  --init \
+  --user "$(id -u):$(id -g)" \
+  --entrypoint "$HOME/.local/share/soloistd/bin/soloist" \
+  -e HOME="$HOME" \
+  -e XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
+  -e PIPEWIRE_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
+  -e PULSE_SERVER="unix:${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/pulse/native" \
+  -v /tmp:/tmp \
+  -v "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}:${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
+  -v "$HOME/.local/share/soloistd:$HOME/.local/share/soloistd" \
+  -v "$HOME/.local/share/soloist:$HOME/.local/share/soloist" \
+  -v "$HOME/.cache/soloist:$HOME/.cache/soloist" \
+  -v "$HOME/.config/soloistd:$HOME/.config/soloistd" \
+  minimy-soloist:latest "$@"
+WRAPPER
+      sudo chmod 755 /usr/local/bin/soloist
       ;;
     *)
       echo "Soloist: unsupported architecture $arch." | tee -a $logFile
