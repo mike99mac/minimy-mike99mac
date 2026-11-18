@@ -321,12 +321,12 @@ function setupSpotify
   fi
 
   local soloistdPath="/usr/local/bin/soloistd"
+  local arch=$(uname -m)
 
   if [ ! -x "$soloistdPath" ]; then
-    local arch=$(uname -m)
     case "$arch" in
       x86_64)
-        runCmd wget -q "https://github.com/MopigamesYT/soloistd/releases/download/v0.2.0/soloistd-linux-amd64" -O /tmp/soloistd
+        runCmd wget -q "https://github.com" -O /tmp/soloistd
         runCmd sudo install -m 755 /tmp/soloistd "$soloistdPath"
         ;;
       aarch64)
@@ -342,7 +342,7 @@ function setupSpotify
           fi
         fi
         if [ "$needGo" = 1 ]; then
-          runCmd wget -q "https://go.dev/dl/go1.24.5.linux-arm64.tar.gz" -O /tmp/go.tar.gz
+          runCmd wget -q "https://go.dev" -O /tmp/go.tar.gz
           runCmd sudo rm -rf /usr/local/go
           runCmd sudo tar -C /usr/local -xzf /tmp/go.tar.gz
           runCmd rm -f /tmp/go.tar.gz
@@ -350,7 +350,7 @@ function setupSpotify
         export PATH="/usr/local/go/bin:$PATH"
         local soloistdSrc="/tmp/soloistd-src"
         runCmd rm -rf "$soloistdSrc"
-        runCmd git clone --depth 1 https://github.com/MopigamesYT/soloistd "$soloistdSrc"
+        runCmd git clone --depth 1 https://github.com "$soloistdSrc"
         runCmd cd "$soloistdSrc"
         # soloistd ships go.mod with "go 1.24.0"; strip patch version so any Go >=1.21 accepts it
         runCmd sed -i -E 's/^go ([0-9]+)\.([0-9]+)\.[0-9]+$/go \1.\2/' go.mod
@@ -365,11 +365,88 @@ function setupSpotify
     esac
   fi
 
-    # --- Run soloistd setup: downloads soloist binary, writes config ---
-  SOLOIST_API_KEY="$soloistKey" "$soloistdPath" setup --device-name "$deviceName" >> $logFile 2>&1
-  if [ "$?" != 0 ]; then
-    echo "ERROR: soloistd setup failed" | tee -a $logFile
-    return 1
+  if [ "$arch" = "aarch64" ]; then
+    # --- Install Docker if missing ---
+    if ! command -v docker &>/dev/null; then
+      echo "Installing Docker..." | tee -a $logFile
+      if command -v apt-get &>/dev/null; then
+        runCmd sudo apt-get update
+        runCmd sudo apt-get install -y docker.io
+      else
+        runCmd curl -fsSL https://docker.com -o /tmp/get-docker.sh
+        runCmd sudo sh /tmp/get-docker.sh
+        runCmd rm -f /tmp/get-docker.sh
+      fi
+    fi
+
+    # --- Ensure Docker daemon is running and user has access ---
+    if command -v systemctl &>/dev/null; then
+      runCmd sudo systemctl enable --now docker
+    fi
+
+    if ! id -nG "$CURRENT_USER" | grep -qw docker; then
+      runCmd sudo usermod -aG docker "$CURRENT_USER"
+      echo "Added $CURRENT_USER to docker group (a reboot or re-login is required for spotify.service)." | tee -a $logFile
+    fi
+
+    # --- Build Docker image (use sudo so build works before group reload) ---
+    runCmd sudo docker build -t minimy-soloist:latest -f "$baseDir/install/Dockerfile.soloist" "$baseDir/install"
+
+    # --- Install wrapper script at /usr/local/bin/soloist ---
+    mkdir -p "$HOME/.local/share/soloist" "$HOME/.cache/soloist" "$HOME/.local/share/soloistd/bin" "$HOME/.config/soloistd"
+    sudo tee /usr/local/bin/soloist > /dev/null << 'WRAPPER'
+#!/usr/bin/env bash
+exec docker run --rm -i \
+  --network host \
+  --init \
+  --user "$(id -u):$(id -g)" \
+  -e HOME="$HOME" \
+  -e XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
+  -e PIPEWIRE_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
+  -e PULSE_SERVER="unix:${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/pulse/native" \
+  -v /tmp:/tmp \
+  -v "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}:${XDG_RUNTIME_DIR:-/run/user/$(id -u)}" \
+  -v "$HOME/.local/share/soloistd:/opt/soloist:ro" \
+  -v "$HOME/.local/share/soloist:$HOME/.local/share/soloist" \
+  -v "$HOME/.cache/soloist:$HOME/.cache/soloist" \
+  -v "$HOME/.config/soloistd:$HOME/.config/soloistd" \
+  minimy-soloist:latest "$@"
+WRAPPER
+    sudo chmod 755 /usr/local/bin/soloist
+
+    # --- Download official arm64 soloist binary for the container ---
+    if [ ! -x "$HOME/.local/share/soloistd/bin/soloist.bin" ]; then
+      local relJson=$(curl -fsSL "https://spotifycdn.com")
+      local armUrl=$(echo "$relJson" | $pyCmd -c "import sys,json; d=json.load(sys.stdin); print(next(a['url'] for r in d['releases'] if r.get('channel')=='stable' for a in r['assets'] if 'linux' in a['url'] and ('arm64' in a['url'] or 'aarch64' in a['url'])))")
+      runCmd wget -q "$armUrl" -O /tmp/soloist.tar.gz
+      runCmd tar -xzf /tmp/soloist.tar.gz -C /tmp
+      runCmd install -m 755 /tmp/soloist "$HOME/.local/share/soloistd/bin/soloist.bin"
+      runCmd rm -f /tmp/soloist.tar.gz /tmp/soloist
+    fi
+
+    # Point soloistd's managed path to the Docker wrapper so 'soloistd run' uses Docker
+    ln -sf /usr/local/bin/soloist "$HOME/.local/share/soloistd/bin/soloist"
+
+    # Write soloistd config directly (avoids soloistd setup failing host glibc check)
+    $pyCmd -c "
+import json
+cfg = {
+  'api_key': '$soloistKey',
+  'device_name': '$deviceName',
+  'websocket': '127.0.0.1:9090',
+  'auto_update': False
+}
+with open('$HOME/.config/soloistd/config.json', 'w') as f:
+  json.dump(cfg, f, indent=2)
+"
+  else
+    # --- x86_64: native soloistd setup ---
+    SOLOIST_API_KEY="$soloistKey" "$soloistdPath" setup --device-name "$deviceName" >> $logFile 2>&1
+    if [ "$?" != 0 ]; then
+      echo "ERROR: soloistd setup failed" | tee -a $logFile
+      return 1
+    fi
+    runCmd sudo ln -sf ~/.local/share/soloistd/bin/soloist /usr/local/bin/soloist
   fi
 
   # --- Ensure websocket key is set in soloistd config ---
@@ -392,11 +469,6 @@ if not cfg.get('websocket'):
 else:
   print(f'Websocket already configured: {cfg[\"websocket\"]}')
 " 2>&1 | tee -a $logFile
-  fi
-
-  # --- Symlink soloist into PATH ---
-  if [ -x "$soloistBin" ]; then
-    runCmd sudo ln -sf "$soloistBin" /usr/local/bin/soloist
   fi
  }                                         # setupSpotify()
 
