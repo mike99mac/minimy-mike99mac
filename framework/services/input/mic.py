@@ -4,92 +4,135 @@ import numpy as np
 import collections
 import os
 import os.path
+import sys
+
+# Suppress noisy ALSA C-level error spam before importing pyaudio
+import ctypes
+try:
+  asound = ctypes.CDLL('libasound.so.2')
+  @ctypes.CFUNCTYPE(None, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p)
+  def _alsa_error_handler(filename, line, function, err, fmt):
+    pass
+  asound.snd_lib_error_set_handler(_alsa_error_handler)
+except Exception:
+  pass
+
 import pyaudio
 import queue
-import sys
+import threading
 import time
 import wave
 import webrtcvad
 
-# script to read from mic and save utterances in the directory base_dir/tmp/save_audio/ as .wav files
-DEFAULT_SAMPLE_RATE = 16000
+HARDWARE_SAMPLE_RATE = 48000
+PROCESSING_SAMPLE_RATE = 16000
 
 class Audio(object):
-  # Streams raw audio from microphone. Data is received in a separate thread and stored in a buffer to be read from.
   FORMAT = pyaudio.paInt16
-  RATE_PROCESS = 16000                     # Network/VAD rate-space
-  CHANNELS = 1                             # logical output channels (mono)
-  CAPTURE_CHANNELS = 2                     # always request stereo; select a channel below
-  CHANNEL_INDEX = 1                        # set at runtime by _probe_channels()
+  CHANNELS = 1                             
+  CAPTURE_CHANNELS = 2                     
+  CHANNEL_INDEX = 0                        # Channel 0 is the active reSpeaker AEC feed
   BLOCKS_PER_SECOND = 50
 
-  def __init__(self, callback=None, input_rate=RATE_PROCESS):
-    if callback is None:
-      def default_callback(in_data, frame_count, time_info, status):
-        self.buffer_queue.put(self._extract_channel(in_data))
-      callback = default_callback
-    def proxy_callback(in_data, frame_count, time_info, status):
-      if callback is not None:
-        callback(in_data, frame_count, time_info, status)
-      return (None, pyaudio.paContinue)
+  def __init__(self, input_rate=HARDWARE_SAMPLE_RATE):
     self.base_dir = str(os.getenv("SVA_BASE_DIR"))
     log_filename = self.base_dir + "/logs/audio.log"
     self.log = LOG(log_filename).log
     self.buffer_queue = queue.Queue()
-    if input_rate != self.RATE_PROCESS:
-      raise ValueError(
-        f"Audio.__init__(): input_rate={input_rate} but RATE_PROCESS={self.RATE_PROCESS}. "
-        f"Stream resampling was removed; set the capture device to {self.RATE_PROCESS} Hz "
-        f"(PipeWire resamples transparently) or reinstate a stateful resampler."
-      )
+    
     self.input_rate = input_rate
-    self.sample_rate = self.RATE_PROCESS
-    self.block_size = int(self.RATE_PROCESS / float(self.BLOCKS_PER_SECOND))
+    self.sample_rate = PROCESSING_SAMPLE_RATE  
+    
+    self.block_size = int(PROCESSING_SAMPLE_RATE / float(self.BLOCKS_PER_SECOND))
     self.block_size_input = int(self.input_rate / float(self.BLOCKS_PER_SECOND))
+    
     self.pa = pyaudio.PyAudio()
-    self._probe_channels()
-    kwargs = {"format": self.FORMAT,
-              "channels": self.CAPTURE_CHANNELS,
-              "rate": self.input_rate,
-              "input": True,
-              "frames_per_buffer": self.block_size_input,
-              "stream_callback": proxy_callback
-             }
-    self.log.debug(f"Audio.__init__() kwargs: {kwargs}")
+    self._find_hardware_device()
+    
+    kwargs = {
+      "format": self.FORMAT,
+      "channels": self.CAPTURE_CHANNELS,
+      "rate": self.input_rate,
+      "input": True,
+      "input_device_index": self.input_device_index,
+      "frames_per_buffer": self.block_size_input
+    }
+    self.log.debug(f"Audio.__init__() opening direct stream with kwargs: {kwargs}")
     self.stream = self.pa.open(**kwargs)
     self.stream.start_stream()
+    
+    self._is_running = True
+    self._capture_thread = threading.Thread(target=self._capture_loop, daemon=True)
+    self._capture_thread.start()
 
-  def _probe_channels(self):
-    # Device probing through PipeWire is unreliable: the "default" pseudo-device
-    # reports maxInputChannels=64 regardless of real hardware. So we always
-    # request stereo and take channel 1:
-    #   - reSpeaker XVF3800 2-ch firmware: Ch1 = ASR-optimized output (correct)[cite: 1]
-    #   - mono headset: PipeWire upmixes to stereo, Ch1 = same mic signal (correct)[cite: 1]
-    # Override with SVA_MIC_CHANNEL=<index>; set SVA_MIC_CHANNEL=-1 to downmix to mono.
-    self.CAPTURE_CHANNELS = 2
-    env_idx = os.getenv("SVA_MIC_CHANNEL")
-    if env_idx is not None and env_idx.strip().lstrip("-").isdigit():
-      idx = int(env_idx)
-      self.CHANNEL_INDEX = None if idx < 0 else idx
+  def _find_hardware_device(self):
+    target_index = None
+    max_channels = 2
+    
+    for i in range(self.pa.get_device_count()):
+      try:
+        dev_info = self.pa.get_device_info_by_index(i)
+        name = dev_info.get('name', '')
+        in_channels = int(dev_info.get('maxInputChannels', 0))
+        
+        if in_channels > 0 and ('hw:' in name or 'respeaker' in name.lower()) and in_channels <= 8:
+          if 'respeaker' in name.lower() or target_index is None:
+            target_index = i
+            max_channels = in_channels
+            self.log.info(f"Selected physical audio device: {name} at index {i} with {in_channels} channels")
+            if 'respeaker' in name.lower():
+              break
+      except Exception:
+        continue
+
+    if target_index is None:
+      target_index = 0
+      self.log.warning("No explicit hardware tag matched. Defaulting to device index 0.")
+
+    self.input_device_index = target_index
+    self.CAPTURE_CHANNELS = max_channels
+    
+    if self.CAPTURE_CHANNELS >= 2:
+      self.CHANNEL_INDEX = 0
+      self.log.info(f"Multi-channel array detected. Extracting active channel index: {self.CHANNEL_INDEX}")
     else:
-      self.CHANNEL_INDEX = 1
-    self.log.debug(f"Audio._probe_channels(): capture={self.CAPTURE_CHANNELS} "
-                   f"index={self.CHANNEL_INDEX}")
+      self.CHANNEL_INDEX = None
+      self.log.info("Single-channel device detected. Passing mono stream through.")
 
-  def _extract_channel(self, interleaved_bytes):
-    if self.CAPTURE_CHANNELS == 1:
-      return interleaved_bytes
+  def _capture_loop(self):
+    self.log.debug("Audio._capture_loop() started.")
+    while self._is_running:
+      try:
+        data = self.stream.read(self.block_size_input, exception_on_overflow=False)
+        processed = self._extract_and_resample(data)
+        self.buffer_queue.put(processed)
+      except Exception as e:
+        self.log.error(f"Audio._capture_loop() error: {e}")
+        time.sleep(0.01)
+
+  def _extract_and_resample(self, interleaved_bytes):
     samples = np.frombuffer(interleaved_bytes, dtype=np.int16)
-    channels = samples.reshape(-1, self.CAPTURE_CHANNELS)
-    if self.CHANNEL_INDEX is None:
-      return channels.mean(axis=1).astype(np.int16).tobytes()
-    return channels[:, self.CHANNEL_INDEX].tobytes()
+    
+    if self.CAPTURE_CHANNELS > 1:
+      channels = samples.reshape(-1, self.CAPTURE_CHANNELS)
+      if self.CHANNEL_INDEX is None:
+        samples = channels.mean(axis=1).astype(np.int16)
+      else:
+        idx = min(self.CHANNEL_INDEX, self.CAPTURE_CHANNELS - 1)
+        samples = channels[:, idx]
+    
+    if self.input_rate == 48000:
+      samples = samples[::3]
+      
+    return samples.tobytes()
 
   def read(self):
     return self.buffer_queue.get()
 
   def destroy(self):
-    self.stream.stop_stream()
+    self._is_running = False
+    if self.stream.is_active():
+      self.stream.stop_stream()
     self.stream.close()
     self.pa.terminate()
 
@@ -108,7 +151,7 @@ class Audio(object):
 class VADAudio(Audio):
   def __init__(self, aggressiveness=3, input_rate=None):
     if input_rate is None:
-      input_rate = self.RATE_PROCESS
+      input_rate = HARDWARE_SAMPLE_RATE
     super().__init__(input_rate=input_rate)
     self.vad = webrtcvad.Vad(aggressiveness)
 
@@ -125,7 +168,8 @@ class VADAudio(Audio):
     utterance_start_time = None
     collected_frames = []
     for frame in frames:
-      if len(frame) < 640:
+      min_frame_bytes = int(self.sample_rate * 0.01 * 2)
+      if len(frame) < min_frame_bytes:
         continue
       is_speech = self.vad.is_speech(frame, self.sample_rate)
       if not triggered:
@@ -134,12 +178,14 @@ class VADAudio(Audio):
         if num_voiced > ratio * ring_buffer.maxlen:
           triggered = True
           utterance_start_time = time.time()
+          self.log.debug("VAD TRIGGERED: Speech detected, starting utterance collection.")
           for f, _ in ring_buffer:
             collected_frames.append(f)
           ring_buffer.clear()
       else:
         if utterance_start_time and (time.time() - utterance_start_time) > max_utterance_sec:
           triggered = False
+          self.log.debug(f"VAD TIMEOUT: Max utterance duration reached, yielding {len(collected_frames)} frames.")
           if collected_frames:
             for f in collected_frames:
               yield f
@@ -152,12 +198,14 @@ class VADAudio(Audio):
         num_unvoiced = len([f for f, speech in ring_buffer if not speech])
         if num_unvoiced > ratio * ring_buffer.maxlen:
           triggered = False
+          self.log.debug("VAD END: Speech ended, yielding {len(collected_frames)} frames.")
           for f in collected_frames:
             yield f
           yield None
           collected_frames = []
           ring_buffer.clear()
     if collected_frames:
+      self.log.debug(f"VAD EOF: Yielding remaining {len(collected_frames)} frames.")
       for f in collected_frames:
         yield f
       yield None
@@ -171,32 +219,21 @@ def main():
   log_filename = base_dir + "/logs/audio.log"
   log = LOG(log_filename).log
 
-  print("mic.py.main() Using system default input (PipeWire pulse device)")
+  print("mic.py.main() Initialized with Channel 0 AEC extraction and software gain boost")
 
   aggressiveness = 3
   padding = 300
   ratio = 0.85
   max_utterance_sec = 4.0
 
-  # Suppress stderr ALSA warnings
-  saved_stderr = os.dup(2)
-  devnull = os.open(os.devnull, os.O_WRONLY)
-  os.dup2(devnull, 2)
-  os.close(devnull)
-
   try:
     vad_audio = VADAudio(aggressiveness=aggressiveness,
-                         input_rate=DEFAULT_SAMPLE_RATE)
+                         input_rate=HARDWARE_SAMPLE_RATE)
   except Exception as e:
-    os.dup2(saved_stderr, 2)
-    os.close(saved_stderr)
-    print("\nError - Mic Not Started!\n\n%s\n\nAborting!" % (e,))
+    print(f"\nError - Mic Not Started!\n\n{e}\n\nAborting!")
     sys.exit(-1)
 
-  os.dup2(saved_stderr, 2)
-  os.close(saved_stderr)
-
-  print("mic.py.main() aggressive:%s, padding:%s, ratio:%s" % (aggressiveness, padding, ratio))
+  print(f"mic.py.main() aggressive:{aggressiveness}, padding:{padding}, ratio:{ratio}")
   print("mic.py.main() Listening (ctrl-C to exit)...")
 
   frames = vad_audio.vad_collector(padding_ms=padding, ratio=ratio, max_utterance_sec=max_utterance_sec)
@@ -206,21 +243,23 @@ def main():
       wav_data.extend(frame)
     else:
       if len(wav_data) > 0:
-        duration_sec = len(wav_data) / (2 * DEFAULT_SAMPLE_RATE)
+        duration_sec = len(wav_data) / (2 * PROCESSING_SAMPLE_RATE)
         if 0.3 <= duration_sec <= max_utterance_sec:
           filename = os.path.join(
             tmp_file_path,
             datetime.now().strftime("savewav_%Y-%m-%d_%H-%M-%S_%f.wav")
           )
           vad_audio.write_wav(filename, wav_data)
+          log.info(f"SAVED UTTERANCE WAV: {filename} (duration: {duration_sec:.2f}s)")
         else:
           log.debug(f"mic.py.main() Discarded utterance: {duration_sec:.2f}s")
       wav_data = bytearray()
   if len(wav_data) > 0:
-    duration_sec = len(wav_data) / (2 * DEFAULT_SAMPLE_RATE)
+    duration_sec = len(wav_data) / (2 * PROCESSING_SAMPLE_RATE)
     if 0.3 <= duration_sec <= max_utterance_sec:
       filename = os.path.join(tmp_file_path, datetime.now().strftime("savewav_%Y-%m-%d_%H-%M-%S_%f.wav"))
       vad_audio.write_wav(filename, wav_data)
+      log.info(f"SAVED UTTERANCE WAV: {filename} (duration: {duration_sec:.2f}s)")
 
 if __name__ == "__main__":
   main()

@@ -45,6 +45,11 @@ class SpotifyClient:
       self.sp = spotipy.Spotify(auth_manager=auth)
       self.enabled = True
       self.log.info(f"Spotify: enabled (device='{self.device_name}')")
+      subprocess.run(
+        ["soloist", "ctl", "volume", "100"],
+        check=True,
+        timeout=10
+      )
     except Exception as e:
       self.log.error(f"Spotify: init failed: {e}")
 
