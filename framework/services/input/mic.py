@@ -29,8 +29,8 @@ PROCESSING_SAMPLE_RATE = 16000
 
 class Audio(object):
   FORMAT = pyaudio.paInt16
-  CHANNELS = 1                             
-  CAPTURE_CHANNELS = 2                     
+  CHANNELS = 1
+  CAPTURE_CHANNELS = 2
   CHANNEL_INDEX = 0                        # Channel 0 is the active reSpeaker AEC feed
   BLOCKS_PER_SECOND = 50
 
@@ -39,16 +39,16 @@ class Audio(object):
     log_filename = self.base_dir + "/logs/audio.log"
     self.log = LOG(log_filename).log
     self.buffer_queue = queue.Queue()
-    
+
     self.input_rate = input_rate
-    self.sample_rate = PROCESSING_SAMPLE_RATE  
-    
+    self.sample_rate = PROCESSING_SAMPLE_RATE
+
     self.block_size = int(PROCESSING_SAMPLE_RATE / float(self.BLOCKS_PER_SECOND))
     self.block_size_input = int(self.input_rate / float(self.BLOCKS_PER_SECOND))
-    
+
     self.pa = pyaudio.PyAudio()
     self._find_hardware_device()
-    
+
     kwargs = {
       "format": self.FORMAT,
       "channels": self.CAPTURE_CHANNELS,
@@ -60,7 +60,7 @@ class Audio(object):
     self.log.debug(f"Audio.__init__() opening direct stream with kwargs: {kwargs}")
     self.stream = self.pa.open(**kwargs)
     self.stream.start_stream()
-    
+
     self._is_running = True
     self._capture_thread = threading.Thread(target=self._capture_loop, daemon=True)
     self._capture_thread.start()
@@ -68,13 +68,13 @@ class Audio(object):
   def _find_hardware_device(self):
     target_index = None
     max_channels = 2
-    
+
     for i in range(self.pa.get_device_count()):
       try:
         dev_info = self.pa.get_device_info_by_index(i)
         name = dev_info.get('name', '')
         in_channels = int(dev_info.get('maxInputChannels', 0))
-        
+
         if in_channels > 0 and ('hw:' in name or 'respeaker' in name.lower()) and in_channels <= 8:
           if 'respeaker' in name.lower() or target_index is None:
             target_index = i
@@ -91,7 +91,7 @@ class Audio(object):
 
     self.input_device_index = target_index
     self.CAPTURE_CHANNELS = max_channels
-    
+
     if self.CAPTURE_CHANNELS >= 2:
       self.CHANNEL_INDEX = 0
       self.log.info(f"Multi-channel array detected. Extracting active channel index: {self.CHANNEL_INDEX}")
@@ -112,7 +112,7 @@ class Audio(object):
 
   def _extract_and_resample(self, interleaved_bytes):
     samples = np.frombuffer(interleaved_bytes, dtype=np.int16)
-    
+
     if self.CAPTURE_CHANNELS > 1:
       channels = samples.reshape(-1, self.CAPTURE_CHANNELS)
       if self.CHANNEL_INDEX is None:
@@ -120,10 +120,13 @@ class Audio(object):
       else:
         idx = min(self.CHANNEL_INDEX, self.CAPTURE_CHANNELS - 1)
         samples = channels[:, idx]
-    
+
     if self.input_rate == 48000:
-      samples = samples[::3]
-      
+      float_samples = samples.astype(np.float32)
+      kernel = np.ones(3, dtype=np.float32) / 3.0
+      filtered = np.convolve(float_samples, kernel, mode="same")
+      samples = np.clip(filtered[::3], -32768, 32767).astype(np.int16)
+
     return samples.tobytes()
 
   def read(self):
@@ -149,11 +152,19 @@ class Audio(object):
     wf.close()
 
 class VADAudio(Audio):
-  def __init__(self, aggressiveness=3, input_rate=None):
+  def __init__(self, aggressiveness=3, input_rate=None, min_rms=500):
     if input_rate is None:
       input_rate = HARDWARE_SAMPLE_RATE
     super().__init__(input_rate=input_rate)
     self.vad = webrtcvad.Vad(aggressiveness)
+    self.min_rms = min_rms
+
+  def _is_loud_enough(self, frame):
+    samples = np.frombuffer(frame, dtype=np.int16).astype(np.float32)
+    if samples.size == 0:
+      return False
+    rms = np.sqrt(np.mean(samples ** 2))
+    return rms >= self.min_rms
 
   def frame_generator(self):
     while True:
@@ -171,7 +182,7 @@ class VADAudio(Audio):
       min_frame_bytes = int(self.sample_rate * 0.01 * 2)
       if len(frame) < min_frame_bytes:
         continue
-      is_speech = self.vad.is_speech(frame, self.sample_rate)
+      is_speech = self._is_loud_enough(frame) and self.vad.is_speech(frame, self.sample_rate)
       if not triggered:
         ring_buffer.append((frame, is_speech))
         num_voiced = len([f for f, speech in ring_buffer if speech])
@@ -198,7 +209,7 @@ class VADAudio(Audio):
         num_unvoiced = len([f for f, speech in ring_buffer if not speech])
         if num_unvoiced > ratio * ring_buffer.maxlen:
           triggered = False
-          self.log.debug("VAD END: Speech ended, yielding {len(collected_frames)} frames.")
+          self.log.debug(f"VAD END: Speech ended, yielding {len(collected_frames)} frames.")
           for f in collected_frames:
             yield f
           yield None
@@ -225,15 +236,17 @@ def main():
   padding = 300
   ratio = 0.85
   max_utterance_sec = 4.0
+  min_rms = 500
 
   try:
     vad_audio = VADAudio(aggressiveness=aggressiveness,
-                         input_rate=HARDWARE_SAMPLE_RATE)
+                         input_rate=HARDWARE_SAMPLE_RATE,
+                         min_rms=min_rms)
   except Exception as e:
     print(f"\nError - Mic Not Started!\n\n{e}\n\nAborting!")
     sys.exit(-1)
 
-  print(f"mic.py.main() aggressive:{aggressiveness}, padding:{padding}, ratio:{ratio}")
+  print(f"mic.py.main() aggressive:{aggressiveness}, padding:{padding}, ratio:{ratio}, min_rms:{min_rms}")
   print("mic.py.main() Listening (ctrl-C to exit)...")
 
   frames = vad_audio.vad_collector(padding_ms=padding, ratio=ratio, max_utterance_sec=max_utterance_sec)
